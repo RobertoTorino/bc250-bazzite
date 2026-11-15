@@ -77,7 +77,8 @@ explanation.
 4. **CI passes:** the step waits until GitHub's CI (`ci.yml`) passed on that commit. When it failed, the line says
    so. A test that failed: fix it, then commit and push again. GitHub's own trouble (an error of its servers, a job
    that never started; [githubstatus.com](https://www.githubstatus.com) says when Actions are degraded): **Run CI
-   again** starts the failed jobs again on the same commit.
+   again** starts the failed jobs again on the same commit. Once pressed, it stays off for those runs until GitHub
+   shows them running again; a run that fails again can be started again.
 5. **Start new release:** check the versions on the Contents tab, then press it. It writes the release (the versions
    and their copies, the `Release x.y.z.` entries, the new tags in `portal/apps.toml`, the portal's version and its
    entry), commits it, pushes it and starts `.github/workflows/release.yml` on that commit. If the push stops, fix
