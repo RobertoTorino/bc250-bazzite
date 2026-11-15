@@ -69,7 +69,11 @@ explanation.
    count: a Breaking entry makes it major), or the least the check accepts, whichever is higher, and writes it with
    its CHANGELOG entry on a yes, then commits. A no leaves the commit where it is.
 3. **Push them** (**Push**): what GitHub has that this checkout lacks, such as the last release's `Pin ...`
-   commit, comes in under your commits first (`git pull --rebase`); then the pre-push hook checks them.
+   commit, comes in under your commits first (`git pull --rebase`); then the pre-push hook checks them. On Linux,
+   CI's jobs run here first (`tools/ci-local.sh`): while they run, the step's line and the line under the header's
+   pills count the jobs done and name a job that failed (GitHub knows nothing of this push yet). When a job fails,
+   nothing is pushed and the step turns red, with the job's name and where its log is; fix it, commit and push, or
+   push again when it was no fault of the code.
 4. **CI passes:** the step waits until GitHub's CI (`ci.yml`) passed on that commit. When it failed, the line says
    so. A test that failed: fix it, then commit and push again. GitHub's own trouble (an error of its servers, a job
    that never started; [githubstatus.com](https://www.githubstatus.com) says when Actions are degraded): **Run CI

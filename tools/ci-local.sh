@@ -25,6 +25,17 @@ CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/bc250-ci-local"
 FFMPEG="$CACHE/console-link-ffmpeg"
 mkdir -p "$CACHE" "$FFMPEG"
 
+# One run at a time: two runs share the venvs, pip's cache and the logs here, and one broke the other (owner,
+# 15-11-2026: a crash in a Qt test and a run that never ended, while a second run went on beside them). A second run
+# waits for the first; the lock goes with the container run below (exec keeps it open) and ends with it.
+case " $* " in *" --list "*) ;; *)
+    exec 9>"$CACHE/run.lock"
+    if ! flock -n 9; then
+        info "Another ci-local.sh run is going on this computer: waiting until it ends"
+        flock 9
+    fi ;;
+esac
+
 if ! "$ENGINE" image inspect "$IMAGE" >/dev/null 2>&1; then
     info "Building the CI image (once; a few minutes)"
     "$ENGINE" build -q -t "$IMAGE" -f "$CONTAINERFILE" "$ROOT/tools/ci-local" >/dev/null 2>"$CACHE/image-build.log" ||

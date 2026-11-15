@@ -1,3 +1,9 @@
+Changelog: 15-11-2026 07:05:26
+
+Fixed. tools/ci-local.sh runs one at a time on a computer: a second run says that another one is going and waits
+until it ends (owner, 15-11-2026: two runs at once shared the venvs and the logs, a Qt test crashed and a run never
+ended).
+
 Changelog: 15-11-2026 06:25:12
 
 Added. tools/check-release.sh cleans up after a test, as the Bazzite Console Suite's does (owner, 15-11-2026): on

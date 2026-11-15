@@ -1,3 +1,11 @@
+Changelog: 15-11-2026 07:05:26
+
+Fixed. Push shows where CI's jobs here stand (owner, 15-11-2026: the push seemed to hang, and a job that failed went
+unseen while the line under the pills showed the last push on GitHub as passed): while tools/ci-local.sh runs, the
+step's line and the line under the pills count the jobs done and name a job that failed, and say when the run waits
+for another one. A push that ended badly turns the step red with why (the jobs that failed, where their logs are,
+or a stop), until the commit is pushed or HEAD changes.
+
 Changelog: 15-11-2026 06:25:12
 
 Added. A tab Remove suite (owner, 15-11-2026): on a BC-250 it opens a terminal that lists what of the suite is

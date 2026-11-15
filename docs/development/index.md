@@ -81,7 +81,8 @@ It reads the jobs from the workflow itself, a matrix from the folders as the pla
 change. The first run builds the image from `tools/ci-local/Containerfile` (Python 3.12 and the packages GitHub's
 runner has) and PS Remote Play's FFmpeg; both are kept, with the venvs and the logs, in `~/.cache/bc250-ci-local`.
 It works on a copy of the checkout with every change staged, as the commit will have it. Only the Windows job does
-not run here. The push commands Nexus Release Tool shows run it first (`tools/ci-local.sh && git push`): no push
+not run here. One run goes at a time on a computer: a second one, from a terminal or Nexus Release Tool's Push, says
+that another run is going and waits until it ends, as the two would share the venvs and the logs. The push commands Nexus Release Tool shows run it first (`tools/ci-local.sh && git push`): no push
 when a job fails.
 
 On Windows it runs in podman's machine, a small Fedora in WSL that reaches the checkout under `/mnt/c`. Install
