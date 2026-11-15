@@ -1046,10 +1046,31 @@ def test_one_theme_for_every_app(window, home):
     pill = window.theme_pill
     assert theme.theme_name() == "gunmetal" and pill.value.text() == "Gunmetal"
     assert pill.caption.text() == "Theme switcher" and "next time it starts" in pill.toolTip()
+    # The portal shows it at once and stays open (owner, 15-11-2026: it showed only after a restart): the
+    # application's palette, the view's style sheets and the tiles' muted line are the new theme's.
+    from PyQt6.QtGui import QPalette
+    from PyQt6.QtWidgets import QApplication
+    from bc250_core import widgets
+    from bc250_core.app import switch_theme
+    qapp = QApplication.instance()
+    before = widgets.current_theme()
     seen = []
-    for _ in range(3):
-        pill.click()
-        seen.append((theme.theme_name(), pill.value.text()))
+    try:
+        for _ in range(3):
+            pill.click()
+            qapp.processEvents()                # a window not shown yet takes the palette on its next event
+            name = theme.theme_name()
+            now = theme.THEMES[name]
+            seen.append((name, pill.value.text()))
+            assert widgets.current_theme() is now
+            assert qapp.palette().color(QPalette.ColorRole.Window).name() == now.window
+            assert window.big.palette().color(QPalette.ColorRole.WindowText).name() == now.text
+            assert now.window in pill.styleSheet()
+            assert theme.outline(now) in window.big.bar.styleSheet()
+            assert theme.muted(now) in window.big.hint.styleSheet()
+            assert now.accent in window.big.info.styleSheet()
+    finally:
+        switch_theme(before)                    # the session's QApplication, as the other tests found it
     assert seen == [("silver", "Silver"), ("warm", "Warm"), ("gunmetal", "Gunmetal")]
     assert theme.theme_file().is_relative_to(home)
 
@@ -1080,7 +1101,7 @@ def test_the_header_is_an_apps_header_with_symbols(window):
     assert " | " in window.big.status.text()
     assert [(p.value.text(), p.caption.text()) for p in window.setting_pills] == [
         ("No", "Icons on Desktop"), (sound, "Sound"), (sound, "Music"), ("Built-in", "Music track"),
-        ("Gunmetal", "Theme switcher"), ("None", "Wallpaper"),
+        ("Gunmetal", "Theme switcher"), ("Example", "Wallpaper"),
         ("12 h", "Clock"), ("None", "Weather"), ("100 %", "Touchpad")]
     assert "verified by checksum" in window.source_text
 
@@ -1142,8 +1163,9 @@ def test_the_wallpaper(window, home, tmp_path, monkeypatch):
 
 
 def test_the_example_wallpaper(window):
-    """The portal ships an example wallpaper, to show how one looks, but never sets it by itself: the user chooses it
-    in the menu (owner, 20-10-2026). It meets the portal's own rules."""
+    """The portal ships an example wallpaper (owner, 20-10-2026) and starts with it (owner, 15-11-2026): it is the
+    wallpaper until the user chooses a picture of their own or none, and No wallpaper is remembered. It meets the
+    portal's own rules."""
     from PyQt6.QtGui import QColor, QImage
     from bc250_portal import wallpaper
 
@@ -1151,9 +1173,13 @@ def test_the_example_wallpaper(window):
         return {a.text(): (a.isChecked(), a.isEnabled()) for a in window.wallpaper_menu().actions()}
 
     assert wallpaper.EXAMPLE.is_file() and wallpaper.problem(wallpaper.EXAMPLE) == ""
-    assert wallpaper.shown() is None and window.wallpaper_pill.value.text() == "None"   # none at first
+    assert wallpaper.shown() == wallpaper.EXAMPLE and wallpaper.current() is None              # the example at first
+    assert window.wallpaper_pill.value.text() == "Example" and not window.big.picture.isNull()
+    window.remove_wallpaper()
+    assert wallpaper.shown() is None and window.wallpaper_pill.value.text() == "None"
     assert window.big.picture.isNull() and menu()["Example wallpaper"] == (False, True)
     assert not menu()["No wallpaper"][1]
+    assert (wallpaper.state_dir() / wallpaper.NONE).is_file()  # remembered, past a restart
     window.example_wallpaper()
     assert wallpaper.shown() == wallpaper.EXAMPLE and wallpaper.current() is None
     assert window.wallpaper_pill.value.text() == "Example" and not window.big.picture.isNull()
@@ -1167,7 +1193,7 @@ def test_the_example_wallpaper(window):
     image.fill(QColor("#00ff00"))
     image.save(str(picture))
     window.apply_wallpaper(picture)                         # a picture of one's own replaces the example
-    assert not wallpaper.is_example() and window.wallpaper_pill.value.text() == "Custom"
+    assert wallpaper.current() is not None and window.wallpaper_pill.value.text() == "Custom"
     assert menu()["Example wallpaper"] == (False, True)
     window.example_wallpaper()
     assert wallpaper.current() is None and wallpaper.shown() == wallpaper.EXAMPLE
@@ -1219,7 +1245,9 @@ def test_the_wallpapers_transparency(window):
     def slider_action():
         return next(a for a in window.wallpaper_menu().actions() if a.text() == "Transparency")
 
-    assert window.transparency() == mw.VEIL == 60 and not slider_action().isEnabled()
+    assert window.transparency() == mw.VEIL == 60 and slider_action().isEnabled()      # the example at first
+    window.remove_wallpaper()
+    assert not slider_action().isEnabled()                  # off without a wallpaper
     window.example_wallpaper()
     action = slider_action()
     assert action.isEnabled() and window.transparency_slider.value() == 60

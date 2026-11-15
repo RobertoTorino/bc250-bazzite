@@ -1,3 +1,17 @@
+Changelog: 15-11-2026 07:41:29
+
+Added. The portal starts with its example wallpaper behind it (owner, 15-11-2026, as the Bazzite Console Suite's
+portal). It had none until one was chosen. A picture of your own goes before it, and No wallpaper in the Wallpaper
+pill's menu is remembered. A portal that had no wallpaper shows the example after this update: choose No wallpaper
+once to have none again. The Portal Tour still starts without a wallpaper and chooses the example.
+
+Changelog: 15-11-2026 07:41:29
+
+Fixed. A click on the Theme pill shows the theme at once (owner, 15-11-2026: the portal had to be started again to
+show it). The pill saved the next theme and the portal kept the colors it read when it started. The portal now takes
+the theme at once and stays open: the window, the header, the tiles, the Settings page, the menus and the tooltips
+are drawn again in it. The Settings page's line says so. Each app takes the theme the next time it starts, as before.
+
 Changelog: 15-11-2026 05:32:49
 
 Release 21.0.2.

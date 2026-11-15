@@ -361,9 +361,20 @@ class BuildIndicator(Pill):
             self.announce(told)
         self.release_window.release_page.show_state()   # the Nexus release's run, from the same runs
         latest = rp.latest_push(self.runs)
-        state = rp.build_state(latest)
-        self.show_state(state, self.details(latest))
-        self.release_window.ticker.show_runs(latest, self.signed_in)
+        ticker = self.release_window.ticker
+        if self.awaiting_head():
+            # Pushed, and GitHub has no run of it yet: its newest runs are the commit's before, which say nothing
+            # of this one (owner, 15-11-2026: after a commit that failed, the next push showed as failed, then
+            # passed once GitHub had started its runs).
+            waiting = f"Pushed {self.head[:7]}: waiting for GitHub to start its runs."
+            self.show_state("running", waiting + "\n\nThe runs listed last are the commit's before it.")
+            if not self.release_window.commands.is_running():
+                ticker.show_local(waiting)
+        else:
+            self.show_state(rp.build_state(latest), self.details(latest))
+            if ticker.local.startswith("Pushed "):
+                ticker.show_local("")
+        ticker.show_runs(latest, self.signed_in)
         running = any(not r.done for r in self.runs)
         self.timer.start(BUILD_SOON_MS if self.awaiting_head() else BUILD_BUSY_MS if running else BUILD_IDLE_MS)
 

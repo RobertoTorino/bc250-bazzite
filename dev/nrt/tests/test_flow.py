@@ -782,3 +782,20 @@ def test_the_push_shows_ci_here_and_a_failure_stays_on_its_step(release_window):
     sh(w.root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "fix")
     w.reload()                                                      # a new commit: its push is still to do
     assert flow.step_states(page.facts)["push"] == "now"
+
+
+def test_a_push_github_has_no_runs_of_yet_shows_no_old_failure(release_window, monkeypatch):
+    """Right after a push, GitHub's newest runs are the commit's before: one that failed showed this push as failed
+    until GitHub had started its runs (owner, 15-11-2026). The pill and the line under it wait for GitHub instead."""
+    w = release_window
+    head = sh(w.root, "rev-parse", "HEAD").strip()
+    old = _run("0" * 40, "ci.yml", "CI", conclusion="failure")
+    w.build.head = head
+    monkeypatch.setattr(w.build, "awaiting_head", lambda: True)
+    monkeypatch.setattr(w.build, "source", object())
+    w.build.checked(([old], "e1"))
+    assert w.build.state == "running" and f"Pushed {head[:7]}: waiting for GitHub" in w.build.toolTip()
+    assert w.ticker.local.startswith(f"Pushed {head[:7]}") and w.ticker.isVisibleTo(w)
+    monkeypatch.setattr(w.build, "awaiting_head", lambda: False)
+    w.build.checked(([_run(head, "ci.yml", "CI")], "e2"))
+    assert w.build.state == "passed" and w.ticker.local == ""

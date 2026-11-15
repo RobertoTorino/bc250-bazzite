@@ -1,3 +1,9 @@
+Changelog: 15-11-2026 07:42:52
+
+Fixed. The wiki's Portal Tour is recorded again from the portal that starts with its example wallpaper and shows a
+theme at once: the tour still starts without a wallpaper and chooses the example (tools/portal_tour.py), and its
+click on the Theme pill now shows the next theme in the portal itself.
+
 Changelog: 15-11-2026 07:05:26
 
 Fixed. tools/ci-local.sh runs one at a time on a computer: a second run says that another one is going and waits

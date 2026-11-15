@@ -251,12 +251,12 @@ Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), N
   original may be moved or deleted; the portal's `--purge` removes it.
 - **Theme switcher**, on the Settings page, showing the theme; click it for the next one: the look of every app in the
   suite. **Gunmetal** (dark, cool blue-gray, the default), **Silver** (light) or **Warm** (dark warm gray with a
-  bronze accent). It is one choice for all the apps, kept in `~/.config/bc250-bazzite-suite/theme`; each app takes
-  it the next time it starts, the portal too.
-- **Wallpaper**, on the Settings page: a picture behind the portal, none until you choose one, and seen through the
-  pills that are not active. Click the pill, then
-  **Choose a picture…** for your own (**Custom**), **Example wallpaper** to see how one looks with the picture that
-  comes with the portal (**Example**), or **No wallpaper** for none. Your picture must be a PNG, JPEG or WebP of at least 1920 x 1080 pixels, in 16:9 (1920 x
+  bronze accent). It is one choice for all the apps, kept in `~/.config/bc250-bazzite-suite/theme`: the portal shows
+  it at once and stays open, and each app takes it the next time it starts.
+- **Wallpaper**, on the Settings page: a picture behind the portal, seen through the pills that are not active. The
+  portal starts with the picture that comes with it (**Example**). Click the pill, then
+  **Choose a picture…** for your own (**Custom**), **Example wallpaper** for the portal's own again, or
+  **No wallpaper** for none; the portal remembers that choice. Your picture must be a PNG, JPEG or WebP of at least 1920 x 1080 pixels, in 16:9 (1920 x
   1080, 2560 x 1440, 3840 x 2160); the portal refuses another and says why. It fills the window, under a veil of the
   theme's color so the text stays readable. **Transparency**, a slider in the same menu, sets that veil from 0 to
   90 % (60 % at first): move it up for a dark or busy picture, so the icons stand out, down to see more of the

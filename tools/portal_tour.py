@@ -87,6 +87,7 @@ class Tour(Recorder):
                     records[entry.key] = f"{entry.key}-v{major}.{max(int(minor) - 1, 0)}.0"
         state_dir().mkdir(parents=True, exist_ok=True)
         (state_dir() / "installed.json").write_text(json.dumps(records), encoding="utf-8")
+        (state_dir() / "wallpaper-none").touch()        # the tour starts without a wallpaper and chooses the example
         from bc250_portal.main_window import MainWindow
 
         class Silent(audio.Sounds):                 # the Sound pill as on a board with an output, but nothing plays

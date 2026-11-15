@@ -1,3 +1,11 @@
+Changelog: 15-11-2026 07:41:29
+
+Added. app.switch_theme(theme) puts another theme on the running app: the widgets draw with it, the application
+takes its palette and style sheet, and the tooltips their border. InfoButton.restyle() and RoundedToolTip.restyle()
+write their style sheet again in the theme of the moment; a widget with theme colors in a style sheet of its own
+does the same after a switch. For the portal's Theme pill (owner, 15-11-2026, as the Bazzite Console Suite's core).
+Nothing changes for an app that never switches.
+
 Changelog: 15-11-2026 03:58:53
 
 Fixed. Names BC-250 Board Test, BC-250 Webcam, BC-250 Controller, BC-250 Turing Screen, BC-250 Wi-Fi Adapter, BC-250

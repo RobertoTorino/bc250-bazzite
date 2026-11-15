@@ -1,3 +1,9 @@
+Changelog: 15-11-2026 07:50:10
+
+Fixed. Right after a push, the GitHub pill and the line under the pills wait for GitHub to start the runs of the
+commit pushed (owner, 15-11-2026): until then they showed the runs of the commit before, so a push after a commit
+that failed showed as failed, then as passed. While Run CI again runs, its step says so.
+
 Changelog: 15-11-2026 07:05:26
 
 Fixed. Push shows where CI's jobs here stand (owner, 15-11-2026: the push seemed to hang, and a job that failed went
