@@ -36,8 +36,8 @@
 [apps.check]
 name = "BC-250 Board Test"
 summary = "Read-only diagnostics, stress test and benchmarks. Always installed."
-tag = "bc250-check-v3.0.0"
-sha256 = "b27667659c621965b14847f6b12a5e2f573d022d0a81fb8e43e196881b12a012"
+tag = "bc250-check-v3.0.1"
+sha256 = ""
 required = true
 changes_board = false
 category = "sustainable"

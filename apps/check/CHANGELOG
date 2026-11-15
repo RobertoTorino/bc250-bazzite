@@ -1,3 +1,7 @@
+Changelog: 15-11-2026 23:41:16
+
+Release 3.0.1.
+
 Changelog: 15-11-2026 13:32:44
 
 Fixed. development/tools/install-requirements.sh, run without an option, says before each question what the group
