@@ -37,7 +37,7 @@
 name = "BC-250 Board Test"
 summary = "Read-only diagnostics, stress test and benchmarks. Always installed."
 tag = "bc250-check-v3.0.1"
-sha256 = ""
+sha256 = "5490e36817adae9b24f7031a991f9e5e9480cf479d8498621fb0fa5436bc7def"
 required = true
 changes_board = false
 category = "sustainable"
@@ -529,7 +529,7 @@ launch = [["Open", "~/.local/bin/bc250-bluetooth-pairing"]]
 name = "BC-250 Helpers"
 summary = "Small helpers for one job each: Board Test's extras, MangoHud's config, GPU metrics, the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
 tag = "bc250-helpers-v0.1.0"
-sha256 = ""
+sha256 = "6781344f719f31bdb5b670386e5c09d2eda738427127d25e27c86178262de757"
 required = true
 changes_board = false
 category = "utilities"
