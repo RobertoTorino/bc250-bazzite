@@ -1,3 +1,7 @@
+Changelog: 15-11-2026 12:01:29
+
+Release 22.0.0. Pins bc250-check-v3.0.0, bc250-upscaler-v4.0.0, bc250-overlay-v3.0.0, bc250-bios-v3.0.0, bc250-ace-v3.0.0, bc250-mesh-v3.0.0, bc250-vram-v3.0.0, bc250-fan-v3.0.0, bc250-wifi-v1.0.0, bc250-cec-v3.0.0, bc250-sftp-v3.0.0, bc250-turing-v1.0.0, bc250-webcam-v1.0.0, bc250-controller-v1.0.0, bc250-rpcs3-v6.0.0, bc250-consoles-v4.0.0, bc250-clb-v3.0.0, bc250-shadps4-v6.0.0, bc250-datstation-v5.0.0, bc250-ppsspp-v4.0.0, bc250-pcsx2-v6.0.0, bc250-vita3k-v4.0.0, bc250-xenia-v4.0.0, bc250-ssd-v2.0.0, bc250-btpair-v1.0.0.
+
 Changelog: 15-11-2026 10:16:55
 
 Breaking. The portal installs as a copy of your own in ~/.local/share/bc250-bazzite-suite/portal, as the Bazzite
