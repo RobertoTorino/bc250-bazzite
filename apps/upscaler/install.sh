@@ -54,7 +54,27 @@ move_old() {
           "$DATA_HOME/icons/hicolor/512x512/apps/$OLD_ID.png"
 }
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 uninstall() {
+    found=false
+    installed_here "${DATA_HOME:?}/$OLD_ID" "$BIN_DIR/$OLD_ID" "$APPS_DIR/$OLD_ID.desktop" "$ICON_DIR/$OLD_ID.png" \
+        "$DESKTOP_DIR/$OLD_ID.desktop" "$DATA_HOME/icons/hicolor/512x512/apps/$OLD_ID.png" "$APP_DIR" \
+        "$BIN_DIR/$APP_ID" "$APPS_DIR/$APP_ID.desktop" "$ICON_DIR/$APP_ID.png" \
+        "$DESKTOP_DIR/$APP_ID.desktop" "$DATA_HOME/icons/hicolor/512x512/apps/$APP_ID.png" && found=true
+    $PURGE && installed_here "$APP_DIR/payload" "$CONFIG_DIR/$APP_ID/$APP_ID.conf" && found=true
+    if ! $found; then
+        say "$APP_ID is not installed: nothing to remove."
+        exit 0
+    fi
     move_old
     say "Removing $APP_ID"
     rm -rf "$APP_DIR/venv" "$APP_DIR/upscaler" "$APP_DIR/bc250_core" "$APP_DIR/images"

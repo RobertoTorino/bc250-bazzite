@@ -114,7 +114,7 @@ def windows(monkeypatch, tmp_path):
 
 
 def test_the_old_folders_stay_where_they_were_on_windows(windows, monkeypatch):
-    """Bazzite SFTP's Windows executable keeps its settings and data in ~/.config and ~/.local/share."""
+    """BC-250 SFTP Tools' Windows executable keeps its settings and data in ~/.config and ~/.local/share."""
     for name in ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_BIN_HOME"):
         monkeypatch.delenv(name, raising=False)
     assert platform.data_home() == Path.home() / ".local" / "share"

@@ -136,7 +136,7 @@ whether the kernel got it. Undo writes back the UMA_SIZE of the block before the
 | GTT | `/sys/class/drm/card*/device/mem_info_gtt_total` |
 | System RAM | `MemTotal` in `/proc/meminfo` |
 | TTM limit | `/sys/module/ttm/parameters/pages_limit` (4 KiB pages), and its value on `/proc/cmdline` |
-| Swap | `/proc/swaps` (zram and disk swap) and `/sys/module/zswap/parameters/enabled`, as Bazzite Test's test 14 |
+| Swap | `/proc/swaps` (zram and disk swap) and `/sys/module/zswap/parameters/enabled`, as Board Test's test 14 |
 | Swappiness | `/proc/sys/vm/swappiness` |
 
 amdgpu sizes GTT from the TTM limit and caps it at the RAM on this APU (`amdgpu_ttm_init`: "Capping GTT to …M to
@@ -168,7 +168,7 @@ own event loop, so the window keeps painting under the password dialog; a comman
 without starting, and one that does not end in ten minutes is stopped (84 seconds were seen on a board with 11
 layered packages: rpm-ostree puts them on the new deployment again).
 
-The value is in 4 KiB pages (256 per MiB): the presets are 3014656 (11.5 GiB, Bazzite Test's value) and 4194304
+The value is in 4 KiB pages (256 per MiB): the presets are 3014656 (11.5 GiB, Board Test's value) and 4194304
 (16 GiB, all the RAM with any split); the kernel default removes the argument. The GTT amdgpu then makes is
 `min(limit, RAM)`, which the memory map's preview shows with `gtt_ceiling()`.
 

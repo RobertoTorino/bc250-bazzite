@@ -1,3 +1,8 @@
+Changelog: 15-11-2026 03:58:53
+
+Fixed. Names BC-250 Board Test, BC-250 Webcam, BC-250 Controller, BC-250 Turing Screen, BC-250 Wi-Fi Adapter, BC-250
+SFTP Tools and BC-250 SSD Check by their names, ids and keys where it mentions them (owner, 15-11-2026).
+
 Changelog: 15-11-2026 01:08:09
 
 Breaking. Linux only (owner, 15-11-2026): the Windows mode, which recorded the install of a Windows Portable Suite

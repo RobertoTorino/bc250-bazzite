@@ -288,14 +288,14 @@ The release stays on GitHub, so its history is kept, but nothing installs it any
 4. Release the portal (tab **2**, at least a minor version): its CHANGELOG entry names the withdrawal. A portal
    that updates to it removes the app; the portal update button says so beforehand ("withdraws ...").
 
-Bazzite Test, which is always installed, cannot be withdrawn.
+Board Test, which is always installed, cannot be withdrawn.
 
 ## Checking a release
 
 A release that `tools/build_release.py` built has the same content when you build its tag yourself, but usually
 not the same checksum. The gzip compression of a `.tar.gz` differs between zlib builds (Fedora uses zlib-ng,
-GitHub's Ubuntu runners zlib), so compare the unpacked files, not the `.tar.gz`. Bazzite Test's build time in
-`bazzite_check/_build_info.py` is the commit time too; older Bazzite Test releases recorded the clock, and there
+GitHub's Ubuntu runners zlib), so compare the unpacked files, not the `.tar.gz`. Board Test's build time in
+`board_test/_build_info.py` is the commit time too; older Board Test releases recorded the clock, and there
 only that line differs:
 
 ```bash

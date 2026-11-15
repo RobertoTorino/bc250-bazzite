@@ -162,9 +162,9 @@
       "apps": [
         {
           "suite": "bc250-bazzite",
-          "app": "hdcontrol",
-          "name": "USB HD Control",
-          "launcher": "~/.local/bin/bc250-usb-hdcontrol"
+          "app": "controller",
+          "name": "BC-250 Controller",
+          "launcher": "~/.local/bin/bc250-controller"
         }
       ],
       "how": "Connect the controller with a USB cable and open {apps}: it reads the controller's firmware, compares it with Sony's and updates it (the Edge's profiles are backed up first). Bluetooth is not enough for an update."

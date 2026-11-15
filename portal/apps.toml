@@ -30,7 +30,7 @@
 # started there (owner, 27-10-2026: no Development tab).
 
 [apps.check]
-name = "BC-250 Bazzite Test"
+name = "BC-250 Board Test"
 summary = "Read-only diagnostics, stress test and benchmarks. Always installed."
 tag = "bc250-check-v2.1.2"
 sha256 = "41281924be280533c0a2cf21677e0720a134d9c761261b6065be9685986eef5f"
@@ -39,8 +39,8 @@ changes_board = false
 category = "sustainable"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-bazzite-test"]
-launch = [["Open", "~/.local/bin/bc250-bazzite-test"]]
+detect = ["~/.local/bin/bc250-board-test"]
+launch = [["Open", "~/.local/bin/bc250-board-test"]]
 
 [apps.gpu]
 name = "BC-250 GPU Manager"
@@ -170,7 +170,7 @@ detect = ["~/.local/bin/bc250-persistent-acpi-gui"]
 launch = [["Open", "~/.local/bin/bc250-persistent-acpi-gui"]]
 
 [apps.overlay]
-name = "System Overlay"
+name = "BC-250 System Overlay"
 summary = "CPU, GPU, refresh rate, fan and temperatures in a small window that stays on top."
 tag = "bc250-overlay-v2.1.0"
 sha256 = "80800f8a460f0a0420a5cc9617270409d6fda94096e231870af226fb86875782"
@@ -286,16 +286,15 @@ uninstall = ["bash install.sh --uninstall"]
 detect = ["~/.local/bin/bc250-fan-control"]
 launch = [["Open", "~/.local/bin/bc250-fan-control"]]
 
-[apps.wdriver]
-name = "BC-250 USB Wi-Fi"
+[apps.wifi]
+name = "BC-250 Wi-Fi Adapter"
 summary = "The driver for AIC8800D80 USB Wi-Fi sticks: built for the running kernel, loaded at boot, rebuilt after a kernel update."
-tag = "bc250-wdriver-v2.1.0"
-sha256 = "7747459d5e9105203da725656ac368ed3a819454391b79eef0e82184fd9dfa8f"
+tag = "bc250-wifi-v0.1.0"
 required = false
 changes_board = true
 board_change = """
 The app builds the AIC8800D80 driver as your user against the running kernel's headers and installs it as root
-under /var/lib/bc250-usb-wifi, with a system service, bc250-usb-wifi.service, that loads the two modules with
+under /var/lib/bc250-wifi-adapter, with a system service, bc250-wifi-adapter.service, that loads the two modules with
 insmod at every boot, and a udev rule that switches a stick out of its storage mode. Nothing goes into /usr, and
 no kernel argument, BIOS, firmware or CMOS setting changes; the firmware files it carries are uploaded to the
 stick, never to the board. The files stay across reboots, power offs and kernel updates: after a kernel update
@@ -306,8 +305,8 @@ uninstall.
 category = "utilities"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-usb-wifi"]
-launch = [["Open", "~/.local/bin/bc250-usb-wifi"]]
+detect = ["~/.local/bin/bc250-wifi-adapter"]
+launch = [["Open", "~/.local/bin/bc250-wifi-adapter"]]
 
 [apps.cec]
 name = "BC-250 CEC Manager"
@@ -323,7 +322,7 @@ detect = ["~/.local/bin/bc250-hdmi-cec"]
 launch = [["Open", "~/.local/bin/bc250-hdmi-cec"]]
 
 [apps.sftp]
-name = "Bazzite SFTP Tools"
+name = "BC-250 SFTP Tools"
 short = "SFTP Tools"
 summary = "Move files between computers over SFTP, and manage the SSH server of a Bazzite host."
 tag = "bc250-sftp-v2.1.0"
@@ -333,47 +332,44 @@ changes_board = false
 category = "utilities"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-bazzite-sftp-tools"]
-launch = [["Open", "~/.local/bin/bc250-bazzite-sftp-tools"]]
+detect = ["~/.local/bin/bc250-sftp-tools"]
+launch = [["Open", "~/.local/bin/bc250-sftp-tools"]]
 
-[apps.ips35]
-name = "USB IPS3.5"
+[apps.turing]
+name = "BC-250 Turing Screen"
 summary = "CPU, GPU, memory, fan and temperatures on a Turzx USB IPS screen (Turing Smart Screen 3.5\")."
-tag = "bc250-ips35-v2.1.0"
-sha256 = "325cac29b2205206554b8e6b6d3d52e9d888cea204f1bc8fd9ea1cadcee3abc6"
+tag = "bc250-turing-v0.1.0"
 required = false
 changes_board = false
 category = "utilities"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-usb-ips35"]
-launch = [["Open", "~/.local/bin/bc250-usb-ips35"]]
+detect = ["~/.local/bin/bc250-turing-screen"]
+launch = [["Open", "~/.local/bin/bc250-turing-screen"]]
 
-[apps.hdcam]
-name = "USB HD Cam"
+[apps.webcam]
+name = "BC-250 Webcam"
 summary = "The PS5 HD Camera (CFI-ZEY1) as a webcam: loads its firmware at every plug-in and shows its picture."
-tag = "bc250-hdcam-v2.1.0"
-sha256 = "2058626081a610bf4c2806e1ae272e743549e53776cc77ca96634772f7c33c35"
+tag = "bc250-webcam-v0.1.0"
 required = false
 changes_board = false
 category = "utilities"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-usb-hdcam"]
-launch = [["Open", "~/.local/bin/bc250-usb-hdcam"]]
+detect = ["~/.local/bin/bc250-webcam"]
+launch = [["Open", "~/.local/bin/bc250-webcam"]]
 
-[apps.hdcontrol]
-name = "USB HD Control"
+[apps.controller]
+name = "BC-250 Controller"
 summary = "The DualSense and DualSense Edge on the board: battery, firmware updates from the official server, and the Edge's profiles."
-tag = "bc250-hdcontrol-v2.1.0"
-sha256 = "a516b380c49304f37bf8997329ffd2ac08dfdb87447e9a94aa47993644ae1c6d"
+tag = "bc250-controller-v0.1.0"
 required = false
 changes_board = false
 category = "utilities"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-usb-hdcontrol"]
-launch = [["Open", "~/.local/bin/bc250-usb-hdcontrol"]]
+detect = ["~/.local/bin/bc250-controller"]
+launch = [["Open", "~/.local/bin/bc250-controller"]]
 
 [apps.rpcs3]
 name = "RPCS3 Manager"
@@ -496,7 +492,7 @@ detect = ["~/.local/bin/bc250-xenia-manager"]
 launch = [["Open", "~/.local/bin/bc250-xenia-manager"]]
 
 [apps.ssd]
-name = "SSD Check"
+name = "BC-250 SSD Check"
 summary = "The health, power cycles and power-on hours of the board's SSDs."
 tag = "bc250-ssd-v1.1.0"
 sha256 = "e2eebe8b80440f215ac4ec0b74dfa5ac013e2154641b885c431ee35093483407"
@@ -505,8 +501,8 @@ changes_board = false
 category = "utilities"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-ssd"]
-launch = [["Open", "~/.local/bin/bc250-ssd"]]
+detect = ["~/.local/bin/bc250-ssd-check"]
+launch = [["Open", "~/.local/bin/bc250-ssd-check"]]
 
 [apps.btpair]
 name = "BC-250 Bluetooth Pairing"

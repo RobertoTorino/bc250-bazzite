@@ -5,7 +5,7 @@ launch_in_terminal() is the bisect GUIs' terminal.py (identical in cu, cores and
 file: the shell writes the command's exit status there when it ends, so a caller that cannot wait for the detached
 terminal (the portal running an installer) can still tell when, and how, it finished.
 
-The Windows side, for the development apps on Windows and Bazzite SFTP's Windows executable: open_path() with the
+The Windows side, for the development apps on Windows and BC-250 SFTP Tools' Windows executable: open_path() with the
 file's own program and a PowerShell window for launch_in_terminal(). data_home(), config_home(), bin_home() and
 xdg_open() return what they always did, on Windows too: the Windows executable keeps its files where they are."""
 

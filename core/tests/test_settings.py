@@ -21,8 +21,8 @@ def test_native_file_matches_old_location(settings_dir, info):
 
 
 def test_ini_and_org_override(settings_dir):
-    bt = AppInfo("bc250-bazzite-test", "BC-250 Bazzite Test", "0.1.0", settings_ini=True)
-    assert _file(open_settings(bt)).name == "bc250-bazzite-test.ini"
+    bt = AppInfo("bc250-board-test", "BC-250 Board Test", "0.1.0", settings_ini=True)
+    assert _file(open_settings(bt)).name == "bc250-board-test.ini"
     cores = AppInfo("bc250-cores-unlock", "x", "0.1.0", settings_org="bc250-cores-bisect")
     assert _file(open_settings(cores)).parent.name == "bc250-cores-bisect"
     assert _file(open_settings(cores)).stem == "bc250-cores-unlock"

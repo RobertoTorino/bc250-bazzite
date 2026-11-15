@@ -62,7 +62,29 @@ $PURGE && ! $UNINSTALL && die "--purge only goes with --uninstall."
 
 [ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the venv and the launcher belong in your home folder."
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 if $UNINSTALL; then
+    found=false
+    installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "$LINK" "$OPT_DIR/$APP_ID"-v* "$HOME/.cache/$APP_ID" \
+        "$VENV_USERS/$APP_ID" && found=true
+    $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "$HOME/.local/state/$APP_ID" && found=true
+    if ! $found; then
+        info "$APP_NAME is not installed: nothing to remove."
+        if [ -d "$DRIVER_DIR" ]; then
+            info "The patched driver is still installed in $DRIVER_DIR. To remove it as well: install the app again"
+            info "and use Remove in its window, or run: sudo bash $SRC/bc250-ace-queues.sh --remove-driver"
+        fi
+        exit 0
+    fi
     info "Removing the launcher, the menu entry and the Desktop icon"
     rm -f "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON"
     command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q "$DATA_DIR/applications" || true

@@ -65,7 +65,25 @@ remove_menu_entries() {
 
 [ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the venv and launcher belong in your home folder."
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 if $UNINSTALL; then
+    found=false
+    installed_here "$LAUNCHER" "$DATA_DIR/applications/$DESKTOP_FILE" "$DESKTOP_DIR/$DESKTOP_FILE" "$LINK" \
+        "$OPT_DIR/$APP_ID"-v* "$DATA_DIR/$APP_ID-app" && found=true
+    $PURGE && installed_here "${STATE_DIR:?}" "${CONFIG_DIR:?}/$APP_ID" && found=true
+    if ! $found; then
+        info "$APP_NAME is not installed: nothing to remove."
+        exit 0
+    fi
     info "Removing launcher and menu entry"
     remove_menu_entries
     info "Removing $LINK and installed versions (sudo)"

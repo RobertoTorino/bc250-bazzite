@@ -68,7 +68,7 @@ bash "$T/stage/install.sh" --bogus > "$T/log4" 2>&1; rc=$?
 check "unknown option refused" "[ $rc -ne 0 ] && grep -q 'Unknown option: --bogus' $T/log4"
 
 echo "== 5. uninstall while another suite app uses the venv: PCSX2's own folder, the settings and the log kept"
-touch "$D/bc250-bazzite-suite/venv-users/bc250-bazzite-test"
+touch "$D/bc250-bazzite-suite/venv-users/bc250-board-test"
 mkdir -p "$XDG_CONFIG_HOME/PCSX2/bios" "$XDG_CONFIG_HOME/$APP" && touch "$XDG_CONFIG_HOME/PCSX2/bios/SCPH-70012.bin" "$XDG_CONFIG_HOME/$APP/$APP.ini"
 echo "24-10-2026 04:00:00 INFO PCSX2 Manager started" > "$D/$APP/$APP.log"
 bash "$T/stage/install.sh" --uninstall > "$T/log5" 2>&1; rc=$?
@@ -80,7 +80,7 @@ check "the log kept" "[ -f $D/$APP/$APP.log ]"
 check "venv kept, own marker gone" "[ -x $D/bc250-bazzite-suite/venv/bin/python ] && [ ! -e $D/bc250-bazzite-suite/venv-users/$APP ]"
 
 echo "== 6. reinstall, then uninstall --purge as the last venv user"
-rm "$D/bc250-bazzite-suite/venv-users/bc250-bazzite-test"
+rm "$D/bc250-bazzite-suite/venv-users/bc250-board-test"
 mkdir -p "$D/$APP/covers" && touch "$D/$APP/covers/CUSA00001p.png"       # covers found on SteamGridDB
 bash "$T/stage/install.sh" > "$T/log6" 2>&1 && bash "$T/stage/install.sh" --uninstall --purge >> "$T/log6" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"

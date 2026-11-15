@@ -11,7 +11,8 @@ from pathlib import Path
 SUITE = Path(__file__).resolve().parents[2]
 TESTS = SUITE / "tools" / "installer-tests"
 HELPERS = {"shims.sh"}
-NOT_INSTALLERS = {"release.sh"}         # the release tarballs end to end, not one app's installer
+NOT_INSTALLERS = {"release.sh",         # the release tarballs end to end, not one app's installer
+                  "not-installed.sh"}   # every installer's uninstall where nothing is installed
 
 
 def _scripts() -> set[str]:

@@ -73,7 +73,7 @@ throttling default is also 85 °C. If your board runs hotter than that in a clos
 ## Fans
 
 The board's sensor chip, a Nuvoton NCT6686, drives the fans. Bazzite comes with its driver, `nct6687`. Test 22 of
-Bazzite Test checks that the driver is loaded and tells you how to load it.
+Board Test checks that the driver is loaded and tells you how to load it.
 
 Where a fan is connected decides what the app can do with it:
 

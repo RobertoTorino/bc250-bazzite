@@ -33,10 +33,10 @@ from .memory_map import MemoryMap, gtt_ceiling
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/vram/"
 REFRESH_MS = 2000                       # the memory map's live figures
-RECOMMENDED_MB = 6144                   # bazzite-test's recommendation (test 37): fixes framebuffer pin failures
+RECOMMENDED_MB = 6144                   # board-test's recommendation (test 37): fixes framebuffer pin failures
 SPLITS = (512, 1024, 2048, 4096, RECOMMENDED_MB, 8192, 10240)
 FIRMWARE_MB = 512                       # the split the firmware starts with after a CMOS clear
-SUITE_PAGES = 3014656                   # the suite's GTT limit, 11.5 GiB (Bazzite Test, test 37)
+SUITE_PAGES = 3014656                   # the suite's GTT limit, 11.5 GiB (Board Test, test 37)
 PICK = object()                         # apply_ttm(): the limit the combo shows
 
 # The profiles (owner, 01-11-2026): both values at once, each written only where it differs.
@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
         self.split_info = InfoButton(
             "The split is the part of the 16 GB the GPU keeps for itself; the rest is system RAM, from which the GPU "
             "can borrow more (GTT). A larger split prevents the framebuffer pin failures that end a game session "
-            "(Bazzite Test, test 37). The firmware reads the new split at the next boot. Clearing CMOS (jumper or "
+            "(Board Test, test 37). The firmware reads the new split at the next boot. Clearing CMOS (jumper or "
             f"battery) brings back the firmware's default. <a href='{MANUAL_URL}'>Manual</a>", "About the split")
         row = QHBoxLayout()
         row.addWidget(QLabel("New split:"))
@@ -183,7 +183,7 @@ class MainWindow(QMainWindow):
             f"<b>Default profile:</b> the firmware's {split_label(FIRMWARE_MB)} split and the kernel's GTT limit, "
             f"half the RAM, as a board without changes runs. <b>Games profile:</b> the {split_label(RECOMMENDED_MB)} "
             "split that "
-            "prevents the framebuffer pin failures (Bazzite Test, test 37) and the 11.5 GiB limit, all the RAM with "
+            "prevents the framebuffer pin failures (Board Test, test 37) and the 11.5 GiB limit, all the RAM with "
             "that split: what the suite's boards run. A profile writes what differs from the board: the split to CMOS "
             "and the limit to the next boot's kernel arguments, each with its password prompt; both take effect after "
             f"you reboot the board. <a href='{MANUAL_URL}#profiles'>Manual</a>", "About the profiles"))

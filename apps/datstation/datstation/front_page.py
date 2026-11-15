@@ -21,7 +21,7 @@ from .style import TEXT, label
 
 COLUMNS, ROWS = 4, 4
 TILE_MIN_WIDTH, TILE_HEIGHT = 200, 118          # the tiles share the width of the row
-TRIANGLE, CIRCLE, CROSS, SQUARE = "#3dbf9c", "#e8505b", "#6f9fe8", "#e48fc0"   # as USB HD Control draws them
+TRIANGLE, CIRCLE, CROSS, SQUARE = "#3dbf9c", "#e8505b", "#6f9fe8", "#e48fc0"   # as BC-250 Controller draws them
 
 
 @dataclass(frozen=True)

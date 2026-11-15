@@ -1,8 +1,8 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![SSD Check](../assets/ssd/bc250-ssd.webp){ .app-logo }
+![BC-250 SSD Check](../assets/ssd/bc250-ssd-check.webp){ .app-logo }
 
-# SSD Check
+# BC-250 SSD Check
 
 How an SSD is doing: its **health**, **power cycles** and **power-on hours**, the drive's specs, and whether the
 board lets it run at its full speed. It only reads the drive (the speed test writes a test file and deletes it):
@@ -28,7 +28,7 @@ nothing on the drive changes, and it needs no root.
 - **Drive:** with more than one drive, choose it by its number (Drive 1, Drive 2) in the list under the top row.
   Under the list are the drive's model and size, and a line with its bus and when udisks last read it.
 - **Screenshot**, beside the list: saves the window with the values it shows now as a PNG in your Pictures folder,
-  in a folder named SSD Check (`~/Pictures/SSD Check/SSD Check 2026-11-05 18-04-09.png`, the date and time in its
+  in a folder named BC-250 SSD Check (`~/Pictures/BC-250 SSD Check/BC-250 SSD Check 2026-11-05 18-04-09.png`, the date and time in its
   name). The file manager opens on the folder with the new file selected. The line beside the button names the
   file; hover it for the folder. The serial stays hidden in the picture,
   even while its small window is open.
@@ -153,7 +153,7 @@ this board.
       the speeds sellers list are not the maker's.
 - **Measured R / W** is what the drive does in this board. Click the **Test** pill at the top: SSD Check writes a test file of 1 GB to the
   drive, reads it back and deletes it, which takes a few seconds (at most ten seconds of writing on a slow drive).
-  The file goes in your home folder when that is on the drive (`~/.cache/bc250-ssd/`), else on the drive's first
+  The file goes in your home folder when that is on the drive (`~/.cache/bc250-ssd-check/`), else on the drive's first
   mount point you can write to, such as a USB stick. A drive that is not mounted cannot be measured. The test
   needs 2 GB of free space, writes random data and bypasses the cache, so the numbers are the drive's.
 
@@ -186,7 +186,7 @@ apps/ssd/install.sh --no-desktop-shortcut   # without the Desktop icon
 apps/ssd/install.sh --uninstall             # remove it; --purge removes its settings too
 ```
 
-The launcher is `~/.local/bin/bc250-ssd`; the app runs on the suite's shared Python environment. It needs
+The launcher is `~/.local/bin/bc250-ssd-check`; the app runs on the suite's shared Python environment. It needs
 `busctl` (systemd's) and the udisks service, which every Bazzite has.
 
 ## License

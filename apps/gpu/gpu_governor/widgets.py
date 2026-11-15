@@ -53,7 +53,7 @@ class StatusPill(QLabel):
 
 
 class MetricBox(QFrame):
-    """One box of the header row: a big value with a caption, centered like the stats boxes of bc250-bazzite-test
+    """One box of the header row: a big value with a caption, centered like the stats boxes of bc250-board-test
     (centered=False: left-aligned)."""
 
     def __init__(self, caption: str, colour: str = GREY, parent: QWidget | None = None, centred: bool = True):

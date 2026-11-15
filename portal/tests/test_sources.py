@@ -149,7 +149,7 @@ def test_checkout_stages_app_with_core(tmp_path):
                   uninstall=("y",), detect=("z",))
     folder = sources.prepare(bt)
     assert folder.name == "local-check"
-    assert (folder / "install.sh").is_file() and (folder / "bazzite_check" / "__init__.py").is_file()
+    assert (folder / "install.sh").is_file() and (folder / "board_test" / "__init__.py").is_file()
     assert (folder / "bc250_core" / "widgets.py").is_file()                 # bundled: check uses core
     assert not (folder / "bc250_core" / "__pycache__").exists()
     acpi = AppEntry(key="acpi", name="A", summary="s", tag="acpi-v0.1.0", install=("x",),

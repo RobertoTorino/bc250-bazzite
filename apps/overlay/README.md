@@ -4,7 +4,7 @@
 [![CI](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
 
-# System Overlay
+# BC-250 System Overlay
 
 A small window that stays on top of your desktop and shows the **AMD BC-250**'s live system values on
 **Bazzite**. It only reads sensors: nothing on the board changes and it needs no root.

@@ -28,10 +28,10 @@ CPU's and the GPU's load and temperature (**CPU 12% 54°C | GPU 3% 61°C**), the
 8°C Partly cloudy**, after its symbol). The line at the bottom says what the keys and the controller's buttons
 do.
 
-**Bazzite Test** is always installed with the portal; every other app is optional. Below the header is a strip
+**Board Test** is always installed with the portal; every other app is optional. Below the header is a strip
 with a name for each [category](apps/categories.md): Sustainable, Graphics, Gaming and Utilities, and beside it
 the notice of updates. Each app is a large tile under its category, left to right in the order of `apps.toml`
-and as many to a row as the screen fits; Bazzite Test is always the first tile on Sustainable. The tile with the
+and as many to a row as the screen fits; Board Test is always the first tile on Sustainable. The tile with the
 focus is framed in silver; move it with the arrow keys, the d-pad or the stick, or point at a tile with the
 mouse:
 
@@ -50,7 +50,7 @@ mouse:
   and Square on a PlayStation one) holds every action: **Open** (or the
   app's two windows), **Install** (an arrow into a tray; **Update**, in red, when an update is waiting;
   **Reinstall** for an installed app, in red with a circular arrow when its version is unknown) and
-  **Uninstall** (a bin). What cannot be done now is grayed out. Bazzite Test has no Uninstall: it is removed
+  **Uninstall** (a bin). What cannot be done now is grayed out. Board Test has no Uninstall: it is removed
   together with the portal.
 - **A red dot** in the icon and **Update** under the name: an update is available.
 - **A red circular arrow** in the icon and **Reinstall needed** under the name: reinstall the app. It is
@@ -311,14 +311,14 @@ What it installs:
 
 | What | Where | Why there |
 |---|---|---|
-| The portal, its `apps.toml` and the `bc250_core` it was tested with | `/opt/bc250-bazzite-suite-v<version>`, root-owned, with `/opt/bc250-bazzite-suite` pointing at it | Same as bazzite-test's engine: code that starts root-run installers is not writable by a normal user |
-| BC-250 Bazzite Test (bundled in the portal release) | `/opt/bc250-bazzite-test`, through its own installer | Its test engine runs as root and must be root-owned |
+| The portal, its `apps.toml` and the `bc250_core` it was tested with | `/opt/bc250-bazzite-suite-v<version>`, root-owned, with `/opt/bc250-bazzite-suite` pointing at it | Same as board-test's engine: code that starts root-run installers is not writable by a normal user |
+| BC-250 Board Test (bundled in the portal release) | `/opt/bc250-board-test`, through its own installer | Its test engine runs as root and must be root-owned |
 | The suite's shared venv with PyQt6 | `~/.local/share/bc250-bazzite-suite/venv` | One copy of the ~100 MB of Qt for all suite apps; removed with the last app that uses it (`venv-users/`) |
 | What the portal installed, and the release each app was installed from | `~/.local/share/bc250-bazzite-suite/portal/` | So each app's matching uninstaller is at hand; an update removes the previous release |
 | What the apps found outside the suite, one file per app | `~/.local/share/bc250-bazzite-suite/upstream/` | For **Outside the suite** in the notice; written by the apps, read by the portal |
 | Launcher, menu entry, Desktop icon | `~/.local/bin/bc250-bazzite-suite`, `~/.local/share/applications/`, the Desktop | The portal's icon is the one way in; the apps' own icons are optional (**Icons on Desktop**) |
 
-Uninstall: `/opt/bc250-bazzite-suite/install.sh --uninstall`. This removes the portal and Bazzite Test and
+Uninstall: `/opt/bc250-bazzite-suite/install.sh --uninstall`. This removes the portal and Board Test and
 keeps settings; add `--purge` to remove those too. First it asks about each other suite app that is installed:
 `y` uninstalls it, `s` skips it (it stays installed), `c` cancels the whole uninstall before anything is removed.
 The list has every app this portal lists and the apps an earlier portal installed that this one no longer lists (an app dropped from the suite), each removed
@@ -327,6 +327,9 @@ only those of the apps you kept stay, with the release each one's uninstaller ne
 goes too. To remove the whole suite at once, `--uninstall --all` asks one question instead of one per app, after a
 warning that names every app it will remove; with `--purge` the apps' own settings, history and results go as
 well.
+
+When nothing of the suite is installed, the uninstall says so and removes nothing, without asking for a password.
+Each app's own `install.sh --uninstall` does the same when the app is not installed.
 
 ### What stays after an uninstall
 
@@ -347,9 +350,9 @@ The GPU Manager changes nothing of its own: the governor and its `config.toml` b
 package, which stays installed. HelixSR keeps the imported payload (`~/.local/share/bc250-upscaler`) and
 leaves the games it deployed to as they are; **Remove** each deployment in the app first.
 
-Settings live in `~/.config/bc250-*`, results and logs in `~/.local/share/bc250-*` (Bazzite Test also writes its
-reports to `~/Desktop/bc250-bazzite-test`). Each app's `install.sh --uninstall --purge` removes them; the
-portal's `--purge` does so for the portal and Bazzite Test.
+Settings live in `~/.config/bc250-*`, results and logs in `~/.local/share/bc250-*` (Board Test also writes its
+reports to `~/Desktop/bc250-board-test`). Each app's `install.sh --uninstall --purge` removes them; the
+portal's `--purge` does so for the portal and Board Test.
 
 ## Development
 
@@ -377,7 +380,7 @@ The comment at the top of [`apps.toml`](https://github.com/RobertoTorino/bc250-b
   bump it pins: an app patch release needs at least a portal patch release, an app minor release at least a
   portal minor release, and so on. An added, removed or withdrawn app needs at least a minor portal release.
 - **Withdrawn releases.** `withdrawn = "<reason>"` in an app's entry withdraws its pinned release (see
-  [Withdrawing a release](#withdrawing-a-release)). Not for Bazzite Test, which is always installed.
+  [Withdrawing a release](#withdrawing-a-release)). Not for Board Test, which is always installed.
 
 A release of the suite is made from Nexus Release Tool's release tab with one action, **Start new release**: it
 writes the versions, the CHANGELOG entries and the new tags in `apps.toml`, commits and pushes, and starts
@@ -401,7 +404,7 @@ Releasing one app by hand and pinning it in the portal:
 4. Bump `portal/VERSION` as `tools/check_manifest.py` asks, and list the app release in the portal CHANGELOG.
 5. Once the pinned app releases are tested together on a BC-250 (see
    [Testing a portal release before its tag](#testing-a-portal-release-before-its-tag)), commit steps 3 and 4,
-   push, and tag with `tools/tag-release.sh bc250-portal-v<x.y.z>`. That release bundles the pinned Bazzite Test release (`bc250-check-v…`).
+   push, and tag with `tools/tag-release.sh bc250-portal-v<x.y.z>`. That release bundles the pinned Board Test release (`bc250-check-v…`).
 6. Once `release.yml` has published it, it is GitHub's **Latest** release, where users download the portal:
    [The releases on GitHub](development/releases.md#the-releases-on-github).
 
@@ -448,7 +451,7 @@ For a release by hand, before the portal tag:
    to 4). Nothing has reached users yet.
 
 This does not test the portal tarball itself, which GitHub builds from the tag; the release workflow checks it
-(`tools/check_manifest.py --require-tags`, and the bundled Bazzite Test against its pin). The next section tests
+(`tools/check_manifest.py --require-tags`, and the bundled Board Test against its pin). The next section tests
 it on the board.
 
 ### Testing a portal release after its tag
@@ -473,7 +476,7 @@ A release that must not be used any more is withdrawn with Nexus Release Tool: t
 [Withdrawing a release](development/releases.md#withdrawing-a-release).
 On a BC-250, **Test withdrawal** installs the portal from the checkout and starts it (`check-release.sh local`):
 the portal says the app is not available any more, removes it, and then shows **App not available** on its tile.
-Bazzite Test, which is always installed, cannot be withdrawn.
+Board Test, which is always installed, cannot be withdrawn.
 
 ### Checking a release
 

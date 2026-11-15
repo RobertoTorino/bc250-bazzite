@@ -153,7 +153,7 @@ jobs:
         run: find . -path ./.git -prune -o -path './.venv*' -prune -o -name '*.sh' -print0 | xargs -0 shellcheck -x -S error
       - name: shellcheck (warnings, the installers, the run wrappers, the suite's own scripts and the app scripts that hold to it)
         # Every install.sh and bc250-*-run wrapper by glob, so a new app's are checked without an edit here; the
-        # rest by name: scripts the baseline holds to it (test-bazzite.sh and the bisect scripts do not).
+        # rest by name: scripts the baseline holds to it (test-board.sh and the bisect scripts do not).
         run: |
           shellcheck -x -S warning install.sh portal/install.sh apps/*/install.sh \
             apps/*/bc250-*-run tools/*.sh tools/installer-tests/*.sh test.sh tools/hooks/pre-push

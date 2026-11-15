@@ -471,7 +471,7 @@ conditions later, boot, run `sudo ./bc250-cu-unlock.sh --uninstall`, and reboot 
 > not all equally trustworthy:
 > - `sudo ./bc250-cu-unlock.sh --status` → **"Live masks now"**: reads the actual GPU registers right
 >   now. This is the ground truth for the current boot.
-> - [Bazzite Test](check.md) test
+> - [Board Test](check.md) test
 >   #21: reads the exact same registers, read-only. Agrees with the line above by construction.
 > - `--status` → **"Configured masks"**: just what's saved in `/etc/bc250-cu-bisect/masks`. This is
 >   what you *asked* to be installed, not proof it's actually active — if `--install` silently failed
@@ -575,7 +575,7 @@ just want to run the scripts or the GUIs; the portal installs it for you too.
 strategy for the 2 fused-off CPU cores — control, per-core bisect, verdict, then a reversible
 persistent 8C/16T unlock.
 
-[Bazzite Test](check.md): diagnostics for the BC-250 on
+[Board Test](check.md): diagnostics for the BC-250 on
 Bazzite. Its test number 21 reads the live CU masks from the same registers (read-only).
 
 ## License

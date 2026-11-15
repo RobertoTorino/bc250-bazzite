@@ -223,7 +223,7 @@ Each design (the suite's, the development apps') has its own; none is carried ov
   red `#e57373`, orange `#ffb74d`, green `#81c784`, blue `#64b5f6`, purple `#ce93d8`), because the state fills read
   poorly as text on the dark views. The log in the check app uses them; a second tint of a hue is a deviation.
 - **Brand and hardware colors stay what they are:** PlayStation blue and the face-button colors in the PlayStation
-  apps, the light bar's and the color wheel's pure colors in HD Control, a game's own artwork, the gaming blue
+  apps, the light bar's and the color wheel's pure colors in BC-250 Controller, a game's own artwork, the gaming blue
   `#0a55b0` of the gaming apps in the emulator managers (blue; their icon is a silver controller with a blue light
   since 13-11-2026).
 - **Anything else is a deviation**, listed under Color families below with the app it is in. A new color is
@@ -250,7 +250,7 @@ FAMILIES = [
         ("#e57373", "tint", "Red text on a dark surface: the check app's findings, log, in-game checks, history and "
                             "scores; the error labels of ACPI, CU Unlock and Cores Unlock; SFTP Tools' password "
                             "requirements not met."),
-        ("#e8505b", "brand", "PlayStation's circle: HD Control's circle button, DatStation's circle symbol."),
+        ("#e8505b", "brand", "PlayStation's circle: BC-250 Controller's circle button, DatStation's circle symbol."),
         ("#ff2020", "hardware", "The light bar's red; `#ff0000` the color wheel's."),
     ]),
     ("Orange and yellow", [
@@ -266,7 +266,7 @@ FAMILIES = [
         ("#2e7d32", "family", "Ok: passed, valid, unlocked, a pressed controller button; a right answer."),
         ("#81c784", "tint", "Green text on a dark surface: the check app's log success, in-game ok, a better result "
                             "in its history and full scores; SFTP Tools' password requirements met."),
-        ("#3dbf9c", "brand", "PlayStation's triangle: HD Control's triangle button, DatStation's triangle symbol."),
+        ("#3dbf9c", "brand", "PlayStation's triangle: BC-250 Controller's triangle button, DatStation's triangle symbol."),
         ("#10d040", "hardware", "The light bar's green; `#00ff00` the color wheel's."),
     ]),
     ("Blue", [
@@ -276,7 +276,7 @@ FAMILIES = [
                              "under the pointer and `#08448d` pressed; `#5b93da` their links."),
         ("#003791", "brand", "PlayStation blue (DatStation), `#0072ce` light, `#1a85e0` under the pointer, "
                              "`#00589f` pressed; `#4da3ef` its links."),
-        ("#6f9fe8", "brand", "PlayStation's cross: HD Control's cross button, DatStation's cross symbol (the square "
+        ("#6f9fe8", "brand", "PlayStation's cross: BC-250 Controller's cross button, DatStation's cross symbol (the square "
                              "is `#e48fc0` in both)."),
         ("#1f3e9c", "brand", "BIOS Reader's bar and selection, with `#0b2a8a` and `#10205a`: a classic BIOS screen."),
         ("#0050ff", "hardware", "The light bar's blue (the default); `#0000ff` the color wheel's."),
@@ -322,7 +322,7 @@ STYLESHEETS = {
 
 GAMING_TEXT = [
     ("#5b93da", "Links on a dark window (PS Remote Play, XB Remote Play, PCSX2, "
-                "PPSSPP, RPCS3, shadPS4, Vita3K, Xenia; HD Control's lit parts)."),
+                "PPSSPP, RPCS3, shadPS4, Vita3K, Xenia; BC-250 Controller's lit parts)."),
     ("#ffffff", "Text on the blue primary button and on the shortcut artwork."),
 ]
 GAMING_BLOCKS = [
@@ -333,7 +333,7 @@ GAMING_BLOCKS = [
     ("#0a55b01a", "Blue tint (10 %): hover, every other table row."),
     ("#0a55b059", "Blue line (35 %): outlines, a pressed button."),
     ("#80808080", "Disabled (50 % gray)."),
-    ("#5b93da", "HD Control: lit parts of the controller, the chosen card."),
+    ("#5b93da", "BC-250 Controller: lit parts of the controller, the chosen card."),
     ("#0b1d3a", "shadPS4 shortcut artwork, top of the gradient."),
     ("#030810", "shadPS4 shortcut artwork, bottom."),
     ("#16123a", "RPCS3 shortcut artwork, top."),
@@ -348,7 +348,7 @@ GAMING_BLOCKS = [
 DAT_TEXT = [
     ("#4da3ef", "Links on a dark window."),
     ("#0072ce", "Links on a light window."),
-    ("#3dbf9c", "Triangle: the Quiz symbol (the face-button colors, as HD Control draws them)."),
+    ("#3dbf9c", "Triangle: the Quiz symbol (the face-button colors, as BC-250 Controller draws them)."),
     ("#e8505b", "Circle: the History symbol."),
     ("#6f9fe8", "Cross: the System Version History symbol."),
     ("#e48fc0", "Square: the Region Codes symbol."),
@@ -437,15 +437,15 @@ OTHER_BLOCKS = [
     ("#1f3e9c", "BIOS Reader: the bar and the selection."),
     ("#c6c6c6", "BIOS Reader: the screen."),
     ("#1565c0", "HDMI-CEC: the adapter box."),
-    ("#000000", "HDMI-CEC: the display box; HD Control: the light bar off."),
+    ("#000000", "HDMI-CEC: the display box; BC-250 Controller: the light bar off."),
     ("#c62828", "SFTP: the errors button."),
     ("#5f6368", "VRAM: firmware in the memory map."),
     ("#00838f", "VRAM: zswap in the memory map."),
-    ("#3dbf9c", "HD Control: the triangle button."),
-    ("#e8505b", "HD Control: the circle button."),
-    ("#6f9fe8", "HD Control: the cross button."),
-    ("#e48fc0", "HD Control: the square button."),
-    ("#0050ff", "HD Control light bar: blue (the default)."),
+    ("#3dbf9c", "BC-250 Controller: the triangle button."),
+    ("#e8505b", "BC-250 Controller: the circle button."),
+    ("#6f9fe8", "BC-250 Controller: the cross button."),
+    ("#e48fc0", "BC-250 Controller: the square button."),
+    ("#0050ff", "BC-250 Controller light bar: blue (the default)."),
     ("#ff2020", "Light bar: red."),
     ("#10d040", "Light bar: green."),
     ("#a020f0", "Light bar: purple."),
@@ -511,11 +511,11 @@ are not on core yet carry a copy). The theme is one choice for every app: Gunmet
                        "Nexus's colors as a theme for core's widgets, set with `create_app(theme=NEXUS)`; its "
                        "states are the apps' state family.", NEXUS_APP_TEXT, NEXUS_APP_BLOCKS))
     out.append("## The apps' own colors\n\nOn top of the theme, in the apps' `style.py` or where they are used.\n")
-    out.append(section("Gaming apps", "PS Remote Play, XB Remote Play, HD Control, "
+    out.append(section("Gaming apps", "PS Remote Play, XB Remote Play, BC-250 Controller, "
                        "PCSX2, PPSSPP, RPCS3, shadPS4, Vita3K and Xenia.", GAMING_TEXT, GAMING_BLOCKS))
     out.append(section("DatStation", "", DAT_TEXT, DAT_BLOCKS))
     out.append(section("Upscaler", "", UPSCALER_TEXT, UPSCALER_BLOCKS))
-    out.append(section("BC-250 Bazzite Test (check)", "", CHECK_TEXT, CHECK_BLOCKS))
+    out.append(section("BC-250 Board Test (check)", "", CHECK_TEXT, CHECK_BLOCKS))
     out.append(section("Other apps", "", OTHER_TEXT, OTHER_BLOCKS))
     out.append("## Tools\n")
     out.append(section("Portal screenshots", "`tools/portal_screenshot.py` paints the portal in a fixed dark palette "

@@ -33,7 +33,7 @@ Every app with its icon and its category.
 
 | App | Category |
 |---|---|
-| ![](../assets/apps/check.webp){ .app-icon } [BC-250 Bazzite Test](check.md) | Sustainable |
+| ![](../assets/apps/check.webp){ .app-icon } [BC-250 Board Test](check.md) | Sustainable |
 | ![](../assets/apps/gpu.webp){ .app-icon } [BC-250 GPU Manager](gpu.md) | Sustainable |
 | ![](../assets/apps/compute.webp){ .app-icon } [BC-250 CU Bisect](compute.md), with its Unlock window | Sustainable |
 | ![](../assets/apps/cores.webp){ .app-icon } [BC-250 Cores Bisect](cores.md), with its Unlock window | Sustainable |
@@ -53,13 +53,13 @@ Every app with its icon and its category.
 | ![](../assets/apps/vita3k.webp){ .app-icon } [Vita3K Manager](vita3k.md) | Gaming |
 | ![](../assets/apps/xenia.webp){ .app-icon } [Xenia Manager](xenia.md) | Gaming |
 | ![](../assets/apps/datstation.webp){ .app-icon } [Bazzite DatStation](datstation.md) | Gaming |
-| ![](../assets/apps/overlay.webp){ .app-icon } [System Overlay](overlay.md) | Utilities |
-| ![](../assets/apps/ips35.webp){ .app-icon } [USB IPS3.5](ips35.md) | Utilities |
-| ![](../assets/apps/hdcam.webp){ .app-icon } [USB HD Cam](hdcam.md) | Utilities |
-| ![](../assets/apps/hdcontrol.webp){ .app-icon } [USB HD Control](hdcontrol.md) | Utilities |
+| ![](../assets/apps/overlay.webp){ .app-icon } [BC-250 System Overlay](overlay.md) | Utilities |
+| ![](../assets/apps/turing.webp){ .app-icon } [BC-250 Turing Screen](turing.md) | Utilities |
+| ![](../assets/apps/webcam.webp){ .app-icon } [BC-250 Webcam](webcam.md) | Utilities |
+| ![](../assets/apps/controller.webp){ .app-icon } [BC-250 Controller](controller.md) | Utilities |
 | ![](../assets/apps/bios.webp){ .app-icon } [BC-250 BIOS Reader](bios.md) | Utilities |
-| ![](../assets/apps/wdriver.webp){ .app-icon } [BC-250 USB Wi-Fi](wdriver.md) | Utilities |
+| ![](../assets/apps/wifi.webp){ .app-icon } [BC-250 Wi-Fi Adapter](wifi.md) | Utilities |
 | ![](../assets/apps/cec.webp){ .app-icon } [BC-250 CEC Manager](cec.md) | Utilities |
-| ![](../assets/apps/sftp.webp){ .app-icon } [Bazzite SFTP Tools](sftp.md) | Utilities |
-| ![](../assets/apps/ssd.webp){ .app-icon } [SSD Check](ssd.md) | Utilities |
+| ![](../assets/apps/sftp.webp){ .app-icon } [BC-250 SFTP Tools](sftp.md) | Utilities |
+| ![](../assets/apps/ssd.webp){ .app-icon } [BC-250 SSD Check](ssd.md) | Utilities |
 | ![](../assets/apps/btpair.webp){ .app-icon } [BC-250 Bluetooth Pairing](btpair.md) | Utilities |

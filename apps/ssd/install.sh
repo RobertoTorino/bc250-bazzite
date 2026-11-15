@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs SSD Check as a desktop app, from a clone or the extracted release tarball:
+# Installs BC-250 SSD Check as a desktop app, from a clone or the extracted release tarball:
 #
 #   ./install.sh                         # install or update
 #   ./install.sh --no-desktop-shortcut   # app menu entry only, no icon on the Desktop
@@ -8,15 +8,15 @@
 #   ./install.sh --uninstall --purge     # also remove its settings
 #
 # Run it as your own user; it needs no root.
-#  * ~/.local/share/bc250-ssd/app: the app, with the bc250_core it was tested with (bundled in the release; taken from
+#  * ~/.local/share/bc250-ssd-check/app: the app, with the bc250_core it was tested with (bundled in the release; taken from
 #    the suite checkout when run from there).
 #  * ~/.local/share/bc250-bazzite-suite/venv, the BC250 Bazzite Suite's shared venv with PyQt6 (the wheels bundle Qt; nothing is
 #    layered). It is removed with the last suite app that uses it.
-#  * ~/.local/bin/bc250-ssd to start it from a terminal, plus an app menu entry and a Desktop icon.
+#  * ~/.local/bin/bc250-ssd-check to start it from a terminal, plus an app menu entry and a Desktop icon.
 set -euo pipefail
 
-APP_ID="bc250-ssd"
-APP_NAME="SSD Check"
+APP_ID="bc250-ssd-check"
+APP_NAME="BC-250 SSD Check"
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 APP_DIR="$DATA_DIR/$APP_ID/app"
@@ -53,7 +53,25 @@ $PURGE && ! $UNINSTALL && die "--purge only goes with --uninstall."
 
 [ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the app, the venv and the launcher belong in your home folder."
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 if $UNINSTALL; then
+    found=false
+    installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "${DATA_DIR:?}/${APP_ID:?}" "${VENV_USERS:?}/${APP_ID:?}" \
+        && found=true
+    $PURGE && installed_here "${CONFIG_DIR:?}/${APP_ID:?}" && found=true
+    if ! $found; then
+        info "$APP_NAME is not installed: nothing to remove."
+        exit 0
+    fi
     info "Removing the launcher, the menu entry and the app"
     rm -f "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON"
     command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q "$DATA_DIR/applications" || true

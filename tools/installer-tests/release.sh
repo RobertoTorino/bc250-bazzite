@@ -42,8 +42,8 @@ mkdir -p "$T/dl" && tar -xzf "$T/build-portal/$PORTAL.tar.gz" -C "$T/dl"
 check "install.sh executable in the tarball" "[ -x $T/dl/$PORTAL/install.sh ] && [ -x $T/dl/$PORTAL/bundled/$BT/install.sh ]"
 (cd /tmp && "$T/dl/$PORTAL/install.sh" > "$T/install.log" 2>&1); rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
-check "check is a release build" "[ -f $T/opt/bc250-bazzite-test/bazzite_check/_build_info.py ]"
-check "its engine hash matches" "grep -q \"\$(sha256sum < $T/opt/bc250-bazzite-test/test-bazzite.sh | cut -d' ' -f1)\" $T/opt/bc250-bazzite-test/bazzite_check/_build_info.py"
+check "check is a release build" "[ -f $T/opt/bc250-board-test/board_test/_build_info.py ]"
+check "its engine hash matches" "grep -q \"\$(sha256sum < $T/opt/bc250-board-test/test-board.sh | cut -d' ' -f1)\" $T/opt/bc250-board-test/board_test/_build_info.py"
 check "no 'not a release build' note" "! grep -q 'not a release build' $T/install.log"
 check "record has the bundled tag" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $D/bc250-bazzite-suite/portal/installed.json"
 check "portal from the release" "[ -f $T/opt/bc250-bazzite-suite/bc250_core/__init__.py ] && [ ! -d $T/opt/bc250-bazzite-suite/bundled ]"
@@ -83,7 +83,7 @@ check "local: installs the portal from the checkout" "[ $rc -eq 0 ] && grep -q '
 mkdir -p "$T/gh/$PORTAL" && cp "$T/build-portal/$PORTAL.tar.gz" "$T/build-portal/SHA256SUMS" "$T/gh/$PORTAL/"
 BC250_RELEASE_URL="file://$T/gh" bash "$S/tools/check-release.sh" release --no-start > "$T/check-release.log" 2>&1; rc=$?
 check "release: downloads and verifies portal/VERSION's tag" "[ $rc -eq 0 ] && grep -q '$PORTAL.tar.gz: OK' $T/check-release.log"
-check "release: installed it, bundled Bazzite Test included" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $R && [ -f $T/opt/bc250-bazzite-suite/bc250_core/__init__.py ]"
+check "release: installed it, bundled Board Test included" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $R && [ -f $T/opt/bc250-bazzite-suite/bc250_core/__init__.py ]"
 BC250_RELEASE_URL="file://$T/gh" bash "$S/tools/check-release.sh" release bc250-portal-v9.9.9 --no-start > "$T/check-missing.log" 2>&1; rc=$?
 check "release: a tag GitHub has not built yet is reported" "[ $rc -ne 0 ] && grep -q 'finished the release workflow' $T/check-missing.log"
 # The device test of a Nexus release (check-release.sh draft): the draft's assets come through gh, stood in for

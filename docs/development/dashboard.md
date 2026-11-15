@@ -192,7 +192,7 @@ Before you record, have:
    installed yet, since the demo is a fresh install.
 3. **Record:** **Start recording and install portal** starts the OBS recording and the portal's installer in a
    terminal, for its output and its password prompts; the window hides. Once the installer is done the portal
-   opens: show BC-250 Bazzite Test, install the chosen app and open it. The global shortcut the window named
+   opens: show BC-250 Board Test, install the chosen app and open it. The global shortcut the window named
    (Ctrl+Alt+F12 by default) stops the recording and brings the window back; **Recent recordings…** lists the
    videos and plays one.
 
@@ -289,7 +289,7 @@ version and an i that says how to handle it. None of them is installed from here
 | Card | Asked | What an update means |
 |---|---|---|
 | RPCS3, PCSX2, PPSSPP, Vita3K, Xenia Canary, shadPS4 | GitHub's latest release | Each app installs the build it was tested with (its pin). **Installed** behind the pin: open the app and use its Install. **On GitHub**, newer than the pin: it comes with a release of the app, after a test on a board. |
-| DualSense firmware (and the Edge's) | Sony's firmware list | A new version since the last look: connect the controller with a USB cable and update it in USB HD Control. |
+| DualSense firmware (and the Edge's) | Sony's firmware list | A new version since the last look: connect the controller with a USB cable and update it in BC-250 Controller. |
 | PS4 system software | Sony's PS4 update list | A new version since the last look: update on the console. |
 | PS5 system software, PlayStation Portal | nothing a program can read | **On the device**: the i says where the device shows its updates. |
 

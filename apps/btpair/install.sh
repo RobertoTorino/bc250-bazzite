@@ -67,7 +67,25 @@ $PURGE && ! $UNINSTALL && die "--purge only goes with --uninstall."
 
 [ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the app, the venv and the launcher belong in your home folder."
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 if $UNINSTALL; then
+    found=false
+    installed_here "${SYSTEM_FILES[@]}" "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "${DATA_DIR:?}/${APP_ID:?}" \
+        "${VENV_USERS:?}/${APP_ID:?}" && found=true
+    $PURGE && installed_here "${CONFIG_DIR:?}/${APP_ID:?}" && found=true
+    if ! $found; then
+        info "$APP_NAME is not installed: nothing to remove."
+        exit 0
+    fi
     if [ -e "${SYSTEM_FILES[0]}" ] || [ -e "${SYSTEM_FILES[1]}" ] || [ -e "$SYSTEM_DIR" ]; then
         info "Removing the system services $PAIR_UNIT and $BATTERY_UNIT (sudo)"
         as_root systemctl disable --now "$PAIR_UNIT" "$BATTERY_UNIT" >/dev/null 2>&1 || true

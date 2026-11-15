@@ -24,7 +24,7 @@ class AppInfo:
     tag_prefix: str = ""                # "governor-v": this app's release tags in the suite repo
     settings_org: str = ""              # existing QSettings org/app, so no settings file moves (default: app_id)
     settings_app: str = ""
-    settings_ini: bool = False          # bazzite-test keeps an .ini; the others Qt's native format (.conf)
+    settings_ini: bool = False          # board-test keeps an .ini; the others Qt's native format (.conf)
 
     @property
     def display_name(self) -> str:

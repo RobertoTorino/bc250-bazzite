@@ -35,7 +35,7 @@ Each design (the suite's, the development apps') has its own; none is carried ov
   red `#e57373`, orange `#ffb74d`, green `#81c784`, blue `#64b5f6`, purple `#ce93d8`), because the state fills read
   poorly as text on the dark views. The log in the check app uses them; a second tint of a hue is a deviation.
 - **Brand and hardware colors stay what they are:** PlayStation blue and the face-button colors in the PlayStation
-  apps, the light bar's and the color wheel's pure colors in HD Control, a game's own artwork, the gaming blue
+  apps, the light bar's and the color wheel's pure colors in BC-250 Controller, a game's own artwork, the gaming blue
   `#0a55b0` of the gaming apps in the emulator managers (blue; their icon is a silver controller with a blue light
   since 13-11-2026).
 - **Anything else is a deviation**, listed under Color families below with the app it is in. A new color is
@@ -63,7 +63,7 @@ Every tint of each hue in the BC250 Bazzite Suite, and why it is there. *The fam
 | ![#8b0000](design/colors/block-8b0000.svg) | `#8b0000` | the family | Active red: the GPU Governor's active button (a toggled-on state, not an error). |
 | ![#a00000](design/colors/block-a00000.svg) | `#a00000` | the family | Active red under the pointer. |
 | ![#e57373](design/colors/block-e57373.svg) | `#e57373` | text tint | Red text on a dark surface: the check app's findings, log, in-game checks, history and scores; the error labels of ACPI, CU Unlock and Cores Unlock; SFTP Tools' password requirements not met. |
-| ![#e8505b](design/colors/block-e8505b.svg) | `#e8505b` | brand or icon | PlayStation's circle: HD Control's circle button, DatStation's circle symbol. |
+| ![#e8505b](design/colors/block-e8505b.svg) | `#e8505b` | brand or icon | PlayStation's circle: BC-250 Controller's circle button, DatStation's circle symbol. |
 | ![#ff2020](design/colors/block-ff2020.svg) | `#ff2020` | hardware | The light bar's red; `#ff0000` the color wheel's. |
 
 ### Orange and yellow
@@ -83,7 +83,7 @@ Every tint of each hue in the BC250 Bazzite Suite, and why it is there. *The fam
 | --- | --- | --- | --- |
 | ![#2e7d32](design/colors/block-2e7d32.svg) | `#2e7d32` | the family | Ok: passed, valid, unlocked, a pressed controller button; a right answer. |
 | ![#81c784](design/colors/block-81c784.svg) | `#81c784` | text tint | Green text on a dark surface: the check app's log success, in-game ok, a better result in its history and full scores; SFTP Tools' password requirements met. |
-| ![#3dbf9c](design/colors/block-3dbf9c.svg) | `#3dbf9c` | brand or icon | PlayStation's triangle: HD Control's triangle button, DatStation's triangle symbol. |
+| ![#3dbf9c](design/colors/block-3dbf9c.svg) | `#3dbf9c` | brand or icon | PlayStation's triangle: BC-250 Controller's triangle button, DatStation's triangle symbol. |
 | ![#10d040](design/colors/block-10d040.svg) | `#10d040` | hardware | The light bar's green; `#00ff00` the color wheel's. |
 
 ### Blue
@@ -94,7 +94,7 @@ Every tint of each hue in the BC250 Bazzite Suite, and why it is there. *The fam
 | ![#64b5f6](design/colors/block-64b5f6.svg) | `#64b5f6` | text tint | Blue text on a dark surface: the check app's info and hint findings. |
 | ![#0a55b0](design/colors/block-0a55b0.svg) | `#0a55b0` | brand or icon | Gaming blue, the gaming apps': the emulator managers' primary button, with `#2a6cc4` under the pointer and `#08448d` pressed; `#5b93da` their links. |
 | ![#003791](design/colors/block-003791.svg) | `#003791` | brand or icon | PlayStation blue (DatStation), `#0072ce` light, `#1a85e0` under the pointer, `#00589f` pressed; `#4da3ef` its links. |
-| ![#6f9fe8](design/colors/block-6f9fe8.svg) | `#6f9fe8` | brand or icon | PlayStation's cross: HD Control's cross button, DatStation's cross symbol (the square is `#e48fc0` in both). |
+| ![#6f9fe8](design/colors/block-6f9fe8.svg) | `#6f9fe8` | brand or icon | PlayStation's cross: BC-250 Controller's cross button, DatStation's cross symbol (the square is `#e48fc0` in both). |
 | ![#1f3e9c](design/colors/block-1f3e9c.svg) | `#1f3e9c` | brand or icon | BIOS Reader's bar and selection, with `#0b2a8a` and `#10205a`: a classic BIOS screen. |
 | ![#0050ff](design/colors/block-0050ff.svg) | `#0050ff` | hardware | The light bar's blue (the default); `#0000ff` the color wheel's. |
 
@@ -337,11 +337,11 @@ On top of the theme, in the apps' `style.py` or where they are used.
 
 ### Gaming apps
 
-PS Remote Play, XB Remote Play, HD Control, PCSX2, PPSSPP, RPCS3, shadPS4, Vita3K and Xenia.
+PS Remote Play, XB Remote Play, BC-250 Controller, PCSX2, PPSSPP, RPCS3, shadPS4, Vita3K and Xenia.
 
 Text colors:
 
-- `#5b93da` Links on a dark window (PS Remote Play, XB Remote Play, PCSX2, PPSSPP, RPCS3, shadPS4, Vita3K, Xenia; HD Control's lit parts).
+- `#5b93da` Links on a dark window (PS Remote Play, XB Remote Play, PCSX2, PPSSPP, RPCS3, shadPS4, Vita3K, Xenia; BC-250 Controller's lit parts).
 
   ![Sample text in #5b93da](design/colors/text-5b93da.svg)
 
@@ -359,7 +359,7 @@ Background colors:
 | ![#0a55b01a](design/colors/block-0a55b01a.svg) | `#0a55b01a` | Blue tint (10 %): hover, every other table row. |
 | ![#0a55b059](design/colors/block-0a55b059.svg) | `#0a55b059` | Blue line (35 %): outlines, a pressed button. |
 | ![#80808080](design/colors/block-80808080.svg) | `#80808080` | Disabled (50 % gray). |
-| ![#5b93da](design/colors/block-5b93da.svg) | `#5b93da` | HD Control: lit parts of the controller, the chosen card. |
+| ![#5b93da](design/colors/block-5b93da.svg) | `#5b93da` | BC-250 Controller: lit parts of the controller, the chosen card. |
 | ![#0b1d3a](design/colors/block-0b1d3a.svg) | `#0b1d3a` | shadPS4 shortcut artwork, top of the gradient. |
 | ![#030810](design/colors/block-030810.svg) | `#030810` | shadPS4 shortcut artwork, bottom. |
 | ![#16123a](design/colors/block-16123a.svg) | `#16123a` | RPCS3 shortcut artwork, top. |
@@ -382,7 +382,7 @@ Text colors:
 
   ![Sample text in #0072ce](design/colors/text-0072ce.svg)
 
-- `#3dbf9c` Triangle: the Quiz symbol (the face-button colors, as HD Control draws them).
+- `#3dbf9c` Triangle: the Quiz symbol (the face-button colors, as BC-250 Controller draws them).
 
   ![Sample text in #3dbf9c](design/colors/text-3dbf9c.svg)
 
@@ -453,7 +453,7 @@ Background colors:
 | ![#0e6f75](design/colors/block-0e6f75.svg) | `#0e6f75` | Teal: boxes, white text on them. |
 | ![#26a9b0](design/colors/block-26a9b0.svg) | `#26a9b0` | Cyan, the icon's: button outlines. |
 
-### BC-250 Bazzite Test (check)
+### BC-250 Board Test (check)
 
 Text colors:
 
@@ -604,15 +604,15 @@ Background colors:
 | ![#1f3e9c](design/colors/block-1f3e9c.svg) | `#1f3e9c` | BIOS Reader: the bar and the selection. |
 | ![#c6c6c6](design/colors/block-c6c6c6.svg) | `#c6c6c6` | BIOS Reader: the screen. |
 | ![#1565c0](design/colors/block-1565c0.svg) | `#1565c0` | HDMI-CEC: the adapter box. |
-| ![#000000](design/colors/block-000000.svg) | `#000000` | HDMI-CEC: the display box; HD Control: the light bar off. |
+| ![#000000](design/colors/block-000000.svg) | `#000000` | HDMI-CEC: the display box; BC-250 Controller: the light bar off. |
 | ![#c62828](design/colors/block-c62828.svg) | `#c62828` | SFTP: the errors button. |
 | ![#5f6368](design/colors/block-5f6368.svg) | `#5f6368` | VRAM: firmware in the memory map. |
 | ![#00838f](design/colors/block-00838f.svg) | `#00838f` | VRAM: zswap in the memory map. |
-| ![#3dbf9c](design/colors/block-3dbf9c.svg) | `#3dbf9c` | HD Control: the triangle button. |
-| ![#e8505b](design/colors/block-e8505b.svg) | `#e8505b` | HD Control: the circle button. |
-| ![#6f9fe8](design/colors/block-6f9fe8.svg) | `#6f9fe8` | HD Control: the cross button. |
-| ![#e48fc0](design/colors/block-e48fc0.svg) | `#e48fc0` | HD Control: the square button. |
-| ![#0050ff](design/colors/block-0050ff.svg) | `#0050ff` | HD Control light bar: blue (the default). |
+| ![#3dbf9c](design/colors/block-3dbf9c.svg) | `#3dbf9c` | BC-250 Controller: the triangle button. |
+| ![#e8505b](design/colors/block-e8505b.svg) | `#e8505b` | BC-250 Controller: the circle button. |
+| ![#6f9fe8](design/colors/block-6f9fe8.svg) | `#6f9fe8` | BC-250 Controller: the cross button. |
+| ![#e48fc0](design/colors/block-e48fc0.svg) | `#e48fc0` | BC-250 Controller: the square button. |
+| ![#0050ff](design/colors/block-0050ff.svg) | `#0050ff` | BC-250 Controller light bar: blue (the default). |
 | ![#ff2020](design/colors/block-ff2020.svg) | `#ff2020` | Light bar: red. |
 | ![#10d040](design/colors/block-10d040.svg) | `#10d040` | Light bar: green. |
 | ![#a020f0](design/colors/block-a020f0.svg) | `#a020f0` | Light bar: purple. |

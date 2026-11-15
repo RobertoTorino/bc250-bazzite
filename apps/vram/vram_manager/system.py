@@ -2,7 +2,7 @@
 """What the running system says about its memory, read without root from /sys and /proc: the VRAM split the
 kernel got, the GTT it may lend the GPU, the TTM limit behind it, the RAM and the swap layout.
 
-The swap checks are the ones of bazzite-test's test 14 and system score (zram and disk swap from /proc/swaps,
+The swap checks are the ones of board-test's test 14 and system score (zram and disk swap from /proc/swaps,
 zswap from its module parameter). read_usage() adds what changes while the system runs, for the memory map: the
 VRAM and GTT in use, the RAM available, what zram and zswap hold and what that costs in RAM."""
 
@@ -62,7 +62,7 @@ class Memory:
 
 
 def gpu_device(sys_root: Path = Path("/sys")) -> Path | None:
-    """The amdgpu device with VRAM figures (the last one, as bazzite-test's test 37 does)."""
+    """The amdgpu device with VRAM figures (the last one, as board-test's test 37 does)."""
     found = [p for p in sorted((sys_root / "class/drm").glob("card*/device")) if (p / "mem_info_vram_total").is_file()]
     return found[-1] if found else None
 

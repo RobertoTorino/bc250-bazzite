@@ -44,7 +44,7 @@ def test_prefix_picks_this_apps_newest_release():
     # The suite's newest release overall belongs to another app; 0.10.0 must beat 0.9.0 numerically.
     releases = [_rel("portal-v0.3.0"), _rel("governor-v0.9.0"), _rel("governor-v0.10.0", date="2026-09-01"),
                 _rel("governor-v0.11.0", pre=True), _rel("governor-v0.12.0", draft=True),
-                _rel("bazzite-test-v2.0.0")]
+                _rel("board-test-v2.0.0")]
     info = latest_release(REPO, "governor-v", fetch=lambda url: releases)
     assert (info.version, info.tag, info.error) == ("0.10.0", "governor-v0.10.0", "")
 

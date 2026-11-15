@@ -166,7 +166,7 @@ governor config. `--status` (and a finished run) writes a readable report to you
 
 - [bc250-cu-bisect](compute.md) - CU unlock and bisect
 - [bc250-cores-bisect](cores.md) - CPU cores unlock and bisect
-- [BC-250 Bazzite Test](check.md) - health-check test suite
+- [BC-250 Board Test](check.md) - health-check test suite
 - The **CPU** side (voltage/frequency via SMU) is covered by
   [bc250_smu_oc](https://github.com/bc250-collective/bc250_smu_oc) from the BC-250 collective - this
   project deliberately sticks to the GPU curve.

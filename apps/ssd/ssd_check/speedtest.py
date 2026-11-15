@@ -19,7 +19,7 @@ from pathlib import Path
 SIZE = 1 << 30                  # 1 GiB
 BLOCK = 8 << 20                 # written and read in blocks of 8 MiB
 LIMIT_S = 10.0                  # the most it writes for
-NAME = ".bc250-ssd-speed-test"
+NAME = ".bc250-ssd-check-speed-test"
 
 
 class SpeedError(RuntimeError):
@@ -27,12 +27,12 @@ class SpeedError(RuntimeError):
 
 
 def folder_for(mounts: list[str], home: Path | None = None) -> Path | None:
-    """Where the test file goes on a drive mounted at *mounts*: ~/.cache/bc250-ssd when the home folder is on it,
+    """Where the test file goes on a drive mounted at *mounts*: ~/.cache/bc250-ssd-check when the home folder is on it,
     else the first writable mount point; None when there is none (the drive is not mounted)."""
     home = (home or Path.home()).resolve()
     points = sorted((Path(m) for m in mounts), key=lambda p: len(p.parts), reverse=True)
     if any(home == p or p in home.parents for p in points):
-        return home / ".cache" / "bc250-ssd"
+        return home / ".cache" / "bc250-ssd-check"
     return next((p for p in points if p != Path("/") and os.access(p, os.W_OK)), None)
 
 

@@ -8,8 +8,8 @@ FROM ghcr.io/ublue-os/bazzite:latest
 RUN rpm-ostree install stress-ng lm_sensors vkmark nvme-cli fio
 
 # To test a locally built RPM of this project, drop it next to this file and uncomment:
-# COPY ./bc250-bazzite-test-*.rpm /tmp/
-# RUN rpm-ostree install /tmp/bc250-bazzite-test-*.rpm && rm -f /tmp/bc250-bazzite-test-*.rpm
+# COPY ./bc250-board-test-*.rpm /tmp/
+# RUN rpm-ostree install /tmp/bc250-board-test-*.rpm && rm -f /tmp/bc250-board-test-*.rpm
 
 # Commit the changes into the OSTree container commit.
 RUN rpm-ostree cleanup -a && ostree container commit

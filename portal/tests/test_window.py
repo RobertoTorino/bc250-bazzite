@@ -103,7 +103,7 @@ def test_an_app_without_an_icon_file_still_has_a_tile(qapp, home, settings_dir, 
 
 
 def test_short_names_drop_the_suite_prefix(window):
-    assert mw.short_name("BC-250 Bazzite Test") == "Bazzite Test"
+    assert mw.short_name("BC-250 Board Test") == "Board Test"
     assert mw.short_name("BC250 Suite Releases") == "Suite Releases"
     assert mw.short_name("Media Tool") == "Media Tool"
     assert window.states["gpu"].title == "GPU Manager"
@@ -174,10 +174,10 @@ def test_states_follow_detection_and_records(window, home):
 def test_bazzite_test_has_only_reinstall(window, home):
     """With the arrow into a tray, as every app (owner, 14-10-2026), and the version it reinstalls."""
     state = window.states["check"]
-    (home / ".local" / "bin" / "bc250-bazzite-test").write_text("#!/bin/sh\n")
+    (home / ".local" / "bin" / "bc250-board-test").write_text("#!/bin/sh\n")
     window.records.set("check", state.entry.tag)
     window.refresh()
-    assert state.action_tip == f"Reinstall BC-250 Bazzite Test v{state.entry.version}"
+    assert state.action_tip == f"Reinstall BC-250 Board Test v{state.entry.version}"
     assert menu_texts(window, "check") == ["Open", "Reinstall"]
     assert not state.reinstall
     window.records.set("check", "")                                      # not installed by the portal
@@ -193,7 +193,7 @@ def test_board_change_needs_confirmation(window, launched, monkeypatch):
     assert window.sources.prepared == [] and launched == []                 # canceled: nothing happens
 
 
-def test_no_warning_for_bazzite_test(window, launched, monkeypatch):
+def test_no_warning_for_board_test(window, launched, monkeypatch):
     monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: pytest.fail("no board warning expected"))
     window.install(window.entries[0])
     assert wait_for(lambda: launched)
@@ -715,7 +715,7 @@ def test_a_category_per_tab_in_order(window):
 
 
 def test_bazzite_test_is_the_first_tile_on_sustainable(window):
-    """Bazzite Test is pinned as the first tile on Sustainable (owner, 20-10-2026)."""
+    """Board Test is pinned as the first tile on Sustainable (owner, 20-10-2026)."""
     assert window.big.current_tiles()[0] is window.big.tiles["check"]
     assert window.big.grids["sustainable"].itemAtPosition(0, 0).widget() is window.big.tiles["check"]
 

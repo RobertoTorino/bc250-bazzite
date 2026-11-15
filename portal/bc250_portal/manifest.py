@@ -19,7 +19,7 @@ CATEGORIES = {"sustainable": "Sustainable", "graphics": "Graphics", "gaming": "G
 LEGACY_CATEGORIES = ("development",)
 # Apps renamed in the suite (old key: new key), for the record of a copy installed under the old key.
 RENAMED = {"ace-queues": "ace", "bazzite-datstation": "datstation",
-           "bazzite-test": "check", "bios-reader": "bios",
+           "bios-reader": "bios",
            "console-link": "consoles", "cores-bisect": "cores", "cu-bisect": "compute",
            "fan-control": "fan",
            "governor": "gpu", "gpu-oc-bisect": "oc",
@@ -29,7 +29,7 @@ RENAMED = {"ace-queues": "ace", "bazzite-datstation": "datstation",
            "shadps4-manager": "shadps4", "vita3k-manager": "vita3k",
            "demo-tool": "mtool", "dtool": "mtool", "dependency-checker": "package",
            "persistent-acpi": "acpi", "sftp-tools": "sftp",
-           "suite-releases": "suite", "suite": "releases", "usb-wifi": "wdriver",
+           "suite-releases": "suite", "suite": "releases",
            "system-overlay": "overlay", "helixsr": "upscaler"}
 
 

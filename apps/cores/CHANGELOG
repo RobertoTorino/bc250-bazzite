@@ -1,3 +1,9 @@
+Changelog: 15-11-2026 03:22:26
+
+Fixed. The uninstall on a computer where the app is not installed says so ("… is not installed: nothing to remove.")
+and stops, without asking for the sudo password; it listed its removal steps for what was never there (owner,
+15-11-2026). With anything of the app there, it uninstalls as before.
+
 Changelog: 14-11-2026 23:58:33
 
 Fixed. The suite is a repository of its own, github.com/RobertoTorino/bc250-bazzite (owner, 14-11-2026). The app's

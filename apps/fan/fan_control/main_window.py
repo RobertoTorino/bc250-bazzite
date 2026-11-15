@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
         if not reading.fans:
             self.fans_label.setText("No fan controller found.")
             self.fans_note.setText("The fans are read through the nct6687 driver, which comes with Bazzite. "
-                                   "Test 22 of Bazzite Test checks that driver and tells you how to load it.")
+                                   "Test 22 of Board Test checks that driver and tells you how to load it.")
             self.fans_note.setVisible(True)
             return
         rows = [f"<b>{escape(f.header)}</b>: {f.rpm} RPM, {escape(f.mode_text)}" for f in turning]

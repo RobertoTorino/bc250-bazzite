@@ -27,8 +27,8 @@ def test_every_windows_app_has_its_package_and_a_core_to_bundle():
 def test_asset_names_follow_app_id_and_version():
     src = SUITE / "apps" / "sftp"
     version = (src / "VERSION").read_text(encoding="utf-8").strip()
-    assert bwe.app_id(src, "sftp_tools") == "bc250-bazzite-sftp-tools"
-    assert bwe.asset_name("bc250-bazzite-sftp-tools", version) == f"bc250-bazzite-sftp-tools-{version}-windows.zip"
+    assert bwe.app_id(src, "sftp_tools") == "bc250-sftp-tools"
+    assert bwe.asset_name("bc250-sftp-tools", version) == f"bc250-sftp-tools-{version}-windows.zip"
 
 
 def test_launcher_calls_the_packages_main():

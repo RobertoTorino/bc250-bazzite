@@ -8,7 +8,7 @@ The tag names its suite (tools/suites.py: a suite's TAG_PREFIX, none for this re
 
 <out-dir> gets <tag>.tar.gz (unpacks into <tag>/), SHA256SUMS, notes.md and title.txt (the release's title). The
 tag's version must equal the app's VERSION. An app in NATIVE_WHEELS needs the wheel of its native core in that folder
-first, built by release.yml; it goes into the tarball, so the portal's checksum covers it. Bazzite Test (check) gets
+first, built by release.yml; it goes into the tarball, so the portal's checksum covers it. Board Test (check) gets
 its engine checksum recorded (development/tools/build_info.py), which makes it a release build that refuses a changed
 engine. A portal tag needs --bundle: a folder with the pinned check release (<tag>.tar.gz and SHA256SUMS, as
 published); it is verified against apps.toml and unpacked into bundled/.
@@ -16,8 +16,8 @@ published); it is verified against apps.toml and unpacked into bundled/.
 The tar inside is reproducible and the same on Linux and Windows: sorted entries, root:root, the commit time (or
 SOURCE_DATE_EPOCH) as mtime, and modes set here (755 for folders and scripts, 644 for the rest), not taken from the
 file system, which on Windows has no exec bit. The .tar.gz is only byte for byte the same with the same zlib: its
-compressed bytes differ between zlib builds (Fedora's zlib-ng, Ubuntu's zlib). Bazzite Test also records its build
-time in bazzite_check/_build_info.py."""
+compressed bytes differ between zlib builds (Fedora's zlib-ng, Ubuntu's zlib). Board Test also records its build
+time in board_test/_build_info.py."""
 
 from __future__ import annotations
 

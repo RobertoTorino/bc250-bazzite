@@ -518,7 +518,7 @@ class MainWindow(QMainWindow):
             self._update_start_button()
             return
         self.instructions.setText(
-            f"The portal is installed. Open it, show BC-250 Bazzite Test, "
+            f"The portal is installed. Open it, show BC-250 Board Test, "
             "install the selected optional app, "
             "then open that app for the peek."
         )

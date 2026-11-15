@@ -54,7 +54,30 @@ for f in install-bisect-gui.sh install-gui.sh uninstall-bisect-gui.sh uninstall-
     [ -f "$PACKAGING/$f" ] || die "packaging/bazzite/$f is missing: run install.sh from a clone or the extracted release folder."
 done
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 if $UNINSTALL; then
+    # What the two GUIs' uninstallers (packaging/bazzite) remove
+    found=false
+    desktop=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
+    installed_here "$DATA_DIR/bc250-bisect-gui" "$DATA_DIR/bc250-unlock-cu-gui" \
+        "${XDG_BIN_HOME:-$HOME/.local/bin}/bc250-bisect-gui" "${XDG_BIN_HOME:-$HOME/.local/bin}/bc250-unlock-cu-gui" \
+        "$DATA_DIR/applications/bc250-cu-bisect.desktop" "$DATA_DIR/applications/bc250-cu-unlock.desktop" \
+        "$DATA_DIR/icons/hicolor/"*/apps/bc250-cu-bisect*.png "$desktop/bc250-cu-bisect.desktop" \
+        "$desktop/bc250-cu-unlock.desktop" && found=true
+    $PURGE && installed_here "$AUTO_UNIT" "$WATCH_ENTRY" "${STATE_DIR:?}" "${SETTINGS_DIR:?}" && found=true
+    if ! $found; then
+        info "$APP_NAME is not installed: nothing to remove."
+        exit 0
+    fi
     info "Removing the bisect GUI"
     bash "$PACKAGING/uninstall-bisect-gui.sh"
     info "Removing the unlock GUI"

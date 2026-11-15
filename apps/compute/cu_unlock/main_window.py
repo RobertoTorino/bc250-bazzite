@@ -82,7 +82,7 @@ class MainWindow(QWidget):
         root = QVBoxLayout(self)
 
         # The logo spans the title row and the description line below it (same layout as
-        # bc250-bazzite-test, for a consistent look across the BC-250 tools).
+        # bc250-board-test, for a consistent look across the BC-250 tools).
         header = QHBoxLayout()
         header.setSpacing(14)
         if LOGO_PATH.is_file():

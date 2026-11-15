@@ -164,7 +164,7 @@ class Tour(Recorder):
         self.move(self.at(w.big.notice))
         self.hold(3.5)
         first = w.big.tiles["check"]
-        self.say("Bazzite Test checks the board. It is always installed, as the first tile on Sustainable.")
+        self.say("Board Test checks the board. It is always installed, as the first tile on Sustainable.")
         self.move(self.at(first, 0.5, 0.3))
         self.hold(3.5)
         self.say("A press on a tile opens its app; its menu installs, updates and uninstalls it, in a terminal.")

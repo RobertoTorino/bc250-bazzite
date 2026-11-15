@@ -7,11 +7,11 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from bazzite_check import steamlines
+from board_test import steamlines
 
-PREFIX = "PYTHONPATH=/opt/bc250-bazzite-test /venv/bin/python -m bazzite_check.gamemon"
+PREFIX = "PYTHONPATH=/opt/bc250-board-test /venv/bin/python -m board_test.gamemon"
 # From the owner's board (19-10-2026), the user folder masked: lines copied from the checkout before the move.
-OLD = ("PYTHONPATH=/home/user/bc250-bazzite-test /home/user/bc250-bazzite-test/_python/bin/python "
+OLD = ("PYTHONPATH=/home/user/bc250-board-test /home/user/bc250-board-test/_python/bin/python "
        "-m bc250_gui.gamemon")
 
 
@@ -34,8 +34,8 @@ def python(folder: Path) -> Path:
 
 
 def app_folder(folder: Path) -> Path:
-    (folder / "bazzite_check").mkdir(parents=True)
-    (folder / "bazzite_check" / "gamemon.py").write_text("")
+    (folder / "board_test").mkdir(parents=True)
+    (folder / "board_test" / "gamemon.py").write_text("")
     return folder
 
 
@@ -64,12 +64,12 @@ def test_lines_without_gamemon_are_left_alone():
 
 def test_current_line_is_fine(tmp_path):
     exe, root = python(tmp_path / "venv"), app_folder(tmp_path / "app")
-    assert steamlines.gamemon_problem(f"PYTHONPATH={root} {exe} -m bazzite_check.gamemon %command%") is None
+    assert steamlines.gamemon_problem(f"PYTHONPATH={root} {exe} -m board_test.gamemon %command%") is None
 
 
 def test_quoted_paths_with_spaces(tmp_path):
     exe, root = python(tmp_path / "my venv"), app_folder(tmp_path / "my app")
-    line = f"PYTHONPATH='{root}' '{exe}' -m bazzite_check.gamemon mangohud %command%"
+    line = f"PYTHONPATH='{root}' '{exe}' -m board_test.gamemon mangohud %command%"
     assert steamlines.gamemon_problem(line) is None
     assert steamlines.fixed_line(line, PREFIX) == PREFIX + " mangohud %command%"
 
@@ -77,12 +77,12 @@ def test_quoted_paths_with_spaces(tmp_path):
 def test_each_missing_part_has_its_reason(tmp_path):
     exe, root = python(tmp_path / "venv"), app_folder(tmp_path / "app")
     assert "app folder is gone" in steamlines.gamemon_problem(
-        f"PYTHONPATH={tmp_path / 'moved'} {exe} -m bazzite_check.gamemon %command%")
+        f"PYTHONPATH={tmp_path / 'moved'} {exe} -m board_test.gamemon %command%")
     assert "names the package bc250_gui" in steamlines.gamemon_problem(
         f"PYTHONPATH={root} {exe} -m bc250_gui.gamemon %command%")
-    assert "has no bazzite_check" in steamlines.gamemon_problem(
-        f"PYTHONPATH={tmp_path} {exe} -m bazzite_check.gamemon %command%")
-    assert steamlines.gamemon_problem(f"{exe} -m bazzite_check.gamemon %command%") is None   # no PYTHONPATH
+    assert "has no board_test" in steamlines.gamemon_problem(
+        f"PYTHONPATH={tmp_path} {exe} -m board_test.gamemon %command%")
+    assert steamlines.gamemon_problem(f"{exe} -m board_test.gamemon %command%") is None   # no PYTHONPATH
 
 
 def test_fixed_line_keeps_what_surrounds_the_gamemon_part():
@@ -92,7 +92,7 @@ def test_fixed_line_keeps_what_surrounds_the_gamemon_part():
 
 def test_stale_lines_over_every_user_with_names_from_any_library(tmp_path):
     exe, root = python(tmp_path / "venv"), app_folder(tmp_path / "app")
-    good = f"PYTHONPATH={root} {exe} -m bazzite_check.gamemon %command%"
+    good = f"PYTHONPATH={root} {exe} -m board_test.gamemon %command%"
     steam = steam_with(tmp_path, {
         "111": {"389730": OLD + " mangohud %command%", "297860": OLD + " %command%", "570": good},
         "222": {"389730": OLD + " mangohud %command%", "851670": "%command%"},
@@ -122,15 +122,15 @@ def test_no_steam_or_no_name(tmp_path):
 def test_from_checkout(tmp_path):
     (tmp_path / "repo" / ".git").mkdir(parents=True)
     (tmp_path / "repo" / "apps" / "check").mkdir(parents=True)
-    (tmp_path / "opt" / "bc250-bazzite-test").mkdir(parents=True)
+    (tmp_path / "opt" / "bc250-board-test").mkdir(parents=True)
     assert steamlines.from_checkout(tmp_path / "repo" / "apps" / "check")
-    assert not steamlines.from_checkout(tmp_path / "opt" / "bc250-bazzite-test")
+    assert not steamlines.from_checkout(tmp_path / "opt" / "bc250-board-test")
 
 
 def test_ingame_page_lists_the_stale_games(sandbox, monkeypatch):
     from PyQt6.QtWidgets import QLabel, QLineEdit
 
-    from bazzite_check import ingame
+    from board_test import ingame
     steam = steam_with(sandbox.parent, {"1": {"297860": OLD + " %command%"}})
     monkeypatch.setattr(ingame, "find_steam", lambda: steam)
     page = ingame.InGamePage()

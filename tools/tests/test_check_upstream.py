@@ -270,9 +270,9 @@ def test_the_pinned_appimage(name):
     assert "is gone from GitHub" in check_upstream.check_build(pin, build_github(pin, *same, gone=True)).drift[0]
 
 
-# --- BC-250 USB Wi-Fi: the driver's pinned commits ----------------------------------------------------------------
+# --- BC-250 Wi-Fi Adapter: the driver's pinned commits ----------------------------------------------------------------
 
-BUILDER = check_upstream.load_loader(check_upstream.BUILDER, "wdriver_builder_pin")
+BUILDER = check_upstream.load_loader(check_upstream.BUILDER, "wifi_builder_pin")
 UPSTREAM_API = check_upstream.API.format(repo="shenmintao/aic8800d80")
 MIRROR_API = check_upstream.API.format(repo="RobertoTorino/aic8800d80")
 
@@ -307,28 +307,28 @@ def test_the_driver_pins_are_read_from_builder_py():
 
 
 def test_the_driver_in_step():
-    report = check_upstream.check_wdriver(BUILDER, driver_github())
+    report = check_upstream.check_wifi(BUILDER, driver_github())
     assert report.drift == [] and "branch heads main " in report.text()
     assert "the mirror has legacy-mcu1's pinned commit" in report.fine
 
 
 def test_a_branch_past_its_pin():
-    report = check_upstream.check_wdriver(BUILDER, driver_github({"legacy-mcu1": 24}))
+    report = check_upstream.check_wifi(BUILDER, driver_github({"legacy-mcu1": 24}))
     [line] = report.drift
     pin = BUILDER.PINS["legacy-mcu1"].commit[:7]
     assert line.startswith(f"legacy-mcu1 is 24 commits past the pin {pin} (newest 0000023, 2026-11-02): a new "
-                           "version of BC-250 USB Wi-Fi could move PINS")
+                           "version of BC-250 Wi-Fi Adapter could move PINS")
     assert "legacy-mcu1 0000023" in report.latest and f"main {BUILDER.PINS['main'].commit[:7]}" in report.latest
 
 
 def test_the_mirror():
-    [line] = check_upstream.check_wdriver(BUILDER, driver_github(mirror="none")).drift
+    [line] = check_upstream.check_wifi(BUILDER, driver_github(mirror="none")).drift
     assert "is not on GitHub (missing, or private)" in line
-    [line] = check_upstream.check_wdriver(BUILDER, driver_github(mirror="main")).drift
+    [line] = check_upstream.check_wifi(BUILDER, driver_github(mirror="main")).drift
     assert "lacks main's pinned commit" in line
 
 
-# --- Mesa, FFmpeg and libva, USB HD Cam's firmware, the speedtest CLI (Bazzite/Windows 2, 05-11-2026) ---------------
+# --- Mesa, FFmpeg and libva, BC-250 Webcam's firmware, the speedtest CLI (Bazzite/Windows 2, 05-11-2026) ---------------
 
 def test_the_new_pins_are_read_from_the_apps():
     assert check_upstream.shell_value(check_upstream.MESH, "MESA_VER").count(".") == 2
@@ -398,7 +398,7 @@ def test_ffmpeg_and_libva():
     assert still.drift == [] and still.fine == ["no FFmpeg release newer than 7.1.2", "no libva release newer than 2.22.0"]
 
 
-def test_hdcam_firmware():
+def test_webcam_firmware():
     """The file at the pinned commit, and the same file on the default branch: changed or gone there is a line."""
     import hashlib
     firmware = [check_upstream.Firmware("cam", "someone/fw", "a" * 40, "fw/cam.bin", hashlib.sha256(b"fw").hexdigest())]
@@ -413,13 +413,13 @@ def test_hdcam_firmware():
                 return head
             raise AssertionError(url)
         return get
-    same = check_upstream.check_hdcam(firmware, raw(b"fw"))
+    same = check_upstream.check_webcam(firmware, raw(b"fw"))
     assert same.drift == [] and same.latest == "the same files"
-    [line] = check_upstream.check_hdcam(firmware, raw(b"new")).drift
-    assert line.startswith("cam's fw/cam.bin changed on someone/fw's default branch: a new version of USB HD Cam")
-    [line] = check_upstream.check_hdcam(firmware, raw(None)).drift
+    [line] = check_upstream.check_webcam(firmware, raw(b"new")).drift
+    assert line.startswith("cam's fw/cam.bin changed on someone/fw's default branch: a new version of BC-250 Webcam")
+    [line] = check_upstream.check_webcam(firmware, raw(None)).drift
     assert "is gone from someone/fw's default branch" in line
-    replaced = check_upstream.check_hdcam(firmware, raw(b"fw", pinned=b"other")).drift
+    replaced = check_upstream.check_webcam(firmware, raw(b"fw", pinned=b"other")).drift
     assert "is not the pinned file" in replaced[0]
 
 

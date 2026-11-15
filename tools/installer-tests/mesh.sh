@@ -50,7 +50,7 @@ fakeroot -- bash "$T/stage/install.sh" > "$T/log3" 2>&1; rc=$?
 check "exit non-zero" "[ $rc -ne 0 ] && grep -q 'not with sudo' $T/log3"
 
 echo "== 4. uninstall while another suite app still uses the venv"
-touch "$D/bc250-bazzite-suite/venv-users/bc250-bazzite-test"
+touch "$D/bc250-bazzite-suite/venv-users/bc250-board-test"
 mkdir -p "$HOME/.cache/$APP/stage" "$HOME/.local/state/$APP" && touch "$HOME/.local/state/$APP/tested"
 bash "$T/stage/install.sh" --uninstall > "$T/log4" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
@@ -60,7 +60,7 @@ check "venv kept, own marker gone" "[ -x $D/bc250-bazzite-suite/venv/bin/python 
 check "launcher and menu entry gone" "[ ! -e $HOME/.local/bin/$APP ] && [ ! -e $D/applications/$APP.desktop ]"
 
 echo "== 5. reinstall, then uninstall --purge as the last venv user"
-rm "$D/bc250-bazzite-suite/venv-users/bc250-bazzite-test"
+rm "$D/bc250-bazzite-suite/venv-users/bc250-board-test"
 mkdir -p "$XDG_CONFIG_HOME/$APP" && touch "$XDG_CONFIG_HOME/$APP/$APP.ini"
 bash "$T/stage/install.sh" > "$T/log5" 2>&1 && bash "$T/stage/install.sh" --uninstall --purge >> "$T/log5" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"

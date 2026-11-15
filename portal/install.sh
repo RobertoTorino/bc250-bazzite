@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs the BC250 Bazzite Suite portal and BC-250 Bazzite Test, from the extracted portal release:
+# Installs the BC250 Bazzite Suite portal and BC-250 Board Test, from the extracted portal release:
 #
 #   ./install.sh                         # install or update
 #   ./install.sh --no-desktop-shortcut   # app menu entries only, no icons on the Desktop
-#   ./install.sh --uninstall             # remove the portal, Bazzite Test and (asked per app) the other apps;
+#   ./install.sh --uninstall             # remove the portal, Board Test and (asked per app) the other apps;
 #                                        # keeps settings and results
 #   ./install.sh --uninstall --purge     # also remove settings, history and results
 #   ./install.sh --uninstall --all       # the whole suite: every other app too, without a question per app,
@@ -16,7 +16,7 @@
 #  * ~/.local/share/bc250-bazzite-suite/venv: the suite's shared venv with PyQt6 and pygame-ce (the portal's
 #    controller reader), removed with the last suite app that uses it.
 #  * ~/.local/bin/bc250-bazzite-suite, an app menu entry and a Desktop icon.
-#  * BC-250 Bazzite Test, which the suite always includes, through its own installer (bundled in the release).
+#  * BC-250 Board Test, which the suite always includes, through its own installer (bundled in the release).
 # The other apps are installed from the portal, each with its own installer.
 set -euo pipefail
 
@@ -34,10 +34,10 @@ MENU_ENTRY="$DATA_DIR/applications/$APP_ID.desktop"
 DESKTOP_DIR=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
 DESKTOP_ICON="$DESKTOP_DIR/$APP_ID.desktop"
 LINK="$OPT_DIR/$APP_ID"
-BT_ID="bc250-bazzite-test"
+BT_ID="bc250-board-test"
 
 SRC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-# A release bundles bc250_core and the pinned Bazzite Test; in the suite checkout they live in core/ and apps/.
+# A release bundles bc250_core and the pinned Board Test; in the suite checkout they live in core/ and apps/.
 if [ -d "$SRC/bc250_core" ]; then CORE_SRC="$SRC/bc250_core"; else CORE_SRC="$SRC/../core/bc250_core"; fi
 BT_SRC=""
 if [ -d "$SRC/bundled" ]; then
@@ -105,7 +105,7 @@ installed_apps() {
 import json, os, re, subprocess, sys, tomllib
 from pathlib import Path
 manifest, state, checkout, staging = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], Path(sys.argv[4])
-data_dir, opt_dir, own_ids = Path(sys.argv[5]), Path(sys.argv[6]), set(sys.argv[7:9])    # the portal, Bazzite Test
+data_dir, opt_dir, own_ids = Path(sys.argv[5]), Path(sys.argv[6]), set(sys.argv[7:9])    # the portal, Board Test
 tables = tomllib.loads(manifest.read_text(encoding="utf-8"))
 apps = tables.get("apps", {})
 suite = Path(checkout) if checkout else None                       # the suite: the checkout itself
@@ -135,12 +135,13 @@ def row(key, name, folder, commands):
 
 
 def suite_installer(folder):
-    """Whether *folder* holds a suite app's install.sh: one with the options every suite installer has."""
+    """Whether *folder* holds a suite app's install.sh: one with the options every suite installer has, of this suite
+    (its names start with bc250: another suite's apps may sit in /opt beside them)."""
     try:
         text = (folder / "install.sh").read_text(encoding="utf-8", errors="replace")
     except OSError:
         return False
-    return "--no-desktop-shortcut)" in text and "--uninstall)" in text and "not with sudo" in text
+    return "--no-desktop-shortcut)" in text and "--uninstall)" in text and "not with sudo" in text and "bc250" in text
 
 
 app_ids = set()                         # the ids of the apps this portal lists: their launchers' names
@@ -200,7 +201,7 @@ uninstall_other_apps() {
     if $ALL && [ -n "$list" ]; then
         { [ -t 0 ] || [ -n "${BC250_INTERACTIVE:-}" ]; } || die "--all needs a terminal to confirm; nothing was uninstalled."
         names=$(cut -f2 <<<"$list" | paste -sd, - | sed 's/,/, /g')
-        info "WARNING: --all removes the whole suite from this computer: $names, with the portal and Bazzite Test."
+        info "WARNING: --all removes the whole suite from this computer: $names, with the portal and Board Test."
         $PURGE && info "WARNING: --purge removes their settings, history and results as well."
         printf "Are you sure you want to delete everything permanently? [y/N] "
         read -r answer || answer=n
@@ -243,7 +244,7 @@ uninstall_other_apps() {
     rm -rf "$staging"
     [ ${#failed[@]} -eq 0 ] || info "Not uninstalled: ${failed[*]}"
     if $PURGE && [ ${#chosen[@]} -gt 0 ] && ! $ALL; then
-        info "Their own settings are kept: --purge applies to the portal and Bazzite Test (with --all, to every app)."
+        info "Their own settings are kept: --purge applies to the portal and Board Test (with --all, to every app)."
     fi
 }
 
@@ -267,7 +268,7 @@ PY
 }
 
 # After the uninstall without --purge: keep only what an app that is still installed needs (its record and the
-# release folder its uninstaller runs from); records and folders of apps that are gone, and Bazzite Test's, go.
+# release folder its uninstaller runs from); records and folders of apps that are gone, and Board Test's, go.
 # With nothing left, the portal's state folder goes too.
 prune_state() {
     local manifest="$SRC/apps.toml"
@@ -307,10 +308,36 @@ else:
 PY
 }
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the suite is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
+# Nothing of the portal, of Board Test or of another suite app: nothing to uninstall.
+nothing_installed() {
+    local staging list
+    installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "$LINK" "$OPT_DIR/$APP_ID"-v* "$OPT_DIR/$BT_ID" \
+        "$VENV_USERS/$APP_ID" && return 1
+    $PURGE && installed_here "${STATE_DIR:?}" "${CONFIG_DIR:?}/$APP_ID" && return 1
+    staging=$(mktemp -d)
+    list=$(installed_apps "$staging" 2>/dev/null) || list=""
+    rm -rf "${staging:?}"
+    [ -z "$list" ]
+}
+
 if $UNINSTALL; then
+    if nothing_installed; then
+        info "$APP_NAME is not installed: nothing to remove."
+        exit 0
+    fi
     uninstall_other_apps
     if [ -f "$OPT_DIR/$BT_ID/install.sh" ]; then
-        info "Uninstalling BC-250 Bazzite Test"
+        info "Uninstalling BC-250 Board Test"
         bt_args=(--uninstall)
         $PURGE && bt_args+=(--purge)
         bash "$OPT_DIR/$BT_ID/install.sh" "${bt_args[@]}"
@@ -340,7 +367,7 @@ for f in apps.toml requirements.txt bc250_portal/__init__.py bc250_portal/__main
 done
 [ -f "$CORE_SRC/__init__.py" ] || die "bc250_core is missing: run install.sh from the extracted release folder."
 CORE_SRC=$(cd "$CORE_SRC" && pwd -P)
-[ -f "$BT_SRC/install.sh" ] || die "BC-250 Bazzite Test is missing: run install.sh from the extracted release folder."
+[ -f "$BT_SRC/install.sh" ] || die "BC-250 Board Test is missing: run install.sh from the extracted release folder."
 VERSION=$(sed -n 's/^__version__ = "\([0-9.]*\)"$/\1/p' "$SRC/bc250_portal/__init__.py")
 [ -n "$VERSION" ] || die "Could not read the version from bc250_portal/__init__.py."
 command -v python3 >/dev/null 2>&1 || die "python3 is not installed."
@@ -359,7 +386,7 @@ else
     as_root rm -rf "$STAGE"
     as_root mkdir -p "$STAGE"
     # Plain copy, no -a: the files get /opt's default SELinux label instead of the Downloads one. The bundled
-    # Bazzite Test is installed by its own installer below, so it is not part of the portal's copy.
+    # Board Test is installed by its own installer below, so it is not part of the portal's copy.
     (cd "$SRC" && tar --exclude='./bundled' --exclude='./tests' --exclude='./.git' --exclude='__pycache__' \
         --exclude='./requirements-dev.txt' -cf - .) | as_root tar -xf - -C "$STAGE" --no-same-owner
     if [ "$CORE_SRC" != "$SRC/bc250_core" ]; then         # from the checkout: bundle core like a release
@@ -450,12 +477,12 @@ elif ! $DESKTOP_SHORTCUT; then
     rm -f "$DESKTOP_ICON"
 fi
 
-# --- 4. BC-250 Bazzite Test, always part of the suite -------------------------------------------
-info "Installing BC-250 Bazzite Test ($BT_TAG)"
+# --- 4. BC-250 Board Test, always part of the suite -------------------------------------------
+info "Installing BC-250 Board Test ($BT_TAG)"
 bt_args=()
 $DESKTOP_SHORTCUT || bt_args+=(--no-desktop-shortcut)
 bash "$BT_SRC/install.sh" "${bt_args[@]}"
-# Tell the portal which Bazzite Test it installed ("local" from a checkout), as it does for apps it installs.
+# Tell the portal which Board Test it installed ("local" from a checkout), as it does for apps it installs.
 mkdir -p "$STATE_DIR"
 python3 - "$STATE_DIR/installed.json" "check" "$BT_TAG" <<'PY'
 import json, sys

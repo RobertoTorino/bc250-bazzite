@@ -49,8 +49,8 @@ apps/<name>/
 
 - The **package** sits directly in `apps/<name>/`, never in a wrapper folder such as `apps/<name>/<name>/<package>`.
   `<name>` is a short name for the app and the package is the app's name without its BC-250 or Bazzite prefix, as
-  a Python identifier: `apps/ace/ace_queues/` for BC-250 ACE Queues, `apps/datstation/datstation/` for Bazzite DatStation (the two names may be the same word), `apps/check/bazzite_check/`
-  for BC-250 Bazzite Test (a short name chosen apart from the app's, so that no folder is called test). Apps
+  a Python identifier: `apps/ace/ace_queues/` for BC-250 ACE Queues, `apps/datstation/datstation/` for Bazzite DatStation (the two names may be the same word), `apps/check/board_test/`
+  for BC-250 Board Test (a short name chosen apart from the app's, so that no folder is called test). Apps
   from before this convention still have a `bc250_<something>` or `bazzite_<something>` package;
   they move to it one at a time.
 - **Data** the package reads ships inside the package (DatStation's `data/questions.json`) or next to it
@@ -260,7 +260,7 @@ Each module of a package has one job, so the logic can be tested without a windo
 - **State lives in the XDG folders:** settings in `~/.config/` (through `AppInfo` and core's settings helpers),
   results and data in `~/.local/share/`, each in a folder named after the app. `install.sh --uninstall --purge` removes exactly
   those.
-- **Scripts that do the board work** (the bisect and unlock scripts, `test-bazzite.sh`) stand on their own: the
+- **Scripts that do the board work** (the bisect and unlock scripts, `test-board.sh`) stand on their own: the
   window builds their command line and shows their output, and the script can be run by hand with the same
   result.
 

@@ -97,7 +97,7 @@ def pictures() -> Path:
 
 
 def screenshot_path(folder: Path, now: datetime.datetime | None = None) -> Path:
-    """A PNG in *folder* named after the app and the time ("SSD Check 2026-11-05 18-04-09.png"), not one there
+    """A PNG in *folder* named after the app and the time ("BC-250 SSD Check 2026-11-05 18-04-09.png"), not one there
     already: two in one second get (2), (3) and so on."""
     stem = f"{APP_NAME} {(now or datetime.datetime.now()):%Y-%m-%d %H-%M-%S}"
     path, n = folder / f"{stem}.png", 1

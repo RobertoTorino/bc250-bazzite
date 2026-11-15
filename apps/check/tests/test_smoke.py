@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """check on bc250_core: the app starts, its settings stay in the same .ini file, and its widgets are core's.
 
-No test runs: the window is built with the fake engine (development/tools/fake-test-bazzite.sh) and closed."""
+No test runs: the window is built with the fake engine (development/tools/fake-test-board.sh) and closed."""
 
 from __future__ import annotations
 
@@ -10,20 +10,20 @@ from pathlib import Path
 from bc250_core import theme
 from bc250_core import widgets as core_widgets
 
-ENGINE = Path(__file__).resolve().parents[1] / "development" / "tools" / "fake-test-bazzite.sh"
+ENGINE = Path(__file__).resolve().parents[1] / "development" / "tools" / "fake-test-board.sh"
 
 
 def test_constants_come_from_core():
-    from bazzite_check import INFO, __version__, dashboard, widgets
-    assert (INFO.app_id, INFO.version, INFO.tag_prefix) == ("bc250-bazzite-test", __version__, "bc250-check-v")
+    from board_test import INFO, __version__, dashboard, widgets
+    assert (INFO.app_id, INFO.version, INFO.tag_prefix) == ("bc250-board-test", __version__, "bc250-check-v")
     assert dashboard.ACCENT == theme.ACCENT and dashboard.header_font is theme.header_font
     assert widgets.RoundedToolTip is core_widgets.RoundedToolTip and widgets.ClickableLogo is core_widgets.ClickableLogo
 
 
 def test_settings_file_unchanged(sandbox):
-    from bazzite_check.settings import AppSettings
+    from board_test.settings import AppSettings
     settings = AppSettings()
-    assert Path(settings.qsettings.fileName()).name == "bc250-bazzite-test.ini"
+    assert Path(settings.qsettings.fileName()).name == "bc250-board-test.ini"
     assert settings.get("run/stress_duration") == 120
     settings.set("run/stress_duration", 300)
     assert AppSettings().get("run/stress_duration") == 300
@@ -35,15 +35,15 @@ def test_main_window_builds(sandbox, qapp):
     from PyQt6.QtCore import QCoreApplication, QEvent
 
     from bc250_core.app import create_app
-    from bazzite_check import INFO
-    from bazzite_check.main_window import MainWindow
-    from bazzite_check.runner import TestRunner
+    from board_test import INFO
+    from board_test.main_window import MainWindow
+    from board_test.runner import TestRunner
     create_app(INFO)
     window = MainWindow(TestRunner(str(ENGINE), use_sudo=False))
     window.show()
     qapp.processEvents()                        # runs the deferred history load
     assert window.windowTitle() == INFO.display_name
-    from bazzite_check.readme import ReadmeView
+    from board_test.readme import ReadmeView
     rows = [window.nav.item(i).text() for i in range(window.nav.count())]
     assert "Help" in rows and "Manual" not in rows                     # the chapter of the manual, as Help
     assert isinstance(window.stack.widget(rows.index("Help")), ReadmeView)
@@ -61,20 +61,20 @@ def test_main_window_builds(sandbox, qapp):
 
 
 def test_manual_is_the_chapter(tmp_path):
-    from bazzite_check import readme
+    from board_test import readme
     assert readme.manual_path() == readme.DOCS_DIR.parents[1] / "docs" / "apps" / "check.md"   # checkout
     (tmp_path / "MANUAL.md").write_text("# shipped\n")                                               # release
     assert readme.manual_path(tmp_path) == tmp_path / "MANUAL.md"
 
 
 def test_manual_markdown_for_qt(tmp_path):
-    from bazzite_check import readme
+    from board_test import readme
     text = readme.manual_markdown("![logo](../assets/check/x.png){ .app-logo }\n", tmp_path)
     assert text == f"![logo]({(tmp_path / 'images').as_posix()}/x.png)\n"
 
 
 def test_other_chapters_open_online():
-    from bazzite_check import readme
+    from board_test import readme
     base = readme.SUITE_MANUAL_URL
     assert readme.online_url("cu-bisect.md") == base + "apps/cu-bisect/"
     assert readme.online_url("../SECURITY.md#verifying-a-download") == base + "SECURITY/#verifying-a-download"
@@ -83,7 +83,7 @@ def test_other_chapters_open_online():
 
 
 def test_manual_view_shows_the_chapter(qapp):
-    from bazzite_check.readme import ReadmeView
+    from board_test.readme import ReadmeView
     view = ReadmeView()
     assert "Read-only diagnostics" in view.browser.toPlainText() and "{ .app-logo }" not in view.browser.toPlainText()
     view.close()
@@ -92,7 +92,7 @@ def test_manual_view_shows_the_chapter(qapp):
 def test_results_preview_shows_image_and_emits_open_paths(qapp, tmp_path):
     from PyQt6.QtGui import QPixmap
 
-    from bazzite_check.dashboard import ResultsPreview
+    from board_test.dashboard import ResultsPreview
 
     image_path = tmp_path / "results.png"
     pixmap = QPixmap(24, 16)
@@ -119,9 +119,9 @@ def test_print_results_opens_saved_png_and_shows_preview(sandbox, qapp, tmp_path
     from PyQt6.QtWidgets import QFileDialog
 
     from bc250_core.app import create_app
-    from bazzite_check import INFO
-    from bazzite_check.main_window import MainWindow
-    from bazzite_check.runner import TestRunner
+    from board_test import INFO
+    from board_test.main_window import MainWindow
+    from board_test.runner import TestRunner
 
     create_app(INFO)
     window = MainWindow(TestRunner(str(ENGINE), use_sudo=False))
@@ -129,7 +129,7 @@ def test_print_results_opens_saved_png_and_shows_preview(sandbox, qapp, tmp_path
     monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *args: (str(image_path), "PNG image (*.png)"))
     opened_urls = []
     monkeypatch.setattr(QDesktopServices, "openUrl", lambda url: opened_urls.append(url) or True)
-    from bazzite_check.results_dialog import ResultsCardDialog
+    from board_test.results_dialog import ResultsCardDialog
     monkeypatch.setattr(ResultsCardDialog, "exec", lambda self: self.save_button.click())   # Save… in the preview
 
     window._print_results()
@@ -153,7 +153,7 @@ def test_the_results_card_preview_copies_and_shares(qapp, tmp_path, monkeypatch)
     from PyQt6.QtGui import QPixmap
     from PyQt6.QtWidgets import QApplication, QMessageBox
 
-    from bazzite_check import results_dialog as rd
+    from board_test import results_dialog as rd
 
     card = QPixmap(1200, 900)
     card.fill()
@@ -165,7 +165,7 @@ def test_the_results_card_preview_copies_and_shares(qapp, tmp_path, monkeypatch)
             return 0, "a1b2c3 Pixel 9\n"
         return 0, ""
     monkeypatch.setattr(rd.shutil, "which", lambda tool: f"/usr/bin/{tool}")
-    folder = tmp_path / "Desktop" / "bc250-bazzite-test"
+    folder = tmp_path / "Desktop" / "bc250-board-test"
     dialog = rd.ResultsCardDialog(card, saved.append, folder, run_=fake_run)
     said = []
     dialog.shared.connect(said.append)

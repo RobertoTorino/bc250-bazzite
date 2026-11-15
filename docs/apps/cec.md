@@ -22,7 +22,7 @@ chip in it, and CEC works only when that chip passes it on:
   TVs give CEC a brand name in their settings: Anynet+ (Samsung), SimpLink (LG), Bravia Sync (Sony), HDMI control or
   HDMI CEC (others).
 
-Bazzite Test checks both (test 51).
+Board Test checks both (test 51).
 
 ## Using it
 

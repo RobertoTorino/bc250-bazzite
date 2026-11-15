@@ -28,7 +28,7 @@ NOT_INSTALLED = -2                      # privileged.run_command: the command is
 # The limits the app offers: (label, pages); None is the kernel's default, the argument removed.
 PRESETS: tuple[tuple[str, int | None], ...] = (
     ("Kernel default: half the RAM", None),
-    ("11.5 GiB, the suite's value (Bazzite Test, test 37)", 3014656),
+    ("11.5 GiB, the suite's value (Board Test, test 37)", 3014656),
     ("16 GiB: all the RAM, whatever the split", 4194304),
 )
 

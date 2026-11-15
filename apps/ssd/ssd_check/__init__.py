@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The health, power cycles and power-on hours of the board's SSDs."""
 
-APP_NAME = "SSD Check"
-APP_ID = "bc250-ssd"
+APP_NAME = "BC-250 SSD Check"
+APP_ID = "bc250-ssd-check"
 __version__ = "1.1.0"
 
 from pathlib import Path
@@ -12,7 +12,7 @@ from bc250_core import AppInfo
 ROOT = Path(__file__).resolve().parent.parent
 LOGO_PATH = ROOT / "images" / f"{APP_ID}.webp"
 
-# Settings in ~/.config/bc250-ssd/bc250-ssd.ini
+# Settings in ~/.config/bc250-ssd-check/bc250-ssd-check.ini
 INFO = AppInfo(app_id=APP_ID, name=APP_NAME, version=__version__, logo=LOGO_PATH, tag_prefix="bc250-ssd-v",
                settings_ini=True)
 

@@ -12,7 +12,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/shims.sh" "$T"; set +e
 fail=0
 check() { if eval "$2"; then echo "  ok   $1"; else echo "  FAIL $1"; fail=1; fi; }
 D=$XDG_DATA_HOME
-APP=bc250-bazzite-sftp-tools
+APP=bc250-sftp-tools
 A=$D/$APP/app
 # sudo must never be needed: make it fail loudly.
 printf '#!/bin/sh\necho "sudo called: $*" >&2\nexit 1\n' > "$T/shims/sudo"

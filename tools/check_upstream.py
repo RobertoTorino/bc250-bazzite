@@ -3,7 +3,7 @@
 """Upstream check: are the apps that pin an upstream release still in step with it?
 
     python3 tools/check_upstream.py [--report FILE] [shadps4] [helixsr] [ppsspp] [pcsx2] [rpcs3] [directmesh]
-                                    [vita3k] [xenia] [wdriver] [mesa] [ffmpeg] [hdcam] [speedtest]
+                                    [vita3k] [xenia] [wifi] [mesa] [ffmpeg] [webcam] [speedtest]
                                     # all when none is named
 
 The shadPS4 Manager pins one shadPS4 release (apps/shadps4/shadps4_manager/emulator.py: VERSION, TAG,
@@ -36,8 +36,8 @@ without importing the app (owner, 04-11-2026: they come in, though both publish 
  * the pinned build: its AppImage must still be on GitHub, published with the pinned SHA-256 (or without one, which
    older uploads lack: the app checks the download itself).
 
-BC-250 USB Wi-Fi builds its driver from one pinned commit per branch of shenmintao/aic8800d80 (PINS in
-apps/wdriver/usb_wifidriver/builder.py, loaded on its own: it needs only the standard library):
+BC-250 Wi-Fi Adapter builds its driver from one pinned commit per branch of shenmintao/aic8800d80 (PINS in
+apps/wifi/wifi_adapter/builder.py, loaded on its own: it needs only the standard library):
  * each branch's head: commits after the pin mean a new version of the app could move the pin, after it is built and
    tried on the board with the stick;
  * the suite owner's mirror, which the app fetches first, must be there and have each pinned commit.
@@ -55,11 +55,11 @@ LIBVA_VERSION in apps/consoles/native/ffmpeg/build.sh). Against FFmpeg's release
 mirror) and libva's latest release: a newer FFmpeg on the pinned branch (its fixes), a newer branch (a bigger move),
 a newer libva.
 
-USB HD Cam downloads each camera's firmware from one commit of a GitHub repository (PINNED in
-apps/hdcam/usb_hdcam/firmware.py): the file there must still be the pinned one (SHA-256), and the file on the
+BC-250 Webcam downloads each camera's firmware from one commit of a GitHub repository (PINNED in
+apps/webcam/webcam/firmware.py): the file there must still be the pinned one (SHA-256), and the file on the
 repository's default branch the same; changed or gone there means a new version of the app could follow it.
 
-BC-250 Bazzite Test's development tool installs one release of Ookla's speedtest CLI (SPEEDTEST_VERSION in
+BC-250 Board Test's development tool installs one release of Ookla's speedtest CLI (SPEEDTEST_VERSION in
 apps/check/development/tools/install-requirements.sh); Ookla's Homebrew formula names the current one.
 
 Exit code 0: all in step; 1: an upstream moved (the report says what); 2: one could not be checked (network, GitHub's
@@ -95,10 +95,10 @@ RPCS3 = SUITE / "apps" / "rpcs3" / "rpcs3_manager" / "emulator.py"
 MESH = SUITE / "apps" / "mesh" / "bc250-mesh-shaders.sh"
 VITA3K = SUITE / "apps" / "vita3k" / "vita3k_manager" / "emulator.py"
 XENIA = SUITE / "apps" / "xenia" / "xenia_manager" / "emulator.py"
-BUILDER = SUITE / "apps" / "wdriver" / "usb_wifidriver" / "builder.py"
+BUILDER = SUITE / "apps" / "wifi" / "wifi_adapter" / "builder.py"
 ACE_PATCH = SUITE / "apps" / "ace" / "mesa" / "gfx1013-ace-queue.patch"
 FFMPEG_BUILD = SUITE / "apps" / "consoles" / "native" / "ffmpeg" / "build.sh"
-HDCAM_FIRMWARE = SUITE / "apps" / "hdcam" / "usb_hdcam" / "firmware.py"
+WEBCAM_FIRMWARE = SUITE / "apps" / "webcam" / "webcam" / "firmware.py"
 SPEEDTEST_TOOL = SUITE / "apps" / "check" / "development" / "tools" / "install-requirements.sh"
 MESA_TAGS = ("https://gitlab.freedesktop.org/api/v4/projects/mesa%2Fmesa/repository/tags"
              "?search=%5Emesa-&order_by=version&per_page=100")
@@ -416,7 +416,7 @@ def _repo(url: str) -> str:
     return url.rstrip("/").removeprefix("https://github.com/")
 
 
-def check_wdriver(builder: ModuleType, get: Fetch = fetch) -> Report:
+def check_wifi(builder: ModuleType, get: Fetch = fetch) -> Report:
     pins = builder.PINS
     report = Report(", ".join(f"{b} {p.commit[:7]}" for b, p in pins.items()), name="USB Wi-Fi driver (aic8800d80)",
                     short="The driver", newest="branch heads")
@@ -431,8 +431,8 @@ def check_wdriver(builder: ModuleType, get: Fetch = fetch) -> Report:
         heads.append(f"{branch} {head}")
         if ahead:
             report.drift.append(f"{branch} is {ahead} commit{'s' if ahead != 1 else ''} past the pin {pin.commit[:7]} "
-                                f"(newest {head}, {date}): a new version of BC-250 USB Wi-Fi could move PINS in "
-                                f"apps/wdriver/usb_wifidriver/builder.py, after the driver is built and tried on the "
+                                f"(newest {head}, {date}): a new version of BC-250 Wi-Fi Adapter could move PINS in "
+                                f"apps/wifi/wifi_adapter/builder.py, after the driver is built and tried on the "
                                 f"board with the stick. {compare.get('html_url', '')}")
         else:
             report.fine.append(f"{branch} has no commit after the pin {pin.commit[:7]}")
@@ -552,7 +552,7 @@ def check_ffmpeg(ffmpeg: str, libva: str, get: Fetch = fetch) -> Report:
 
 @dataclass
 class Firmware:
-    """One firmware file USB HD Cam downloads, pinned at a commit of a GitHub repository (firmware.PINNED)."""
+    """One firmware file BC-250 Webcam downloads, pinned at a commit of a GitHub repository (firmware.PINNED)."""
     model: str
     repo: str
     commit: str
@@ -560,7 +560,7 @@ class Firmware:
     sha256: str
 
 
-def load_firmware(path: Path = HDCAM_FIRMWARE) -> list[Firmware]:
+def load_firmware(path: Path = WEBCAM_FIRMWARE) -> list[Firmware]:
     """firmware.py's PINNED, read without importing the app: each Pinned(url=..., sha256=...)."""
     found = []
     for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
@@ -577,10 +577,10 @@ def load_firmware(path: Path = HDCAM_FIRMWARE) -> list[Firmware]:
     return found
 
 
-def check_hdcam(pins: list[Firmware], get: Fetch = fetch) -> Report:
+def check_webcam(pins: list[Firmware], get: Fetch = fetch) -> Report:
     """Each pinned firmware file: still there at the pinned commit with its SHA-256, and the same on the repository's
     default branch (a changed or removed file there means a new version of the app could follow it)."""
-    report = Report(", ".join(f"{p.model} {p.commit[:7]}" for p in pins), name="USB HD Cam's firmware",
+    report = Report(", ".join(f"{p.model} {p.commit[:7]}" for p in pins), name="BC-250 Webcam's firmware",
                     short="The firmware", newest="default branch")
     moved = []
     for pin in pins:
@@ -590,7 +590,7 @@ def check_hdcam(pins: list[Firmware], get: Fetch = fetch) -> Report:
         except CheckError as error:
             if ": GitHub answered 404" not in str(error):
                 raise
-            report.drift.append(f"{pin.model}'s {pin.path} is gone from {pin.repo} at {pin.commit[:7]}: USB HD Cam "
+            report.drift.append(f"{pin.model}'s {pin.path} is gone from {pin.repo} at {pin.commit[:7]}: BC-250 Webcam "
                                 f"cannot download it any more.")
             continue
         if pinned != pin.sha256:
@@ -609,8 +609,8 @@ def check_hdcam(pins: list[Firmware], get: Fetch = fetch) -> Report:
             continue
         if head != pin.sha256:
             moved.append(pin.model)
-            report.drift.append(f"{pin.model}'s {pin.path} changed on {pin.repo}'s default branch: a new version of USB "
-                                f"HD Cam could pin it (PINNED in apps/hdcam/usb_hdcam/firmware.py), after it is tried "
+            report.drift.append(f"{pin.model}'s {pin.path} changed on {pin.repo}'s default branch: a new version of "
+                                f"BC-250 Webcam could pin it (PINNED in apps/webcam/webcam/firmware.py), after it is tried "
                                 f"with the camera. https://github.com/{pin.repo}/commits/HEAD/{pin.path}")
         else:
             report.fine.append(f"{pin.model}'s file is the same on the default branch")
@@ -619,9 +619,9 @@ def check_hdcam(pins: list[Firmware], get: Fetch = fetch) -> Report:
 
 
 def check_speedtest(version: str, get: Fetch = fetch) -> Report:
-    """BC-250 Bazzite Test's development tool installs one release of Ookla's speedtest CLI (SPEEDTEST_VERSION); the
+    """BC-250 Board Test's development tool installs one release of Ookla's speedtest CLI (SPEEDTEST_VERSION); the
     test itself runs whichever is installed. Ookla publishes no API: its Homebrew formula names the current one."""
-    report = Report(version, name="Ookla's speedtest CLI (BC-250 Bazzite Test)", short="speedtest", held="installs",
+    report = Report(version, name="Ookla's speedtest CLI (BC-250 Board Test)", short="speedtest", held="installs",
                     newest="current")
     formula = get(SPEEDTEST_FORMULA).decode("utf-8", "replace")
     found = re.search(r'^\s*version "([^"]+)"', formula, re.MULTILINE)
@@ -645,12 +645,12 @@ CHECKS = {"shadps4": ("shadPS4", lambda: check_shadps4(load_shadps4_pin())),
           "directmesh": ("DirectMesh", lambda: check_release(load_release("directmesh"))),
           "vita3k": ("Vita3K", lambda: check_build(load_build("vita3k"))),
           "xenia": ("Xenia", lambda: check_build(load_build("xenia"))),
-          "wdriver": ("USB Wi-Fi driver", lambda: check_wdriver(load_loader(BUILDER, "wdriver_builder_pin"))),
+          "wifi": ("USB Wi-Fi driver", lambda: check_wifi(load_loader(BUILDER, "wifi_builder_pin"))),
           "mesa": ("Mesa", lambda: check_mesa(shell_value(MESH, "MESA_VER"),
                                               ACE_PATCH.read_text(encoding="utf-8"))),
           "ffmpeg": ("FFmpeg and libva", lambda: check_ffmpeg(shell_value(FFMPEG_BUILD, "FFMPEG_VERSION"),
                                                              shell_value(FFMPEG_BUILD, "LIBVA_VERSION"))),
-          "hdcam": ("USB HD Cam's firmware", lambda: check_hdcam(load_firmware())),
+          "webcam": ("BC-250 Webcam's firmware", lambda: check_webcam(load_firmware())),
           "speedtest": ("speedtest CLI", lambda: check_speedtest(shell_value(SPEEDTEST_TOOL, "SPEEDTEST_VERSION")))}
 
 

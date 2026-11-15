@@ -29,7 +29,7 @@ GAP = 8
 TIPS = {
     "vram_used": ("VRAM in use: {used} of the {split} split. The split is the part of the 16 GB the GPU keeps for "
                   "itself, set in CMOS and read at boot. The screen's framebuffers must fit in it: when a game "
-                  "fills it, the next frame cannot be shown and the session ends (Bazzite Test, test 37)."),
+                  "fills it, the next frame cannot be shown and the session ends (Board Test, test 37)."),
     "vram_free": "Free VRAM: {mib} of the split is not in use now. Linux cannot use it for anything else.",
     "vram": "The VRAM split: {mib}, the part of the 16 GB the GPU keeps for itself, set in CMOS and read at boot.",
     "gtt": ("GTT in use: the GPU borrows {mib} of system RAM now. When the VRAM split is full, the GPU grows into "

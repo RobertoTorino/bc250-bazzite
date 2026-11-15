@@ -24,8 +24,8 @@ name = "Shared core"
 launchers = []
 
 [app.check]
-name = "BC-250 Bazzite Test"
-launchers = ["~/.local/bin/bc250-bazzite-test"]
+name = "BC-250 Board Test"
+launchers = ["~/.local/bin/bc250-board-test"]
 
 [app.gpu]
 name = "BC-250 GPU Manager"
@@ -52,20 +52,20 @@ name = "BC-250 Persistent ACPI"
 launchers = ["~/.local/bin/bc250-persistent-acpi-gui"]
 
 [app.overlay]
-name = "System Overlay"
+name = "BC-250 System Overlay"
 launchers = ["~/.local/bin/bc250-system-overlay"]
 
-[app.ips35]
-name = "USB IPS3.5"
-launchers = ["~/.local/bin/bc250-usb-ips35"]
+[app.turing]
+name = "BC-250 Turing Screen"
+launchers = ["~/.local/bin/bc250-turing-screen"]
 
-[app.hdcam]
-name = "USB HD Cam"
-launchers = ["~/.local/bin/bc250-usb-hdcam"]
+[app.webcam]
+name = "BC-250 Webcam"
+launchers = ["~/.local/bin/bc250-webcam"]
 
-[app.hdcontrol]
-name = "USB HD Control"
-launchers = ["~/.local/bin/bc250-usb-hdcontrol"]
+[app.controller]
+name = "BC-250 Controller"
+launchers = ["~/.local/bin/bc250-controller"]
 
 [app.bios]
 name = "BC-250 BIOS Reader"
@@ -87,17 +87,17 @@ launchers = ["~/.local/bin/bc250-memory-manager"]
 name = "BC-250 Fan Control"
 launchers = ["~/.local/bin/bc250-fan-control"]
 
-[app.wdriver]
-name = "BC-250 USB Wi-Fi"
-launchers = ["~/.local/bin/bc250-usb-wifi"]
+[app.wifi]
+name = "BC-250 Wi-Fi Adapter"
+launchers = ["~/.local/bin/bc250-wifi-adapter"]
 
 [app.cec]
 name = "BC-250 CEC Manager"
 launchers = ["~/.local/bin/bc250-hdmi-cec"]
 
 [app.sftp]
-name = "Bazzite SFTP Tools"
-launchers = ["~/.local/bin/bc250-bazzite-sftp-tools"]
+name = "BC-250 SFTP Tools"
+launchers = ["~/.local/bin/bc250-sftp-tools"]
 
 [app.consoles]
 name = "BC-250 PS Remote Play"
@@ -136,8 +136,8 @@ name = "Bazzite DatStation"
 launchers = ["~/.local/bin/bazzite-datstation"]
 
 [app.ssd]
-name = "SSD Check"
-launchers = ["~/.local/bin/bc250-ssd"]
+name = "BC-250 SSD Check"
+launchers = ["~/.local/bin/bc250-ssd-check"]
 
 [app.btpair]
 name = "BC-250 Bluetooth Pairing"
@@ -161,11 +161,11 @@ anchor = "reading-the-bios-flash-chip-optional"
 [[tool]]
 name = "bluetoothctl"
 rpm = "bluez"
-description = "BlueZ's command line for Bluetooth. USB HD Control uses it to end a controller's Bluetooth connection: so that Linux takes its USB cable instead, or to switch it off. Bluetooth Pairing searches for, pairs and connects the listed devices with it."
+description = "BlueZ's command line for Bluetooth. BC-250 Controller uses it to end a controller's Bluetooth connection: so that Linux takes its USB cable instead, or to switch it off. Bluetooth Pairing searches for, pairs and connects the listed devices with it."
 executables = ["bluetoothctl"]
 
 [[tool.source]]
-owner = "hdcontrol"
+owner = "controller"
 need = "optional"
 usage = "Use the cable disconnects a controller that stayed on Bluetooth while plugged in; Turn Bluetooth off and the idle service switch a controller off."
 anchor = "on-the-cable-and-over-bluetooth"
@@ -198,7 +198,7 @@ need = "required"
 usage = "Password prompt for turning the thermal guard on, changing it and turning it off."
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "Password prompt for installing, updating and removing the Wi-Fi driver and its service."
 
@@ -218,13 +218,13 @@ need = "required"
 usage = "Password prompt for installing and removing the DirectMesh driver."
 
 [[tool.source]]
-owner = "ips35"
+owner = "turing"
 need = "required"
 usage = "Password prompt for adding the udev rule that gives your user the screen's port (Allow access)."
 anchor = "access-to-the-screen"
 
 [[tool.source]]
-owner = "hdcam"
+owner = "webcam"
 need = "required"
 usage = "Password prompt for adding the udev rule that gives your user the camera's boot loader (Allow access)."
 anchor = "access-to-the-camera"
@@ -296,7 +296,7 @@ anchor = "requirements"
 name = "stress"
 brew = "stress"
 rpm = "stress"
-description = "A simple CPU and memory load generator, older than stress-ng. Bazzite Test uses it only when stress-ng is missing."
+description = "A simple CPU and memory load generator, older than stress-ng. Board Test uses it only when stress-ng is missing."
 executables = ["stress"]
 
 [[tool.source]]
@@ -519,7 +519,7 @@ usage = "SMART information for NVMe diagnostics."
 name = "fio"
 brew = "fio"
 rpm = "fio"
-description = "A flexible disk benchmark. Bazzite Test uses it read-only, for the random 4K read speed of the system disk. It reads the raw partition, so it runs as root, and only a system-wide fio is used (rpm-ostree install fio)."
+description = "A flexible disk benchmark. Board Test uses it read-only, for the random 4K read speed of the system disk. It reads the raw partition, so it runs as root, and only a system-wide fio is used (rpm-ostree install fio)."
 executables = ["fio"]
 root = true
 
@@ -532,7 +532,7 @@ usage = "Random 4K disk read test."
 name = "speedtest"
 brew = "speedtest-cli"
 rpm = "speedtest-cli"
-description = "An internet speed test: download, upload and latency. Bazzite Test runs Ookla's speedtest CLI (command speedtest) when it is there, else speedtest-cli; one of the two is enough."
+description = "An internet speed test: download, upload and latency. Board Test runs Ookla's speedtest CLI (command speedtest) when it is there, else speedtest-cli; one of the two is enough."
 executables = ["speedtest", "speedtest-cli"]
 
 [[tool.source]]
@@ -692,18 +692,18 @@ need = "required"
 usage = "Install, start and remove the thermal guard's service; the guard powers the board off with it at the shutdown limit."
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "Install, start and remove the Wi-Fi driver's service, which loads the driver at boot."
 
 [[tool.source]]
-owner = "hdcam"
+owner = "webcam"
 need = "required"
 usage = "Tell your user's systemd about the load service, which sends the camera's firmware when it is plugged in."
 anchor = "loading-by-itself"
 
 [[tool.source]]
-owner = "hdcontrol"
+owner = "controller"
 need = "required"
 usage = "Enable your user's service that switches an unused controller on Bluetooth off."
 anchor = "the-controller-box"
@@ -715,7 +715,7 @@ description = "Reads the systemd journal: the system, service and kernel logs."
 executables = ["journalctl"]
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "Read the chip's answer and the loader's messages from the kernel log."
 
@@ -796,12 +796,12 @@ need = "optional"
 usage = "The thermal guard's warnings on the desktop; without it they go only to the journal and the app."
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "optional"
 usage = "The driver service's word on the desktop when it rebuilt the driver after a kernel update, or could not."
 
 [[tool.source]]
-owner = "hdcontrol"
+owner = "controller"
 need = "optional"
 usage = "The idle service's word on the desktop when it switched an unused controller off, or could not; without it only the journal has it."
 anchor = "the-controller-box"
@@ -1132,15 +1132,15 @@ owner = "overlay"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]
-owner = "ips35"
+owner = "turing"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]
-owner = "hdcam"
+owner = "webcam"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]
-owner = "hdcontrol"
+owner = "controller"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]
@@ -1188,7 +1188,7 @@ owner = "fan"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]
-owner = "wdriver"
+owner = "wifi"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]
@@ -1233,7 +1233,7 @@ specifier = ">=2.5,<3"
 
 [[dependency]]
 name = "PyQt6-Charts"
-description = "Qt's chart module for PyQt6. Bazzite Test draws its benchmark and history graphs with it, the GPU Manager its clock, load and temperature graphs."
+description = "Qt's chart module for PyQt6. Board Test draws its benchmark and history graphs with it, the GPU Manager its clock, load and temperature graphs."
 
 [[dependency.source]]
 owner = "check"
@@ -1247,11 +1247,11 @@ specifier = ">=6.11,<7"
 name = "gcc"
 brew = "gcc"
 rpm = "gcc"
-description = "The C compiler. BC-250 USB Wi-Fi builds the Wi-Fi driver with it against the running kernel; Bazzite's image ships it with the kernel's build tree (kernel-devel)."
+description = "The C compiler. BC-250 Wi-Fi Adapter builds the Wi-Fi driver with it against the running kernel; Bazzite's image ships it with the kernel's build tree (kernel-devel)."
 executables = ["gcc"]
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "Build the Wi-Fi driver for the running kernel, in the app and in its service after a kernel update."
 
@@ -1263,7 +1263,7 @@ description = "Runs the kernel's build system for an out-of-tree module."
 executables = ["make"]
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "Build the Wi-Fi driver with the kernel's build tree."
 
@@ -1275,7 +1275,7 @@ description = "Fetches the driver's sources at the pinned commit."
 executables = ["git"]
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "Fetch the Wi-Fi driver's sources, one commit, the first time a branch is built."
 
@@ -1286,7 +1286,7 @@ description = "Loads and unloads kernel modules (insmod, modprobe, rmmod)."
 executables = ["insmod", "modprobe", "rmmod"]
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "The driver's service loads the Wi-Fi driver's two modules at boot and unloads them when stopped."
 
@@ -1297,7 +1297,7 @@ description = "Ejects a removable disk. An AIC8800 stick leaves its storage mode
 executables = ["eject"]
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "Switch the stick out of storage mode, from the udev rule and from the driver's service."
 
@@ -1308,25 +1308,25 @@ description = "Controls udev: reloads its rules after a change."
 executables = ["udevadm"]
 
 [[tool.source]]
-owner = "wdriver"
+owner = "wifi"
 need = "required"
 usage = "Reload udev's rules after installing or removing the stick's rule."
 
 [[tool.source]]
-owner = "ips35"
+owner = "turing"
 need = "required"
 usage = "Applies the rule that gives your user the screen's port, at once, without unplugging it."
 anchor = "access-to-the-screen"
 
 [[tool.source]]
-owner = "hdcam"
+owner = "webcam"
 need = "required"
 usage = "Applies the rule that gives your user the camera's boot loader, at once, without unplugging it."
 anchor = "access-to-the-camera"
 
 [[dependency]]
 name = "paramiko"
-description = "An SSH and SFTP library for Python. Bazzite SFTP Tools connects to the host, transfers files and runs the sshd commands of the Server Manager with it."
+description = "An SSH and SFTP library for Python. BC-250 SFTP Tools connects to the host, transfers files and runs the sshd commands of the Server Manager with it."
 
 [[dependency.source]]
 owner = "sftp"

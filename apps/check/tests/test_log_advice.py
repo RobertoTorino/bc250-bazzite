@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-SCRIPT = Path(__file__).resolve().parents[1] / "test-bazzite.sh"
+SCRIPT = Path(__file__).resolve().parents[1] / "test-board.sh"
 
 pytestmark = pytest.mark.skipif(shutil.which("bash") is None, reason="needs bash")
 

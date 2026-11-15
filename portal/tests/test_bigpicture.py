@@ -205,7 +205,7 @@ def test_view_has_a_tile_per_app_and_shows_each_state(made):
     window, _ = made()
     assert set(window.big.tiles) == set(window.states)
     check = window.big.tiles["check"]
-    assert check.name == "Bazzite Test" and check.pixmap and not check.pixmap.isNull()
+    assert check.name == "Board Test" and check.pixmap and not check.pixmap.isNull()
     window.states["check"].show_state(False, "")
     window.big.sync(window.states)
     assert window.big.tiles["check"].status == "Not installed"

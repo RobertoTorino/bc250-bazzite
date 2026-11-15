@@ -38,7 +38,7 @@ STOCK = {
 }
 AMD_SETUP = ("3A997502-647A-4C82-998E-52EF9486A247", "AmdSetup")
 SETUP_FORMSET = "7B59104A-C00D-4158-87FF-F04D6396A915"
-# Version strings, with the same rules as bazzite-test's BIOS check.
+# Version strings, with the same rules as board-test's BIOS check.
 STOCK_VERSION = re.compile(r"^[LP]?([1-5])\.00$")
 MODDED_VERSION = re.compile(r"meimei|mod|unlock", re.IGNORECASE)
 

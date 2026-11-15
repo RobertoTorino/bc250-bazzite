@@ -1,8 +1,8 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![BC-250 Bazzite Test](../assets/check/bc250-bazzite-test.webp){ .app-logo }
+![BC-250 Board Test](../assets/check/bc250-board-test.webp){ .app-logo }
 
-# BC-250 Bazzite Test
+# BC-250 Board Test
 
 Read-only diagnostics, stress test and benchmarks for an **AMD BC-250** board (Cyan Skillfish APU,
 `gfx1013`, PCI `1002:13fe`) running **Bazzite** (Fedora Atomic / rpm-ostree).
@@ -15,7 +15,7 @@ writes one temporary file and removes it.
 
 ## Download and install
 
-BC-250 Bazzite Test is part of the [BC250 Bazzite Suite](https://github.com/RobertoTorino/bc250-bazzite) and is always installed with it: install
+BC-250 Board Test is part of the [BC250 Bazzite Suite](https://github.com/RobertoTorino/bc250-bazzite) and is always installed with it: install
 the suite's **portal** (see [Install](../install.md)), and this app comes along. It can also be installed on its own from
 its release on the suite's [Releases](https://github.com/RobertoTorino/bc250-bazzite/releases) page: `bc250-check-v<version>.tar.gz` with a
 `SHA256SUMS` file. To be notified of new releases, click **Watch → Custom → Releases** on the suite page.
@@ -38,25 +38,25 @@ cd bc250-check-v*/
 ./install.sh
 ```
 
-**3. Start** *BC-250 Bazzite Test* from the app menu or the icon on your Desktop, or run
-`bc250-bazzite-test` in a terminal. The extracted download folder can be deleted.
+**3. Start** *BC-250 Board Test* from the app menu or the icon on your Desktop, or run
+`bc250-board-test` in a terminal. The extracted download folder can be deleted.
 
 What `install.sh` does:
 
 * copies the app, with the `bc250_core` it was released with, to `/opt/bc250-check-v<version>`
-  (root-owned), points `/opt/bc250-bazzite-test` at it and removes older versions;
+  (root-owned), points `/opt/bc250-board-test` at it and removes older versions;
 * uses the suite's shared venv `~/.local/share/bc250-bazzite-suite/venv` with PyQt6 (created on first use;
   the wheels bundle Qt, nothing else is needed; ~100 MB download the first time). The venv is removed with
   the last suite app that uses it;
-* adds the launcher `~/.local/bin/bc250-bazzite-test`, an app menu entry and a Desktop icon
+* adds the launcher `~/.local/bin/bc250-board-test`, an app menu entry and a Desktop icon
   (`./install.sh --no-desktop-shortcut` skips the Desktop icon).
 
 **Optional tools** some tests use (stress-ng, vkpeak, memtest_vulkan, fio, speedtest, …) can be
-installed interactively with `/opt/bc250-bazzite-test/development/tools/install-requirements.sh` —
+installed interactively with `/opt/bc250-board-test/development/tools/install-requirements.sh` —
 it says what each group is for and asks per group.
 
 > **Why `/opt`?** The test engine runs as root through sudo. A release build therefore refuses to
-> run `test-bazzite.sh` unless the file and every folder above it are owned by root and writable by
+> run `test-board.sh` unless the file and every folder above it are owned by root and writable by
 > root only, and the file matches the SHA-256 recorded when the release was built. A copy in your
 > home directory fails that check on purpose.
 
@@ -66,8 +66,8 @@ It replaces the old version; your settings and the history are kept — they liv
 **Uninstall:** uninstalling the portal removes this app too. On its own:
 
 ```shell
-/opt/bc250-bazzite-test/install.sh --uninstall           # keeps settings, history and reports
-/opt/bc250-bazzite-test/install.sh --uninstall --purge   # removes those too
+/opt/bc250-board-test/install.sh --uninstall           # keeps settings, history and reports
+/opt/bc250-board-test/install.sh --uninstall --purge   # removes those too
 ```
 
 ## Reporting problems
@@ -104,13 +104,13 @@ about your system: read it before you post it. Security problems: see [SECURITY.
 * The app remembers its window size, the last page, the panel sizes and the stress settings.
 * **Show Logs** lists earlier runs, colored like the live output; **Settings** has privacy options, a
   system overview, log cleanup, version information and **Print results**: it shows the Base and
-  Extended System scores and the other header boxes as a compact "BC-250 Bazzite Test Results" card,
+  Extended System scores and the other header boxes as a compact "BC-250 Board Test Results" card,
   easy to compare with other users. Under the card: **Save…** saves it as a PNG where you choose (results.png
   in Downloads at first) and opens it; **Copy** puts it on the clipboard, to paste in a chat or a forum post;
   **Share** sends it to a phone paired with KDE Connect (one entry per phone in reach), opens your mail app with
   it attached (**Email…**), or shows it in the file manager (**Show in file manager**), whose own right-click
   **Share** has the rest of what KDE offers (Imgur, Telegram, Nextcloud, Bluetooth). Share writes the card to
-  `results-card.png` in `~/Desktop/bc250-bazzite-test/` first, overwritten each time.
+  `results-card.png` in `~/Desktop/bc250-board-test/` first, overwritten each time.
 * **Game details** records a game while you play, like MangoHud's logging: copy its launch line into the
   game's *Properties → Launch options* in Steam (it works alongside `mangohud %command%`). Every session
   becomes a graph of FPS, the game's CPU/GPU share, total load, GPU and CPU clocks and temperatures,
@@ -224,7 +224,7 @@ a password) or make sudo forget the password right away.
 
 ### Logs
 
-Every run is saved as `~/.local/share/bc250-bazzite-test/logs/<YYYYmmdd-HHMMSS>_<scope>.log`. **Show Logs** on a
+Every run is saved as `~/.local/share/bc250-board-test/logs/<YYYYmmdd-HHMMSS>_<scope>.log`. **Show Logs** on a
 page lists that page's runs; *Show all logs* lists every run. With *Mask personal data in saved GUI logs* on
 (the default, *Settings › Privacy*), host and user name, home folder, serial numbers, MAC and IP addresses and
 the speed test's ISP and result URL are replaced by placeholders in these files; the terminal shows everything.
@@ -241,11 +241,11 @@ ALL* also empties the history. The full reports are owned by root, so removing t
 
 ### History
 
-Every result is stored in a small SQLite database, `~/.local/share/bc250-bazzite-test/history.db`: per run the
+Every result is stored in a small SQLite database, `~/.local/share/bc250-board-test/history.db`: per run the
 date, scope, active CUs and cores/threads (kernel version and mitigation state only when turned on in
 *Settings › Privacy*); per test the status and the number of hints; and the numbers worth comparing (benchmark
 scores, stress clocks, temperatures and power, disk and internet speeds). Full reports that are not in the
-history yet (in `/var/log/bc250-bazzite-test` and the Desktop folder) are imported once, at startup. The
+history yet (in `/var/log/bc250-board-test` and the Desktop folder) are imported once, at startup. The
 database grows by a few KB per run. The history and the logs are readable by your user only. The app checks the
 history at every start: when it is damaged or was changed outside the app, it is kept aside as
 `history.db.damaged-<date>` and a new, empty history starts.
@@ -318,7 +318,7 @@ older sessions keep their graphs.
 
 ## Output files
 
-All files go to `/var/log/bc250-bazzite-test/`:
+All files go to `/var/log/bc250-board-test/`:
 
 | File                                       | Contents                                                                               |
 |--------------------------------------------|----------------------------------------------------------------------------------------|
@@ -333,17 +333,17 @@ All files go to `/var/log/bc250-bazzite-test/`:
 | `bc250-speedtest-<YYYYmmdd-HHMMSS>.json`   | Raw speed test result, only by the internet speed test.                                |
 | `bc250-speedtest-history.csv`              | One line per speed test: interface, server, speeds, idle/loaded latency, jitter, loss. |
 
-They are copied to `~/Desktop/bc250-bazzite-test/` of the desktop user at the end of the run for easy
+They are copied to `~/Desktop/bc250-board-test/` of the desktop user at the end of the run for easy
 sharing (GUI: *Settings > General > Copy the full reports to Desktop*, on by default; command line:
 skipped with `--no-desktop`).
 During a stress run the files are flushed to disk after every sample, so they survive a hard lockup.
 
 The GUI additionally keeps its own captured output of every run as
-`~/.local/share/bc250-bazzite-test/logs/<YYYYmmdd-HHMMSS>_<scope>.log` — these are not the files above,
+`~/.local/share/bc250-board-test/logs/<YYYYmmdd-HHMMSS>_<scope>.log` — these are not the files above,
 just what the script printed during that run.
 
 In-game monitoring writes one CSV per gameplay session to
-`~/.local/share/bc250-bazzite-test/game-logs/bc250-game-<game>-<YYYYmmdd-HHMMSS>.csv`
+`~/.local/share/bc250-board-test/game-logs/bc250-game-<game>-<YYYYmmdd-HHMMSS>.csv`
 (columns `elapsed_s, fps, game_cpu_pct, game_gpu_pct, cpu_pct, gpu_pct, sclk_mhz, mclk_mhz,
 gpu_temp_c, gpu_power_w, vram_used_mib, gtt_used_mib, vddgfx_mv, fan_rpm, cpu_temp_c, cpu_mhz_avg,
 mem_avail_mib`); the **Game details** page opens them as graphs. Next to each CSV is a small `.json`
@@ -423,10 +423,10 @@ test lists every Wi-Fi adapter it finds, with its USB or PCI ID and its driver, 
 * **firmware missing**: the driver took the adapter but did not get its firmware file at this boot;
 * **no driver**: the running kernel has no driver for the stick's ID, so it does not work on Bazzite as it is;
 * **storage mode**: the stick shows up as a small disk with the Windows driver. An AIC8800D80 stick (the UGREEN
-  AX900 and others) needs [BC-250 USB Wi-Fi](wdriver.md), which builds its driver; another stick switches when
+  AX900 and others) needs [BC-250 Wi-Fi Adapter](wifi.md), which builds its driver; another stick switches when
   its disk is ejected.
 
-With BC-250 USB Wi-Fi's driver installed, the test also checks its service: enabled, its last run without an
+With BC-250 Wi-Fi Adapter's driver installed, the test also checks its service: enabled, its last run without an
 error, the driver built for the running kernel and loaded. The test only reads: it loads no module and switches no
 stick. No adapter at all is reported, not a warning: the network cable needs nothing.
 
@@ -569,7 +569,7 @@ too (memory-bound, so it does not change with CUs).
 
 1. Put the board in its stock configuration (undo any CU unlock and reboot, so 24 CUs), close games, tick
    *Save as baseline (stock board only)* and run test 42 once. This writes
-   `/var/log/bc250-bazzite-test/bench-baseline.json`, the 100 mark for the whole system.
+   `/var/log/bc250-board-test/bench-baseline.json`, the 100 mark for the whole system.
 2. Apply an unlock and run test 42 again (without *Save as baseline*). The CPU and GPU score boxes at the
    top show the result; *Benchmark history* compares all runs.
 
@@ -729,7 +729,7 @@ the RPM packages and downloads `vkpeak`, `memtest_vulkan` and the Ookla `speedte
 
 Also recommended: zswap in front of a disk swapfile instead of Bazzite's zram-only swap, so memory pressure
 does not go straight to the OOM killer (on the BC-250 that can present as a hard freeze). See
-*Swap file recommendation* in [Bazzite Test script](../development/bazzite-test.md#swap-file-recommendation) for the Btrfs-safe commands; tests 14 and 37
+*Swap file recommendation* in [Board Test script](../development/board-test.md#swap-file-recommendation) for the Btrfs-safe commands; tests 14 and 37
 check and report the swap layout.
 
 `vulkan-tools` (which provides `vkcube`) is usually present on Bazzite already. Note that **Flatpak
@@ -974,7 +974,7 @@ with the override. The BIOS route remains an alternative, not a requirement.
 
 Copyright © 2026 Philip.
 
-BC-250 Bazzite Test is free software: you can redistribute it and/or modify it under the terms of the
+BC-250 Board Test is free software: you can redistribute it and/or modify it under the terms of the
 [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html), version 3 or (at your option) any
 later version. It is distributed in the hope that it will be useful, but **without any warranty**; without
 even the implied warranty of merchantability or fitness for a particular purpose.

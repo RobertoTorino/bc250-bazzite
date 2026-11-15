@@ -1,3 +1,14 @@
+Changelog: 15-11-2026 03:58:53
+
+Fixed. Names BC-250 Board Test, BC-250 Webcam, BC-250 Controller, BC-250 Turing Screen, BC-250 Wi-Fi Adapter, BC-250
+SFTP Tools and BC-250 SSD Check by their names, ids and keys where it mentions them (owner, 15-11-2026).
+
+Changelog: 15-11-2026 03:04:04
+
+Fixed. In the suite's own repository NRT looked for the release workflow under its Nexus name,
+release-bc250-bazzite.yml, instead of release.yml: it found no release, offered no app and showed every step of
+the release done. A repository that is one suite itself now has ci.yml and release.yml, whatever its tag prefix.
+
 Changelog: 15-11-2026 01:08:09
 
 Fixed. The handling of a suite made for Windows devices is gone (owner, 15-11-2026): its check-release.ps1 on the

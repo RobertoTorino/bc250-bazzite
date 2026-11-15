@@ -51,7 +51,7 @@ the tooling began as a copy of Nexus's and is this repository's own now: a chang
   board). Do the obvious housekeeping without asking.
 - **Warn before board changes.** Apps that change how the board runs (CU/core unlocks, GPU governor, GPU
   overclocking, ACPI override, the patched RADV of ace, the DirectMesh RADV of mesh, the VRAM split of vram, the
-  thermal guard of fan, the kernel module of wdriver) are marked `changes_board` and the portal asks first. Frame it
+  thermal guard of fan, the kernel module of wifi) are marked `changes_board` and the portal asks first. Frame it
   as standard caution: the apps are software-only and reversible, not "risky". Every such app says what it changes
   (owner, 03-11-2026): its `board_change` in `portal/apps.toml`, a few plain sentences on what it touches, what
   stays after a reboot or a power off, what it never touches (the BIOS, the firmware) and how it is undone, written
@@ -111,7 +111,7 @@ the tooling began as a copy of Nexus's and is this repository's own now: a chang
 
 ## What this is
 
-A **portal** installs and starts the apps listed in its manifest. **check** (BC-250 Bazzite Test) is always
+A **portal** installs and starts the apps listed in its manifest. **check** (BC-250 Board Test) is always
 installed and always listed first; every other listed app is an optional tile. The release tags are
 `bc250-<app>-v<x.y.z>` and `bc250-portal-v<x.y.z>` (`TAG_PREFIX`, owner 15-11-2026; the releases made in Nexus had
 no prefix). The app ids, the launchers and the state folder on the board (`~/.local/share/bc250-bazzite-suite/`)
@@ -127,8 +127,8 @@ graphics, gaming, utilities): the portal, one fullscreen view for the keyboard, 
 The repository is the suite (`tools/suites.py` names it `.`):
 
 - `portal/`: the portal (`bc250_portal`), `apps.toml` (one pinned release per app), its tests and `install.sh`.
-- `apps/<name>/`: check, gpu, upscaler, compute, cores, oc, acpi, overlay, ips35, hdcam, hdcontrol, bios, ace, mesh,
-  vram, fan, wdriver, cec, sftp, consoles, clb, shadps4, rpcs3, ppsspp, pcsx2, vita3k, xenia, datstation, ssd, btpair.
+- `apps/<name>/`: check, gpu, upscaler, compute, cores, oc, acpi, overlay, turing, webcam, controller, bios, ace, mesh,
+  vram, fan, wifi, cec, sftp, consoles, clb, shadps4, rpcs3, ppsspp, pcsx2, vita3k, xenia, datstation, ssd, btpair.
   Each has its own VERSION, CHANGELOG, LICENSE (acpi is MIT; consoles is AGPL-3.0, its protocol code ported from
   chiaki-ng: those files AGPL-3.0-only, its own AGPL-3.0-or-later; clb (BC-250 XB Remote Play, XBOX) is
   GPL-3.0-or-later with protocol code ported from Greenlight and xal-node, MIT, whose notice its README keeps; the

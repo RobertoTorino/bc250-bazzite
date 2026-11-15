@@ -26,12 +26,12 @@ hide:
 <div class="home-card" markdown>
 #### :material-stethoscope: Diagnostics
 
-[Bazzite Test](apps/check.md) checks, stress-tests and benchmarks the board,
+[Board Test](apps/check.md) checks, stress-tests and benchmarks the board,
 [BIOS Reader](apps/bios.md) shows every BIOS setting, hidden menus too, and
-[System Overlay](apps/overlay.md) keeps CPU, GPU, fan and temperatures on top,
-[USB IPS3.5](apps/ips35.md) shows them on a small USB screen,
+[BC-250 System Overlay](apps/overlay.md) keeps CPU, GPU, fan and temperatures on top,
+[Turing Screen](apps/turing.md) shows them on a small USB screen,
 [Fan Control](apps/fan.md) guards the board against overheating, and
-[USB Wi-Fi](apps/wdriver.md) brings the driver for AIC8800D80 Wi-Fi sticks.
+[Wi-Fi Adapter](apps/wifi.md) brings the driver for AIC8800D80 Wi-Fi sticks.
 </div>
 <div class="home-card" markdown>
 #### :material-speedometer: Tuning
@@ -64,8 +64,8 @@ beside the system Mesa.
 #### :material-television: Living room
 
 [BC-250 CEC Manager](apps/cec.md) turns the TV on and off with the board, [SFTP Tools](apps/sftp.md) moves files
-between computers, [USB HD Cam](apps/hdcam.md) makes the PS5 HD Camera a webcam, and
-[USB HD Control](apps/hdcontrol.md) updates the DualSense's firmware.
+between computers, [Webcam](apps/webcam.md) makes the PS5 HD Camera a webcam, and
+[Controller](apps/controller.md) updates the DualSense's firmware.
 </div>
 </div>
 
@@ -93,7 +93,7 @@ Apps that **change the board** are marked, and the portal asks before it install
 ## Get started
 
 Ready to set up your BC-250 board? Download the newest portal on the board (the latest
-release on GitHub), check it with SHA256 and run its installer. It installs BC-250 Bazzite Test with it, every other app
+release on GitHub), check it with SHA256 and run its installer. It installs BC-250 Board Test with it, every other app
 installs from the portal.
 
 [:material-download: Download](https://github.com/RobertoTorino/bc250-bazzite/releases/latest){ .md-button .md-button--primary }
@@ -111,7 +111,7 @@ Only the apps marked **changes the board**: the unlocks, the GPU governor, GPU o
 VRAM split and the patched GPU drivers. They are software-only and can be undone, and the portal asks before it
 installs or opens them. Each of their chapters opens with a **Changes the board** box that says what the app
 touches, what stays after a reboot or a power off, what it never touches (the BIOS, the firmware) and how the
-change is undone; the portal shows the same text when you hover over the tile. BC-250 Bazzite Test and BIOS
+change is undone; the portal shows the same text when you hover over the tile. BC-250 Board Test and BIOS
 Reader only read.
 
 ### How do I undo a change?

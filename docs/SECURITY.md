@@ -51,7 +51,7 @@ app through an app release that requires that version. If no release does yet, r
 - The apps run as your own user. Their installers refuse to run with sudo, and so do the bisect scripts. Only the
   steps that need root ask for your password, through sudo in a terminal or pkexec in a desktop dialog.
 - Apps whose scripts run as root are installed root-owned under `/opt`, so a normal user cannot change code that
-  sudo runs. Bazzite Test never runs a tool as root from a folder you can write to, such as `~/.local/bin`.
+  sudo runs. Board Test never runs a tool as root from a folder you can write to, such as `~/.local/bin`.
 - The tools that only work as root are marked **Needs root.** in [Nexus Deps](development/dashboard.md#deps).
 - The portal asks before it installs or opens an app that changes how the board runs (unlocks, clocks, voltages,
   firmware tables, the VRAM split, the patched driver). All of them are software-only and can be undone.

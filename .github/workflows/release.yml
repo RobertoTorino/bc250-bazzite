@@ -19,7 +19,7 @@ name: Release
 #   in vain.
 #
 # The assets are <tag>.tar.gz, SHA256SUMS and the notes, all built by tools/build_release.py, so a local build has
-# the same content (the suite's wiki, "Checking a release"). A portal release bundles the release of Bazzite Test
+# the same content (the suite's wiki, "Checking a release"). A portal release bundles the release of Board Test
 # (check) that portal/apps.toml pins (downloaded from its own release and checked against the pin) and requires
 # every pinned tag to exist. GitHub's "Latest" is the newest portal (publish_release.sh, and Publish for a draft), so
 # the releases page and the app releases' notes lead there.
@@ -289,7 +289,7 @@ jobs:
           python tools/check_versions.py
           python tools/check_manifest.py --require-tags
 
-      - name: Bundled Bazzite Test
+      - name: Bundled Board Test
         run: |
           bt=$(python -c 'import tomllib; print(tomllib.load(open("portal/apps.toml", "rb"))["apps"]["check"]["tag"])')
           mkdir -p bundle

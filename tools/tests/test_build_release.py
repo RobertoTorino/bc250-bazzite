@@ -68,12 +68,12 @@ def test_bazzite_test_layout(bt_release):
     archive = bt_release / f"{BT_TAG}.tar.gz"
     names = members(archive)
     top = BT_TAG
-    assert {f"{top}/install.sh", f"{top}/test-bazzite.sh", f"{top}/bazzite_check/__main__.py",
-            f"{top}/bc250_core/widgets.py", f"{top}/bazzite_check/_build_info.py"} <= set(names)
+    assert {f"{top}/install.sh", f"{top}/test-board.sh", f"{top}/board_test/__main__.py",
+            f"{top}/bc250_core/widgets.py", f"{top}/board_test/_build_info.py"} <= set(names)
     assert all(n == top or n.startswith(top + "/") for n in names)
     assert not any("/tests/" in n or "__pycache__" in n or n.endswith(".pyc") for n in names)
-    engine = read(archive, f"{top}/test-bazzite.sh")
-    info = read(archive, f"{top}/bazzite_check/_build_info.py").decode()
+    engine = read(archive, f"{top}/test-board.sh")
+    info = read(archive, f"{top}/board_test/_build_info.py").decode()
     assert hashlib.sha256(engine).hexdigest() in info              # release build: engine hash recorded
     assert 'BUILD_DATE = "2026-09-21 14:13 UTC"' in info                 # the commit time, not the clock: reproducible
     manual = (br.SUITE / "docs" / "apps" / "check.md").read_bytes()
@@ -84,9 +84,9 @@ def test_modes_and_owner(bt_release):
     names = members(bt_release / f"{BT_TAG}.tar.gz")
     top = BT_TAG
     assert names[f"{top}/install.sh"].mode == 0o755
-    assert names[f"{top}/test-bazzite.sh"].mode == 0o755
-    assert names[f"{top}/bazzite_check/__init__.py"].mode == 0o644
-    assert names[f"{top}/bazzite_check"].mode == 0o755 and names[f"{top}/bazzite_check"].isdir()
+    assert names[f"{top}/test-board.sh"].mode == 0o755
+    assert names[f"{top}/board_test/__init__.py"].mode == 0o644
+    assert names[f"{top}/board_test"].mode == 0o755 and names[f"{top}/board_test"].isdir()
     assert {(m.uid, m.gid, m.uname) for m in names.values()} == {(0, 0, "root")}
     assert {m.mtime for m in names.values()} == {1790000000}
 
@@ -102,7 +102,7 @@ def test_sums_and_notes(bt_release):
     assert notes.index("use the portal, not this file") < notes.index("### Install")   # an app: the portal first
     assert br.INDEX_URL in notes
     version = BT_TAG.split("-v")[1]
-    assert (bt_release / "title.txt").read_text() == f"BC250 Bazzite Suite: BC-250 Bazzite Test {version}\n"
+    assert (bt_release / "title.txt").read_text() == f"BC250 Bazzite Suite: BC-250 Board Test {version}\n"
 
 
 def test_reproducible(bt_release, tmp_path):
@@ -169,7 +169,7 @@ def test_portal_needs_and_verifies_bundle(bt_release, pinned, tmp_path):
     archive = tmp_path / "b" / f"{PORTAL_TAG}.tar.gz"
     names = members(archive)
     assert f"{PORTAL_TAG}/bundled/{BT_TAG}/install.sh" in names
-    assert f"{PORTAL_TAG}/bundled/{BT_TAG}/bazzite_check/_build_info.py" in names
+    assert f"{PORTAL_TAG}/bundled/{BT_TAG}/board_test/_build_info.py" in names
     assert f"{PORTAL_TAG}/bc250_core/platform.py" in names and f"{PORTAL_TAG}/apps.toml" in names
     notes = (tmp_path / "b" / "notes.md").read_text()
     assert BT_TAG in notes and "use the portal, not this file" not in notes

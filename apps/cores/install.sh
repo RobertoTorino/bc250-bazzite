@@ -91,7 +91,32 @@ remove_menu_entries() {
 
 [ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the venv and the launchers belong in your home folder."
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 if $UNINSTALL; then
+    found=false
+    installed_here "$BISECT_LAUNCHER" "$UNLOCK_LAUNCHER" "$DATA_DIR/applications/$BISECT_DESKTOP" \
+        "$DATA_DIR/applications/$UNLOCK_DESKTOP" "$DESKTOP_DIR/$BISECT_DESKTOP" "$DESKTOP_DIR/$UNLOCK_DESKTOP" \
+        "$DATA_DIR/bc250-cores-bisect-gui" "$DATA_DIR/bc250-cores-unlock-gui" \
+        "$DATA_DIR/applications/bc250-cores-bisect.desktop" \
+        "$DATA_DIR/icons/hicolor/512x512/apps/bc250-cores-bisect.png" \
+        "$DATA_DIR/icons/hicolor/512x512/apps/bc250-cores-unlock.png" \
+        "$DATA_DIR/icons/hicolor/128x128/apps/bc250-cores-bisect.png" \
+        "$DATA_DIR/icons/hicolor/128x128/apps/bc250-cores-unlock.png" "$LINK" "$OPT_DIR/$APP_ID"-v* \
+        "$DATA_DIR/$APP_ID-app" && found=true
+    $PURGE && installed_here "$AUTO_UNIT" "${STATE_DIR:?}" "${CONFIG_DIR:?}/$APP_ID" && found=true
+    if ! $found; then
+        info "$APP_NAME is not installed: nothing to remove."
+        exit 0
+    fi
     info "Removing the launchers and the menu entries"
     remove_menu_entries
     remove_legacy_install

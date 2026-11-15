@@ -72,7 +72,7 @@ fakeroot -- bash "$T/stage/install.sh" > "$T/log3" 2>&1; rc=$?
 check "exit non-zero" "[ $rc -ne 0 ] && grep -q 'not with sudo' $T/log3"
 
 echo "== 4. uninstall while another suite app still uses the venv; the CEC daemon settings are kept"
-touch "$D/bc250-bazzite-suite/venv-users/bc250-bazzite-test"
+touch "$D/bc250-bazzite-suite/venv-users/bc250-board-test"
 mkdir -p "$(dirname "$FRAGMENT")" && echo "wake_tv = true" > "$FRAGMENT"
 echo "[Unit]" > "$BOOT/systemd/system/other.service"
 cp "$T/shims/sudo" "$T/sudo-failing" && cp "$T/sudo-fakeroot" "$T/shims/sudo"
@@ -88,7 +88,7 @@ check "own marker gone" "[ ! -e $D/bc250-bazzite-suite/venv-users/$APP ]"
 check "launcher and menu entry gone" "[ ! -e $HOME/.local/bin/$APP ] && [ ! -e $D/applications/$APP.desktop ]"
 
 echo "== 5. reinstall, then uninstall --purge as the last venv user"
-rm "$D/bc250-bazzite-suite/venv-users/bc250-bazzite-test"
+rm "$D/bc250-bazzite-suite/venv-users/bc250-board-test"
 mkdir -p "$XDG_CONFIG_HOME/$APP" && touch "$XDG_CONFIG_HOME/$APP/$APP.ini"
 echo "keep = true" > "$(dirname "$FRAGMENT")/98-bazzite-cec-mode.toml"
 bash "$T/stage/install.sh" > "$T/log5" 2>&1 && bash "$T/stage/install.sh" --uninstall --purge >> "$T/log5" 2>&1; rc=$?

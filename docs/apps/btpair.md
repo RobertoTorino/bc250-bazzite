@@ -61,6 +61,13 @@ appears, with nothing to say why.
 Enable Bluetooth), so Bluetooth is on at every login whatever was saved. It is your own setting and asks for no
 password. Switched off, Plasma restores the saved state again. On another desktop than Plasma it does not apply.
 
+## A USB 3 device beside the receiver
+
+A device in a USB 3 port (USB 3.0 to 3.2: a drive, a hub, a camera, a Wi-Fi stick) can heavily interfere with a
+Bluetooth receiver in a USB port beside it: USB 3 gives off noise in the same 2.4 GHz band that Bluetooth uses.
+Devices then pair late or not at all, lose their connection, or a mouse or controller lags. A USB extension cable
+helps: put the receiver (or the USB 3 device) on it and keep the two as far apart as you can.
+
 ## Install
 
 Install it from the portal (the **Utilities** tab), or from a checkout of the repository:

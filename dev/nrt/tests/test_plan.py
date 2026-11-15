@@ -280,6 +280,20 @@ def test_commands():
     assert order == sorted(order)                             # commit, test, push and tag, then check the release
 
 
+def test_a_repository_of_one_suite_has_ci_and_release(tmp_path):
+    """A repository that is one suite itself runs ci.yml and release.yml, its TAG_PREFIX or not (15-11-2026: the BC250
+    Bazzite Suite's own repository, bc250- tags, looked for release-bc250-bazzite.yml, found no release and showed
+    every step of NRT's release done)."""
+    from nexus_release_tool import flow
+    root = tmp_path / "bc250-bazzite"
+    write(root / "TAG_PREFIX", "bc250-\n")
+    write(root / "portal/VERSION", "1.0.0\n")
+    write(root / "portal/apps.toml", card("check", required=True))
+    write(root / ".github/workflows/release.yml", "name: Release\non:\n  workflow_dispatch:\n")
+    assert rp.suite_workflows(root, flow.HERE) == {"ci.yml", "release.yml"}
+    assert flow.release_suites(root) == [flow.HERE]
+
+
 def test_ticker_follows_the_suite_ticked(two_suites, tmp_path):
     """Every push starts every suite's CI: the ticker shows the ticked suite's runs and Nexus's, not another
     suite's (owner, 28-10-2026: the BC250 portal's release showed CI Windows Portable first)."""

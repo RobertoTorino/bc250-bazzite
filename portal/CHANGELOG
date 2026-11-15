@@ -1,3 +1,24 @@
+Changelog: 15-11-2026 04:10:07
+
+Breaking. Version 21.0.0 (owner, 15-11-2026). apps.toml pins the first releases of the new apps,
+bc250-webcam-v0.1.0, bc250-controller-v0.1.0, bc250-turing-v0.1.0 and bc250-wifi-v0.1.0, without a checksum until
+they are released (tools/pin_app.py adds it). BC-250 Board Test, BC-250 SSD Check, BC-250 SFTP Tools and BC-250
+System Overlay keep their versions and pins.
+
+Changelog: 15-11-2026 03:58:53
+
+Breaking. apps.toml lists BC-250 Webcam (webcam), BC-250 Controller (controller), BC-250 Turing Screen (turing) and
+BC-250 Wi-Fi Adapter (wifi) as new apps, and BC-250 System Overlay, BC-250 SFTP Tools, BC-250 SSD Check and BC-250
+Board Test under their names, each found by its new launcher (owner, 15-11-2026); their tiles show the name without
+BC-250. The portal's own texts say Board Test.
+
+Changelog: 15-11-2026 03:22:26
+
+Fixed. install.sh --uninstall on a computer where nothing of the suite is installed (no portal, no Bazzite Test, no
+other suite app) says so and stops, without asking for the sudo password (owner, 15-11-2026). Its list of the other
+installed suite apps takes only installers of this suite: another suite's apps in /opt beside them were taken for
+its own, and --uninstall --all would have removed them.
+
 Changelog: 15-11-2026 02:03:59
 
 Fixed. The suite's tags start with bc250- (owner, 15-11-2026): apps.toml pins bc250-<app>-v<x.y.z>, the manifest

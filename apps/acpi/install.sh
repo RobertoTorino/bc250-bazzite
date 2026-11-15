@@ -63,7 +63,29 @@ refresh_menu() {
 
 [ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the venv and the launcher belong in your home folder. To install only the ACPI override from a terminal: sudo $SRC/bc250-acpi-override.sh --install"
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 if $UNINSTALL; then
+    found=false
+    installed_here "$LAUNCHER" "$DATA_DIR/applications/$DESKTOP_FILE" "$DESKTOP_DIR/$DESKTOP_FILE" "$LINK" \
+        "$OPT_DIR/$APP_ID"-v* "$DATA_DIR/$APP_ID-app" && found=true
+    $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" && found=true
+    if ! $found; then
+        info "$APP_NAME is not installed: nothing to remove."
+        if [ -f /boot/acpi_override.cpio ]; then
+            info "The ACPI override is still installed. To remove it as well: install the app again and use"
+            info "Uninstall in its window, or run: sudo $SRC/bc250-acpi-override.sh --uninstall"
+        fi
+        exit 0
+    fi
     info "Removing the launcher and the menu entry"
     rm -f "$LAUNCHER" "$DATA_DIR/applications/$DESKTOP_FILE" "$DESKTOP_DIR/$DESKTOP_FILE"
     refresh_menu

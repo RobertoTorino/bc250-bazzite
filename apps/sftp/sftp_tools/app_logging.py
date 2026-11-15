@@ -10,7 +10,7 @@ from pathlib import Path
 
 from bc250_core.platform import private
 
-LOGGER_NAME = "bc250-bazzite-sftp-tools"
+LOGGER_NAME = "bc250-sftp-tools"
 
 
 class _Private(logging.Formatter):

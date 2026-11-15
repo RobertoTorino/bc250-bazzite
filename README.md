@@ -7,7 +7,7 @@
 # BC250 Bazzite Suite
 
 Tools for the AMD BC-250 running Bazzite. The **[portal](portal)** installs, opens, updates and removes them:
-BC-250 Bazzite Test is always installed, every other app is optional.
+BC-250 Board Test is always installed, every other app is optional.
 
 **Beta:** The suite is in active development: features and layout may still change between releases.
 
@@ -38,7 +38,7 @@ By category, as the portal lists them.
 
 **Sustainable**: the board itself: test it, tune it, unlock it, cool it, and keep it running well.
 
-- <img src="portal/images/apps/check.webp" width="20" height="20" alt=""/> **[BC-250 Bazzite Test](apps/check)**: Read-only diagnostics, stress test and benchmarks. Always installed.
+- <img src="portal/images/apps/check.webp" width="20" height="20" alt=""/> **[BC-250 Board Test](apps/check)**: Read-only diagnostics, stress test and benchmarks. Always installed.
 - <img src="portal/images/apps/gpu.webp" width="20" height="20" alt=""/> **[BC-250 GPU Manager](apps/gpu)**: Manage the cyan-skillfish GPU governor: tuning, safe points, profiles, backups.
 - <img src="portal/images/apps/compute.webp" width="20" height="20" alt=""/> **[BC-250 CU Bisect](apps/compute)**: Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock.
 - <img src="portal/images/apps/cores.webp" width="20" height="20" alt=""/> **[BC-250 Cores Bisect](apps/cores)**: Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock.
@@ -67,15 +67,15 @@ By category, as the portal lists them.
 
 **Utilities**: handy tools around the board.
 
-- <img src="portal/images/apps/overlay.webp" width="20" height="20" alt=""/> **[System Overlay](apps/overlay)**: CPU, GPU, refresh rate, fan and temperatures in a small window that stays on top.
-- <img src="portal/images/apps/ips35.webp" width="20" height="20" alt=""/> **[USB IPS3.5](apps/ips35)**: CPU, GPU, memory, fan and temperatures on a Turzx USB IPS screen (Turing Smart Screen 3.5"), with the time, the date and the weather, in your own theme and colors.
-- <img src="portal/images/apps/hdcam.webp" width="20" height="20" alt=""/> **[USB HD Cam](apps/hdcam)**: the PS5 HD Camera (CFI-ZEY1) as a webcam: loads its firmware at every plug-in and shows its picture, one camera or both side by side.
-- <img src="portal/images/apps/hdcontrol.webp" width="20" height="20" alt=""/> **[USB HD Control](apps/hdcontrol)**: the DualSense and DualSense Edge: battery, firmware updates from the official server over USB, and the Edge's profiles with a backup.
+- <img src="portal/images/apps/overlay.webp" width="20" height="20" alt=""/> **[BC-250 System Overlay](apps/overlay)**: CPU, GPU, refresh rate, fan and temperatures in a small window that stays on top.
+- <img src="portal/images/apps/turing.webp" width="20" height="20" alt=""/> **[BC-250 Turing Screen](apps/turing)**: CPU, GPU, memory, fan and temperatures on a Turzx USB IPS screen (Turing Smart Screen 3.5"), with the time, the date and the weather, in your own theme and colors.
+- <img src="portal/images/apps/webcam.webp" width="20" height="20" alt=""/> **[BC-250 Webcam](apps/webcam)**: the PS5 HD Camera (CFI-ZEY1) as a webcam: loads its firmware at every plug-in and shows its picture, one camera or both side by side.
+- <img src="portal/images/apps/controller.webp" width="20" height="20" alt=""/> **[BC-250 Controller](apps/controller)**: the DualSense and DualSense Edge: battery, firmware updates from the official server over USB, and the Edge's profiles with a backup.
 - <img src="portal/images/apps/bios.webp" width="20" height="20" alt=""/> **[BC-250 BIOS Reader](apps/bios)**: The BIOS settings as the setup screen shows them, hidden menus included. Stock or modded BIOS. Read-only.
-- <img src="portal/images/apps/wdriver.webp" width="20" height="20" alt=""/> **[BC-250 USB Wi-Fi](apps/wdriver)**: The driver for AIC8800D80 USB Wi-Fi sticks: built for the running kernel, loaded at boot, rebuilt after a kernel update.
+- <img src="portal/images/apps/wifi.webp" width="20" height="20" alt=""/> **[BC-250 Wi-Fi Adapter](apps/wifi)**: The driver for AIC8800D80 USB Wi-Fi sticks: built for the running kernel, loaded at boot, rebuilt after a kernel update.
 - <img src="portal/images/apps/cec.webp" width="20" height="20" alt=""/> **[BC-250 CEC Manager](apps/cec)**: Turn the TV on and off with the board, switch its input and use its remote, over HDMI-CEC.
-- <img src="portal/images/apps/sftp.webp" width="20" height="20" alt=""/> **[Bazzite SFTP Tools](apps/sftp)**: Move files between computers over SFTP, and manage the SSH server of a Bazzite host.
-- <img src="portal/images/apps/ssd.webp" width="20" height="20" alt=""/> **[SSD Check](apps/ssd)**: The health, power cycles and power-on hours of the board's SSDs.
+- <img src="portal/images/apps/sftp.webp" width="20" height="20" alt=""/> **[BC-250 SFTP Tools](apps/sftp)**: Move files between computers over SFTP, and manage the SSH server of a Bazzite host.
+- <img src="portal/images/apps/ssd.webp" width="20" height="20" alt=""/> **[BC-250 SSD Check](apps/ssd)**: The health, power cycles and power-on hours of the board's SSDs.
 - <img src="portal/images/apps/btpair.webp" width="20" height="20" alt=""/> **[BC-250 Bluetooth Pairing](apps/btpair)**: Pair your Bluetooth keyboard, mouse and controllers at boot, with no USB keyboard or mouse needed.
 
 The tools for working on the suite run from a checkout of the repository and are not in the portal.

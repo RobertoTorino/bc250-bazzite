@@ -6,13 +6,13 @@
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/
-T=/tmp/bc250-ssd-test
+T=/tmp/bc250-ssd-check-test
 # shellcheck source=tools/installer-tests/shims.sh
 source "$(dirname "${BASH_SOURCE[0]}")/shims.sh" "$T"; set +e
 fail=0
 check() { if eval "$2"; then echo "  ok   $1"; else echo "  FAIL $1"; fail=1; fi; }
 D=$XDG_DATA_HOME
-APP=bc250-ssd
+APP=bc250-ssd-check
 A=$D/$APP/app
 printf '#!/bin/sh\necho "sudo called: $*" >&2\nexit 1\n' > "$T/shims/sudo"     # nothing here needs root
 

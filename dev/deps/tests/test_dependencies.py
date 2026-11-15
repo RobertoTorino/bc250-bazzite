@@ -128,7 +128,7 @@ def test_every_tool_names_its_need_and_root():
     assert tool_need(tools["stress-ng"], {"cores"}) == "required"
     assert tool_need(tools["stress-ng"], {"check"}) == "optional"
     assert tool_need(tools["stress-ng"], {"gpu"}) == ""
-    # Bazzite Test runs Ookla's speedtest, else speedtest-cli: one entry, either one will do.
+    # Board Test runs Ookla's speedtest, else speedtest-cli: one entry, either one will do.
     assert tools["speedtest"].executables == ("speedtest", "speedtest-cli")
     assert "speedtest-cli" not in tools
 

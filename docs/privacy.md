@@ -28,7 +28,7 @@ The servers see your IP address, as any website you open does.
   [GPU Manager](apps/gpu.md) look for a newer release of what they install at start; each can be
   told not to in its settings.
 
-**Sony** (`fwupdater.dl.playstation.net`): [USB HD Control](apps/hdcontrol.md#the-firmware-update) asks Sony's
+**Sony** (`fwupdater.dl.playstation.net`): [BC-250 Controller](apps/controller.md#the-firmware-update) asks Sony's
 update server for the controllers' latest firmware when its window opens (at most once a day; it can be told not
 to), and downloads the firmware when you update a controller.
 
@@ -52,17 +52,17 @@ its Python packages from PyPI.
 - [shadPS4 Manager](apps/shadps4.md#shadnet): shadPS4 signs in to the shadNet server you set, with the
   account you set. shadPS4 keeps the password as it is and shadNet sends it unencrypted: use one you use nowhere
   else.
-- [Bazzite SFTP Tools](apps/sftp.md) connects only to the host you enter.
+- [BC-250 SFTP Tools](apps/sftp.md) connects only to the host you enter.
 - [Bazzite DatStation](apps/datstation.md#privacy) loads the PlayStation Blog's feed on its PS News page.
-- [BC-250 Bazzite Test](apps/check.md): its network test resolves and pings `google.com` and asks
+- [BC-250 Board Test](apps/check.md): its network test resolves and pings `google.com` and asks
   `www.example.com` for a page header; the optional speed test uses Ookla's servers and about 1 GB of data.
 - The [portal](portal.md) shows the weather in its status only for a place you choose on its Settings page:
   the name you search for, then that place's coordinates every 30 minutes while the portal is not minimized, go to
   Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`), which needs no account.
-- [USB IPS3.5](apps/ips35.md#settings) shows the weather only for a place you choose: the name you search for,
+- [BC-250 Turing Screen](apps/turing.md#settings) shows the weather only for a place you choose: the name you search for,
   then that place's coordinates every 30 minutes while its Weather tile is shown, go to Open-Meteo
   (`geocoding-api.open-meteo.com`, `api.open-meteo.com`), which needs no account.
-- [USB HD Cam](apps/hdcam.md#the-firmware) downloads the camera's firmware from GitHub
+- [BC-250 Webcam](apps/webcam.md#the-firmware) downloads the camera's firmware from GitHub
   (`raw.githubusercontent.com`) only when you click Download.
 - [BC-250 ACE Queues](apps/ace.md) and [BC-250 Mesh Shaders](apps/mesh.md) download Mesa's source
   from `archive.mesa3d.org` when they build their driver.
@@ -76,7 +76,7 @@ Each app keeps its settings in `~/.config/<app>` and its data and logs in `~/.lo
 the exact list. Nothing of it is uploaded. Uninstalling with `--purge` removes the settings and logs too.
 
 Some of it can identify you: host and user names, serial numbers, MAC and IP addresses, account IDs. Where an app
-shows or saves such details, it masks them: [Bazzite Test](apps/check.md) masks them in saved logs (on by default,
+shows or saves such details, it masks them: [Board Test](apps/check.md) masks them in saved logs (on by default,
 in **Settings › Privacy**), [BC-250 PS Remote Play](apps/consoles.md#privacy) in its window and log, and
 [BC-250 XB Remote Play](apps/clb.md#privacy) in its log. Where an app shows a path on its screen or writes one in its
 log, your home folder is written as `~`, so your user name is not in it. Before you share a log or a screenshot, for example in an issue,

@@ -21,7 +21,7 @@ spec.loader.exec_module(sr)
 SHA = "ab" * 32
 MANIFEST = """# a comment that stays
 [apps.check]
-name = "BC-250 Bazzite Test"
+name = "BC-250 Board Test"
 tag = "bc250-check-v3.0.1"
 sha256 = "%s"
 required = true

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs Bazzite SFTP Tools as a desktop app, from a clone or the extracted release tarball:
+# Installs BC-250 SFTP Tools as a desktop app, from a clone or the extracted release tarball:
 #
 #   ./install.sh                         # install or update
 #   ./install.sh --no-desktop-shortcut   # app menu entry only, no icon on the Desktop
@@ -9,17 +9,17 @@
 #
 # Run it as your own user; installing needs no root. The app is a client: the Bazzite host you connect to only
 # needs a reachable sshd. Trusted hosts in ~/.ssh/known_hosts are never touched.
-#  * ~/.local/share/bc250-bazzite-sftp-tools/app: the app, with the bc250_core it was tested with (bundled in the
+#  * ~/.local/share/bc250-sftp-tools/app: the app, with the bc250_core it was tested with (bundled in the
 #    release; taken from the suite checkout when run from there).
-#  * ~/.local/share/bc250-bazzite-sftp-tools/venv: the app's own Python venv with PyQt6 and paramiko (the suite's
+#  * ~/.local/share/bc250-sftp-tools/venv: the app's own Python venv with PyQt6 and paramiko (the suite's
 #    shared venv has no paramiko).
-#  * ~/.config/bc250-bazzite-sftp-tools: settings and connection profiles, once you save them in the app.
-#  * ~/.local/share/bc250-bazzite-sftp-tools/bc250-bazzite-sftp-tools.log: the app's log.
-#  * ~/.local/bin/bc250-bazzite-sftp-tools to start it from a terminal, plus an app menu entry and a Desktop icon.
+#  * ~/.config/bc250-sftp-tools: settings and connection profiles, once you save them in the app.
+#  * ~/.local/share/bc250-sftp-tools/bc250-sftp-tools.log: the app's log.
+#  * ~/.local/bin/bc250-sftp-tools to start it from a terminal, plus an app menu entry and a Desktop icon.
 set -euo pipefail
 
-APP_ID="bc250-bazzite-sftp-tools"
-APP_NAME="Bazzite SFTP Tools"
+APP_ID="bc250-sftp-tools"
+APP_NAME="BC-250 SFTP Tools"
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 APP_HOME="$DATA_DIR/$APP_ID"
@@ -55,7 +55,24 @@ $PURGE && ! $UNINSTALL && die "--purge only goes with --uninstall."
 
 [ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the app, the venv and the launcher belong in your home folder."
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 if $UNINSTALL; then
+    found=false
+    installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "${APP_HOME:?}/app" "${APP_HOME:?}/venv" && found=true
+    $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "${APP_HOME:?}" && found=true
+    if ! $found; then
+        info "$APP_NAME is not installed: nothing to remove."
+        exit 0
+    fi
     info "Removing the launcher, the menu entry, the Desktop icon, the app and its venv"
     rm -f "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON"
     command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q "$DATA_DIR/applications" || true

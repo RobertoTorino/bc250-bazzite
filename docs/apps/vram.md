@@ -29,7 +29,7 @@ The GPU can also borrow system RAM on top of the split. That is the **GTT**. amd
 
 A small split leaves the most RAM, and the GPU grows into GTT when it needs more. But the screen's framebuffers
 must fit in the split itself: when a game fills a 512 MB split, the next frame cannot be shown and the session
-ends. Bazzite Test reports this as a framebuffer pin failure (test 37). A 6 GB split fixes it, which is why the app
+ends. Board Test reports this as a framebuffer pin failure (test 37). A 6 GB split fixes it, which is why the app
 marks 6 GB as recommended for games.
 
 ## Using it
@@ -73,7 +73,7 @@ says, the GTT never grows past the RAM: with a 6 GB split and 9.4 GB of RAM, a l
 of it, and a higher one changes nothing. A small split is where the argument counts: with 512 MB, the kernel's
 default stops the GPU at half of the 15 GB of RAM.
 
-The limit does not fix the framebuffer pin failures (Bazzite Test, test 37): those need a larger split.
+The limit does not fix the framebuffer pin failures (Board Test, test 37): those need a larger split.
 
 Under **GTT limit on the kernel command line**:
 
@@ -86,7 +86,7 @@ Under **GTT limit on the kernel command line**:
   status turns to **Reboot to apply**, and the reboot is yours to do: the app never reboots the board (`systemctl
   reboot`, or the menu). The choices:
     - **Kernel default: half the RAM.** The argument is removed.
-    - **11.5 GiB, the suite's value.** What Bazzite Test advises; all of the RAM with a 6 GB split.
+    - **11.5 GiB, the suite's value.** What Board Test advises; all of the RAM with a 6 GB split.
     - **16 GiB: all the RAM, whatever the split.** The kernel caps it at the RAM, so this is the most the GPU can
       borrow with any split.
     - A limit set by hand that is none of these appears as a fourth choice, **as set now**.
@@ -102,7 +102,7 @@ Under **Profiles** two buttons set the split and the limit at once:
 
 - **Default profile:** the firmware's 512 MB split and the kernel's GTT limit, half the RAM. What a board runs
   without any change, as after a CMOS clear on a kernel command line without `ttm.pages_limit`.
-- **Games profile:** the 6 GB split that prevents the framebuffer pin failures (Bazzite Test, test 37) and the
+- **Games profile:** the 6 GB split that prevents the framebuffer pin failures (Board Test, test 37) and the
   11.5 GiB limit, all the RAM with that split. What the suite's boards run.
 
 A profile writes only what differs from the board: the split to CMOS, the limit to the next boot's kernel

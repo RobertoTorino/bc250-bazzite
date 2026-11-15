@@ -30,7 +30,25 @@ CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 say()  { printf '\033[1;35m==>\033[0m %s\n' "$*"; }
 fail() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the app is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
+}
+
 uninstall() {
+    found=false
+    installed_here "$APP_DIR" "$BIN_DIR/$APP_ID" "$APPS_DIR/$APP_ID.desktop" "$ICON_DIR/$APP_ID.png" \
+        "$DESKTOP_DIR/$APP_ID.desktop" "$DATA_HOME/icons/hicolor/512x512/apps/$APP_ID.png" && found=true
+    $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "$CONFIG_DIR/autostart/$APP_ID.desktop" && found=true
+    if ! $found; then
+        say "$APP_ID is not installed: nothing to remove."
+        exit 0
+    fi
     say "Removing $APP_ID"
     rm -rf "$APP_DIR"
     rm -f "$BIN_DIR/$APP_ID" "$APPS_DIR/$APP_ID.desktop" "$ICON_DIR/$APP_ID.png" "$DESKTOP_DIR/$APP_ID.desktop" \

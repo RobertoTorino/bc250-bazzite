@@ -1,8 +1,8 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![Bazzite SFTP Tools](../assets/sftp/bc250-bazzite-sftp-tools.webp){ .app-logo }
+![BC-250 SFTP Tools](../assets/sftp/bc250-sftp-tools.webp){ .app-logo }
 
-# Bazzite SFTP Tools
+# BC-250 SFTP Tools
 
 SFTP Tools moves files between your computer and another one over SSH, and manages the SSH server (`sshd`) of a
 **BC-250** running **Bazzite**. It has two tabs:
@@ -109,13 +109,13 @@ default keys.
 
 SFTP Tools also comes as a program for Windows, for connecting to the board from a Windows computer. It is not
 installed by the portal. On the [releases page](https://github.com/RobertoTorino/bc250-bazzite/releases),
-open the latest `sftp` release and download `bc250-bazzite-sftp-tools-<version>-windows.zip` and its
+open the latest `sftp` release and download `bc250-sftp-tools-<version>-windows.zip` and its
 `.sha256` file. Check the download (`certutil -hashfile <zip> SHA256` must print the number in the `.sha256`
 file), unzip it, and start `BC250-SFTP-Tools.exe`. It needs no Python.
 
 The program is not signed, so Windows may show a SmartScreen warning the first time: choose *More info*, then
-*Run anyway*. Settings, profiles and the log are in `C:\Users\<you>\.config\bc250-bazzite-sftp-tools\` and
-`C:\Users\<you>\.local\share\bc250-bazzite-sftp-tools\`. The beep uses Qt's, not `paplay`. Windows has an
+*Run anyway*. Settings, profiles and the log are in `C:\Users\<you>\.config\bc250-sftp-tools\` and
+`C:\Users\<you>\.local\share\bc250-sftp-tools\`. The beep uses Qt's, not `paplay`. Windows has an
 OpenSSH client with `ssh-keygen` but no `ssh-copy-id`: to log in with a key, copy the public key into
 `~/.ssh/authorized_keys` on the host by hand.
 
@@ -145,10 +145,10 @@ OpenSSH client with `ssh-keygen` but no `ssh-copy-id`: to log in with a key, cop
 
 | What | Where |
 |---|---|
-| The app | `~/.local/share/bc250-bazzite-sftp-tools/app` and its virtual environment `.../venv` |
-| Settings | `~/.config/bc250-bazzite-sftp-tools/settings.json` (delete it to go back to the defaults) |
-| Profiles | `~/.config/bc250-bazzite-sftp-tools/profiles.json` (SFTP Client), `server-profiles.json` (Server Manager); readable by you only |
-| The log | `~/.local/share/bc250-bazzite-sftp-tools/bc250-bazzite-sftp-tools.log` |
+| The app | `~/.local/share/bc250-sftp-tools/app` and its virtual environment `.../venv` |
+| Settings | `~/.config/bc250-sftp-tools/settings.json` (delete it to go back to the defaults) |
+| Profiles | `~/.config/bc250-sftp-tools/profiles.json` (SFTP Client), `server-profiles.json` (Server Manager); readable by you only |
+| The log | `~/.local/share/bc250-sftp-tools/bc250-sftp-tools.log` |
 | Trusted hosts | `~/.ssh/known_hosts`, never removed by the app |
 
 ## Uninstalling

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Optional setup helper for bc250-bazzite-test: installs the tools the tests can use.
+# Optional setup helper for bc250-board-test: installs the tools the tests can use.
 # The test script itself never installs anything; everything here is opt-in and idempotent.
 #
 # Usage:
@@ -105,7 +105,7 @@ install_speedtest() {
 # --------------------------------------------------------- development extras
 install_dev() {
     if command -v sqlite3 >/dev/null 2>&1; then
-        say "sqlite3 is already installed (view the GUI history: sqlite3 ~/.local/share/bc250-bazzite-test/history.db)"
+        say "sqlite3 is already installed (view the GUI history: sqlite3 ~/.local/share/bc250-board-test/history.db)"
         return
     fi
     command -v rpm-ostree >/dev/null 2>&1 || die "rpm-ostree not found."

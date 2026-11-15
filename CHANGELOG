@@ -1,3 +1,23 @@
+Changelog: 15-11-2026 03:58:53
+
+Breaking. Eight apps are new apps (owner, 15-11-2026): BC-250 Webcam, BC-250 Controller, BC-250 Turing Screen,
+BC-250 System Overlay, BC-250 SFTP Tools, BC-250 SSD Check, BC-250 Wi-Fi Adapter and BC-250 Board Test (Board Test
+for short), each with its own id, folders, launcher, settings and release tags; the keys of four of them are webcam,
+controller, turing and wifi. The wiki (its chapters apps/webcam, apps/controller, apps/turing, apps/wifi and
+development/board-test*), the README, DESIGN.md (from tools/make_design.py), the workflows and the tools name them
+so. A copy installed before is not taken over: uninstall it first.
+
+Changelog: 15-11-2026 03:22:26
+
+Added. tools/installer-tests/not-installed.sh runs every app's and the portal's install.sh --uninstall, and with
+--purge, on a computer where nothing is installed: each says so in one line, exits 0, writes nothing and asks for no
+sudo password (owner, 15-11-2026).
+
+Changelog: 15-11-2026 02:59:45
+
+Added. The wiki's Bluetooth Pairing chapter has a section on a USB 3 device beside the Bluetooth receiver: it can
+heavily interfere with it, and a USB extension cable that keeps the two as far apart as possible helps.
+
 Changelog: 15-11-2026 02:37:59
 
 Fixed. The main branch's ruleset lets repository admins bypass it too (owner, 15-11-2026), as the repository has it:

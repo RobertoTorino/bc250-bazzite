@@ -41,7 +41,7 @@ mkdir -p "$D/$OLD/app" "$D/$OLD/venv" "$D/applications" "$HOME/Desktop" "$HOME/.
     "$SHARED/venv-users"
 touch "$HOME/.local/bin/$OLD" "$HOME/.local/bin/$OLD-cli" "$D/applications/$OLD.desktop" "$HOME/Desktop/$OLD.desktop" \
     "$D/$OLD/$OLD.log" "$XDG_CONFIG_HOME/$OLD/$OLD.ini" "$SHARED/venv/bin/python" "$SHARED/venv-users/$APP" \
-    "$SHARED/venv-users/bc250-bazzite-test"
+    "$SHARED/venv-users/bc250-board-test"
 
 echo "== 1. install from the suite checkout"
 bash "$SUITE/apps/shadps4/install.sh" > "$T/log1" 2>&1; rc=$?
@@ -117,10 +117,10 @@ check "exit 0" "[ $rc -eq 0 ]"
 check "app, venv and installed shadPS4 gone" "[ ! -e $A ] && [ ! -e $D/$APP/venv ] && [ ! -e $D/$APP/emulator ]"
 check "launchers and menu entry gone" "[ ! -e $HOME/.local/bin/$APP ] && [ ! -e $CLI ] && [ ! -e $RUN ] && [ ! -e $D/applications/$APP.desktop ]"
 check "shadPS4's own folder, the settings and the log kept" "[ -f $D/shadPS4/config.json ] && [ -d $D/shadPS4/sys_modules ] && [ -f $XDG_CONFIG_HOME/$APP/$APP.ini ] && [ -f $D/$APP/pkgxtractor.log ]"
-check "the shared venv untouched" "[ -e $SHARED/venv/bin/python ] && [ -e $SHARED/venv-users/bc250-bazzite-test ]"
+check "the shared venv untouched" "[ -e $SHARED/venv/bin/python ] && [ -e $SHARED/venv-users/bc250-board-test ]"
 
 echo "== 6. an install on the shared venv as its last user: the shared venv goes"
-rm "$SHARED/venv-users/bc250-bazzite-test" && touch "$SHARED/venv-users/$APP"
+rm "$SHARED/venv-users/bc250-board-test" && touch "$SHARED/venv-users/$APP"
 bash "$T/stage/install.sh" > "$T/log6" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "shared venv removed" "[ ! -e $SHARED/venv ] && [ ! -e $SHARED/venv-users ] && grep -q 'no other suite app uses it' $T/log6"

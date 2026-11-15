@@ -13,7 +13,7 @@ def test_the_home_folder_when_it_is_on_the_drive(tmp_path):
     home = tmp_path / "var" / "home" / "user"
     home.mkdir(parents=True)
     mounts = ["/boot/efi", str(tmp_path / "var"), str(tmp_path / "var" / "home")]
-    assert speedtest.folder_for(mounts, home) == home.resolve() / ".cache" / "bc250-ssd"
+    assert speedtest.folder_for(mounts, home) == home.resolve() / ".cache" / "bc250-ssd-check"
 
 
 def test_else_a_writable_mount_point_and_none_unmounted(tmp_path):
@@ -23,7 +23,7 @@ def test_else_a_writable_mount_point_and_none_unmounted(tmp_path):
     home.mkdir()
     assert speedtest.folder_for(["/proc", str(stick)], home) == stick
     assert speedtest.folder_for([], home) is None
-    assert speedtest.folder_for(["/"], home) == home.resolve() / ".cache" / "bc250-ssd"   # a drive at / holds home
+    assert speedtest.folder_for(["/"], home) == home.resolve() / ".cache" / "bc250-ssd-check"   # a drive at / holds home
 
 
 def test_it_measures_and_leaves_nothing_behind(tmp_path):

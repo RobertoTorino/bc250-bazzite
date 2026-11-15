@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Packaging step: record the build date (SOURCE_DATE_EPOCH when set, else now) and the SHA-256 of the test engine
-in bazzite_check/_build_info.py.
+in board_test/_build_info.py.
 
 With that file present the app runs as a release build: before every run it refuses a test engine that
 does not have exactly this checksum, or that is not owned by root and writable by root only.
-Run it after the last change to test-bazzite.sh, from the repository root:
+Run it after the last change to test-board.sh, from the repository root:
 
     python3 development/tools/build_info.py            # or: python3 development/tools/build_info.py --remove  (back to development)
 """
@@ -17,8 +17,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-ENGINE = ROOT / "test-bazzite.sh"
-TARGET = ROOT / "bazzite_check" / "_build_info.py"
+ENGINE = ROOT / "test-board.sh"
+TARGET = ROOT / "board_test" / "_build_info.py"
 
 
 def main() -> int:

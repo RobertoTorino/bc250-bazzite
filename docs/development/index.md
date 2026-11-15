@@ -196,7 +196,7 @@ a transparent background, like the others) and add it at the end of the list wit
 
 ## Where things are installed
 
-- **Root-owned `/opt`:** the portal (`/opt/bc250-bazzite-suite`), Bazzite Test (`check`), cores, oc and
+- **Root-owned `/opt`:** the portal (`/opt/bc250-bazzite-suite`), Board Test (`check`), cores, oc and
   acpi, whose scripts run as root: a normal user cannot change code that sudo runs.
 - **Your home folder:** the shared venv `~/.local/share/bc250-bazzite-suite/venv` (PyQt6, used by all suite
   GUIs and removed with the last of them), plus each app's settings, results and launchers.
@@ -293,8 +293,8 @@ app relies on in Xenia's source at the new commit: the `--fullscreen` option and
 (`src/xenia/vfs/devices/disc_image_device.cc`, which `GAME_PARTITIONS` in the app's `games.py` copies), and GTK on
 X11 (`GDK_BACKEND` in `src/xenia/ui/windowed_app_main_posix.cc`).
 
-BC-250 USB Wi-Fi builds its driver from one pinned commit per branch of `shenmintao/aic8800d80` (`main` and
-`legacy-mcu1`), `PINS` in `apps/wdriver/usb_wifidriver/builder.py`, fetched from the suite owner's
+BC-250 Wi-Fi Adapter builds its driver from one pinned commit per branch of `shenmintao/aic8800d80` (`main` and
+`legacy-mcu1`), `PINS` in `apps/wifi/wifi_adapter/builder.py`, fetched from the suite owner's
 mirror first and from the upstream when the mirror does not answer. The tool reports a branch with commits after its
 pin (how many, the newest and the compare page), and a mirror that is not on GitHub or lacks a pinned commit. A new
 pin is built on the board against the running kernel and tried with the stick, on the branch for its chip.
@@ -313,18 +313,18 @@ none (`LIBVA_VERSION`, `LIBVA_SHA256`). The tool reads FFmpeg's release tags (`n
 libva's latest release, and reports a newer FFmpeg on the pinned branch (its fixes), a newer FFmpeg branch (a bigger
 move: the decoder calls of the native core) and a newer libva (its headers only; the libraries stay the system's).
 
-USB HD Cam downloads each camera's firmware from one commit of a GitHub repository (`PINNED` in
-`apps/hdcam/usb_hdcam/firmware.py`). The tool downloads the file at that commit, which must still have
+BC-250 Webcam downloads each camera's firmware from one commit of a GitHub repository (`PINNED` in
+`apps/webcam/webcam/firmware.py`). The tool downloads the file at that commit, which must still have
 the pinned SHA-256, and the same file on the repository's default branch: changed or gone there is reported.
 
-BC-250 Bazzite Test runs whichever speedtest CLI is installed; its development tool installs one release of Ookla's
+BC-250 Board Test runs whichever speedtest CLI is installed; its development tool installs one release of Ookla's
 (`SPEEDTEST_VERSION` in `apps/check/development/tools/install-requirements.sh`). Ookla publishes no API;
 the tool reads the version from Ookla's Homebrew formula.
 
 ```bash
 python3 tools/check_upstream.py            # all of them
 python3 tools/check_upstream.py helixsr    # one: shadps4, helixsr, ppsspp, pcsx2, rpcs3, directmesh,
-                                                          # vita3k, xenia, wdriver, mesa, ffmpeg, hdcam or speedtest
+                                                          # vita3k, xenia, wifi, mesa, ffmpeg, webcam or speedtest
 ```
 
 ## bc250_core
@@ -336,19 +336,19 @@ Code shared by the suite's apps (`core/`). Nothing in it imports an app: each ap
 | `appinfo` | `AppInfo` (id, name, version, logo, tag prefix, settings names) | new |
 | `theme` | The suite's theme (`THEMES`, `theme_name()`, `save_theme_name()`, `apply_theme()`, `surface_style()`, `muted()`), `STATE_COLORS`, bundled Inter font, `header_font()`, `HOVER_STYLESHEET`; self-contained, so an app not on core carries a copy | all six GUIs |
 | `text` | `fmt()` (`%1` placeholders), `fill()` (`{name}` placeholders), `plain_tooltip()`, `window_title()` | governor, upscaler |
-| `widgets` | `AppHeader` (the window header), `StatusPill`, `MetricBox`, `Pill` (a `MetricBox` that is a button), `same_width()`, `ClickableLogo`, `Terminal`, `TextDialog`, `RoundedToolTip`, `show_tooltip()`, `page_header()`, `hint_label()`, `accent_button()`, `set_button_active()` | governor + helixsr's Wayland tooltip + bazzite-test's manual tooltips |
+| `widgets` | `AppHeader` (the window header), `StatusPill`, `MetricBox`, `Pill` (a `MetricBox` that is a button), `same_width()`, `ClickableLogo`, `Terminal`, `TextDialog`, `RoundedToolTip`, `show_tooltip()`, `page_header()`, `hint_label()`, `accent_button()`, `set_button_active()` | governor + helixsr's Wayland tooltip + board-test's manual tooltips |
 | `app` | `create_app()` / `run_app()` / `exec_app()`: names, Fusion with the theme, tooltip, icon, SIGTERM | the apps' `__main__` |
 | `exit_keys` | `install(app)`: Escape and a controller's B close the app's window, after a key the window takes for itself and through its `closeEvent`; B, read with pygame-ce, is Escape for what has the focus, and only for the app that has had the focus for a moment; `install(app, controller=False)` for Escape alone, the class attribute `exit_keys = False` for a window that keeps every key. Self-contained, so an app not on core carries a copy | new |
 | `action_tab` | `ActionTab`: the last tab of a `QTabWidget` as a button (Start game in the game managers): a click acts and the open page stays open | new |
-| `settings` | `open_settings(info)` at each app's existing file, geometry helpers, `SettingsStore` (typed defaults) | bazzite-test's `AppSettings` |
+| `settings` | `open_settings(info)` at each app's existing file, geometry helpers, `SettingsStore` (typed defaults) | board-test's `AppSettings` |
 | `help` | `HelpView` (the content stays in the app) | upscaler |
 | `updates` | `latest_release()` (with a tag prefix for the per-app tags: GitHub's release pages, newest first, are followed until one holds the prefix, since other releases can fill the first page), `UpdateStatus`, `UpdateChecker` (any job, off the GUI thread) | upscaler + governor |
 | `platform` | XDG folders, `xdg_open()`, `launch_in_terminal()` (with an exit file the caller can watch); for Windows (the development apps, SFTP Tools' `.exe`), `open_path()` and a PowerShell window; `private()`, a path or a text with the user's folders as `%LOCALAPPDATA%`, `%APPDATA%` and `%USERPROFILE%` (`~` on Linux), never the user's name, which `applog.setup(private=True)` applies to every line of a log; `outside_bundle()` and `start_program()`: a program a PyInstaller-built app starts without the app's own DLL directory and PATH, which it would otherwise inherit | the bisect GUIs' `terminal.py` |
 | `steam` | Steam's folders and users, `installed()`, `with_steam_closed()`, `shortcuts.vdf` and the shortcuts' artwork in `grid/`, `shortcut_number()` and `play_url()` (a shortcut's number in Steam's file, and the address that starts it) (standard library only) | consoles |
 | `steam_art` | `draw_icon_art()`: a shortcut's four pictures drawn from an app's icon, in the icon's color | consoles |
 | `upstream` | `publish()` / `read_all()`: the updates outside the suite an app can install now, for the portal's notice (standard library only; HelixSR carries a copy) | new: helixsr, pcsx2, portal |
-| `sensors` | `Sensors.read()`: the board's live values from `/proc` and `/sys` without root (CPU, GPU, the governor's range, VRAM, RAM, temperatures, network, disk, fans), `Reading`, `Fan` | System Overlay; used by USB IPS3.5 too |
-| `wifi` | The Wi-Fi adapters and whether the running kernel has a driver and firmware for them, `report()` (standard library only; `python3 -m bc250_core.wifi`) | new: check's test 53, wdriver |
+| `sensors` | `Sensors.read()`: the board's live values from `/proc` and `/sys` without root (CPU, GPU, the governor's range, VRAM, RAM, temperatures, network, disk, fans), `Reading`, `Fan` | System Overlay; used by BC-250 Turing Screen too |
+| `wifi` | The Wi-Fi adapters and whether the running kernel has a driver and firmware for them, `report()` (standard library only; `python3 -m bc250_core.wifi`) | new: check's test 53, wifi |
 
 Core is **bundled per app**: `tools/stage_app.py` copies `bc250_core/` next to the package of every app that
 imports it, so each release runs on the core it was tested with.

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Wi-Fi adapters on the board, and whether the running kernel has a driver for them: read from /sys, the
-kernel's module tables and this boot's kernel log, without root and without Qt. BC-250 Bazzite Test runs it as its
-Wi-Fi Adapter test (python3 -m bc250_core.wifi, with the system python), BC-250 USB Wi-Fi shows it in its window.
+kernel's module tables and this boot's kernel log, without root and without Qt. BC-250 Board Test runs it as its
+Wi-Fi Adapter test (python3 -m bc250_core.wifi, with the system python), BC-250 Wi-Fi Adapter shows it in its window.
 
 It only reads: it loads no module, ejects no disk and changes no setting; what would help, it says.
 
@@ -34,15 +34,15 @@ USB_WIFI_VENDORS = {
 }
 PCI_VENDORS = {0x8086: "Intel", 0x10EC: "Realtek", 0x14C3: "MediaTek", 0x168C: "Qualcomm Atheros",
                0x17CB: "Qualcomm", 0x14E4: "Broadcom", 0x1814: "Ralink"}
-# The AIC8800D80 (the UGREEN AX900 and others), whose driver BC-250 USB Wi-Fi builds: its storage mode, waiting
-# for its firmware, Wi-Fi mode (the IDs of usb_wifidriver/stick.py).
+# The AIC8800D80 (the UGREEN AX900 and others), whose driver BC-250 Wi-Fi Adapter builds: its storage mode, waiting
+# for its firmware, Wi-Fi mode (the IDs of wifi_adapter/stick.py).
 AIC_VENDORS = (0xA69C, 0x368B)
 AIC_STORAGE = {0x5721, 0x5722, 0x5723, 0x5724, 0x572C}
 AIC_D80 = AIC_STORAGE | {0x8D80, 0x8D81}
 AIC_MODULES = ("aic_load_fw", "aic8800_fdrv")   # out of tree: not in modules.dep
 # Other sticks that come up as a small disk with the Windows driver, until something switches them.
 STORAGE_MODE = {(0x0BDA, 0x1A2B): "Realtek", (0x0E8D, 0x2870): "MediaTek"}
-WIFI_APP = "BC-250 USB Wi-Fi"
+WIFI_APP = "BC-250 Wi-Fi Adapter"
 FIRMWARE_LINE = re.compile(r"^(?:\S+ )?(\S+): Direct firmware load for (\S+) failed with error", re.MULTILINE)
 
 
@@ -176,7 +176,7 @@ class Adapter:
 
     @property
     def verdict(self) -> str:
-        """connected, ready, blocked, firmware, storage, aic (BC-250 USB Wi-Fi's driver), no-interface (a driver
+        """connected, ready, blocked, firmware, storage, aic (BC-250 Wi-Fi Adapter's driver), no-interface (a driver
         is bound, no interface came), not-loaded (the kernel has a driver, it is not loaded) or no-driver."""
         if self.interfaces:
             if any(i.soft_blocked or i.hard_blocked for i in self.interfaces):
@@ -304,8 +304,8 @@ def _link_text(i: Interface) -> str:
 
 
 def report(adapters: tuple[Adapter, ...], modules: Modules, in_wifi_app: bool = False) -> list[tuple[str, str]]:
-    """The findings as (level, text): SUCCESS, INFO, NOTE, WARNING or HINT, the levels of BC-250 Bazzite Test.
-    in_wifi_app: for BC-250 USB Wi-Fi's own window, which builds the AIC driver itself."""
+    """The findings as (level, text): SUCCESS, INFO, NOTE, WARNING or HINT, the levels of BC-250 Board Test.
+    in_wifi_app: for BC-250 Wi-Fi Adapter's own window, which builds the AIC driver itself."""
     get_aic = "build and install the driver here" if in_wifi_app else f"{WIFI_APP} (in the portal) builds it"
     lines: list[tuple[str, str]] = []
     if not modules.found:
@@ -380,7 +380,7 @@ def read_boot_log(runner: Runner = run_text) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """The report as LEVEL: text lines, for BC-250 Bazzite Test's Wi-Fi Adapter test. Exit status 0 either way."""
+    """The report as LEVEL: text lines, for BC-250 Board Test's Wi-Fi Adapter test. Exit status 0 either way."""
     del argv
     kernel = os.uname().release
     modules = read_modules(kernel)

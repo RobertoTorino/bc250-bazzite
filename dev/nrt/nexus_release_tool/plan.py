@@ -926,7 +926,7 @@ def set_withdrawn(text: str, key: str, reason: str) -> str:
 
 
 def withdrawable(root: Path, units: list[Unit], suite: str | None = None) -> list[Unit]:
-    """The apps a portal pins that can be withdrawn: never the required one (Bazzite Test, always installed)."""
+    """The apps a portal pins that can be withdrawn: never the required one (Board Test, always installed)."""
     required = {e.key for e in manifest_tools(root, suite).manifest.load(manifest_path(root, suite)) if e.required}
     return [u for u in units if u.kind == "app" and not u.standalone and u.pinned_tag and u.key not in required]
 
@@ -1438,12 +1438,13 @@ def elapsed(seconds: float) -> str:
 
 
 def suite_workflows(root: Path, suite: str | None = None) -> set[str]:
-    """The workflow files that are the suite's own: ci.yml and release.yml for the suite without a tag prefix,
-    ci-<suite>.yml and release-<suite>.yml for one with (each suite's CI and releases stand apart, owner
-    27-10-2026)."""
-    if not tag_prefix(root, suite):
+    """The workflow files that are the suite's own: ci.yml and release.yml for the suite without a tag prefix and for
+    a repository that is one suite itself, ci-<suite>.yml and release-<suite>.yml for one with a tag prefix beside
+    others (each suite's CI and releases stand apart, owner 27-10-2026)."""
+    folder = suite_dir(root, suite)
+    if not tag_prefix(root, suite) or folder.resolve() == root.resolve():
         return {"ci.yml", "release.yml"}
-    name = suite_dir(root, suite).name
+    name = folder.name
     return {f"ci-{name}.yml", f"release-{name}.yml"}
 
 
