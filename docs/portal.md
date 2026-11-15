@@ -469,6 +469,19 @@ that the portal starts, that its version is the new one, and that the apps insta
 run `./install.sh` in the repository root. A portal from the checkout shows an orange
 banner at the top, "Local build"; the published release has none.
 
+A test cleans up after itself. On a board without the suite, what the test installs is marked as a test's and
+removed again when the portal closes: the portal, Board Test and the apps installed during the test. A board that
+had the suite installed keeps it (the test replaces its portal), and `--keep` keeps what a test installed. An
+install by hand afterwards (`./install.sh`) makes it the board's own.
+
+```bash
+tools/check-release.sh status            # what of the suite is installed, and whether a test put it there
+tools/check-release.sh remove            # remove every app, the portal and Board Test; settings stay
+tools/check-release.sh remove --purge    # their settings, history and results too
+```
+
+`remove` runs each part's own uninstaller. Nexus Release Tool's **Remove suite** tab runs it in a terminal.
+
 ### Withdrawing a release
 
 A release that must not be used any more is withdrawn with Nexus Release Tool: the steps are in

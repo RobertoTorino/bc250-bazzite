@@ -164,12 +164,13 @@ def test_own_settings_are_never_replaced(tmp_path):
 def test_one_output_tab(window, monkeypatch):
     """Commands, the command line with its output, is the one output tab after the steps (owner, 01-11-2026: the Logs
     tab was mostly empty): what a step writes shows there under a line that names the step, and Commands opens when
-    the step that wrote is the tab open. The release by hand (Release apps, Pin and release Portal, Test on this
-    board) went on 15-11-2026. A finished command reads the checkout again only when it changed something (a
+    the step that wrote is the tab open (not for Remove suite, whose lines come while you click). The release by
+    hand (Release apps, Pin and release Portal, Test on this board) went on 15-11-2026. A finished command reads the checkout again only when it changed something (a
     commit, a push)."""
     w, _app = window
-    pages = (w.release_page, w.withdraw_page)
-    assert [w.tabs.tabText(i) for i in range(w.tabs.count())] == ["Nexus release", "Contents", "Retract app", "Commands"]
+    pages = (w.release_page, w.withdraw_page, w.remove_page)
+    assert [w.tabs.tabText(i) for i in range(w.tabs.count())] == \
+        ["Nexus release", "Contents", "Retract app", "Remove suite", "Commands"]
     assert w.tabs.widget(w.commands_tab) is w.commands and w.tabs.widget(1) is w.release_page.contents
     assert not any(p.isAncestorOf(p.output) for p in pages)             # a step's log is no widget of its page
     w.tabs.setCurrentWidget(w.withdraw_page)
@@ -180,6 +181,10 @@ def test_one_output_tab(window, monkeypatch):
     w.withdraw_page.output.set_text("later")                            # another tab open: shown, no switch
     assert w.tabs.currentWidget() is w.release_page.contents
     assert "── Retract app\nlater\n" in w.commands.output.toPlainText()
+    w.tabs.setCurrentWidget(w.remove_page)
+    w.remove_page.output.appendPlainText("listing")                     # Remove suite never switches
+    assert w.tabs.currentWidget() is w.remove_page
+    assert "── Remove suite\nlisting\n" in w.commands.output.toPlainText()
     assert w.withdraw_page.output.toPlainText() == "later"              # the page keeps its own log
     w.tabs.setCurrentIndex(0)
     assert w.commands.root == w.root
@@ -394,3 +399,21 @@ def test_the_icons_are_the_nexus_drawing():
     for copy, size in ((ROOT / "images" / "nexus-release-tool.webp", 512), (ROOT / "images" / "nexus-release-tool-128.png", 128)):
         with Image.open(copy) as got:
             assert got.size == (size, size), copy.name
+
+
+def test_remove_suite_runs_check_release_remove_on_the_board(window, monkeypatch):
+    """Remove suite (owner, 15-11-2026): check-release.sh remove in a terminal, on Linux, the board; off elsewhere."""
+    from nexus_release_tool import plan as rp
+    w, _app = window
+    launched = []
+    w.launch = launched.append
+    page = w.remove_page
+    monkeypatch.setattr(rp, "tests_here", lambda: True)
+    page.enable()
+    assert page.remove_button.isEnabled()
+    page.remove_button.click()
+    assert launched and launched[0].endswith("tools/check-release.sh remove")
+    assert "Board Test asks for the sudo password" in page.output.toPlainText()
+    monkeypatch.setattr(rp, "tests_here", lambda: False)
+    page.enable()
+    assert not page.remove_button.isEnabled() and "on the board (Linux)" in page.remove_button.toolTip()

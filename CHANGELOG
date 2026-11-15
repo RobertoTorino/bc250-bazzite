@@ -1,3 +1,13 @@
+Changelog: 15-11-2026 06:25:12
+
+Added. tools/check-release.sh cleans up after a test, as the Bazzite Console Suite's does (owner, 15-11-2026): on
+a board without the suite, what a test installs (local, release or draft, the Device test too) is marked as a
+test's and removed again when the portal closes; a board that had the suite keeps it, and --keep keeps what a test
+installed. check-release.sh status lists what of the suite is installed and whether a test put it there, and
+check-release.sh remove [--purge] removes it all, every app, the portal and Board Test, each with its own
+uninstaller. release takes the draft while the release is not published yet. tools/installer-tests/release-check.sh
+tests it all.
+
 Changelog: 15-11-2026 05:52:56
 
 Fixed. tools/pre-push.sh's message for a missing portal bump names Nexus Release Tool's Commit your changes, which

@@ -5,7 +5,8 @@ repository's.
 
 Nexus release: the release as numbered steps, from your own changes to the portal published, and Contents, what it
 holds (release_page.py, flow.py). Retract app: a pinned release withdrawn in apps.toml, tested on a board (Test
-withdrawal); the portal that removes it from the boards is the next release. The release by hand, a tag at a time
+withdrawal); the portal that removes it from the boards is the next release. Remove suite: what of the suite is
+installed on this board, removed (check-release.sh remove). The release by hand, a tag at a time
 (Release apps with its Apply, Pin and release Portal with its Pin and Bump, git tag and Test on this board), went on
 15-11-2026 (owner: its Bump wrote a portal release while the release's draft waited for its device test, which then
 went out as a second release of the same apps); tools/tag-release.sh still tags one release from a terminal. Each
@@ -192,6 +193,56 @@ class WithdrawPage(QWidget):
 
 def open_url(url: str) -> None:
     QDesktopServices.openUrl(QUrl(url))
+
+
+class RemovePage(QWidget):
+    """Remove suite: what of the suite is installed on this board, removed with each part's own uninstaller
+    (check-release.sh remove, in a terminal). On Linux, the board (owner,
+    15-11-2026: as the Bazzite Console Suite's release tool has it)."""
+
+    def __init__(self, window: "ReleaseWindow"):
+        super().__init__()
+        self.release_window = window
+        self.remove_button = QPushButton("Remove suite")
+        self.remove_button.clicked.connect(self.remove)
+        self.output = StepLog(self, "Remove suite", window.step_wrote, opens=False)   # lines while you click
+        row = QHBoxLayout()
+        row.addWidget(self.remove_button)
+        row.addStretch(1)
+        lay = QVBoxLayout(self)
+        lay.addLayout(info_row(
+            "Remove suite shows what of the suite is installed on this board and removes it all, in a terminal.",
+            "<b>Remove suite</b> lists what of the suite is installed on this board and whether a test put it there "
+            "(check-release.sh status), then removes it all: every app, the portal and Board Test, each with its own "
+            "uninstaller (check-release.sh remove). Settings, history and results stay; <code>check-release.sh remove "
+            "--purge</code> in a terminal removes them too. A test on a board without the suite removes what it "
+            "installed when the portal closes; a board that had the suite keeps it."))
+        lay.addLayout(row)
+        lay.addStretch(1)
+        self.enable()
+
+    def enable(self) -> None:
+        """On Linux, the board (owner, 28-10-2026: the board's buttons are off on a Windows PC, which says where)."""
+        here = rp.tests_here()
+        self.remove_button.setEnabled(here)
+        self.remove_button.setToolTip("Show what of the suite is installed on this board and whether a test put it "
+                                      "there, then remove it all: every app, the portal and Board Test, each with "
+                                      "its own uninstaller (check-release.sh remove). Settings stay" if here else
+                                      "This runs on the board (Linux)")
+
+    def remove(self) -> None:
+        window = self.release_window
+        path = rp.check_script(window.root, window.suite)
+        if not (window.root / path).is_file():
+            self.output.appendPlainText(f"This suite has no {path}.")
+            return
+        try:
+            window.launch(f"{shlex.quote(str(window.root / path))} remove")
+        except RuntimeError as exc:
+            self.output.appendPlainText(str(exc))
+            return
+        self.output.appendPlainText("A terminal lists what of the suite is installed here, then removes it: every "
+                                    "app, the portal and Board Test. Board Test asks for the sudo password.")
 
 
 NOTIFY_MS = 10_000                      # how long a notification from the tray icon shows
@@ -743,6 +794,8 @@ class ReleaseWindow(QMainWindow):
         self.tabs.addTab(self.release_page.contents, "Contents")
         self.withdraw_page = WithdrawPage(self)
         self.tabs.addTab(self.withdraw_page, "Retract app")
+        self.remove_page = RemovePage(self)
+        self.tabs.addTab(self.remove_page, "Remove suite")
         self.commands = CommandLine(root, settings, finished=self.command_finished,   # a commit or push: read it again
                                     log_dir=COMMAND_LOG_DIR if settings is not None else None, terminal=self.launch)
         # One output tab (owner, 01-11-2026: Logs was mostly empty): Commands is the command line with its output,

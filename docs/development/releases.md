@@ -129,10 +129,18 @@ already and ends at once.
 ## The window
 
 The tabs are **Nexus release** (the steps above), **Contents** (what the release holds), **Retract app** (a
-withdrawal, [below](#withdrawing-a-release)) and **Commands**.
+withdrawal, [below](#withdrawing-a-release)), **Remove suite** and **Commands**.
 
-- What a step writes (the release, Retract, Test withdrawal) shows in **Commands**, under a line that names the
-  step, with the output of the commands: one output tab. A step that writes its log opens Commands; open the step
+- **Remove suite**, on a BC-250, opens a terminal that lists what of the suite is installed on the board and
+  whether a test put it there (`tools/check-release.sh status`), then removes it all: every app, the portal and
+  Board Test, each with its own uninstaller (`tools/check-release.sh remove`). Board Test asks for the sudo
+  password. Settings, history and results stay; `tools/check-release.sh remove --purge` removes them too.
+- **Device test** and the other tests of `tools/check-release.sh` clean up after themselves: on a board without the
+  suite, what the test installs is marked as a test's and removed again when the portal closes (the portal, Board
+  Test and the apps installed during the test). A board that had the suite installed keeps it, and `--keep` keeps
+  what a test installed.
+- What a step writes (the release, Retract, Test withdrawal, Remove suite) shows in **Commands**, under a line that
+  names the step, with the output of the commands: one output tab. A step that writes its log opens Commands; open the step
   again to go on. The steps' logs go into the day's command log too (below).
 - **The command line** in **Commands** runs a command in the checkout, so you need no separate terminal for the
   commands the steps show. Type it and press Enter; its output appears above the line as it runs. **Commands**

@@ -1,3 +1,8 @@
+Changelog: 15-11-2026 06:25:12
+
+Added. A tab Remove suite (owner, 15-11-2026): on a BC-250 it opens a terminal that lists what of the suite is
+installed and removes it all, every app, the portal and Board Test (tools/check-release.sh remove).
+
 Changelog: 15-11-2026 05:52:56
 
 Fixed. A part whose only changes since its last tag are its version, its version copies and a "Release x.y.z."
