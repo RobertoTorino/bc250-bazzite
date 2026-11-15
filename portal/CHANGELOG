@@ -1,3 +1,7 @@
+Changelog: 15-11-2026 08:25:29
+
+Release 21.1.0. Pins bc250-check-v2.2.0, bc250-upscaler-v3.2.0, bc250-overlay-v2.2.0, bc250-bios-v2.2.0, bc250-ace-v2.2.0, bc250-mesh-v2.2.0, bc250-vram-v2.2.0, bc250-fan-v2.2.0, bc250-wifi-v0.2.0, bc250-cec-v2.2.0, bc250-sftp-v2.2.0, bc250-turing-v0.2.0, bc250-webcam-v0.2.0, bc250-controller-v0.2.0, bc250-rpcs3-v5.2.0, bc250-consoles-v3.2.0, bc250-clb-v2.2.0, bc250-shadps4-v5.3.0, bc250-datstation-v4.2.0, bc250-ppsspp-v3.2.0, bc250-pcsx2-v5.2.0, bc250-vita3k-v3.2.0, bc250-xenia-v3.2.0, bc250-ssd-v1.2.0, bc250-btpair-v0.3.0.
+
 Changelog: 15-11-2026 07:41:29
 
 Added. The portal starts with its example wallpaper behind it (owner, 15-11-2026, as the Bazzite Console Suite's

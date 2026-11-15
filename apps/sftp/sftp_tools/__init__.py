@@ -4,7 +4,7 @@ Bazzite host from another computer."""
 
 APP_NAME = "BC-250 SFTP Tools"
 APP_ID = "bc250-sftp-tools"
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 from pathlib import Path
 
