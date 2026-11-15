@@ -1,5 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
+<span class="page-icon">:material-shape-outline:</span>
+
 # App categories
 
 Every app in the suite belongs to one of five categories, and every app in a category has the same icon. The icon
@@ -63,3 +65,4 @@ Every app with its icon and its category.
 | ![](../assets/apps/sftp.webp){ .app-icon } [BC-250 SFTP Tools](sftp.md) | Utilities |
 | ![](../assets/apps/ssd.webp){ .app-icon } [BC-250 SSD Check](ssd.md) | Utilities |
 | ![](../assets/apps/btpair.webp){ .app-icon } [BC-250 Bluetooth Pairing](btpair.md) | Utilities |
+| ![](../assets/apps/helpers.webp){ .app-icon } [BC-250 Helpers](helpers.md) | Utilities |

@@ -1,5 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
+<span class="page-icon">:material-tag-outline:</span>
+
 # Releases
 
 The **Nexus Release Tool**, NRT for short (`dev/nrt/` in the repository), is the suite's release front end: a
@@ -69,7 +71,10 @@ explanation.
    that never started; [githubstatus.com](https://www.githubstatus.com) says when Actions are degraded): **Run CI
    again** starts the failed jobs again on the same commit. Once pressed, it stays off for those runs until GitHub
    shows them running again; a run that fails again can be started again.
-5. **Start new release:** check the versions on the Contents tab, then press it. It writes the release (the versions
+5. **Start new release:** while the wiki's Portal Tour is older than the portal (its window or its tiles), an orange
+   banner above the steps says so, with **Record new video now** (`tools/record-tour.sh --wiki`, about a minute, its
+   output on the Commands tab), and this step waits until the video is recorded. Then check the versions on the
+   Contents tab, and press it. It writes the release (the versions
    and their copies, the `Release x.y.z.` entries, the new tags in `portal/apps.toml`, the portal's version and its
    entry), commits it, pushes it and starts `.github/workflows/release.yml` on that commit. If the push stops, fix
    what it says; the pill then reads **Push and start**. It fetches GitHub's tags and `main` first: the portal is
@@ -224,7 +229,7 @@ The release stays on GitHub, so its history is kept, but nothing installs it any
    is not released again. The portal's CHANGELOG entry names the withdrawal. A portal that updates to it removes
    the app; the portal update button says so beforehand ("withdraws ...").
 
-Board Test, which is always installed, cannot be withdrawn.
+Board Test and Helpers, which are always installed, cannot be withdrawn.
 
 ## Checking a release
 

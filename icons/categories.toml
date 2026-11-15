@@ -173,3 +173,8 @@ tile = "portal/images/apps/ssd.webp"
 category = "utilities"
 icons = ["apps/btpair/images/bc250-bluetooth-pairing"]
 tile = "portal/images/apps/btpair.webp"
+
+[helpers]
+category = "utilities"
+icons = ["apps/helpers/images/bc250-helpers"]
+tile = "portal/images/apps/helpers.webp"

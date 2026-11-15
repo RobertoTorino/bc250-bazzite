@@ -1,5 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
+<span class="page-icon">:material-clipboard-list-outline:</span>
+
 # Basic tests and additional requirements to streamline the Qt GUI version
 
 ### Start the GUI: 

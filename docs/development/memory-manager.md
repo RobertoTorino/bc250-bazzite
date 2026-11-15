@@ -1,5 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
+<span class="page-icon">:material-memory:</span>
+
 # Memory Manager internals
 
 How BC-250 Memory Manager reads and writes the VRAM split in CMOS and the GTT limit on the kernel command line,

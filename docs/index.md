@@ -26,7 +26,8 @@ hide:
 <div class="home-card" markdown>
 #### :material-stethoscope: Diagnostics
 
-[Board Test](apps/check.md) checks, stress-tests and benchmarks the board,
+[Board Test](apps/check.md) checks, stress-tests and benchmarks the board, with
+[Helpers](apps/helpers.md) for its extras, MangoHud's FPS log, the GPU metrics, the sensors and the journal,
 [BIOS Reader](apps/bios.md) shows every BIOS setting, hidden menus too, and
 [BC-250 System Overlay](apps/overlay.md) keeps CPU, GPU, fan and temperatures on top,
 [Turing Screen](apps/turing.md) shows them on a small USB screen,

@@ -28,7 +28,7 @@ CPU's and the GPU's load and temperature (**CPU 12% 54°C | GPU 3% 61°C**), the
 8°C Partly cloudy**, after its symbol). The line at the bottom says what the keys and the controller's buttons
 do.
 
-**Board Test** is always installed with the portal; every other app is optional. Below the header is a strip
+**Board Test** and **Helpers** are always installed with the portal; every other app is optional. Below the header is a strip
 with a name for each [category](apps/categories.md): Sustainable, Graphics, Gaming and Utilities, and beside it
 the notice of updates. Each app is a large tile under its category, left to right in the order of `apps.toml`
 and as many to a row as the screen fits; Board Test is always the first tile on Sustainable. The tile with the
@@ -50,8 +50,12 @@ mouse:
   and Square on a PlayStation one) holds every action: **Open** (or the
   app's two windows), **Install** (an arrow into a tray; **Update**, in red, when an update is waiting;
   **Reinstall** for an installed app, in red with a circular arrow when its version is unknown) and
-  **Uninstall** (a bin). What cannot be done now is grayed out. Board Test has no Uninstall: it is removed
-  together with the portal.
+  **Uninstall** (a bin). What cannot be done now is grayed out. Board Test and the helpers have no Uninstall:
+  they are removed together with the portal.
+- **A helper**: [BC-250 Helpers](apps/helpers.md) is an app of small helpers for one job each, and each helper is a
+  tile of its own on Utilities (Test Extras, MangoHud Config, Fix GPU Metrics, ...). Pressing one opens that
+  helper's window; a helper that changes the board says so under its name and asks first. Its menu's Reinstall
+  reinstalls the whole app, as every helper's tile shows the app's state.
 - **A red dot** in the icon and **Update** under the name: an update is available.
 - **A red circular arrow** in the icon and **Reinstall needed** under the name: reinstall the app. It is
   installed, but not by this portal (by hand, or under an earlier name of the app), so the portal does not know its
@@ -173,7 +177,7 @@ Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), N
   of the tarball it installed from (`build.sha256` beside the program, when the tarball is next to the unpacked
   folder, as the install steps and the portal's own update leave it), and the portal compares it with the newest
   release's. A portal installed from a checkout is not offered the release of its own version (it would replace
-  the checkout's portal); a newer version still is. The download is kept in `~/.local/share/bc250-bazzite-suite/state/portal-update/` until the next one.
+  the checkout's portal); a newer version still is. The unpacked release is kept in `~/.local/share/bc250-bazzite-suite/state/portal-update/` until the next one; its tarball and `SHA256SUMS` are removed once it is installed.
 - **Outside the suite**, in orange beside the red notice: a newer release of a program that an installed app
   installs in its newest version, so the app can install it now. Press it to list them, for example **Upscaler
   Manager (Graphics): HelixSR 1.9.3 is out**, with what to do in the app, and choose one to go to its tile; the
@@ -305,12 +309,13 @@ What it installs:
 | The portal, its `apps.toml` and the `bc250_core` it was tested with | `~/.local/share/bc250-bazzite-suite/portal` | In your home folder: the portal needs no root |
 | What the portal remembers: the apps it installed and their releases, the wallpaper, the music track, a downloaded portal update | `~/.local/share/bc250-bazzite-suite/state` | Apart from the program, so an update of the portal keeps it; each app's matching uninstaller is at hand |
 | BC-250 Board Test (bundled in the portal release) | `/opt/bc250-board-test`, through its own installer, which asks for the sudo password | Its test engine runs as root and must be root-owned |
+| BC-250 Helpers (bundled in the portal release) | `~/.local/share/bc250-helpers/app`, through its own installer | An app of your own; a helper asks for your password when it changes the board |
 | The suite's shared venv with PyQt6 | `~/.local/share/bc250-bazzite-suite/venv` | One copy of the ~100 MB of Qt for all suite apps; removed with the last app that uses it (`venv-users/`) |
 | What the apps found outside the suite, one file per app | `~/.local/share/bc250-bazzite-suite/upstream/` | For **Outside the suite** in the notice; written by the apps, read by the portal |
 | Launcher, menu entry, Desktop icon | `~/.local/bin/bc250-bazzite-suite`, `~/.local/share/applications/`, the Desktop | The portal's icon is the one way in; the apps' own icons are optional (**Icons on Desktop**) |
 
-Uninstall: `~/.local/share/bc250-bazzite-suite/portal/install.sh --uninstall`. This removes the portal and Board
-Test and keeps settings and the wallpaper; add `--purge` to remove those too. First it asks about each other suite
+Uninstall: `~/.local/share/bc250-bazzite-suite/portal/install.sh --uninstall`. This removes the portal, Board
+Test and Helpers and keeps settings and the wallpaper; add `--purge` to remove those too. First it asks about each other suite
 app that is installed: `y` uninstalls it, `s` skips it (it stays installed), `c` cancels the whole uninstall before
 anything is removed. The list has every app this portal lists and the apps an earlier portal installed that this one
 no longer lists (an app dropped from the suite), each removed with its own uninstaller. Those apps keep their own
@@ -343,7 +348,7 @@ leaves the games it deployed to as they are; **Remove** each deployment in the a
 
 Settings live in `~/.config/bc250-*`, results and logs in `~/.local/share/bc250-*` (Board Test also writes its
 reports to `~/Desktop/bc250-board-test`). Each app's `install.sh --uninstall --purge` removes them; the
-portal's `--purge` does so for the portal and Board Test.
+portal's `--purge` does so for the portal, Board Test and Helpers.
 
 ## Development
 
@@ -357,7 +362,8 @@ PYTHONPATH=../core ../.venv-linux/bin/python -m bc250_portal    # --source relea
 ```
 
 To install from the checkout, run `./install.sh` in the repository's root (or here in `portal/`). It copies the
-portal into your home folder, as a release does, bundles the repository's `core/` and installs `../apps/check`. The
+portal into your home folder, as a release does, bundles the repository's `core/` and installs `../apps/check` and
+`../apps/helpers`. The
 installed portal names the checkout and installs the other apps from it too, so keep the checkout where it is.
 
 ## apps.toml and releases
@@ -371,7 +377,15 @@ The comment at the top of [`apps.toml`](https://github.com/RobertoTorino/bc250-b
   bump it pins: an app patch release needs at least a portal patch release, an app minor release at least a
   portal minor release, and so on. An added, removed or withdrawn app needs at least a minor portal release.
 - **Withdrawn releases.** `withdrawn = "<reason>"` in an app's entry withdraws its pinned release (see
-  [Withdrawing a release](#withdrawing-a-release)). Not for Board Test, which is always installed.
+  [Withdrawing a release](#withdrawing-a-release)). Not for the required apps, Board Test and Helpers, which are
+  always installed.
+- **Required apps.** `required = true` marks an app the portal installs with itself and lists without Uninstall:
+  Board Test (`check`, always the first tile) and BC-250 Helpers. A portal release bundles the pinned release of
+  each one.
+- **Helpers.** An app made of small helpers lists them as `[[apps.<key>.helpers]]` tables (key, name, summary,
+  launch, and `changes_board` with its `board_change` for one that changes the board): the portal shows a tile per
+  helper and none for the app. In the app's wiki chapter, the section of each helper that changes the board opens
+  with its `board_change` in a "Changes the board" box (`tools/check_manifest.py` compares the two).
 
 A release of the suite is made from Nexus Release Tool's release tab with one action, **Start new release**: it
 writes the versions, the CHANGELOG entries and the new tags in `apps.toml`, commits and pushes, and starts
@@ -393,7 +407,8 @@ Releasing one app by hand and pinning it in the portal:
 4. Bump `portal/VERSION` as `tools/check_manifest.py` asks, and list the app release in the portal CHANGELOG.
 5. Once the pinned app releases are tested together on a BC-250 (see
    [Testing a portal release before its tag](#testing-a-portal-release-before-its-tag)), commit steps 3 and 4,
-   push, and tag with `tools/tag-release.sh bc250-portal-v<x.y.z>`. That release bundles the pinned Board Test release (`bc250-check-v…`).
+   push, and tag with `tools/tag-release.sh bc250-portal-v<x.y.z>`. That release bundles the pinned Board Test
+   and Helpers releases (`bc250-check-v…`, `bc250-helpers-v…`).
 6. Once `release.yml` has published it, it is GitHub's **Latest** release, where users download the portal:
    [The releases on GitHub](development/releases.md#the-releases-on-github).
 
@@ -440,7 +455,7 @@ For a release by hand, before the portal tag:
    to 4). Nothing has reached users yet.
 
 This does not test the portal tarball itself, which GitHub builds from the tag; the release workflow checks it
-(`tools/check_manifest.py --require-tags`, and the bundled Board Test against its pin). The next section tests
+(`tools/check_manifest.py --require-tags`, and the bundled Board Test and Helpers against their pins). The next section tests
 it on the board.
 
 ### Testing a portal release after its tag
@@ -465,7 +480,7 @@ install by hand afterwards (`./install.sh`) makes it the board's own.
 
 ```bash
 tools/check-release.sh status            # what of the suite is installed, and whether a test put it there
-tools/check-release.sh remove            # remove every app, the portal and Board Test; settings stay
+tools/check-release.sh remove            # remove every app, the portal, Board Test and Helpers; settings stay
 tools/check-release.sh remove --purge    # their settings, history and results too
 ```
 
@@ -477,7 +492,7 @@ A release that must not be used any more is withdrawn with Nexus Release Tool: t
 [Withdrawing a release](development/releases.md#withdrawing-a-release).
 On a BC-250, **Test withdrawal** installs the portal from the checkout and starts it (`check-release.sh local`):
 the portal says the app is not available any more, removes it, and then shows **App not available** on its tile.
-Board Test, which is always installed, cannot be withdrawn.
+Board Test and Helpers, which are always installed, cannot be withdrawn.
 
 ### Checking a release
 

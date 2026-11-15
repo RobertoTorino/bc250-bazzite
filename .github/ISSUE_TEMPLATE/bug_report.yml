@@ -39,6 +39,7 @@ body:
         - xenia
         - ssd
         - btpair
+        - helpers
     validations:
       required: true
   - type: textarea

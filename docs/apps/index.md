@@ -1,9 +1,11 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
+<span class="page-icon">:material-view-grid-outline:</span>
+
 # The apps
 
-The portal installs, opens, updates and removes these apps. BC-250 Board Test is always installed, every
-other app is optional. They are listed by category, as the portal's tabs list them; what the icons stand for is in
+The portal installs, opens, updates and removes these apps. BC-250 Board Test and BC-250 Helpers are always
+installed, every other app is optional. They are listed by category, as the portal's tabs list them; what the icons stand for is in
 [App categories](categories.md).
 
 **Closing an app.** In every app's window **Escape** closes the window, as its close button does, and so does **B**
@@ -63,6 +65,7 @@ controller Steam Input owns sends what its desktop layout says, by default Escap
 | ![](../assets/apps/sftp.webp){ .app-icon } [BC-250 SFTP Tools](sftp.md) | Move files between computers over SFTP, and manage the SSH server of a Bazzite host. |
 | ![](../assets/apps/ssd.webp){ .app-icon } [BC-250 SSD Check](ssd.md) | The health, power cycles and power-on hours of the board's SSDs. |
 | ![](../assets/apps/btpair.webp){ .app-icon } [BC-250 Bluetooth Pairing](btpair.md) | Pair your Bluetooth keyboard, mouse and controllers at boot, with no USB keyboard or mouse needed. |
+| ![](../assets/apps/helpers.webp){ .app-icon } [BC-250 Helpers](helpers.md) | Small helpers for one job each: Board Test's extras, MangoHud's config, GPU metrics, the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed. |
 
 The tools for working on the suite run from a checkout of the repository and are not in the portal:
 [Nexus Dashboard](../development/dashboard.md) opens them all (Nexus Release Tool, Nexus

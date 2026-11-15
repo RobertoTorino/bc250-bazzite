@@ -143,6 +143,10 @@ launchers = ["~/.local/bin/bc250-ssd-check"]
 name = "BC-250 Bluetooth Pairing"
 launchers = ["~/.local/bin/bc250-bluetooth-pairing"]
 
+[app.helpers]
+name = "BC-250 Helpers"
+launchers = ["~/.local/bin/bc250-helpers"]
+
 [[tool]]
 name = "flashrom"
 rpm = "flashrom"
@@ -233,6 +237,11 @@ anchor = "access-to-the-camera"
 owner = "btpair"
 need = "required"
 usage = "Password prompt for installing, changing and removing the search after boot and the battery service."
+
+[[tool.source]]
+owner = "helpers"
+need = "required"
+usage = "Password prompt for every change of the helpers that change the board: GPU metrics, the sensors driver, the memory map, the journal and the kernel arguments (IOMMU, CPU mitigations)."
 
 [[tool]]
 name = "umr"
@@ -1217,6 +1226,10 @@ specifier = ">=6.11,<7"
 
 [[dependency.source]]
 owner = "btpair"
+specifier = ">=6.11,<7"
+
+[[dependency.source]]
+owner = "helpers"
 specifier = ">=6.11,<7"
 
 [[dependency]]

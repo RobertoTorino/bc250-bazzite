@@ -16,7 +16,8 @@ S=$D/bc250-bazzite-suite/state         # what it remembers
 logs=()
 V=$(cat "$SUITE/portal/VERSION")
 NEXT="${V%.*}.$(( ${V##*.} + 1 ))"   # a later portal release, for the update in step 2
-BT="bc250-check-v$(tr -d '[:space:]' < "$SUITE/apps/check/VERSION")"   # the bundled release
+BT="bc250-check-v$(tr -d '[:space:]' < "$SUITE/apps/check/VERSION")"   # the bundled releases
+HB="bc250-helpers-v$(tr -d '[:space:]' < "$SUITE/apps/helpers/VERSION")"
 
 echo "== 1. install from the suite checkout, with the install.sh at its root"
 bash "$SUITE/install.sh" > "$T/log1" 2>&1; rc=$?; logs+=("$T/log1")
@@ -31,28 +32,34 @@ check "the sound is in the copy" "[ -s $P/bc250_portal/sounds/bigpicture.wav ] &
 check "the controller reader is in the requirements" "grep -q '^pygame-ce' $P/requirements.txt"
 check "check installed too" "[ -f $T/opt/bc250-board-test/test-board.sh ] && [ -x $HOME/.local/bin/bc250-board-test ]"
 check "check has its manual" "cmp -s $SUITE/docs/apps/check.md $T/opt/bc250-board-test/MANUAL.md"
-check "both venv users" "[ -f $D/bc250-bazzite-suite/venv-users/bc250-bazzite-suite ] && [ -f $D/bc250-bazzite-suite/venv-users/bc250-board-test ]"
+check "helpers installed too" "[ -f $D/bc250-helpers/app/helpers/__main__.py ] && [ -x $HOME/.local/bin/bc250-helpers ]"
+check "the venv users" "[ -f $D/bc250-bazzite-suite/venv-users/bc250-bazzite-suite ] && [ -f $D/bc250-bazzite-suite/venv-users/bc250-board-test ] && [ -f $D/bc250-bazzite-suite/venv-users/bc250-helpers ]"
 check "portal launcher" "grep -qF 'm bc250_portal' $HOME/.local/bin/bc250-bazzite-suite"
 check "desktop icons" "[ -x $HOME/Desktop/bc250-bazzite-suite.desktop ] && [ -x $HOME/Desktop/bc250-board-test.desktop ]"
-check "record says local" "grep -q '\"check\": \"local\"' $S/installed.json"
+check "records say local" "grep -q '\"check\": \"local\"' $S/installed.json && grep -q '\"helpers\": \"local\"' $S/installed.json"
 check "portal imports its bundled core" "(cd $P && /usr/bin/python3 -c 'import bc250_core, os, sys; sys.exit(0 if os.path.abspath(bc250_core.__file__).startswith(\"$P\") else 1)')"
 check "manifest parses on Linux python" "(cd $P && /usr/bin/python3 -c 'import tomllib; d=tomllib.load(open(\"apps.toml\",\"rb\")); assert list(d[\"apps\"])[0]==\"check\"')"
 
-echo "== 2. release-shaped tree: portal staged + bundled check, no desktop icons"
+echo "== 2. release-shaped tree: portal staged + bundled check and helpers, no desktop icons"
 R="$T/release/bc250-portal-v$NEXT"; rm -rf "$T/release"; mkdir -p "$T/release"
 /usr/bin/python3 "$NEXUS/tools/stage_app.py" portal "$R" > /dev/null
 /usr/bin/python3 "$NEXUS/tools/stage_app.py" check "$R/bundled/$BT" > /dev/null
+/usr/bin/python3 "$NEXUS/tools/stage_app.py" helpers "$R/bundled/$HB" > /dev/null
 sed -i "s/^__version__ = \"$V\"\$/__version__ = \"$NEXT\"/" "$R/bc250_portal/__init__.py"
 (cd "$T/release" && tar -czf "bc250-portal-v$NEXT.tar.gz" "bc250-portal-v$NEXT")      # the tarball beside it, as a download leaves it
+(cd "$T/release" && sha256sum "bc250-portal-v$NEXT.tar.gz" > SHA256SUMS)
+SUM=$(sha256sum "$T/release/bc250-portal-v$NEXT.tar.gz" | cut -c1-64)
 bash "$R/install.sh" --no-desktop-shortcut > "$T/log2" 2>&1; rc=$?; logs+=("$T/log2")
 check "exit 0" "[ $rc -eq 0 ]"
-check "the tarball's sha256 is kept beside the program" "[ \"\$(cut -c1-64 $P/build.sha256)\" = \"\$(sha256sum $T/release/bc250-portal-v$NEXT.tar.gz | cut -c1-64)\" ]"
+check "the tarball's sha256 is kept beside the program" "[ \"\$(cut -c1-64 $P/build.sha256)\" = $SUM ]"
+check "the tarball and its SHA256SUMS are removed" "[ ! -e $T/release/bc250-portal-v$NEXT.tar.gz ] && [ ! -e $T/release/SHA256SUMS ] && [ -f $R/install.sh ]"
 check "the new portal version replaced the old" "grep -q '^__version__ = \"$NEXT\"' $P/bc250_portal/__init__.py"
 check "the release has the sound" "[ -s $P/bc250_portal/sounds/bigpicture.wav ]"
 check "bundled/ not copied" "[ ! -d $P/bundled ]"
 check "portal installs apps from releases" "[ ! -e $P/suite-checkout ]"
-check "record has the bundled tag" "grep -q '\"check\": \"$BT\"' $S/installed.json"
-check "desktop icons removed" "[ ! -e $HOME/Desktop/bc250-bazzite-suite.desktop ] && [ ! -e $HOME/Desktop/bc250-board-test.desktop ]"
+check "records have the bundled tags" "grep -q '\"check\": \"$BT\"' $S/installed.json && grep -q '\"helpers\": \"$HB\"' $S/installed.json"
+check "helpers from the bundled release" "[ -f $D/bc250-helpers/app/bc250_core/__init__.py ]"
+check "desktop icons removed" "[ ! -e $HOME/Desktop/bc250-bazzite-suite.desktop ] && [ ! -e $HOME/Desktop/bc250-board-test.desktop ] && [ ! -e $HOME/Desktop/bc250-helpers.desktop ]"
 
 echo "== 3. the portal's own update: a release unpacked in the state folder, installed from there"
 U="$S/portal-update/bc250-portal-v$NEXT"; mkdir -p "$S/portal-update"; cp -r "$R" "$U"
@@ -60,6 +67,11 @@ echo picture > "$S/wallpaper.png"
 (cd "$U" && ./install.sh --no-desktop-shortcut) > "$T/log2b" 2>&1; rc=$?; logs+=("$T/log2b")
 check "exit 0" "[ $rc -eq 0 ]"
 check "the portal is installed, the state untouched" "[ -f $P/bc250_portal/__main__.py ] && grep -q '\"check\": \"$BT\"' $S/installed.json && [ -f $S/wallpaper.png ]"
+check "run again without its tarball: the build is still recorded" "[ \"\$(cut -c1-64 $P/build.sha256)\" = $SUM ]"
+# A tarball beside a SHA256SUMS of another download: the tarball goes, that SHA256SUMS stays.
+(cd "$S/portal-update" && tar -czf "bc250-portal-v$NEXT.tar.gz" "bc250-portal-v$NEXT" && echo "$SUM  other.tar.gz" > SHA256SUMS)
+(cd "$U" && ./install.sh --no-desktop-shortcut) > "$T/log2d" 2>&1; rc=$?; logs+=("$T/log2d")
+check "another download's SHA256SUMS is kept" "[ $rc -eq 0 ] && [ ! -e $S/portal-update/bc250-portal-v$NEXT.tar.gz ] && grep -q other.tar.gz $S/portal-update/SHA256SUMS"
 # An earlier portal kept its downloads in what is the portal's own folder now: the copy replaces the folder the
 # update runs from, after Board Test is installed from it.
 U="$P/portal-update/bc250-portal-v$NEXT"; mkdir -p "$P/portal-update"; cp -r "$R" "$U"
@@ -72,7 +84,7 @@ mkdir -p "$S/releases/governor-v0.0.1" "$S/releases/local-bios"
 bash "$P/install.sh" --uninstall > "$T/log3" 2>&1; rc=$?; logs+=("$T/log3")
 check "exit 0" "[ $rc -eq 0 ]"
 check "portal gone, check gone from /opt" "[ ! -e $P ] && [ -z \"\$(ls $T/opt)\" ]"
-check "launchers gone" "[ ! -e $HOME/.local/bin/bc250-bazzite-suite ] && [ ! -e $HOME/.local/bin/bc250-board-test ]"
+check "launchers gone" "[ ! -e $HOME/.local/bin/bc250-bazzite-suite ] && [ ! -e $HOME/.local/bin/bc250-board-test ] && [ ! -e $HOME/.local/bin/bc250-helpers ] && [ ! -e $D/bc250-helpers ]"
 check "venv kept, only governor left" "[ -x $D/bc250-bazzite-suite/venv/bin/python ] && [ \"\$(ls $D/bc250-bazzite-suite/venv-users)\" = bc250-governor-manager ]"
 check "mentions what is left" "grep -q 'Still installed: bc250-governor-manager' $T/log3"
 check "the wallpaper kept, the records and releases of the apps that are gone dropped" "[ -f $S/wallpaper.png ] && [ ! -e $S/installed.json ] && [ ! -e $S/releases ]"
@@ -130,7 +142,7 @@ check "dropped app without a record gone" "! installed bazzite-datstation && [ !
 check "record drops the chosen app" "! grep -q bios $S/installed.json && grep -q overlay $S/installed.json"
 check "record and folder of check gone" "! grep -q check $S/installed.json && [ ! -e $S/releases/local-check ]"
 check "older release of the skipped app gone" "[ ! -e $S/releases/overlay-v0.0.1 ]"
-check "portal and check gone" "! installed bc250-bazzite-suite && ! installed bc250-board-test"
+check "portal, check and helpers gone" "! installed bc250-bazzite-suite && ! installed bc250-board-test && ! installed bc250-helpers"
 check "mentions what is left" "grep -q 'Still installed: bc250-system-overlay' $T/log5"
 (cd "$S/releases/local-overlay" && bash install.sh --uninstall) >> "$T/log5" 2>&1
 bash "$NEXUS/dev/itests/install.sh" --uninstall >> "$T/log5" 2>&1
@@ -156,7 +168,7 @@ bash "$SUITE/install.sh" --uninstall --all < /dev/null >> "$T/log7" 2>&1; rc=$?
 check "without a terminal: refused, nothing removed" "[ $rc -ne 0 ] && grep -q 'needs a terminal' $T/log7 && installed bc250-system-overlay && installed bc250-bazzite-suite"
 printf 'n\n' | BC250_INTERACTIVE=1 bash "$SUITE/install.sh" --uninstall --all >> "$T/log7" 2>&1; rc=$?
 check "no: canceled, nothing removed" "[ $rc -eq 1 ] && grep -q 'Canceled: nothing was uninstalled.' $T/log7 && installed bc250-system-overlay && installed bc250-bios-reader && installed bc250-bazzite-suite"
-check "the warning names every app" "grep -q 'WARNING: --all removes the whole suite from this computer: BC-250 System Overlay, BC-250 BIOS Reader, with the portal and Board Test.' $T/log7"
+check "the warning names every app" "grep -q 'WARNING: --all removes the whole suite from this computer: BC-250 System Overlay, BC-250 BIOS Reader, with the portal, Board Test and Helpers.' $T/log7"
 check "asks once, not per app" "grep -q 'Are you sure you want to delete everything permanently?' $T/log7 && ! grep -q 'Uninstall BC-250 System Overlay?' $T/log7"
 printf 'y\n' | BC250_INTERACTIVE=1 bash "$SUITE/install.sh" --uninstall --all --purge >> "$T/log7" 2>&1; rc=$?
 check "yes: exit 0" "[ $rc -eq 0 ]"

@@ -1,3 +1,27 @@
+Changelog: 15-11-2026 23:30:00
+
+Release 22.1.0. Pins bc250-helpers-v0.1.0.
+
+Changelog: 15-11-2026 19:43:21
+
+Added. apps.toml lists BC-250 Helpers' IOMMU Off and CPU Mitigations Off, each a tile of its own on Utilities that
+changes the board, with what it changes.
+
+Changelog: 15-11-2026 14:33:23
+
+Added. BC-250 Helpers comes with the portal, as Board Test does: the portal installs it with itself (bundled in the
+release, from apps/helpers in a checkout), records it, lists no Uninstall for it and removes it with its own
+uninstall. Each helper is a tile of its own on Utilities, from the new [[apps.<key>.helpers]] tables of apps.toml;
+a helper that changes the board says so on its tile and asks before it opens, and Reinstall or Update on any of
+them installs the app. apps.toml may now mark more than one app required; check stays the first.
+
+Changelog: 15-11-2026 12:45:47
+
+Added. install.sh removes the downloaded portal tarball once it has installed from it, and the SHA256SUMS beside
+it when that file lists the tarball (another download's SHA256SUMS stays); the unpacked folder stays. It keeps
+build.sha256 in that folder too, so running install.sh from it again still records the build. This covers the
+install steps, the portal's own update and check-release.sh. The portal's installer test covers it.
+
 Changelog: 15-11-2026 12:01:29
 
 Release 22.0.0. Pins bc250-check-v3.0.0, bc250-upscaler-v4.0.0, bc250-overlay-v3.0.0, bc250-bios-v3.0.0, bc250-ace-v3.0.0, bc250-mesh-v3.0.0, bc250-vram-v3.0.0, bc250-fan-v3.0.0, bc250-wifi-v1.0.0, bc250-cec-v3.0.0, bc250-sftp-v3.0.0, bc250-turing-v1.0.0, bc250-webcam-v1.0.0, bc250-controller-v1.0.0, bc250-rpcs3-v6.0.0, bc250-consoles-v4.0.0, bc250-clb-v3.0.0, bc250-shadps4-v6.0.0, bc250-datstation-v5.0.0, bc250-ppsspp-v4.0.0, bc250-pcsx2-v6.0.0, bc250-vita3k-v4.0.0, bc250-xenia-v4.0.0, bc250-ssd-v2.0.0, bc250-btpair-v1.0.0.

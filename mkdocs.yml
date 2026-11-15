@@ -93,6 +93,7 @@ nav:
           - BC-250 Bluetooth Pairing: apps/btpair.md
           - BC-250 CEC Manager: apps/cec.md
           - BC-250 Controller: apps/controller.md
+          - BC-250 Helpers: apps/helpers.md
           - BC-250 SFTP Tools: apps/sftp.md
           - BC-250 SSD Check: apps/ssd.md
           - BC-250 System Overlay: apps/overlay.md

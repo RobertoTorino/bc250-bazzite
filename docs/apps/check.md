@@ -43,7 +43,7 @@ cd bc250-check-v*/
 
 What `install.sh` does:
 
-* copies the app, with the `bc250_core` it was released with, to `/opt/bc250-check-v<version>`
+* copies the app, with the `bc250_core` it was released with, to `/opt/bc250-board-test-v<version>`
   (root-owned), points `/opt/bc250-board-test` at it and removes older versions;
 * uses the suite's shared venv `~/.local/share/bc250-bazzite-suite/venv` with PyQt6 (created on first use;
   the wheels bundle Qt, nothing else is needed; ~100 MB download the first time). The venv is removed with
@@ -51,9 +51,39 @@ What `install.sh` does:
 * adds the launcher `~/.local/bin/bc250-board-test`, an app menu entry and a Desktop icon
   (`./install.sh --no-desktop-shortcut` skips the Desktop icon).
 
-**Optional tools** some tests use (stress-ng, vkpeak, memtest_vulkan, fio, speedtest, …) can be
-installed interactively with `/opt/bc250-board-test/development/tools/install-requirements.sh` —
-it says what each group is for and asks per group.
+**Optional tools.** The app runs without extras; a test whose tool is missing says so. These are the tools the
+tests use when they are there; the suite's [Test Extras](helpers.md#test-extras) helper shows which ones are there and
+installs them:
+
+| Tool | Used by | Group |
+|------|---------|-------|
+| `stress-ng` | 41 CPU + GPU Stress (CPU load), 42 Performance Benchmark (CPU score), 49 CPU Memory Bandwidth | RPM packages |
+| `lm_sensors` (`sensors`) | 22 Hardware Sensors | RPM packages |
+| `vkmark` | 41 CPU + GPU Stress (GPU load, when memtest_vulkan and vkpeak are missing) | RPM packages |
+| `nvme-cli` (`nvme`) | 10 NVMe Devices (SMART health) | RPM packages |
+| `fio` | 43 Disk Speed (random 4K read) | RPM packages |
+| `memtest_vulkan` | 41 CPU + GPU Stress (GPU load and a VRAM error check) | Binaries in `~/.local/bin` |
+| `vkpeak` | 42 Performance Benchmark (GPU score), 41 CPU + GPU Stress (GPU load, when memtest_vulkan is missing) | Binaries in `~/.local/bin` |
+| Ookla `speedtest` | 44 Internet Speed (`speedtest-cli` works too) | Speed test in `~/.local/bin` |
+| `sqlite` (`sqlite3`) | no test: looks into the app's history database during development | Development extras |
+
+`glmark2`, `vulkan-tools` (`vulkaninfo`, `vkcube`) and `smartmontools` (`smartctl`), which tests 10, 20, 21 and 41
+also use, come with Bazzite.
+
+The helper `/opt/bc250-board-test/development/tools/install-requirements.sh` installs them. Run without an
+option, it asks per group, says what each group is for and what it installs, and skips what is there already:
+
+* **RPM packages** are layered with `rpm-ostree` and become active after a reboot (`systemctl reboot`);
+* **binaries** (`vkpeak`, `memtest_vulkan`) are the latest releases from their GitHub projects;
+* **the speed test** is Ookla's CLI; running it accepts Ookla's license and privacy terms;
+* **development extras** are only for working on the app.
+
+```bash
+/opt/bc250-board-test/development/tools/install-requirements.sh          # asks per group
+/opt/bc250-board-test/development/tools/install-requirements.sh --all    # every group except the development extras, no questions
+```
+
+`--rpms`, `--bins`, `--speedtest` and `--dev` install one group.
 
 > **Why `/opt`?** The test engine runs as root through sudo. A release build therefore refuses to
 > run `test-board.sh` unless the file and every folder above it are owned by root and writable by
@@ -310,7 +340,8 @@ log_interval=500
 
 Create the folder, and make sure MangoHud is active for the game (for example the Steam launch option
 `mangohud %command%`). A log file is written per game session; delete old ones now and then. Without logging,
-the game's name and its CPU and GPU share are still shown.
+the game's name and its CPU and GPU share are still shown. The suite's
+[MangoHud Config](helpers.md#mangohud-config) helper sets the three lines and makes the folder for you.
 
 The **Game details** launch line does not work with the **Flatpak** version of Steam: the game would not start.
 Use the Steam that comes with Bazzite. The **Checks for the last session** always describe the newest session;
@@ -499,8 +530,8 @@ explanation are grouped per program, with the command to read them.
 
 | #  | Test                      | Checks                                                                          |
 |----|---------------------------|---------------------------------------------------------------------------------|
-| 23 | IOMMU Disabled            | Counts IOMMU groups; IOMMU is broken on the BC-250 and must be off — via BIOS or the `amd_iommu=off` kernel arg. |
-| 24 | CPU Mitigations           | Passes when `mitigations=off` is set (worth roughly +18 FPS on this board).     |
+| 23 | IOMMU Disabled            | Counts IOMMU groups; IOMMU is broken on the BC-250 and must be off — via BIOS or the `amd_iommu=off` kernel arg ([IOMMU Off](helpers.md#iommu-off) helper). |
+| 24 | CPU Mitigations           | Passes when `mitigations=off` is set (worth roughly +18 FPS on this board); the [CPU Mitigations Off](helpers.md#cpu-mitigations-off) helper sets it. |
 | 25 | CPU Core and Thread Count | Reports cores/threads — 6C/12T stock, 8C/16T after the unlock.                  |
 | 26 | CPU Power Management      | Checks cpufreq scaling and C-states; both need the BC-250 ACPI fix.             |
 | 46 | CPU Voltage               | CPU/SoC voltage rails from hwmon (amdgpu `vddgfx`/`vddnb`) plus the voltage each core requests (current P-state VID via MSR, one line per core). |
@@ -621,7 +652,8 @@ A freeze with a continuous screeching tone is a total kernel stall: the sound ca
 the same DMA buffer because nothing is left running to refill it. That rules out an application
 crash and points at the kernel or the SoC itself.
 
-Enable crash capture first, because a freeze this abrupt never reaches the disk:
+Enable crash capture first, because a freeze this abrupt never reaches the disk (the suite's
+[Persistent Journal](helpers.md#persistent-journal) helper makes the journal folder):
 
 ```bash
 sudo mkdir -p /var/log/journal && sudo systemd-tmpfiles --create --prefix /var/log/journal
@@ -665,7 +697,8 @@ GPU load then shows as **0%** or as an impossible **655%** (the raw `0xFFFF` in 
 enabled it also writes that load into a patched copy of `gpu_metrics` and bind-mounts it over the
 sysfs file, so the Steam performance overlay, MangoHud and radeontop show a real GPU %.
 
-Enable it in `/etc/cyan-skillfish-governor-smu/config.toml`:
+The suite's [Fix GPU Metrics](helpers.md#fix-gpu-metrics) helper turns it on and off, with a backup of
+the settings file. By hand, enable it in `/etc/cyan-skillfish-governor-smu/config.toml`:
 
 ```toml
 [gpu-usage]
@@ -846,7 +879,8 @@ The IOMMU is broken on the BC-250 and leaving it active creates an unstable syst
 that BIOS for this. The kernel can be told to never initialize the AMD IOMMU (AMD-Vi) via a
 boot parameter, which is the standard BC-250 community workaround.
 
-On Bazzite (ostree-based):
+The suite's [IOMMU Off](helpers.md#iommu-off) helper adds it for you, and removes it again. By hand, on Bazzite
+(ostree-based):
 
 ```bash
 rpm-ostree kargs --append=amd_iommu=off
@@ -972,7 +1006,7 @@ with the override. The BIOS route remains an alternative, not a requirement.
 
 ## License
 
-Copyright © 2026 Philip.
+Copyright © 2026 RobertoTorino.
 
 BC-250 Board Test is free software: you can redistribute it and/or modify it under the terms of the
 [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html), version 3 or (at your option) any

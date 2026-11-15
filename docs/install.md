@@ -17,10 +17,11 @@ tar -xzf {{ portal_tag }}.tar.gz &&
 ./{{ portal_tag }}/install.sh
 ```
 
-It downloads the portal, checks that the download is intact, unpacks it and installs it. If a line fails, nothing
+It downloads the portal, checks that the download is intact, unpacks it and installs it. Once installed,
+`install.sh` removes the downloaded archive and `SHA256SUMS`; the unpacked folder stays. If a line fails, nothing
 after it runs: fix what its message names and paste the block again. Prefer the browser? The same two files are on
 the [portal's release page](https://github.com/RobertoTorino/bc250-bazzite/releases/tag/{{ portal_tag }}); extract
-the archive and run `install.sh` in the extracted folder.
+the archive beside them and run `install.sh` in the extracted folder.
 
 This installs the portal in `~/.local/share/bc250-bazzite-suite/portal` and BC-250 Board Test. Install the other
 apps from the portal. The other releases on the Releases page (`bc250-gpu-v…`, `bc250-upscaler-v…` and so on) are
@@ -31,7 +32,7 @@ from the clone, so keep it where it is. `./install.sh --uninstall` removes it ag
 installed app.
 
 To uninstall the portal, run `~/.local/share/bc250-bazzite-suite/portal/install.sh --uninstall`. It removes the
-portal and Board Test, and first asks about each other app that is installed.
+portal, Board Test and Helpers, and first asks about each other app that is installed.
 
 What each app does: [The apps](apps/index.md).
 
