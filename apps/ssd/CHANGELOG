@@ -1,3 +1,7 @@
+Changelog: 15-11-2026 04:14:33
+
+Release 1.1.0.
+
 Changelog: 15-11-2026 04:09:59
 
 Breaking. BC-250 SSD Check has its own id, bc250-ssd-check, for the launcher, the menu entry, the settings and the

@@ -1,3 +1,7 @@
+Changelog: 15-11-2026 04:14:33
+
+Release 2.1.0.
+
 Changelog: 15-11-2026 04:09:59
 
 Breaking. BC-250 System Overlay has its own id, bc250-system-overlay, for the launcher, the menu entry, the settings

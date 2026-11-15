@@ -1,3 +1,7 @@
+Changelog: 15-11-2026 04:14:33
+
+Release 2.1.0.
+
 Changelog: 15-11-2026 04:09:59
 
 Breaking. BC-250 SFTP Tools has its own id, bc250-sftp-tools, for the launcher, the menu entry, the settings and the
