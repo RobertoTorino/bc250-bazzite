@@ -13,16 +13,17 @@ own.
 
 ## Start it
 
-From the repository's root, with the checkout's venv for the system ([Set up and test](https://robertotorino.github.io/bc250-bazzite/development/#set-up-and-test)):
+From the repository's root, with the checkout's venv ([Set up and test](https://robertotorino.github.io/bc250-bazzite/development/#set-up-and-test)):
 
-| | Linux | Windows (PowerShell) |
-|---|---|---|
-| Open it | `tools/nrt.sh` | `dev\nrt\run.ps1` |
-| The overview in the terminal | `tools/nrt.sh --list` | `dev\nrt\run.ps1 --list` |
-| Menu entry and Desktop icon | `dev/nrt/install.sh` | `powershell -ExecutionPolicy Bypass -File dev\nrt\install.ps1` |
+| | Command |
+|---|---|
+| Open it | `tools/nrt.sh` |
+| The overview in the terminal | `tools/nrt.sh --list` |
+| Menu entry and Desktop icon | `dev/nrt/install.sh` |
 
-Both installers take `--no-desktop-shortcut`, `--uninstall` and `--uninstall --purge` (the settings too). Nothing is
-copied: the entry starts the app of the checkout you installed it from.
+The installer takes `--no-desktop-shortcut`, `--uninstall` and `--uninstall --purge` (the settings too). Nothing is
+copied: the entry starts the app of the checkout you installed it from. The window's header names the checkout's
+last commit and its time: the tool is never released and has no version.
 
 How to use it: [Releases in the wiki](https://robertotorino.github.io/bc250-bazzite/development/releases/).
 

@@ -9,10 +9,14 @@
 #
 # APP: its key in portal/apps.toml (fan, cec, ...). compute and cores have two programs: --package says which.
 # Music: tools/sounds/the_quiet_engine.mp3 (made with generative AI tools), faded out over the last two seconds.
-# Default output: ~/Videos/bc250-<app>-tour-v<its version>.mp4 (an earlier file of that name is replaced;
+# Default output: ~/Videos/<tag prefix><app>-tour-v<its version>.mp4 (an earlier file of that name is replaced;
 # -2160p or -1440p before .mp4 with --size, which renders the tour at that size for YouTube).
-# Interpreter: $PYTHON if set, else the venv for this OS, as test.sh. Needs ffmpeg with libx264.
+# Interpreter: $PYTHON if set, else the checkout's venv, as test.sh. Needs ffmpeg with libx264.
 set -euo pipefail
+if [[ "${1:-}" == -h || "${1:-}" == --help ]]; then
+    sed -n '3,14p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0
+fi
 SUITE=$(cd "$(dirname "$0")/.." && pwd -P)       # the suite: the repository
 cd "$SUITE"                                      # the repository: the venvs and tools/app_tour.py
 
@@ -22,16 +26,12 @@ if [[ $# -lt 1 || "$1" == -* ]]; then
 fi
 PY=${PYTHON:-}
 if [[ -z "$PY" ]]; then
-    case "$(uname -s)" in
-        MINGW*|MSYS*|CYGWIN*) candidates=(.venv-windows/Scripts/python.exe .venv/Scripts/python.exe) ;;
-        *)                    candidates=(.venv-linux/bin/python .venv/bin/python) ;;
-    esac
-    for candidate in "${candidates[@]}"; do
+    for candidate in .venv-linux/bin/python .venv/bin/python; do
         [[ -x "$candidate" ]] && PY="$PWD/$candidate" && break
     done
 fi
 if [[ -z "$PY" ]]; then
-    echo "No venv for this OS. Create one, e.g. on Linux:" >&2
+    echo "No venv in the checkout. Create one:" >&2
     echo "  python3 -m venv .venv-linux && .venv-linux/bin/python -m pip install -r requirements-dev.txt" >&2
     exit 1
 fi
@@ -42,4 +42,4 @@ fi
 
 echo "Recording the tour of $1..."
 # Qt's notes about the offscreen platform (no raise, no keyboard grab) are left out.
-"$PY" tools/app_tour.py --suite . "$@" 2> >(grep -v -e "does not support" -e "propagateSizeHints" >&2)
+"$PY" tools/app_tour.py "$@" 2> >(grep -v -e "does not support" -e "propagateSizeHints" >&2)

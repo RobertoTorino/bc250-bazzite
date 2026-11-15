@@ -4,7 +4,7 @@
 # no sudo), a staged release replacing it, the refusals, uninstall with another venv user (the installed PPSSPP
 # removed; PPSSPP's own folder, the games and the settings kept) and --purge as the last venv user (the settings
 # removed).
-# Runs with the shims from shims.sh (CI, or WSL on Windows).
+# Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

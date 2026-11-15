@@ -1,70 +1,64 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The dashboard's window: the suite chosen in the header, the tiles (the Nexus apps of the checkout, then the
-suite's tours and icons and Close issues), Test local apps (the suite's portal and apps from the checkout, and the
-wikis), and what happened below. A click on an app's tile starts it with its run script, in its own session, and
-says where its log is; a click on a tool's tile opens its dialog on the chosen suite. A tile is greyed out where it
-does not run here: a Nexus app without the run script of this system, a suite's tours where its scripts need
-the other system, the icons for a suite whose apps take no category icons. Test local apps and Close issues came from Nexus Release
-Tool's Test on this board (owner, 04-11-2026: the release tool is the release, the dashboard the place for working
-on a suite)."""
+"""The dashboard's window: the tiles (the development apps of the checkout, then the suite's tours and icons and
+Close issues), Test local apps (the suite's portal and apps from the checkout, and its wiki), and what happened
+below. A click on an app's tile starts it with its run.sh, in its own session, and says where its log is; a click on
+a tool's tile opens its dialog on the checkout. A tile is greyed out where it does not run here: an app without its
+run.sh, the tours without their scripts, the icons without icons/categories.toml. Test local apps and Close issues
+came from Nexus Release Tool's Test on this board (owner, 04-11-2026: the release tool is the release, the dashboard
+the place for working on the suite)."""
 
 from __future__ import annotations
 
 import os
 import socket
 import subprocess
-import sys
 from pathlib import Path
 
-from PyQt6.QtCore import QProcess, QRectF, QSettings, QSize, Qt, QTimer, QUrl
+from PyQt6.QtCore import QProcess, QRectF, QSize, Qt, QTimer, QUrl
 from PyQt6.QtGui import QColor, QDesktopServices, QIcon, QPainter, QPen, QPixmap
 from PyQt6.QtNetwork import QLocalSocket
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDialog, QHBoxLayout, QLabel, QListView, QListWidget,
+from PyQt6.QtWidgets import (QCheckBox, QDialog, QHBoxLayout, QLabel, QListView, QListWidget,
                              QListWidgetItem, QMainWindow, QMessageBox, QVBoxLayout, QWidget)
 
+from bc250_core import SUITE_MANUAL_URL
 from bc250_core.instance import server_name
+from bc250_core.nexus import header as nexus_header
 from bc250_core.theme import ORANGE
-from bc250_core.widgets import AppHeader, InfoButton, Terminal, hint_label
+from bc250_core.widgets import InfoButton, Terminal, hint_label
 
-from . import APP_ID, APP_NAME, CHECKOUT, LOGO_PATH, __version__
+from . import APP_ID, APP_NAME, CHECKOUT, LOGO_PATH
 from . import local
-from .checkout import WINDOWS, DevApp, dev_apps, here, start, suite_folder, suite_name, suites
+from .checkout import DevApp, dev_apps, start, suite_name
 from .icons import IconsDialog, has_category_icons
 from .issues import IssuesDialog, close_commands, fetch_open_issues, gh_program
 from .tours import RECORD_APP_TOUR, RECORD_TOUR, AppsTourDialog, PortalTourDialog
-from .versions import VersionsDialog
 
-SUITE_KEY = "suite"                     # the chosen suite, in the settings
 ICON_PX = 64
-DEPS_CATALOGS = Path("nexus_deps") / "catalogs"   # Nexus Deps checks a suite with a catalog here (<suite>.toml)
 BADGE_PX = 26                           # the warning in the corner of an app's icon that changes the board
-NEXUS_PAGE = "https://robertotorino.github.io/nexus/"     # the Nexus page, opened by a click on the header's icon
 # Each local app's output, a log per app (the Nexus apps' logs are in checkout.LOG_DIR)
 LOCAL_LOG_DIR = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / APP_ID / "local"
-ABOUT = ("One door to the tools for working on the suites. The first tiles are the Nexus apps of this checkout, "
-         "each a window of its own that keeps running when the dashboard closes: Nexus Release Tool (a release's "
-         "versions, CHANGELOG entries, pins and the board checks), Nexus Installer Tests (a suite's installer tests "
-         "one at a time), Nexus Demo Recorder (a portal installation recorded with OBS) and Nexus Sound Lab (short "
-         "sound effects for the windows, made from sliders and saved as WAV).\n\n"
-         "The other tiles work on the suite chosen in the header: Portal video tour and Apps video tour record the "
-         "suite's tours from this checkout (its tools/record-tour.sh and record-app-tour.sh), Convert icons makes "
-         "a category's icons from your images (tools/sync_icons.py). Close issues is the repository's: it lists "
-         "the open issues on GitHub and closes the ones you tick. Dev app versions sets the Nexus apps' versions "
-         "(tools/dev_versions.py). A tile is greyed out where it does not run on "
-         "this system or for this suite.\n\n"
+ABOUT = ("One place for the tools for working on the suite. The first tiles are the development apps of this "
+         "checkout, each a window of its own that keeps running when the dashboard closes: Nexus Release Tool (a "
+         "release's versions, CHANGELOG entries, pins and the board checks), Nexus Deps (the suite's packages and "
+         "tools on this machine, and its updates), Nexus Installer Tests (the suite's installer tests one at a "
+         "time), Nexus Demo Recorder (a portal installation recorded with OBS) and Nexus Sound Lab (short sound "
+         "effects for the windows, made from sliders and saved as WAV).\n\n"
+         "The other tiles work on this checkout: Portal video tour and Apps video tour record the suite's tours "
+         "(tools/record-tour.sh and record-app-tour.sh), Convert icons makes a category's icons from your images "
+         "(tools/sync_icons.py), Close issues lists the repository's open issues on GitHub and closes the ones you "
+         "tick. A tile is greyed out where it does not run here.\n\n"
          "Test local apps, below the tiles: the suite's portal and apps as they are in this checkout, to try them "
-         "before their release, then the suite's wiki and the Nexus page served from the checkout.")
+         "before their release, then the suite's wiki served from the checkout. A click on the icon in the header "
+         "opens the suite's wiki.")
 LOCAL_ABOUT = (
-    "Click an app to start it from this checkout, to try it before its release. On Windows an app with a "
-    "<code>run.ps1</code> starts with it, as by hand; otherwise <code>python -m</code> with this venv and the "
-    "checkout's core, as <code>run.sh</code> starts a Nexus app. An app that changes how the board runs "
-    "(an orange <b>!</b> on its icon) asks first; it uses the scripts in the checkout. Each app writes its output "
-    f"to <code>{LOCAL_LOG_DIR}</code>; when it stops with an error, the end of that log shows below. The suite's "
-    "portal is the first icon; when a portal is already open it warns instead, as a second one would only show the "
-    "open one. The last icons are the suite's wiki and the Nexus page: each is served with <code>mkdocs "
-    "serve</code> on a port of its own and opens in the browser with its design panel; it rebuilds on every save. "
-    "With <b>Wikis on the network</b> they are served for the other devices too, on ports of their own; the "
-    "addresses show below.")
+    "Click an app to start it from this checkout, to try it before its release: <code>python -m</code> with this "
+    "venv and the checkout's core, as <code>run.sh</code> starts a development app. An app that changes how the "
+    "board runs (an orange <b>!</b> on its icon) asks first; it uses the scripts in the checkout. Each app writes its "
+    f"output to <code>{LOCAL_LOG_DIR}</code>; when it stops with an error, the end of that log shows below. The "
+    "suite's portal is the first icon; when a portal is already open it warns instead, as a second one would only "
+    "show the open one. The last icon is the suite's wiki: it is served with <code>mkdocs serve</code> and opens in "
+    "the browser with its design panel; it rebuilds on every save. With <b>Wiki on the network</b> it is served "
+    "for the other devices too, on a port of its own; the addresses show below.")
 
 
 def board_badge(icon: QIcon) -> QIcon:
@@ -123,11 +117,6 @@ def start_local(command: list[str], env: dict[str, str], cwd: Path, log: Path) -
     """Starts a local app in its own session, so it keeps running when this window closes; its output goes to *log*."""
     log.parent.mkdir(parents=True, exist_ok=True)
     with open(log, "wb") as out:
-        if WINDOWS:
-            # No console window, in a group of its own, as checkout.start() starts a Nexus app's run.ps1.
-            return subprocess.Popen(command, cwd=cwd, env=env, stdin=subprocess.DEVNULL, stdout=out,
-                                    stderr=subprocess.STDOUT,
-                                    creationflags=subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP)
         return subprocess.Popen(command, cwd=cwd, env=env, stdin=subprocess.DEVNULL, stdout=out,
                                 stderr=subprocess.STDOUT, start_new_session=True)
 LOGO_ICON = LOGO_PATH
@@ -142,44 +131,29 @@ class Tile:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, root: Path = CHECKOUT, settings: QSettings | None = None, suite: str | None = None,
-                 starter=start, open_file=None, start_local=start_local, issues_source=fetch_open_issues):
-        """*settings* keeps the chosen suite (None: this session only); *suite* opens that suite (a folder name);
-        *starter* starts a dev app (checkout.start); *open_file* opens a video (the system's player); *start_local*
-        starts an app or a wiki under Test local apps; *issues_source* reads the open GitHub issues for Close
-        issues."""
+    def __init__(self, root: Path = CHECKOUT, starter=start, open_file=None, start_local=start_local,
+                 issues_source=fetch_open_issues):
+        """*root*: the checkout, which is the suite; *starter* starts a dev app (checkout.start); *open_file* opens a
+        video (the system's player); *start_local* starts an app or a wiki under Test local apps; *issues_source*
+        reads the open GitHub issues for Close issues."""
         super().__init__()
         self.root = root
-        self.settings = settings
         self.starter = starter
         self.start_local = start_local
         self.issues_source = issues_source
         self.open_file = open_file or (lambda path: QDesktopServices.openUrl(QUrl.fromLocalFile(str(path))))
         self.setWindowTitle(APP_NAME)
         self.resize(900, 820)
-        self.suites = suites(root)
-        remembered = str(settings.value(SUITE_KEY, "")) if settings is not None else ""
-        self.suite = suite if suite in self.suites else remembered if remembered in self.suites else \
-            self.suites[0] if self.suites else None
         self.apps = dev_apps(root)
 
         central = QWidget()
         layout = QVBoxLayout(central)
-        header = AppHeader(LOGO_ICON, APP_NAME, __version__)
+        header = nexus_header(LOGO_ICON, APP_NAME, CHECKOUT)  # the checkout's commit, never a version
         header.logo.setCursor(Qt.CursorShape.PointingHandCursor)
-        header.logo.setToolTip("Open the Nexus page")
-        header.logo.clicked.connect(lambda: open_url(NEXUS_PAGE))
+        header.logo.setToolTip(f"Open the {suite_name(root)}'s wiki")
+        header.logo.clicked.connect(lambda: open_url(SUITE_MANUAL_URL))
         self.header = header
         header.add_action(InfoButton(ABOUT, "What this app does"))
-        self.suite_box = QComboBox()
-        for name in self.suites:
-            self.suite_box.addItem(suite_name(root, name), name)
-        self.suite_box.setToolTip("The suite the tours and the icons work on; the Nexus apps are every suite's")
-        if self.suite is not None:
-            self.suite_box.setCurrentIndex(self.suites.index(self.suite))
-        self.suite_box.currentIndexChanged.connect(lambda index: self.choose_suite(self.suite_box.itemData(index)))
-        header.add_second(QLabel("Suite:"))
-        header.add_second(self.suite_box)
         header.add_second(hint_label("Click a tile: an app opens in a window of its own, a tool on the suite."), 1)
         layout.addLayout(header)
 
@@ -196,16 +170,16 @@ class MainWindow(QMainWindow):
 
         local_title = QLabel("Test local apps")
         local_title.setStyleSheet("font-weight:700;")
-        self.network_box = QCheckBox("Wikis on the network")
-        self.network_box.setToolTip("Serve the wikis on every address of this computer, on ports of their own, so "
-                                    "the other devices on the network (a handheld, a laptop, the TV) open them too; "
-                                    "their addresses show below once a wiki started")
+        self.network_box = QCheckBox("Wiki on the network")
+        self.network_box.setToolTip("Serve the wiki on every address of this computer, on a port of its own, so the "
+                                    "other devices on the network (a handheld, a laptop, the TV) open it too; its "
+                                    "addresses show below once it started")
         self.network_box.toggled.connect(lambda _on: self.fill_local())
         local_row = QHBoxLayout()
         local_row.addWidget(local_title)
         local_row.addWidget(InfoButton(LOCAL_ABOUT, "Test local apps"))
         local_row.addWidget(hint_label("Click an app to start it from this checkout, to try it before its release; "
-                                       "the last icons serve the wikis."), 1)
+                                       "the last icon serves the wiki."), 1)
         local_row.addWidget(self.network_box)
         layout.addLayout(local_row)
         self.local_apps = QListWidget()
@@ -230,51 +204,27 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
         self.fill()
 
-    # --- the suite and the tiles ------------------------------------------------------------------------------
-    @property
-    def suite_dir(self) -> Path | None:
-        return suite_folder(self.root, self.suite) if self.suite else None
-
-    def choose_suite(self, name: str | None) -> None:
-        if not name or name == self.suite:
-            return
-        self.suite = name
-        if self.settings is not None:
-            self.settings.setValue(SUITE_KEY, name)
-        self.fill()
-
+    # --- the tiles -----------------------------------------------------------------------------------------
     def tile_list(self) -> list[Tile]:
-        """The tiles in their order: the Nexus apps, then the suite's tools; each with why it is off, when it is."""
-        found = []
-        for app in self.apps:
-            off = "" if app.runs_here else f"{app.name} has no {app.script.name} for this system."
-            catalog = app.folder / DEPS_CATALOGS / f"{self.suite}.toml"
-            if not off and app.key == "deps" and self.suite and not catalog.is_file():
-                off = f"{app.name} has no catalog for {self.suite} yet."
-            found.append(Tile(app.key, app.name, app.icon, f"{app.name} {app.version}: {app.script.name} in "
-                              f"{app.folder}", app, off))
-        suite = self.suite_dir
-        if suite is None:
-            off_tours = off_icons = "No suite in the checkout."
-        else:
-            system = "Windows" if sys.platform == "win32" else "Linux"
-            off_tours = ("" if here(self.root, self.suite) and (suite / RECORD_TOUR).is_file()
-                         else f"{self.suite}'s tours are not recorded on {system}.")
-            off_icons = "" if has_category_icons(suite) else f"{self.suite}'s apps take no category icons."
+        """The tiles in their order: the development apps, then the suite's tools; each with why it is off, when it
+        is."""
+        found = [Tile(app.key, app.name, app.icon, f"{app.name}: {app.script.name} in {app.folder}", app,
+                      "" if app.runs_here else f"{app.name} has no {app.script.name}.") for app in self.apps]
+        root = self.root
+        off_tours = "" if (root / RECORD_TOUR).is_file() else f"This checkout has no {RECORD_TOUR.as_posix()}."
+        off_icons = "" if has_category_icons(root) else "This checkout's apps take no category icons."
         found += [
             Tile("portal-tour", "Portal video tour", LOGO_ICON, "Record the portal's video tour from this checkout: "
                  "about two minutes, with music, at 1080p or 4K, and the copy on the wiki's Portal Tour page if "
                  "you like", off=off_tours),
             Tile("apps-tour", "Apps video tour", LOGO_ICON, "Record a short video tour of each app you tick, from "
                  "this checkout: about 40 seconds each, with music, at 1080p or 4K", off=off_tours or (
-                     "" if (suite / RECORD_APP_TOUR).is_file() else f"{self.suite} has no record-app-tour.sh.")),
+                     "" if (root / RECORD_APP_TOUR).is_file() else
+                     f"This checkout has no {RECORD_APP_TOUR.as_posix()}.")),
             Tile("icons", "Convert icons", LOGO_ICON, "Make a category's icons from new images, and their copies "
                  "in the suite's apps", off=off_icons),
             Tile("issues", "Close issues", LOGO_ICON, "The open issues on GitHub, such as the weekly Upstream "
                  "review: tick the ones that are handled, and Run closes them (gh issue close)"),
-            Tile("versions", "Dev app versions", LOGO_ICON, "The Nexus apps' versions: what changed since each "
-                 "one's last version and the version that asks for, set with one click (VERSION, its copies and "
-                 "the CHANGELOG entry)"),
         ]
         return found
 
@@ -291,11 +241,9 @@ class MainWindow(QMainWindow):
         self.fill_local()
 
     def fill_local(self) -> None:
-        """The icons under Test local apps: the suite's portal, its apps and the wikis, from the checkout."""
+        """The icons under Test local apps: the suite's portal, its apps and its wiki, from the checkout."""
         self.local_apps.clear()
-        if self.suite is None:
-            return
-        for target in local.targets(self.root, self.suite, self.network_box.isChecked()):
+        for target in local.targets(self.root, self.network_box.isChecked()):
             icon = QIcon(str(target.icon)) if target.icon else QIcon()
             item = QListWidgetItem(board_badge(icon) if target.changes_board else icon, target.label)
             item.setData(Qt.ItemDataRole.UserRole, target)
@@ -313,29 +261,24 @@ class MainWindow(QMainWindow):
         if tile.app is not None:
             self.run(tile.app)
         elif tile.key == "portal-tour":
-            PortalTourDialog(self.suite_dir, self.open_file, self).exec()
+            PortalTourDialog(self.root, self.open_file, self).exec()
         elif tile.key == "apps-tour":
-            AppsTourDialog(self.suite_dir, self.open_file, self).exec()
+            AppsTourDialog(self.root, self.open_file, self).exec()
         elif tile.key == "icons":
-            IconsDialog(self.root, self.suite, self).exec()
+            IconsDialog(self.root, self).exec()
         elif tile.key == "issues":
             dialog = IssuesDialog(self, self.issues_source)
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 self.close_issues(dialog.numbers(), dialog.comment.text())
-        elif tile.key == "versions":
-            VersionsDialog(self.root, self, self.output.appendPlainText).exec()
-            self.apps = dev_apps(self.root)     # the tiles' tooltips name the versions
-            self.fill()
 
     def run(self, app: DevApp) -> None:
-        """Starts *app* in a window of its own; the suite goes along where the app takes one."""
-        args = ("--suite", self.suite) if app.key in ("nrt", "itests", "deps") and self.suite else ()
+        """Starts *app* in a window of its own."""
         try:
-            self.starter(app, args)
+            self.starter(app)
         except OSError as exc:
             self.output.appendPlainText(f"{app.name}: could not start ({exc})")
             return
-        self.output.appendPlainText(f"{app.name} {app.version} started from {app.folder} (log: {app.log})")
+        self.output.appendPlainText(f"{app.name} started from {app.folder} (log: {app.log})")
 
     # --- Test local apps --------------------------------------------------------------------------------------
     def run_local(self, target: local.Launch) -> None:

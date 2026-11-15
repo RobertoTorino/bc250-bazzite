@@ -1,3 +1,18 @@
+Changelog: 15-11-2026 10:20:56
+
+Added. nexus.py gives the development apps their header: header() names the checkout's last commit and its time
+(checkout_stamp()) where a released app shows its version (owner, 15-11-2026: the development apps have no
+VERSION).
+
+Changelog: 15-11-2026 10:16:55
+
+Breaking. The Windows side is gone (owner, 15-11-2026: the development apps run on Linux only, and SFTP Tools'
+Windows executable has its own repository): platform's WINDOWS, open_path(), the PowerShell window of
+launch_in_terminal() (powershell_command(), powershell_argv()) and Explorer in show_in_folder(); private() writes the
+home folder as ~, as it always did on Linux; app.create_app() no longer sets the .ini format on Windows; the
+controller reader no longer sets SDL_JOYSTICK_RAWINPUT; steam's _steam_program(). What the apps do on Linux is
+unchanged. The tests no longer have Windows branches.
+
 Changelog: 15-11-2026 08:25:29
 
 Version 4.0.0.

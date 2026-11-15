@@ -13,11 +13,9 @@ on this system, and says why in its tooltip.
 
 ## Start it
 
-From the repository's root, with the checkout's venv for the system (`.venv-linux` or `.venv-windows`, see
+From the repository's root, with the checkout's venv (`.venv-linux`, see
 [Set up and test](index.md#set-up-and-test)). Nothing is copied when you install it: the menu entry always
 starts the app of the checkout you installed it from. After moving the checkout, install it again.
-
-On Linux:
 
 ```bash
 dev/dash/run.sh                             # open it
@@ -27,19 +25,8 @@ dev/dash/install.sh --uninstall             # remove them; the checkout stays
 dev/dash/install.sh --uninstall --purge     # also remove the settings
 ```
 
-On Windows, in PowerShell:
-
-```powershell
-dev\dash\run.ps1                                                                    # open it
-powershell -ExecutionPolicy Bypass -File dev\dash\install.ps1                       # Start-menu entry and Desktop shortcut
-powershell -ExecutionPolicy Bypass -File dev\dash\install.ps1 --no-desktop-shortcut # Start-menu entry only
-powershell -ExecutionPolicy Bypass -File dev\dash\install.ps1 --uninstall           # remove them; the checkout stays
-powershell -ExecutionPolicy Bypass -File dev\dash\install.ps1 --uninstall --purge   # also remove the settings
-```
-
-Run the installer as your own user, not as administrator. Then a double-click on **Nexus Dashboard** on the
-Desktop, or its Start-menu entry, opens the dashboard without a console window. From Git Bash, `dev/dash/run.sh`
-opens it too.
+Run the installer as your own user, not with sudo. Then a double-click on **Nexus Dashboard** on the Desktop, or its
+menu entry, opens the dashboard.
 
 Opening the dashboard while it is already open closes the open window and opens a new one: the app runs from the
 checkout, so the new window has the code as it is now. An open dashboard that does not answer within 5 seconds is
@@ -47,7 +34,8 @@ ended.
 
 ## The window
 
-The header holds the icon, the name and the version. Below it are the tiles, then
+The header holds the icon, the name and the checkout's last commit with its time (a development app has no
+version). A click on the icon opens the suite's wiki. Below it are the tiles, then
 [Test local apps](#test-local-apps), and under them a line for each click: which app started and where its log is,
 or why a tile is off.
 
@@ -70,7 +58,6 @@ The other tiles work on the suite:
 | **Apps video tour** | Records a short tour of each app you tick ([below](#video-tours)). |
 | **Convert icons** | Makes a category's icons from your images ([below](#convert-icons)). |
 | **Close issues** | Closes the open issues on GitHub you tick ([below](#close-issues)). |
-| **Dev app versions** | Sets the versions of the development apps in `dev/` ([below](#dev-app-versions)). |
 
 ## Test local apps
 
@@ -85,14 +72,13 @@ shows below. The apps keep running when you close the dashboard. The round **i**
 
 The last icon is the wiki: **BC250 Bazzite Suite wiki (local)** serves it from the checkout with `mkdocs serve`
 (the development venv has MkDocs) and opens it in the browser at `http://127.0.0.1:8765/bc250-bazzite/`, with its
-design panel open. It rebuilds on every save; its log is `mkdocs-<wiki>-local.log` there. When it is already
+design panel open. It rebuilds on every save; its log is `mkdocs-root-local.log` there. When it is already
 running, a click only opens the page again. The wiki, like the apps, keeps running when you close the dashboard,
 which has no button that stops it. A wiki started before the checkout changed (after a pull, or a change to
 `mkdocs.yml` or the design panel) can still show the old setup: stop it, then click its icon again.
-`pkill -f "mkdocs serve"` stops it on Linux; on Windows, in PowerShell:
-`Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -like '*mkdocs serve*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`.
+`pkill -f "mkdocs serve"` stops it.
 
-With **Wikis on the network** ticked, the icon serves the wiki on every address of the computer, at port 8785, so a
+With **Wiki on the network** ticked, the icon serves the wiki on every address of the computer, at port 8785, so a
 handheld, a laptop or the TV opens it too: the addresses for those devices show below once the wiki started. The
 computer's firewall has to let them in.
 
@@ -102,29 +88,6 @@ computer's firewall has to let them in.
 closes the ticked ones with `gh issue close`, one after the other, with a comment when you write one; their output
 shows below, and when one fails the ones after it stay open. It needs the GitHub CLI with a login
 (`gh auth login`). A double click opens an issue on GitHub.
-
-## Dev app versions
-
-The development apps in `dev/` are never released or tagged, so Nexus Release Tool does not list them. Their
-versions are set here instead, as core's are: an app's `VERSION`, the `__version__` copy beside it, and a
-**Version x.y.z.** entry on top of its CHANGELOG.
-
-**Dev app versions** lists each app with its version and what its CHANGELOG entries since its last **Version** entry
-ask for, by their kind: `Breaking.` major, `Added.` minor, `Fixed.` patch (an entry without a kind counts as a fix).
-Pick an app: **Version** offers that version first, with the next patch, minor and major after it, and you can type
-another. **Note** adds a sentence after **Version x.y.z.** in the entry. **Set version** writes the three files; the
-line under the tiles names them. Commit and push them as any change.
-
-A version set and not pushed yet shows *set, not pushed yet*: set it again and the new one takes its place, its
-entry too. A pushed one is history and stays. An app with nothing new since its last version has nothing to set.
-
-In a terminal, `tools/dev_versions.py` does the same:
-
-```bash
-python3 tools/dev_versions.py                            # every dev app: its version, what changed, the offer
-python3 tools/dev_versions.py dash                       # gives Nexus Dashboard the version offered
-python3 tools/dev_versions.py dash 0.3.0 --notes "..."   # this version, with a note in its entry
-```
 
 ## Video tours
 
@@ -225,8 +188,7 @@ sound can stay silent on a TV: PipeWire pauses the output when nothing plays, an
 the stream stops and needs time to unmute when it starts again, so a 50 ms tick is over before it is heard. The
 preset Tick after silence shows the same from the other side: with the link asleep, only its tick comes through. A
 window that plays such sounds needs the same loop while it is open. `dev/sounds/run.sh` and
-`dev/sounds/install.sh` start and install it on their own; on Windows (PowerShell) `dev\sounds\run.ps1` starts it,
-and the dashboard's tile does the same.
+`dev/sounds/install.sh` start and install it on their own, and the dashboard's tile does the same.
 
 ## Deps
 

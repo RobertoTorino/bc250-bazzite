@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 name: Bug report
-description: Something in one of the apps doesn't work, or a value or test result looks wrong.
+description: Something in the portal or one of the apps doesn't work, or a value or test result looks wrong.
 labels: [bug]
 body:
   - type: dropdown
@@ -17,6 +17,28 @@ body:
         - oc
         - acpi
         - overlay
+        - bios
+        - ace
+        - mesh
+        - vram
+        - fan
+        - wifi
+        - cec
+        - sftp
+        - turing
+        - webcam
+        - controller
+        - rpcs3
+        - consoles
+        - clb
+        - shadps4
+        - datstation
+        - ppsspp
+        - pcsx2
+        - vita3k
+        - xenia
+        - ssd
+        - btpair
     validations:
       required: true
   - type: textarea

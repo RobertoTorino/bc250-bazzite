@@ -3,7 +3,7 @@
 # Exercise apps/ace/install.sh: install from the checkout (root-owned /opt copy with core bundled, shared
 # venv), a staged release replacing it, uninstall with another venv user (build removed, test results kept),
 # --purge, the note about a driver that stays, and the refusal to run as root.
-# Runs with the shims from shims.sh (CI, or WSL on Windows). The script itself is tested in apps/ace/tests.
+# Runs with the shims from shims.sh (CI). The script itself is tested in apps/ace/tests.
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

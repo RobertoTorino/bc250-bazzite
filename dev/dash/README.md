@@ -13,14 +13,14 @@ tours, and the category icons. A development app: it runs from the checkout it l
 
 ## Start it
 
-From the repository's root, with the checkout's venv for the system ([Set up and test](https://robertotorino.github.io/bc250-bazzite/development/#set-up-and-test)):
+From the repository's root, with the checkout's venv ([Set up and test](https://robertotorino.github.io/bc250-bazzite/development/#set-up-and-test)):
 
-| | Linux | Windows (PowerShell) |
-|---|---|---|
-| Open it | `dev/dash/run.sh` | `dev\dash\run.ps1` |
-| Menu entry and Desktop icon | `dev/dash/install.sh` | `powershell -ExecutionPolicy Bypass -File dev\dash\install.ps1` |
+| | Linux |
+|---|---|
+| Open it | `dev/dash/run.sh` |
+| Menu entry and Desktop icon | `dev/dash/install.sh` |
 
-Both installers take `--no-desktop-shortcut`, `--uninstall` and `--uninstall --purge` (the settings too). Nothing is
+The installer takes `--no-desktop-shortcut`, `--uninstall` and `--uninstall --purge` (the settings too). Nothing is
 copied: the entry starts the app of the checkout you installed it from.
 
 How to use it: [Dashboard in the wiki](https://robertotorino.github.io/bc250-bazzite/development/dashboard/).

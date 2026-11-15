@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""OBS connection, portal release validation, and terminal integration: a BC250 portal release (install.sh) in a
+"""OBS connection, portal release validation, and terminal integration: a portal release (install.sh) in a
 terminal emulator."""
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-PORTAL_LAUNCHER = Path.home() / ".local" / "bin" / "bc250-bazzite-suite"   # the BC250 suite's portal, installed
+PORTAL_LAUNCHER = Path.home() / ".local" / "bin" / "bc250-bazzite-suite"   # the suite's portal, installed
 INSTALLER = "install.sh"                                    # a portal release's installer, beside its apps.toml
 OBS_FLATPAK_ID = "com.obsproject.Studio"
 RECORDINGS_DIRECTORY = Path.home() / "Videos" / "demos"     # where OBS saves the demos (the tours go to ~/Videos too)

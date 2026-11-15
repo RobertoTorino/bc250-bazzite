@@ -165,7 +165,7 @@ Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), N
   brings, for example **Portal 0.9.1: updates ACE Queues and Memory Manager**, with each app's old and new
   version. Press Y, right-click a tile, or click the banner (Enter or A with the focus on it) to update: the portal
   downloads the release, checks it against the release's `SHA256SUMS`, and runs its `install.sh` in a terminal,
-  which asks for your sudo password for the copy to `/opt`. The banner says **DOWNLOADING THE UPDATE…** and then
+  which asks for your sudo password for Board Test's copy to `/opt`. The banner says **DOWNLOADING THE UPDATE…** and then
   **INSTALLING THE UPDATE…**. When the installer has ended well, the portal starts again as the new version, and
   the installed apps it updates show the red dot. When it fails, the terminal stays open with what happened, and
   Y tries again. While an app installs, the portal update waits for it. A release built again under the portal's
@@ -173,7 +173,7 @@ Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), N
   of the tarball it installed from (`build.sha256` beside the program, when the tarball is next to the unpacked
   folder, as the install steps and the portal's own update leave it), and the portal compares it with the newest
   release's. A portal installed from a checkout is not offered the release of its own version (it would replace
-  the checkout's portal); a newer version still is. The download is kept in `~/.local/share/bc250-bazzite-suite/portal/portal-update/` until the next one.
+  the checkout's portal); a newer version still is. The download is kept in `~/.local/share/bc250-bazzite-suite/state/portal-update/` until the next one.
 - **Outside the suite**, in orange beside the red notice: a newer release of a program that an installed app
   installs in its newest version, so the app can install it now. Press it to list them, for example **Upscaler
   Manager (Graphics): HelixSR 1.9.3 is out**, with what to do in the app, and choose one to go to its tile; the
@@ -247,7 +247,7 @@ Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), N
 - **Music track**, on the Settings page: which track the music plays. **Built-in** is the portal's own. Click the
   pill, then **Choose a track…** for one of your own (**Custom**): an Ogg, Opus, MP3, FLAC, WAV or M4A sound file,
   which plays at once, from its start; the portal refuses another file and says why. **The portal's track** brings
-  the portal's own back. The portal keeps a copy of your track in `~/.local/share/bc250-bazzite-suite/portal/`, so the
+  the portal's own back. The portal keeps a copy of your track in `~/.local/share/bc250-bazzite-suite/state/`, so the
   original may be moved or deleted; the portal's `--purge` removes it.
 - **Theme switcher**, on the Settings page, showing the theme; click it for the next one: the look of every app in the
   suite. **Gunmetal** (dark, cool blue-gray, the default), **Silver** (light) or **Warm** (dark warm gray with a
@@ -261,7 +261,7 @@ Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), N
   theme's color so the text stays readable. **Transparency**, a slider in the same menu, sets that veil from 0 to
   90 % (60 % at first): move it up for a dark or busy picture, so the icons stand out, down to see more of the
   picture. The window changes while you move it, and the portal remembers it. The portal keeps a copy in
-  `~/.local/share/bc250-bazzite-suite/portal/`, so the original may be moved or deleted; the portal's `--purge`
+  `~/.local/share/bc250-bazzite-suite/state/`, so the original may be moved or deleted; the portal's `--purge`
   removes it. The menu also lists the last 10 wallpapers you chose, newest first, under **Used before**: click one to
   use it again. The portal remembers only where each picture was (in `wallpapers.json` in the same folder), so one
   moved or deleted since shows as not found until it is back.
@@ -294,37 +294,28 @@ Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), N
 
 ## Install
 
-From the repository's [latest release](https://github.com/RobertoTorino/bc250-bazzite/releases/latest), download
-`bc250-portal-v<version>.tar.gz` and `SHA256SUMS`, then:
-
-```shell
-sha256sum --check --ignore-missing SHA256SUMS
-tar -xzf bc250-portal-v*.tar.gz
-cd bc250-portal-v*/
-./install.sh                 # as your own user; asks for the sudo password only for the copies to /opt
-```
-
-Later versions install from the portal itself: press Y when it says **UPDATE AVAILABLE** (see **Portal updates**
-above).
+[Install](install.md) has the lines to paste into a terminal: they download the portal's release, check it and run
+its `install.sh`, as your own user. Later versions install from the portal itself: press Y when it says **UPDATE
+AVAILABLE** (see **Portal updates** above).
 
 What it installs:
 
 | What | Where | Why there |
 |---|---|---|
-| The portal, its `apps.toml` and the `bc250_core` it was tested with | `/opt/bc250-bazzite-suite-v<version>`, root-owned, with `/opt/bc250-bazzite-suite` pointing at it | Same as board-test's engine: code that starts root-run installers is not writable by a normal user |
-| BC-250 Board Test (bundled in the portal release) | `/opt/bc250-board-test`, through its own installer | Its test engine runs as root and must be root-owned |
+| The portal, its `apps.toml` and the `bc250_core` it was tested with | `~/.local/share/bc250-bazzite-suite/portal` | In your home folder: the portal needs no root |
+| What the portal remembers: the apps it installed and their releases, the wallpaper, the music track, a downloaded portal update | `~/.local/share/bc250-bazzite-suite/state` | Apart from the program, so an update of the portal keeps it; each app's matching uninstaller is at hand |
+| BC-250 Board Test (bundled in the portal release) | `/opt/bc250-board-test`, through its own installer, which asks for the sudo password | Its test engine runs as root and must be root-owned |
 | The suite's shared venv with PyQt6 | `~/.local/share/bc250-bazzite-suite/venv` | One copy of the ~100 MB of Qt for all suite apps; removed with the last app that uses it (`venv-users/`) |
-| What the portal installed, and the release each app was installed from | `~/.local/share/bc250-bazzite-suite/portal/` | So each app's matching uninstaller is at hand; an update removes the previous release |
 | What the apps found outside the suite, one file per app | `~/.local/share/bc250-bazzite-suite/upstream/` | For **Outside the suite** in the notice; written by the apps, read by the portal |
 | Launcher, menu entry, Desktop icon | `~/.local/bin/bc250-bazzite-suite`, `~/.local/share/applications/`, the Desktop | The portal's icon is the one way in; the apps' own icons are optional (**Icons on Desktop**) |
 
-Uninstall: `/opt/bc250-bazzite-suite/install.sh --uninstall`. This removes the portal and Board Test and
-keeps settings; add `--purge` to remove those too. First it asks about each other suite app that is installed:
-`y` uninstalls it, `s` skips it (it stays installed), `c` cancels the whole uninstall before anything is removed.
-The list has every app this portal lists and the apps an earlier portal installed that this one no longer lists (an app dropped from the suite), each removed
-with its own uninstaller. Those apps keep their own settings, also with `--purge`. Of the portal's own records,
-only those of the apps you kept stay, with the release each one's uninstaller needs; with no app left, that folder
-goes too. To remove the whole suite at once, `--uninstall --all` asks one question instead of one per app, after a
+Uninstall: `~/.local/share/bc250-bazzite-suite/portal/install.sh --uninstall`. This removes the portal and Board
+Test and keeps settings and the wallpaper; add `--purge` to remove those too. First it asks about each other suite
+app that is installed: `y` uninstalls it, `s` skips it (it stays installed), `c` cancels the whole uninstall before
+anything is removed. The list has every app this portal lists and the apps an earlier portal installed that this one
+no longer lists (an app dropped from the suite), each removed with its own uninstaller. Those apps keep their own
+settings, also with `--purge`. Of what the portal remembers, only the records of the apps you kept stay, with the
+release each one's uninstaller needs, beside the wallpaper and the music track. To remove the whole suite at once, `--uninstall --all` asks one question instead of one per app, after a
 warning that names every app it will remove; with `--purge` the apps' own settings, history and results go as
 well.
 
@@ -365,9 +356,9 @@ cd portal                  # from the repository's root
 PYTHONPATH=../core ../.venv-linux/bin/python -m bc250_portal    # --source release: the pinned GitHub releases
 ```
 
-To install from the checkout, run `./install.sh` in the repository's root (or here in `portal/`). It
-bundles the repository's `core/` and installs `../apps/check`. The installed portal then installs the other apps from the
-checkout too, so keep the checkout where it is.
+To install from the checkout, run `./install.sh` in the repository's root (or here in `portal/`). It copies the
+portal into your home folder, as a release does, bundles the repository's `core/` and installs `../apps/check`. The
+installed portal names the checkout and installs the other apps from it too, so keep the checkout where it is.
 
 ## apps.toml and releases
 
@@ -398,8 +389,6 @@ Releasing one app by hand and pinning it in the portal:
 2. Commit and push, then tag with `tools/tag-release.sh bc250-<app>-v<x.y.z>` (it waits until CI passed on that
    commit); [`release.yml`](https://github.com/RobertoTorino/bc250-bazzite/blob/main/.github/workflows/release.yml) builds
    `<tag>.tar.gz` and `SHA256SUMS` with [`tools/build_release.py`](https://github.com/RobertoTorino/bc250-bazzite/blob/main/tools/build_release.py).
-   An app with a Windows executable (SFTP Tools) also gets a Windows job on its tag, which adds
-   `<app-id>-<version>-windows.zip` and its `.sha256` to the release; the portal ignores them.
 3. `python3 tools/pin_app.py <tag>`: this sets the tag and checksum in `apps.toml`.
 4. Bump `portal/VERSION` as `tools/check_manifest.py` asks, and list the app release in the portal CHANGELOG.
 5. Once the pinned app releases are tested together on a BC-250 (see

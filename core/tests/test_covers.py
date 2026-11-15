@@ -9,7 +9,6 @@ from __future__ import annotations
 import io
 import json
 import stat
-import sys
 import urllib.error
 
 import pytest
@@ -62,8 +61,7 @@ def test_the_key_for_the_whole_suite(tmp_path, monkeypatch):
     assert covers.read_key() == ""
     covers.write_key(f"  {KEY}\n")
     assert covers.read_key() == KEY
-    if sys.platform != "win32":                               # Windows has no file modes
-        assert stat.S_IMODE(covers.key_file().stat().st_mode) == 0o600
+    assert stat.S_IMODE(covers.key_file().stat().st_mode) == 0o600
     covers.write_key("")
     assert not covers.key_file().exists() and covers.read_key() == ""
 

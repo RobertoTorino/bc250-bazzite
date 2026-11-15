@@ -14,7 +14,7 @@ from pathlib import Path
 from bc250_core import AppInfo
 from bc250_core.platform import data_home
 
-ROOT = Path(__file__).resolve().parent.parent           # portal/ in the checkout, /opt/bc250-bazzite-suite installed
+ROOT = Path(__file__).resolve().parent.parent           # portal/ in the checkout and in the installed copy
 CHECKOUT_FILE = "suite-checkout"                        # in ROOT, written by install.sh when installed from a checkout
 MANIFEST = ROOT / "apps.toml"
 LOGO_PATH = ROOT / "images" / f"{APP_ID}.webp"
@@ -22,20 +22,21 @@ INTRO_LOGO = ROOT / "images" / f"{APP_ID}-1024.webp"      # the same picture at 
 APP_ICONS = ROOT / "images" / "apps"                    # <key>.webp: the small icon on each app's card
 CATEGORY_ICONS = ROOT / "images" / "categories"         # <category>.webp: the 512 px icon, drawn on the tiles
 INFO = AppInfo(app_id=APP_ID, name=APP_NAME, version=__version__, logo=LOGO_PATH, tag_prefix="bc250-portal-v",
-               settings_app="bc250-bazzite-suite-portal")
+               settings_app=f"{APP_ID}-portal", settings_ini=True)
 
 
 def installed_copy() -> Path | None:
-    """The link install.sh points at the installed portal (/opt/bc250-bazzite-suite), when this portal runs from an
-    installed copy (/opt/bc250-bazzite-suite-v<version>); None from a checkout. A portal installed while this one
-    runs shows up there."""
-    return ROOT.parent / APP_ID if ROOT.name.startswith(f"{APP_ID}-v") else None
+    """The installed portal's folder (~/.local/share/bc250-bazzite-suite/portal, install.sh's copy)
+    when this portal runs from it; None from a checkout. A portal installed while this one runs replaces the files
+    there, its VERSION with them."""
+    return ROOT if ROOT.name == "portal" and ROOT.parent.name == APP_ID else None
 
 
 def state_dir() -> Path:
-    """Per-user portal state: which tag of each app it installed, and the extracted releases it installed from
-    (kept, so the matching uninstaller is at hand)."""
-    return data_home() / APP_ID / "portal"
+    """Per-user portal state: which tag of each app it installed, the extracted releases it installed from (kept, so
+    the matching uninstaller is at hand), the wallpaper and the music track. Not the installed portal's own folder
+    (portal/), which install.sh replaces at every install."""
+    return data_home() / APP_ID / "state"
 
 
 def is_suite(folder: Path) -> bool:

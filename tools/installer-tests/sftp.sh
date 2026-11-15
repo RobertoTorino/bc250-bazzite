@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/sftp/install.sh: install from the checkout (core bundled, the app's own venv, no sudo), a staged
 # release replacing it, the refusal to run as root, uninstall (profiles, settings and log kept) and --purge.
-# Runs with the shims from shims.sh (CI, or WSL on Windows).
+# Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

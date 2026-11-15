@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/compute's two GUI installers as the portal runs them (packaging/bazzite/install-bisect-gui.sh, then
 # install-gui.sh): from the checkout, without the Desktop icons, from a staged release, an unknown option, and the
-# two uninstallers, which keep the bisect results; then the app's install.sh, which runs them, with its options. Runs with the shims from shims.sh (CI, or WSL on Windows).
+# two uninstallers, which keep the bisect results; then the app's install.sh, which runs them, with its options. Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

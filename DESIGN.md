@@ -90,7 +90,7 @@ Every tint of each hue in the BC250 Bazzite Suite, and why it is there. *The fam
 
 | Color | Hex | Kind | Where and why |
 | --- | --- | --- | --- |
-| ![#1565c0](design/colors/block-1565c0.svg) | `#1565c0` | the family | Info; the check app's GPU score box; HDMI CEC's adapter box. |
+| ![#1565c0](design/colors/block-1565c0.svg) | `#1565c0` | the family | Info; the check app's GPU score box; HDMI CEC's adapter and display boxes. |
 | ![#64b5f6](design/colors/block-64b5f6.svg) | `#64b5f6` | text tint | Blue text on a dark surface: the check app's info and hint findings. |
 | ![#0a55b0](design/colors/block-0a55b0.svg) | `#0a55b0` | brand or icon | Gaming blue, the gaming apps': the emulator managers' primary button, with `#2a6cc4` under the pointer and `#08448d` pressed; `#5b93da` their links. |
 | ![#003791](design/colors/block-003791.svg) | `#003791` | brand or icon | PlayStation blue (DatStation), `#0072ce` light, `#1a85e0` under the pointer, `#00589f` pressed; `#4da3ef` its links. |
@@ -603,8 +603,8 @@ Background colors:
 | --- | --- | --- |
 | ![#1f3e9c](design/colors/block-1f3e9c.svg) | `#1f3e9c` | BIOS Reader: the bar and the selection. |
 | ![#c6c6c6](design/colors/block-c6c6c6.svg) | `#c6c6c6` | BIOS Reader: the screen. |
-| ![#1565c0](design/colors/block-1565c0.svg) | `#1565c0` | HDMI-CEC: the adapter box. |
-| ![#000000](design/colors/block-000000.svg) | `#000000` | HDMI-CEC: the display box; BC-250 Controller: the light bar off. |
+| ![#1565c0](design/colors/block-1565c0.svg) | `#1565c0` | HDMI-CEC: the adapter and display boxes. |
+| ![#000000](design/colors/block-000000.svg) | `#000000` | BC-250 Controller: the light bar off. |
 | ![#c62828](design/colors/block-c62828.svg) | `#c62828` | SFTP: the errors button. |
 | ![#5f6368](design/colors/block-5f6368.svg) | `#5f6368` | VRAM: firmware in the memory map. |
 | ![#00838f](design/colors/block-00838f.svg) | `#00838f` | VRAM: zswap in the memory map. |

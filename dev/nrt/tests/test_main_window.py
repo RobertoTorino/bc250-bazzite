@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import pytest
-from PyQt6.QtCore import QPoint, Qt
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget
+from PyQt6.QtCore import QPoint
+from PyQt6.QtWidgets import QApplication, QWidget
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def test_every_widget_keeps_qts_window_method(window):
 
 
 def test_without_notify_send_the_tray_icon_notifies(window, monkeypatch):
-    """Windows has no notify-send: the notification comes from the tray icon instead (owner, 28-10-2026)."""
+    """A desktop without notify-send: the notification comes from the tray icon instead (owner, 28-10-2026)."""
     from nexus_release_tool import main_window
     w, _app = window
     shown = []
@@ -376,17 +376,14 @@ def test_the_window_has_nexus_design(window):
     assert f"border-color:{TEAL}" in w.refresh_pill.styleSheet()
     assert LOGO_PATH.name == "nexus-release-tool.webp" and LOGO_PATH.is_file()
     assert "#6a1b9a" not in w.styleSheet() and "#7e97ad" not in w.styleSheet()        # nothing of the Bazzite suite
-    # The checkboxes: a teal box with its teal checkmark (owner, 28-10-2026), and Portals drawn as a selected tab.
+    # The checkboxes: a teal box with its teal checkmark (owner, 28-10-2026).
     from pathlib import Path
     from nexus_release_tool.style import CHECK_IMAGE
     assert f"border:1px solid {TEAL}" in w.styleSheet() and f"image:url({CHECK_IMAGE})" in w.styleSheet()
     assert Path(CHECK_IMAGE).is_file() and TEAL in Path(CHECK_IMAGE).read_text(encoding="utf-8")
-    title = w.suite_column.findChild(QLabel)
-    assert title.text() == "Portals" and f"border-top:2px solid {TEAL}" in title.styleSheet()
-    assert title.alignment() == Qt.AlignmentFlag.AlignCenter                        # as wide as the column
     central = w.centralWidget().layout()
     row = next(central.itemAt(i).layout() for i in range(central.count())
-               if central.itemAt(i).layout() is not None and central.itemAt(i).layout().indexOf(w.suite_column) >= 0)
+               if central.itemAt(i).layout() is not None and central.itemAt(i).layout().indexOf(w.tabs) >= 0)
     assert row.contentsMargins().top() == central.spacing() > 0                 # twice the spacing off the pills
 
 
@@ -402,18 +399,12 @@ def test_the_icons_are_the_nexus_drawing():
 
 
 def test_remove_suite_runs_check_release_remove_on_the_board(window, monkeypatch):
-    """Remove suite (owner, 15-11-2026): check-release.sh remove in a terminal, on Linux, the board; off elsewhere."""
-    from nexus_release_tool import plan as rp
+    """Remove suite (owner, 15-11-2026): check-release.sh remove in a terminal, on the board."""
     w, _app = window
     launched = []
     w.launch = launched.append
     page = w.remove_page
-    monkeypatch.setattr(rp, "tests_here", lambda: True)
-    page.enable()
-    assert page.remove_button.isEnabled()
+    assert page.remove_button.isEnabled() and "check-release.sh remove" in page.remove_button.toolTip()
     page.remove_button.click()
     assert launched and launched[0].endswith("tools/check-release.sh remove")
     assert "Board Test asks for the sudo password" in page.output.toPlainText()
-    monkeypatch.setattr(rp, "tests_here", lambda: False)
-    page.enable()
-    assert not page.remove_button.isEnabled() and "on the board (Linux)" in page.remove_button.toolTip()

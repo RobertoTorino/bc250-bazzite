@@ -60,17 +60,15 @@ def test_without_a_folder_the_log_goes_to_stderr(tmp_path, capsys):
 
 
 def test_a_private_log_masks_the_users_folders(tmp_path, monkeypatch):
-    """private=True (the Windows Portable Suite's apps, owner 29-10-2026): no user name in a line."""
+    """private=True (owner, 29-10-2026): no user name in a line."""
     from pathlib import Path
-    from bc250_core import platform
-    home = Path(r"C:\Users\Someone") if platform.WINDOWS else Path("/home/someone")
+    home = Path("/home/someone")
     monkeypatch.setattr(Path, "home", lambda: home)
-    monkeypatch.setenv("USERPROFILE", str(home))
     path = applog.setup("bc250-private-app", tmp_path / "app.log", private=True)
     log = applog.logger("bc250-private-app")
     log.info(f"Game folder added: {home / 'Games'} (2 game(s)).")
     line = path.read_text(encoding="utf-8").splitlines()[0]
-    assert str(home) not in line and ("%USERPROFILE%" if platform.WINDOWS else "~") in line
+    assert str(home) not in line and "~" in line
     for handler in list(log.handlers):
         handler.close()
         log.removeHandler(handler)

@@ -1,3 +1,25 @@
+Changelog: 15-11-2026 10:16:55
+
+Breaking. The portal installs as a copy of your own in ~/.local/share/bc250-bazzite-suite/portal, as the Bazzite
+Console Suite's portal does (owner, 15-11-2026): no root-owned /opt/bc250-bazzite-suite-v<version>, no symlink and no
+sudo for the portal (Board Test still asks for it, for its copy in /opt). What the portal remembers (the apps it
+installed and their releases, the wallpaper, the music) is in ~/.local/share/bc250-bazzite-suite/state now, which an
+install never touches. Nothing is carried over from the earlier layout: a fresh install. A portal installed from a
+checkout still names it (suite-checkout) and installs the apps from there; build.sha256 is still written beside the
+program. install.sh installs Board Test before it copies the portal, so the portal's own update also works from a
+release unpacked inside the folder the copy replaces, and the launcher's folder is the working folder after the copy.
+
+Breaking. The portal's settings are an .ini file (~/.config/bc250-bazzite-suite/bc250-bazzite-suite-portal.ini), as
+every app's: the earlier .conf file is not read.
+
+Fixed. An uninstall without --purge keeps the wallpaper and the music in the state folder (an empty state folder
+still goes), and keeps the release folder of an app installed from the checkout (its record local-v<version>).
+
+Fixed. A record under a renamed app's old key whose tag starts with the suite's prefix (bc250-governor-v0.4.0) moves
+to the new key with the tag renamed too (bc250-gpu-v0.4.0).
+
+Fixed. apps.toml must have exactly one required app, as the release tools take one.
+
 Changelog: 15-11-2026 08:25:29
 
 Release 21.1.0. Pins bc250-check-v2.2.0, bc250-upscaler-v3.2.0, bc250-overlay-v2.2.0, bc250-bios-v2.2.0, bc250-ace-v2.2.0, bc250-mesh-v2.2.0, bc250-vram-v2.2.0, bc250-fan-v2.2.0, bc250-wifi-v0.2.0, bc250-cec-v2.2.0, bc250-sftp-v2.2.0, bc250-turing-v0.2.0, bc250-webcam-v0.2.0, bc250-controller-v0.2.0, bc250-rpcs3-v5.2.0, bc250-consoles-v3.2.0, bc250-clb-v2.2.0, bc250-shadps4-v5.3.0, bc250-datstation-v4.2.0, bc250-ppsspp-v3.2.0, bc250-pcsx2-v5.2.0, bc250-vita3k-v3.2.0, bc250-xenia-v3.2.0, bc250-ssd-v1.2.0, bc250-btpair-v0.3.0.

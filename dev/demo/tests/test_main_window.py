@@ -7,6 +7,7 @@ from pathlib import Path
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QImage
 
+from bc250_core.widgets import AppHeader
 from demo_recorder import APP_NAME, LOGO_PATH, main_window
 from demo_recorder.workflow import WorkflowError
 
@@ -293,6 +294,7 @@ def test_start_hides_window_and_global_shortcut_stops_recording(qapp, monkeypatc
         lambda *_args: (_ for _ in ()).throw(AssertionError("Shortcut stop must not prompt before stopping")),
     )
     monkeypatch.setattr(main_window.subprocess, "Popen", lambda argv, **_kwargs: opened.append(argv))
+    monkeypatch.setattr(main_window, "nexus_header", lambda logo, name, _root: AppHeader(logo, name))   # no git
     window = main_window.MainWindow()
     window.release_dir = release
     window.apps = (main_window.DemoApp("overlay", "Overlay", (tmp_path / "overlay",)),)

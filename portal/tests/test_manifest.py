@@ -43,7 +43,9 @@ def test_required_first_then_file_order():
     (('install = ["bash a.sh"]', 'install = []'), "must not be empty"),
     (('install = ["bash a.sh"]', 'install = "bash a.sh"'), "list of non-empty strings"),
     (('launch = [["Bisect", "~/.local/bin/x"], ["Unlock", "~/.local/bin/y"]]', 'launch = [["Bisect"]]'), "pairs"),
-    (("required = true", "required = false"), "required app"),
+    (("required = true", "required = false"), "exactly one required app"),
+    (('launch = [["Bisect", "~/.local/bin/x"], ["Unlock", "~/.local/bin/y"]]', 'required = true'),
+     "exactly one required app"),
     (('name = "CU"', 'name = ""'), "non-empty name"),
 ])
 def test_rejects(change, message):

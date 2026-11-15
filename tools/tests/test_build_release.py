@@ -113,8 +113,10 @@ def test_reproducible(bt_release, tmp_path):
 def test_version_must_match(tmp_path):
     with pytest.raises(SystemExit, match="bump it before tagging"):
         br.build("bc250-check-v9.9.9", tmp_path)
-    with pytest.raises(SystemExit, match="is not <app>-v"):
+    with pytest.raises(SystemExit, match="is not bc250-<app>-v"):
         br.build("check-9.9.9", tmp_path)
+    with pytest.raises(SystemExit, match="is not bc250-<app>-v"):
+        br.build(BT_TAG.removeprefix("bc250-"), tmp_path)        # the suite's prefix is part of every tag
 
 
 def test_an_apps_release_has_the_standard_layout_and_omits_suite_marker(tmp_path):
@@ -147,6 +149,21 @@ def test_native_wheel_is_required_and_named(tmp_path, monkeypatch):
     assert f"Includes its native core as `{name}`" in (tmp_path / "out" / "notes.md").read_text()
 
 
+def test_the_native_wheel_from_a_folder_outside_the_checkout(tmp_path, monkeypatch):
+    """release.yml builds the wheel outside the checkout and names the folder in BC250_NATIVE_WHEEL_DIR: the wheel
+    is taken from there and lands in the app's own wheel folder in the tarball."""
+    version = (br.SUITE / "apps/consoles/VERSION").read_text().strip()
+    outside = tmp_path / "wheel"
+    outside.mkdir()
+    name = f"bc250_console_link_core-{version}-cp310-abi3-linux_x86_64.whl"
+    (outside / name).write_bytes(b"wheel")
+    monkeypatch.setattr(br, "NATIVE_WHEELS", {"consoles": Path("native/nowhere")})
+    monkeypatch.setenv(br.NATIVE_WHEEL_DIR, str(outside))
+    tag = f"bc250-consoles-v{version}"
+    br.build(tag, tmp_path / "out")
+    assert read(tmp_path / "out" / f"{tag}.tar.gz", f"{tag}/native/nowhere/{name}") == b"wheel"
+
+
 def test_checkout_only_app_has_no_release(tmp_path, monkeypatch):
     """An app with .checkout-only (Nexus Release Tool, Installer Tests) is never built: the marker is refused."""
     suite = tmp_path / "suite"
@@ -156,10 +173,6 @@ def test_checkout_only_app_has_no_release(tmp_path, monkeypatch):
     monkeypatch.setattr(br, "SUITE", suite)
     with pytest.raises(SystemExit, match="runs from the checkout"):
         br.build("x-v0.1.0", tmp_path)                          # a suite without a prefix
-
-
-def test_a_plain_tag_is_the_bazzite_suites():
-    assert br.suites.of_tag(BT_TAG)[0] == br.SUITE == br.suites.ROOT
 
 
 def test_portal_needs_and_verifies_bundle(bt_release, pinned, tmp_path):

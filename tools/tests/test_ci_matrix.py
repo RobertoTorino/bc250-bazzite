@@ -16,10 +16,9 @@ sys.modules["ci_matrix"] = cm
 spec.loader.exec_module(cm)
 
 
-def suite(root: Path, name: str, system: str, apps: dict[str, bool]) -> Path:
+def suite(folder: Path, system: str, apps: dict[str, bool]) -> Path:
     """A suite with *apps* (name: whether it has tests/), its portal and tools with tests, and some folders that
     never count."""
-    folder = root / name
     (folder / "portal" / "tests").mkdir(parents=True)
     (folder / "portal" / "apps.toml").write_text("", encoding="utf-8")
     (folder / "tools" / "tests").mkdir(parents=True)
@@ -36,8 +35,8 @@ def suite(root: Path, name: str, system: str, apps: dict[str, bool]) -> Path:
 
 
 def test_the_pytest_matrix_is_every_folder_with_tests(tmp_path):
-    bazzite = suite(tmp_path, "bc", "bazzite", {"gpu": True, "fan": True, "noui": False})
-    assert cm.pytest_dirs(bazzite, tmp_path) == ["bc/apps/fan", "bc/apps/gpu", "bc/portal", "bc/tools"]
+    bazzite = suite(tmp_path, "bazzite", {"gpu": True, "fan": True, "noui": False})
+    assert cm.pytest_dirs(bazzite) == ["apps/fan", "apps/gpu", "portal", "tools"]
 
 
 def test_the_suite_matches_its_workflow_and_the_layout_rule():
@@ -46,7 +45,7 @@ def test_the_suite_matches_its_workflow_and_the_layout_rule():
     text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert "tools/ci_matrix.py pytest" in text and "dir: ${{ fromJSON(needs.plan.outputs.dirs) }}" in text
     dirs = cm.pytest_dirs(ROOT)
-    assert {"core", "tools", "portal", "dev/nrt", "apps/gpu"} <= set(dirs)
+    assert {"core", "tools", "portal", "dev/nrt", "apps/fan"} <= set(dirs)
     assert all((ROOT / d / "tests").is_dir() for d in dirs)
 
 
@@ -54,4 +53,3 @@ def test_the_command_line(capsys):
     assert cm.main(["pytest"]) == 0
     out = capsys.readouterr().out
     assert out.startswith("dirs=[") and "portal" in json.loads(out.removeprefix("dirs="))
-    assert cm.main(["--suite", "nowhere", "pytest"]) == 2 and "no suite" in capsys.readouterr().err

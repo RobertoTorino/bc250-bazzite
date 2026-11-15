@@ -6,11 +6,15 @@
 #
 #   tools/ci-local.sh                                      # the workflows this push starts on GitHub (--all: every one)
 #   tools/ci-local.sh shell pytest/tools                   # jobs by name
-#   tools/ci-local.sh --list                    # the jobs
+#   tools/ci-local.sh --list                               # the jobs
 #
 # Needs podman (Bazzite has it) or docker. The image is built the first time and when the Containerfile changes;
 # venvs, pip's downloads and the logs stay in ~/.cache/bc250-ci-local. Linux only.
 set -euo pipefail
+if [[ "${1:-}" == -h || "${1:-}" == --help ]]; then
+    sed -n '3,12p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0
+fi
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
 
 die() { printf '\033[1;31mERROR:\033[0m %s\n' "$1" >&2; exit 1; }
@@ -45,11 +49,12 @@ if ! "$ENGINE" image inspect "$IMAGE" >/dev/null 2>&1; then
         xargs -r "$ENGINE" rmi -f >/dev/null 2>&1 || true
 fi
 
-# The jobs run as you, as on GitHub (the installers refuse root). FFmpeg's build names its own folder in its pkg-config
+# The jobs run as you, as on GitHub (the installers refuse root), in a copy named as the checkout (GitHub's is named
+# as the repository: the tests may read the folder's name). FFmpeg's build names its own folder in its pkg-config
 # files, so it is always mounted at the same place: ~/.cache/bc250-console-link in the container's home.
 if [ "${ENGINE##*/}" = podman ]; then as_user=(--userns=keep-id); else as_user=(--user "$(id -u):$(id -g)"); fi
 exec "$ENGINE" run --rm --init "${as_user[@]}" \
     --tmpfs "$HOME:rw,mode=1777" -e HOME="$HOME" \
     -v "$ROOT:/src:ro,z" -v "$CACHE:/cache:z" -v "$FFMPEG:$HOME/.cache/bc250-console-link:z" \
-    -e CI_LOCAL_HOST_LOGS="$CACHE/logs" -e CARGO_HOME=/cache/cargo \
+    -e CI_LOCAL_HOST_LOGS="$CACHE/logs" -e CARGO_HOME=/cache/cargo -e CI_LOCAL_WORK="/tmp/ci-local-work/${ROOT##*/}" \
     "$IMAGE" python3 /src/tools/ci_local.py "$@"

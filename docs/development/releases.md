@@ -5,18 +5,17 @@
 The **Nexus Release Tool**, NRT for short (`dev/nrt/` in the repository), is the suite's release front end: a
 window that makes a release with one action, **Start new release**: it writes the versions, the CHANGELOG entries,
 the pins and the portal bump, commits and pushes them and starts the release on GitHub, then runs the device test on
-a board. It commits and pushes only when you press a step's pill. It edits the checkout it lives in, so it is not in the portal's releases and has
-none of its own.
+a board. It commits and pushes only when you press a step's pill. It edits the checkout it lives in, so it is not in
+the portal's releases and has none of its own. The header names the checkout's last commit and its time: the tool is
+never released and has no version.
 
 What a release involves, step by step, is in [apps.toml and releases](../portal.md#appstoml-and-releases).
 
 ## Start it
 
-From the repository's root, with the checkout's venv for the system (`.venv-linux` or `.venv-windows`, see
+From the repository's root, with the checkout's venv (`.venv-linux`, see
 [Set up and test](index.md#set-up-and-test)). Nothing is copied when you install it: the menu entry always starts
 the app of the checkout you installed it from. After moving the checkout, install it again.
-
-On Linux:
 
 ```bash
 tools/nrt.sh                                # open it (dev/nrt/run.sh)
@@ -26,17 +25,8 @@ dev/nrt/install.sh --no-desktop-shortcut   # app menu entry only
 dev/nrt/install.sh --uninstall             # remove them; the checkout stays
 ```
 
-On Windows, in PowerShell:
-
-```powershell
-dev\nrt\run.ps1                                                          # open it
-dev\nrt\run.ps1 --list                                                   # the overview in the terminal
-powershell -ExecutionPolicy Bypass -File dev\nrt\install.ps1             # Start-menu entry and Desktop shortcut
-powershell -ExecutionPolicy Bypass -File dev\nrt\install.ps1 --uninstall # remove them; the checkout stays
-```
-
-From Git Bash, `tools/nrt.sh` and `tools/nrt.sh --install` do the same. `--uninstall --purge` also removes
-the settings.
+`tools/nrt.sh --install` and `tools/nrt.sh --uninstall` do the same as `dev/nrt/install.sh`. `--uninstall --purge`
+also removes the settings.
 
 ## The release
 
@@ -56,7 +46,7 @@ app releases need, and can be typed too.
 The release tab holds the release's steps, numbered, in the order you do them, each with its pill. The step to do
 now has an orange ▶ and its pill lit; a step done has a green ✓, one that failed a red !, and the line beside each
 says what there is to do. While a pill's command runs, its step has a teal ⋯ and its line says what runs
-(**Push them** runs CI's jobs here first, a couple of minutes on Linux, then pushes); the step is done when it
+(**Push them** runs CI's jobs here first, a couple of minutes, then pushes); the step is done when it
 ends, and its output is on the Commands tab. Only the lit pill does anything, so you never need a command or
 another tab. Every tab explains itself behind the round **i** in its first row: click it to read the whole
 explanation.
@@ -69,8 +59,8 @@ explanation.
    count: a Breaking entry makes it major), or the least the check accepts, whichever is higher, and writes it with
    its CHANGELOG entry on a yes, then commits. A no leaves the commit where it is.
 3. **Push them** (**Push**): what GitHub has that this checkout lacks, such as the last release's `Pin ...`
-   commit, comes in under your commits first (`git pull --rebase`); then the pre-push hook checks them. On Linux,
-   CI's jobs run here first (`tools/ci-local.sh`): while they run, the step's line and the line under the header's
+   commit, comes in under your commits first (`git pull --rebase --autostash`); then CI's jobs run
+   here first (`tools/ci-local.sh`): while they run, the step's line and the line under the header's
    pills count the jobs done and name a job that failed (GitHub knows nothing of this push yet). When a job fails,
    nothing is pushed and the step turns red, with the job's name and where its log is; fix it, commit and push, or
    push again when it was no fault of the code.
@@ -105,9 +95,8 @@ explanation.
 7. **Device test,** on a BC-250: it downloads the draft portal with `gh` (a draft needs the sign-in), checks it
    against its `SHA256SUMS`, installs it and starts it (`tools/check-release.sh draft`). Test it as a user would.
    When more than one portal of the run is still a draft, a choice beside Device test lists them; Device test,
-   Publish, Not OK and the step's line follow the one picked there. On another system the button stays gray and
-   the step's line says the draft is tested on a BC-250. Work pushed in the meantime (a fix found during the device
-   test) does not end the release: while its draft waits, Device test and Publish stay at hand for it.
+   Publish, Not OK and the step's line follow the one picked there. Work pushed in the meantime (a fix found during
+   the device test) does not end the release: while its draft waits, Device test and Publish stay at hand for it.
 8. **Publish** when it works: the draft becomes a release, which makes its portal tag, and it becomes GitHub's
    **Latest** release; the installed portals offer it from then on. The new tag is fetched in the same command, so
    the step shows ✓ as soon as it ends: press Publish once. A portal that was open during the device test says its
@@ -117,8 +106,9 @@ explanation.
    **CI passes** and **Start new release**, which builds the portal anew (a portal that was never published keeps
    its version; the apps already out are skipped). Until the fix is committed, **Device test** and **Publish**
    stay at hand, for a Not OK pressed by mistake.
-9. **Bring in the pin commit** (**git pull**): the *Pin ...* commit is on main. It lights as soon as GitHub's runs
-   show that commit, before git has fetched it. Then every step shows ✓.
+9. **Bring in the pin commit** (**git pull**): the *Pin ...* commit is on main. Publish fetches main with the new
+   tag, so it lights as soon as Publish ends (or as soon as GitHub's runs on main show that commit). Then every
+   step shows ✓.
 
 By hand, without the tool, the same run starts on the newest pushed commit with:
 
@@ -129,7 +119,7 @@ gh workflow run release.yml --ref main -f commit="$(git rev-parse origin/main)"
 A run started again skips what is already published. A tag pushed by hand (`tools/tag-release.sh`, below,
 `bc250-<app>-v<x.y.z>` or `bc250-portal-v<x.y.z>`) still releases that one app or portal, published at once. The
 portal tag Publish makes starts `release.yml` too, as any pushed tag does; that run sees the release is published
-already and ends at once.
+already and ends at once. The tool's steps follow only the run Start started on main, never one on a tag.
 
 ## The window
 
@@ -158,10 +148,8 @@ withdrawal, [below](#withdrawing-a-release)), **Remove suite** and **Commands**.
   opens no editor (commit with `-m`) and pages nothing. For a command that must ask, use a terminal; the
   `check-release` script, which asks for the sudo password and keeps the portal running, is handed to a terminal
   by itself when it is run from the line, and the output says so. After each command that changed the checkout (a
-  commit, a push, a tag) the window reads it again, as **Refresh** does. On Windows it needs Git Bash's `bash` on
-  the PATH. Every command, its whole output and how it ended (its exit code) are also kept in a file of the day,
-  `~/.cache/nexus-release-tool/commands/commands-<YYYY-MM-DD>.log` (on Windows under your user folder,
-  `.cache\nexus-release-tool\commands`), so what a step said can be read again afterwards, or sent along when one
+  commit, a push, a tag) the window reads it again, as **Refresh** does. Every command, its whole output and how it ended (its exit code) are also kept in a file of the day,
+  `~/.cache/nexus-release-tool/commands/commands-<YYYY-MM-DD>.log`, so what a step said can be read again afterwards, or sent along when one
   went wrong.
 
 **GitHub** in the header shows whether GitHub built your last push: every workflow run (CI, Release, Wiki) on its
@@ -199,11 +187,9 @@ cache tokens, and each model; click to open [Claude's usage page](https://claude
 your plan's limits. Other computers and claude.ai are not counted. Without Claude Code the pill is not shown. It
 looks every 5 minutes, and **Refresh** looks at once.
 
-The notifications are the desktop's own: on Linux through `notify-send`, on Windows from the Nexus Release Tool
-icon in the notification area, which appears with the first notification and goes when the window closes. A click
-on the notification or the icon brings the window to the front. On Windows they name Nexus Release Tool as their
-source, with its icon, not Python: when it starts, the app registers its Windows app ID for your user (in the
-registry, `HKCU\Software\Classes\AppUserModelId\Nexus.NexusReleaseTool`); `install.ps1 --uninstall` removes it.
+The notifications are the desktop's own, through `notify-send` (without it, from the Nexus Release Tool icon in the
+notification area, which appears with the first notification and goes when the window closes). A click on the
+notification or the icon brings the window to the front.
 
 A red line at the top of the window means a release tag points at a commit whose `VERSION` is not the tag's
 version: the tag was made before the version bump was committed, and `release.yml` cannot build it. Delete the tag
@@ -216,7 +202,7 @@ up to an hour. A portal tag also waits for the app releases it pins: each one ta
 sha256 (the release's *Pin ...* commit, or `tools/pin_app.py`), as the portal's release needs them. A plain `git tag` tags whatever HEAD is at that moment, also
 the commit from before the bump or one CI failed. `release.yml` asks the same before it builds anything: a tag on a
 commit CI did not pass gives no release. It then builds and publishes the release without an approval on GitHub
-(see [GitHub settings](github-settings.md#environments)).
+(see [GitHub settings](github-settings.md#environments)). `tools/tag-release.sh --help` prints its usage.
 
 `tools/nrt.sh --list` lists every app with its version, its last tag and its pin, without Qt.
 

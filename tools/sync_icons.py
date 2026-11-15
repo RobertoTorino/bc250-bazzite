@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Convert new category icons in a suite's icons/<category>/ and copy them to every app of the suite, as its
-icons/categories.toml assigns them (--suite names the suite, as tools/suites.py says, "." for this repository; the
-paths below are the suite's):
+"""Convert new category icons in icons/<category>/ and copy them to every app of the suite, as icons/categories.toml
+assigns them:
 
     python3 tools/sync_icons.py                                       # convert, then write the copies that differ
     python3 tools/sync_icons.py --check                               # only list them; exit 1 when there are any
     python3 tools/sync_icons.py --category C --from IMAGE             # the category's four icons from one image
     python3 tools/sync_icons.py --category C --from IMAGE --size 512  # only the sizes named (--size again for more)
-    python3 tools/sync_icons.py --suite bc250-bazzite --check         # the suite by name
 
 The portal also gets the 512 px icon of each category it lists apps in, portal/images/categories/<category>.webp, which
 its tiles are drawn from.
@@ -28,9 +26,7 @@ import sys
 import tomllib
 from pathlib import Path
 
-import suites
-
-ROOT = suites.ROOT                                  # the checkout; the functions take the suite's folder
+ROOT = Path(__file__).resolve().parent.parent      # the checkout; the functions take another for the tests
 SIZES = (1024, 512, 256, 128)
 WEBP_QUALITY = 90
 
@@ -42,7 +38,7 @@ def icon_path(category_dir: Path, size: int) -> Path:
 
 def copies(root: Path | None = None) -> dict[Path, Path]:
     """Each copy (a path in the suite) with the category icon it is a copy of."""
-    root = root or suites.suite()
+    root = root or ROOT
     table = tomllib.loads((root / "icons" / "categories.toml").read_text(encoding="utf-8"))
     found = {}
     for key, entry in table.items():
@@ -62,14 +58,14 @@ def copies(root: Path | None = None) -> dict[Path, Path]:
 
 def stale(root: Path | None = None) -> list[Path]:
     """The copies that are missing or differ from their category icon."""
-    root = root or suites.suite()
+    root = root or ROOT
     return [copy for copy, source in copies(root).items()
             if not copy.is_file() or copy.read_bytes() != source.read_bytes()]
 
 
 def missing(root: Path | None = None) -> list[Path]:
     """The category icons not there: no copy is written from them."""
-    root = root or suites.suite()
+    root = root or ROOT
     return [icon_path(category_dir, size)
             for category_dir in sorted(p for p in (root / "icons").iterdir() if p.is_dir())
             for size in SIZES if not icon_path(category_dir, size).is_file()]
@@ -112,7 +108,7 @@ def is_icon(path: Path) -> bool:
 
 def dropped(root: Path | None = None) -> dict[Path, tuple[int, ...]]:
     """The images in icons/<category>/ still to convert, each with the sizes it becomes, the whole sets first."""
-    root = root or suites.suite()
+    root = root or ROOT
     found: dict[Path, tuple[int, ...]] = {}
     for category_dir in sorted(p for p in (root / "icons").iterdir() if p.is_dir()):
         sets, singles = [], []
@@ -132,7 +128,7 @@ def dropped(root: Path | None = None) -> dict[Path, tuple[int, ...]]:
 
 def convert_dropped(root: Path | None = None) -> list[Path]:
     """Convert every dropped image and remove it; the icons written."""
-    root = root or suites.suite()
+    root = root or ROOT
     written = []
     for source, sizes in dropped(root).items():
         targets = convert(source, source.parent, sizes)
@@ -145,25 +141,19 @@ def convert_dropped(root: Path | None = None) -> list[Path]:
 
 
 def main(argv: list[str], root: Path | None = None) -> int:
-    """*root*: the suite's folder; without one, --suite picks it (tools/suites.py)."""
+    """*root*: the suite's folder; without one, --root or the checkout."""
     parser = argparse.ArgumentParser(description="Convert a suite's category icons and copy them to its apps.")
     parser.add_argument("--check", action="store_true", help="only list what is out of date; exit 1 when any is")
-    suites.add_argument(parser)
     parser.add_argument("--root", type=Path, help=argparse.SUPPRESS)     # a suite folder anywhere (tools/new_app.py)
     parser.add_argument("--category", help="the category (a folder of icons/) --from writes")
     parser.add_argument("--from", dest="source", type=Path, help="an image to make the category's icons from")
     parser.add_argument("--size", type=int, action="append", choices=SIZES,
                         help="only this size from --from (again for more); all four without it")
     args = parser.parse_args(argv)
-    if root is None and args.root is not None:
-        root = args.root.resolve()
     if root is None:
-        try:
-            root = suites.suite(args.suite)
-        except LookupError as error:
-            parser.error(str(error))
+        root = args.root.resolve() if args.root is not None else ROOT
     if not (root / "icons" / "categories.toml").is_file():
-        parser.error(f"{root.name} has no icons/categories.toml: its apps take no category icons")
+        parser.error(f"{root} has no icons/categories.toml: its apps take no category icons")
     if (args.category is None) != (args.source is None) or (args.size and args.source is None):
         parser.error("--category and --from go together, --size only with them")
     if args.check and args.source is not None:

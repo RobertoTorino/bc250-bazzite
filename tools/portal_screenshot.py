@@ -7,9 +7,9 @@
 It opens the portal's view offscreen on the apps.toml and the icons of this checkout, in a home folder of its
 own (nothing is installed or changed on this computer), with a fixed demo state: every app installed but two, one
 update (the notice and the red count on its category), a fixed status (the loads, the clock and the weather of a
-place) and Sustainable open. Then it saves the
-window as WebP, by default over docs/images/home/portal.webp. The wiki's workflow runs it before every build, so the published
-picture always shows the portal as it is on main; run it by hand to see the same picture locally.
+place) and Sustainable open. Then it saves the window as WebP, by default over docs/images/home/portal.webp. The
+wiki's workflow runs it before every build, so the published picture always shows the portal as it is on main; run
+it by hand to see the same picture locally.
 
 The window and the application are deleted here, in that order, once the picture is saved: left to the
 interpreter's exit, Qt's multimedia backend (the portal's sound asks it for an audio output) and SDL (its controller

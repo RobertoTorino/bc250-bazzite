@@ -20,14 +20,15 @@ from pathlib import Path
 SUITE = Path(__file__).resolve().parent.parent
 MANIFEST = SUITE / "portal" / "apps.toml"
 REPO_URL = "https://github.com/RobertoTorino/bc250-bazzite"
-_TAG = re.compile(r"^bc250-(?P<app>[a-z0-9-]+)-v\d+\.\d+\.\d+$")     # the suite's tags (TAG_PREFIX)
+PREFIX = (SUITE / "TAG_PREFIX").read_text(encoding="utf-8").strip()     # the suite's tags start with it
+_TAG = re.compile(rf"^{re.escape(PREFIX)}(?P<app>[a-z0-9-]+)-v\d+\.\d+\.\d+$")
 
 
 def fetch_sha256(tag: str, asset: str = "") -> str:
     """The checksum of the release's *asset* (default <tag>.tar.gz) in its SHA256SUMS."""
     asset = asset or f"{tag}.tar.gz"
     url = f"{REPO_URL}/releases/download/{tag}/SHA256SUMS"
-    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "bc250-pin-app"}),
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": f"{PREFIX}pin-app"}),
                                 timeout=30) as response:
         sums = response.read().decode("utf-8", "replace")
     for line in sums.splitlines():
@@ -61,7 +62,7 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     match = _TAG.match(args.tag)
     if not match:
-        parser.error(f"{args.tag} is not bc250-<app>-v<x.y.z>")
+        parser.error(f"{args.tag} is not {PREFIX}<app>-v<x.y.z>")
     sha256 = (args.sha256 or fetch_sha256(args.tag)).lower()
     if not re.fullmatch(r"[0-9a-f]{64}", sha256):
         parser.error("--sha256 must be 64 hex digits")

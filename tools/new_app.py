@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""A new app of a suite, written from the architecture chapter, so the template cannot drift from the checks:
+"""A new app of the suite, written from the architecture chapter, so the template cannot drift from the checks:
 
-    python3 tools/new_app.py . <name> "<App Name>" [--id APP_ID] [--package PACKAGE] [--category CATEGORY]
+    python3 tools/new_app.py <name> "<App Name>" [--id APP_ID] [--package PACKAGE] [--category CATEGORY]
                              [--summary TEXT] [--no-check]
 
-The suite is this repository ("."). It writes apps/<name>/ (the package with __main__.py and a window on AppHeader, images/, tests/, install.sh,
+It writes apps/<name>/ (the package with __main__.py and a window on AppHeader, images/, tests/, install.sh,
 the requirements, VERSION 0.1.0, CHANGELOG, LICENSE, .gitignore and README.md), the installer test
 tools/installer-tests/<name>.sh and the wiki chapter docs/apps/<name>.md, and lists the app wherever
 the suite lists its apps: portal/apps.toml, icons/categories.toml (with the
@@ -17,8 +17,7 @@ Then it runs the checks on it (the layout test, the app's tests, the suite's ins
 catalog tests) unless --no-check. The portal bump the new entry asks for, the app's CHANGELOG and its release stay
 the owner's.
 
-The template is the BC250 Bazzite Suite's: a Linux app on the shared venv, with the suite's installer. A suite whose
-portal has another package is refused."""
+The template is the suite's: a Linux app on the shared venv, with the suite's installer."""
 
 from __future__ import annotations
 
@@ -37,7 +36,6 @@ ROOT = Path(__file__).resolve().parent.parent
 CATEGORIES = ("sustainable", "graphics", "gaming", "utilities")   # the portal's, when it has none
 DESKTOP_CATEGORIES = {"sustainable": "System;", "graphics": "Game;Graphics;", "gaming": "Game;",
                       "utilities": "Utility;"}
-TEMPLATES = {"bc250_portal": "bazzite"}  # the suite's portal package names its template
 _NAME = re.compile(r"^[a-z][a-z0-9-]*$")
 _PREFIXES = ("BC-250 ", "BC250 ", "Bazzite ")
 
@@ -54,32 +52,28 @@ def _load(name: str, path: Path):
 class Suite:
     """What the template takes from the suite: its folder, its name and id (the portal's), its wiki's address, its
     categories and the core package every app bundles."""
-    folder: Path                        # <root>/bc250-bazzite
+    folder: Path                        # the repository
     name: str                           # "BC250 Bazzite Suite"
     app_id: str                         # "bc250-bazzite-suite": the shared venv's folder
     wiki: str                           # "https://robertotorino.github.io/bc250-bazzite/"
     categories: tuple[str, ...]
     core: str                           # "bc250_core"
-    template: str                       # "bazzite"
-    tag_prefix: str = ""                # the suite's TAG_PREFIX (this suite has none)
+    tag_prefix: str = ""                # the suite's TAG_PREFIX: "bc250-"
 
     @property
     def prefix(self) -> str:
-        """The start of an app id: the first word of the suite's id (bc250-<name>)."""
-        return self.app_id.split("-")[0]
+        """The start of an app id: the tag prefix without its hyphen (bc250-<name>), else the first word of the
+        suite's id."""
+        return self.tag_prefix.rstrip("-") or self.app_id.split("-")[0]
 
 
-def read_suite(root: Path, name: str) -> Suite:
-    folder = root / name
+def read_suite(root: Path) -> Suite:
+    folder = root
     if not (folder / "portal" / "apps.toml").is_file():
-        suites = sorted(p.name for p in root.iterdir() if p.is_dir() and (p / "portal" / "apps.toml").is_file())
-        raise SystemExit(f"{name} is not a suite of {root} (the suites: {', '.join(suites) or 'none'})")
+        raise SystemExit(f"{root} is no suite: it has no portal/apps.toml")
     packages = [p for p in (folder / "portal").iterdir() if p.is_dir() and (p / "__init__.py").is_file()]
     if len(packages) != 1:
-        raise SystemExit(f"{name}/portal has no portal package (one folder with __init__.py)")
-    if packages[0].name not in TEMPLATES:
-        raise SystemExit(f"{name} has no app template yet (its portal is {packages[0].name}; the templates: "
-                         f"{', '.join(TEMPLATES)})")
+        raise SystemExit("portal/ has no portal package (one folder with __init__.py)")
     init = (packages[0] / "__init__.py").read_text(encoding="utf-8")
     consts = dict(re.findall(r'^(APP_NAME|APP_ID)\s*=\s*"([^"]+)"', init, re.M))
     if "APP_NAME" not in consts or "APP_ID" not in consts:
@@ -95,7 +89,7 @@ def read_suite(root: Path, name: str) -> Suite:
         raise SystemExit(f"{root}/core has no core package (one folder with __init__.py)")
     tag_prefix = (folder / "TAG_PREFIX").read_text(encoding="utf-8").strip() if (folder / "TAG_PREFIX").is_file() else ""
     return Suite(folder, consts["APP_NAME"], consts["APP_ID"], site[1].rstrip("/") + "/" if site else "",
-                 categories, cores[0], TEMPLATES[packages[0].name], tag_prefix)
+                 categories, cores[0], tag_prefix)
 
 
 @dataclass
@@ -127,11 +121,8 @@ def default_package(app_name: str) -> str:
 
 def amsterdam_now() -> str:
     """The CHANGELOG's time, Europe/Amsterdam (CLAUDE.md)."""
-    try:
-        import zoneinfo
-        now = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Amsterdam"))
-    except (ImportError, KeyError):       # Windows without tzdata: the machine's time, which CLAUDE.md warns about
-        now = datetime.datetime.now()
+    import zoneinfo
+    now = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Amsterdam"))
     return now.strftime("%d-%m-%Y %H:%M:%S")
 
 
@@ -463,7 +454,7 @@ INSTALLER_TEST_SH = '''#!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/@NAME@/install.sh: install from the checkout (core bundled, shared venv, no sudo), a staged release
 # replacing it, uninstall with and without other venv users, --purge, and the refusal to run as root.
-# Runs with the shims from shims.sh (CI, or WSL on Windows).
+# Runs with the shims from shims.sh.
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the tools (stage_app.py) and core/
@@ -743,7 +734,7 @@ def write_app(root: Path, suite: Suite, app: NewApp) -> list[Path]:
     change(manifest, old.rstrip("\n") + "\n\n" + entry)
     categories = suite.folder / "icons" / "categories.toml"
     change(categories, categories.read_text(encoding="utf-8").rstrip("\n") + "\n" + fill(CATEGORIES_ENTRY, app, suite))
-    sync = Path(__file__).resolve().parent / "sync_icons.py"          # the Nexus tool, on the suite's folder
+    sync = Path(__file__).resolve().parent / "sync_icons.py"          # on the suite's folder
     result = subprocess.run([sys.executable, str(sync), "--root", str(suite.folder)], cwd=root,
                             capture_output=True, text=True)
     if result.returncode != 0:
@@ -764,8 +755,9 @@ def write_app(root: Path, suite: Suite, app: NewApp) -> list[Path]:
     change(readme, insert_after_list(readme.read_text(encoding="utf-8"), f"**{app.category_title}**",
                                      fill(README_ROW, app, suite), "README.md"))
     # Nexus Deps' catalog of the suite (dev/deps): the app with its launcher, and PyQt6 as one of its packages.
-    catalog = root / "dev" / "deps" / "nexus_deps" / "catalogs" / f"{suite.folder.name}.toml"
-    if catalog.is_file():
+    catalogs = sorted((root / "dev" / "deps" / "nexus_deps" / "catalogs").glob("*.toml"))
+    catalog = catalogs[0] if len(catalogs) == 1 else None
+    if catalog is not None:
         text = insert_before(catalog.read_text(encoding="utf-8"), "\n[[tool]]\n", "\n" + fill(CATALOG_APP, app, suite).rstrip("\n") + "\n",
                              "dependencies.toml")
         start = text.find('name = "PyQt6"')
@@ -811,7 +803,6 @@ def checks(root: Path, suite: Suite, app: NewApp) -> list[tuple[str, bool, str]]
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0],
                                      formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
-    parser.add_argument("suite", help="the suite: . for this repository")
     parser.add_argument("name", help="the app's key: its folder under apps/, its tag prefix (<name>-v), a short name")
     parser.add_argument("app_name", metavar="app-name", help='the name shown: "BC-250 Fan Control"')
     parser.add_argument("--id", dest="app_id", help="the app id (the launcher, the settings, the desktop file; "
@@ -824,7 +815,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=ROOT, help=argparse.SUPPRESS)      # the tests' repositories
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    suite = read_suite(root, args.suite)
+    suite = read_suite(root)
     if not _NAME.match(args.name):
         raise SystemExit(f"{args.name!r} is not a name: lowercase letters, digits and hyphens, starting with a letter")
     if args.category not in suite.categories:

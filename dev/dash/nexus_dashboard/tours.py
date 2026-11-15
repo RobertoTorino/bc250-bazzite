@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Record a suite's video tours: front ends for the suite's tools/record-tour.sh (the portal's tour) and
 tools/record-app-tour.sh (one app's), which run in the background with their output shown. The dialogs take the
-suite's folder in the checkout (the dashboard's chosen suite); they were the Media Tool's until 02-11-2026."""
+checkout; they were the Media Tool's until 02-11-2026."""
 
 from __future__ import annotations
 
 import os
 import signal
-import subprocess
-import sys
 import tomllib
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -38,7 +36,6 @@ MANIFEST = Path("portal") / "apps.toml"
 SECONDS = 40                                        # an app's tour, as tools/app_tour.py makes it by default
 SIZES = ("1080p", "1440p", "2160p")                 # the video's size (tools/tour_frames.py); the first is the default
 SIZE_HINT = "1080p for the wiki, 2160p (4K) for YouTube: about four times the time"
-WINDOWS = sys.platform == "win32"                   # the scripts run with Git Bash there, without setsid
 
 
 def size_suffix(size: str) -> str:
@@ -47,12 +44,12 @@ def size_suffix(size: str) -> str:
 
 
 def video_prefix(suite: Path) -> str:
-    """What the suite's tour videos start with: its tag prefix (wp-), or bc250- for the suite without one, as the
-    tour scripts name them."""
+    """What the suite's tour videos start with, as the tour scripts name them: its tag prefix (TAG_PREFIX: bc250-),
+    "" without one."""
     try:
-        return (suite / "TAG_PREFIX").read_text(encoding="utf-8").strip() or "bc250-"
+        return (suite / "TAG_PREFIX").read_text(encoding="utf-8").strip()
     except OSError:
-        return "bc250-"
+        return ""
 
 
 def size_options(size: str) -> list[str]:
@@ -68,7 +65,7 @@ class TourApp:
     name: str
     package: str | None = None                      # only for an app with two programs
     version: str = ""
-    prefix: str = "bc250-"                          # the suite's: what its videos' names start with
+    prefix: str = ""                                # the suite's: what its videos' names start with (video_prefix())
 
     @property
     def label(self) -> str:
@@ -128,7 +125,7 @@ def app_command(checkout: Path, app: TourApp, out: Path, seconds: int, music: bo
 
 
 class TourDialog(QDialog):
-    """A tour dialog: the suite's folder, the dialog's own options, the output of the runs, and Record and Stop.
+    """A tour dialog: the checkout, the dialog's own options, the output of the runs, and Record and Stop.
     The runs go one after another, each in its own process group so Stop ends the recording and what it started."""
 
     SCRIPT = RECORD_TOUR
@@ -149,12 +146,12 @@ class TourDialog(QDialog):
         text = QLabel(intro)
         text.setWordWrap(True)
         layout.addWidget(text)
-        suite_row = QHBoxLayout()
-        suite_row.addWidget(QLabel("Suite:"))
-        self.suite_label = QLabel(str(checkout))
-        self.suite_label.setToolTip("The suite's folder in the checkout, as chosen in the dashboard")
-        suite_row.addWidget(self.suite_label, 1)
-        layout.addLayout(suite_row)
+        checkout_row = QHBoxLayout()
+        checkout_row.addWidget(QLabel("Checkout:"))
+        self.checkout_label = QLabel(str(checkout))
+        self.checkout_label.setToolTip("The checkout the tour is recorded from")
+        checkout_row.addWidget(self.checkout_label, 1)
+        layout.addLayout(checkout_row)
 
         self.options = QVBoxLayout()
         layout.addLayout(self.options)
@@ -200,12 +197,12 @@ class TourDialog(QDialog):
         row.addStretch(1)
         return row
 
-    # --- the suite ------------------------------------------------------------------------------------------
+    # --- the checkout ---------------------------------------------------------------------------------------
     def set_checkout(self, checkout: Path) -> None:
-        """The suite's folder; a suite without the script gets the dialog greyed out."""
+        """The checkout; one without the script gets the dialog greyed out."""
         self.checkout = checkout
         if not (checkout / self.SCRIPT).is_file():
-            self.output.setPlainText(f"This suite has no {self.SCRIPT.as_posix()}: its tours are not recorded here.")
+            self.output.setPlainText(f"This checkout has no {self.SCRIPT.as_posix()}: its tours are not recorded here.")
             self.checkout = None
         else:
             self.output.clear()
@@ -258,11 +255,8 @@ class TourDialog(QDialog):
         process.readyReadStandardOutput.connect(self._read)
         process.finished.connect(self._ended)
         process.errorOccurred.connect(self._error)
-        if WINDOWS:                 # no setsid on Windows: Stop ends the script's process tree instead
-            process.start(command[0], command[1:])
-        else:
-            # its own process group (setsid), so Stop ends the script and the Python and ffmpeg it started
-            process.start("setsid", command)
+        # its own process group (setsid), so Stop ends the script and the Python and ffmpeg it started
+        process.start("setsid", command)
         self.update_buttons()
 
     def _read(self) -> None:
@@ -298,11 +292,7 @@ class TourDialog(QDialog):
         if process is None:
             return
         try:
-            if WINDOWS:
-                subprocess.run(["taskkill", "/T", "/F", "/PID", str(int(process.processId()))],
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
-            else:
-                os.killpg(int(process.processId()), signal.SIGTERM)
+            os.killpg(int(process.processId()), signal.SIGTERM)
         except (OSError, ValueError):
             process.terminate()
         process.waitForFinished(5000)

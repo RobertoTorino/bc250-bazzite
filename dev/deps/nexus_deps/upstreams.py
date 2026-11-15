@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The programs and firmware the suites' apps use, and their updates (owner, 09-11-2026: "we also check for app
+"""The programs and firmware the suite's apps use, and their updates (owner, 09-11-2026: "we also check for app
 dependencies we use, like emulator updates, and for PlayStation firmware updates"). catalogs/upstreams.json lists
 them, kept in sync with the apps (owner, 09-11-2026: a separate JSON file, kept in sync): the pins, repos, names and
 launchers are read from each app's code and its portal's apps.toml by sync() (`dev/deps/run.sh
@@ -33,16 +33,12 @@ from collections.abc import Callable
 from html import escape
 from pathlib import Path
 
-from . import CATALOGS, CHECKOUT, __version__
+from . import CATALOGS, CHECKOUT
 from .system import Source, Update
-
-ROOT_SUITE = "bc250-bazzite"   # the suite this repository is, by name (its Deps catalog's, its repository's),
-#                                whatever the checkout's folder is called
 
 CATALOG = CATALOGS / "upstreams.json"
 TIMEOUT = 15
-USER_AGENT = f"nexus-deps/{__version__}"
-SUITE_NAMES = {"bc250-bazzite": "BC250 Bazzite Suite"}
+USER_AGENT = "nexus-deps"
 SYNCED = ("repo", "pin", "version", "home", "name", "launcher")
 
 Fetch = Callable[[str], object]          # a GitHub API URL -> its decoded JSON
@@ -98,16 +94,11 @@ def constants(path: Path) -> dict[str, object]:
     return names
 
 
-def _suite_dir(checkout: Path, suite: str) -> Path:
-    """The suite's folder: the checkout itself for the suite the repository is (named as its folder, or ".")."""
-    return checkout if (suite in {checkout.name, ".", ROOT_SUITE} and not (checkout / suite).is_dir()) else checkout / suite
-
-
-def _portal_app(checkout: Path, suite: str, app: str) -> dict:
-    path = _suite_dir(checkout, suite) / "portal" / "apps.toml"
+def _portal_app(checkout: Path, app: str) -> dict:
+    path = checkout / "portal" / "apps.toml"
     entry = tomllib.loads(path.read_text(encoding="utf-8")).get("apps", {}).get(app)
     if entry is None:
-        raise UpstreamError(f"{suite}: {app} is not in {path.relative_to(checkout)}")
+        raise UpstreamError(f"{app} is not in {path.relative_to(checkout)}")
     return entry
 
 
@@ -116,12 +107,12 @@ def sync(data: dict, checkout: Path = CHECKOUT) -> dict:
     data = copy.deepcopy(data)
     for entry in [*data.get("github", []), *data.get("sony", [])]:
         for app in entry.get("apps", []):
-            portal = _portal_app(checkout, app["suite"], app["app"])
+            portal = _portal_app(checkout, app["app"])
             app["name"] = portal["name"]
             app["launcher"] = (portal.get("detect") or [""])[0]
             if "module" not in app:
                 continue
-            folder = _suite_dir(checkout, app["suite"]) / "apps" / app["app"]
+            folder = checkout / "apps" / app["app"]
             module = folder / app["module"]
             if not module.is_file():
                 raise UpstreamError(f"{module.relative_to(checkout)} is missing")
@@ -139,13 +130,12 @@ def sync(data: dict, checkout: Path = CHECKOUT) -> dict:
     return data
 
 
-def apps_with_upstreams(checkout: Path = CHECKOUT) -> set[tuple[str, str]]:
-    """Every (suite, app) of the Linux suites with a pinned upstream: an emulator.py."""
+def apps_with_upstreams(checkout: Path = CHECKOUT) -> set[str]:
+    """Every app of the suite with a pinned upstream: an emulator.py."""
     found = set()
-    for suite in SUITE_NAMES:
-        for module in (_suite_dir(checkout, suite) / "apps").glob("*/*/emulator.py"):
-            if "REPO" in constants(module) and "VERSION" in constants(module):
-                found.add((suite, module.parents[1].name))
+    for module in (checkout / "apps").glob("*/*/emulator.py"):
+        if "REPO" in constants(module) and "VERSION" in constants(module):
+            found.add(module.parents[1].name)
     return found
 
 
@@ -248,7 +238,7 @@ def installed_version(app: dict, home: Path) -> str | None:
 
 
 def _app_label(app: dict) -> str:
-    return f"{app['name']} ({SUITE_NAMES.get(app['suite'], app['suite'])})"
+    return app["name"]
 
 
 def check_github(entry: dict, fetch: Fetch = _fetch, home: Path = Path.home()) -> Source:

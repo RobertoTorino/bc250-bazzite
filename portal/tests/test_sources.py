@@ -213,6 +213,8 @@ def test_records_follow_an_app_renamed_in_the_suite(tmp_path):
     assert json.loads(path.read_text()) == {"ace": "ace-v0.2.0", "datstation": "local", "gpu": "gpu-v0.4.0"}
     path.write_text('{"ace-queues": "ace-queues-v0.1.9", "ace": "ace-v0.2.1"}')
     assert Records(path).get("ace") == "ace-v0.2.1"                  # a record under the new key stays
+    path.write_text('{"governor": "bc250-governor-v0.4.0"}')
+    assert Records(path).get("gpu") == "bc250-gpu-v0.4.0"            # a tag with the suite's prefix too
 
 
 def test_records_follow_an_app_renamed_twice(tmp_path):

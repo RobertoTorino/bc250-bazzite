@@ -3,7 +3,7 @@
 # Exercise apps/controller/install.sh: install from the checkout (core bundled, shared venv, no sudo), a staged release
 # replacing it, uninstall with and without other venv users (the firmware and profile backups kept), --purge (those
 # too), and the refusal to run as root; the idle service (a systemd user unit; systemctl only records what it is
-# asked). Runs with the shims from shims.sh (CI, or WSL on Windows).
+# asked). Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

@@ -28,10 +28,10 @@ from PyQt6.QtWidgets import (
 )
 
 from bc250_core.gamepad import Gamepad
-from bc250_core.nexus import EDGE, MAIN, TEAL
-from bc250_core.widgets import AppHeader, InfoButton, accent_button, hint_label
+from bc250_core.nexus import EDGE, MAIN, TEAL, header as nexus_header
+from bc250_core.widgets import InfoButton, accent_button, hint_label
 
-from . import APP_NAME, LOGO_PATH, __version__
+from . import APP_NAME, CHECKOUT, LOGO_PATH
 from .player import Player
 from .synth import PRESETS, RANGES, WAVES, Sound, from_values, render, to_values, write_wav
 
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
 
         central = QWidget()
         layout = QVBoxLayout(central)
-        header = AppHeader(LOGO_PATH, APP_NAME, __version__)
+        header = nexus_header(LOGO_PATH, APP_NAME, CHECKOUT)  # the checkout's commit, never a version
         header.add_action(InfoButton(ABOUT, "What this app does"))
         self.preset_box = QComboBox()
         self.preset_box.addItems([*PRESETS, CUSTOM])

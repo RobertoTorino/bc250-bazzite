@@ -134,14 +134,14 @@ def _load_toml(text: str) -> dict:
 
 
 def parse(text: str) -> list[AppEntry]:
-    """The pinned apps in display order: the required one(s) first, the rest in file order. The [checkout.*] tables
+    """The pinned apps in display order: the required one first, the rest in file order. The [checkout.*] tables
     of an earlier portal release's manifest (apps that ran from a checkout) are not read."""
     apps = _load_toml(text).get("apps")
     if not isinstance(apps, dict) or not apps:
         raise ManifestError("apps.toml has no [apps.<name>] tables")
     entries = [_entry(key, raw) for key, raw in apps.items()]
-    if not any(e.required for e in entries):
-        raise ManifestError("apps.toml must have a required app (check)")
+    if sum(e.required for e in entries) != 1:
+        raise ManifestError("apps.toml must have exactly one required app (check)")
     return sorted(entries, key=lambda e: not e.required)        # stable: file order within each group
 
 

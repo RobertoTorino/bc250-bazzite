@@ -72,7 +72,7 @@ and the release workflow builds only a commit that CI passed.
   with only **Allow actions created by GitHub** ticked. The workflows use only `actions/*`, so they keep working;
   a third-party action fails until it is allowed on purpose.
 - **Require actions to be pinned to a full-length commit SHA:** off. The workflows refer to actions by version
-  (`actions/checkout@v4`); this setting would fail every run until each `uses:` line names a commit hash.
+  (`actions/checkout@v7`); this setting would fail every run until each `uses:` line names a commit hash.
 - **Workflow permissions:** **Read repository contents**. A workflow that needs more asks for it in its own
   `permissions:` block (`release.yml` writes releases, `docs.yml` publishes the wiki, `upstream.yml` writes the
   Upstream review issue). `release.yml` also pushes its *Pin ...* commit to main and makes the app tags with that

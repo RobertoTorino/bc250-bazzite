@@ -6,7 +6,6 @@ from __future__ import annotations
 import datetime
 import json
 import os
-import shutil
 import subprocess
 import sys
 from dataclasses import replace
@@ -19,7 +18,6 @@ from nexus_release_tool import plan as rp
 from nexus_release_tool.command_line import command_lines
 
 SHA = "cd" * 32
-SUITE_DIR = "bc250-bazzite"                 # the first suite's folder, as Nexus lays the checkout out
 
 
 def card(key: str, required: bool = False) -> str:
@@ -83,58 +81,20 @@ def unit(root: Path, key: str) -> rp.Unit:
     return next(u for u in rp.load_units(root) if u.key == key)
 
 
-@pytest.fixture
-def two_suites(tmp_path) -> Path:
-    """Nexus with a suite of plain tags (bc) and the Windows Portable Suite's kind (wp: wp- tags, its own manifest
-    and check_manifest.py, copied from the checkout)."""
-    root = tmp_path / "nexus"
-    write(root / "core/VERSION", "0.1.0\n")
-    write(root / "core/bc250_core/__init__.py", '__version__ = "0.1.0"\n')
-    write(root / "bc/portal/VERSION", "3.0.0\n")
-    write(root / "bc/portal/apps.toml", card("check", required=True))
-    write(root / "bc/apps/check/VERSION", "0.1.0\n")
-    wp = root / "wp"
-    write(wp / "SYSTEM", "windows\n")
-    write(wp / "TAG_PREFIX", "wp-\n")
-    write(wp / "portal/VERSION", "0.1.0\n")
-    write(wp / "apps/test/VERSION", "0.2.0\n")
-    write(wp / "apps/test/CHANGELOG", "Changelog: 01-01-2026 00:00:00\n\nAdded. More.\n")
-    real = Path(__file__).resolve().parent / "fixtures" / "prefixed-suite"     # the Windows Portable Suite's files
-    for path in ("tools/check_manifest.py", "portal/portable_portal/manifest.py"):
-        write(wp / path, (real / path).read_text(encoding="utf-8"))
-    write(wp / "portal/apps.toml", '[apps.test]\nname = "T"\nsummary = "s"\ntag = "wp-test-v0.1.0"\nsha256 = ""\n'
-                                   'required = true\ncategory = "sustainable"\ninstall = ["i"]\nuninstall = ["u"]\n'
-                                   'detect = ["d"]\n')
-    sh(root, "init", "-q", "-b", "main")
-    sh(root, "add", "-A")
-    sh(root, "commit", "-q", "-m", "start")
-    for tag in ("wp-test-v0.1.0", "test-v9.9.9", "portal-v3.0.0", "check-v0.1.0"):
-        sh(root, "tag", tag)
-    return root
-
-
-def test_a_suites_tags_carry_its_prefix(two_suites):
-    assert rp.suites(two_suites) == ["bc", "wp"]
-    assert (rp.tag_prefix(two_suites, "bc"), rp.tag_prefix(two_suites, "wp")) == ("", "wp-")
-    units = {u.key: u for u in rp.load_units(two_suites, "wp")}
-    test, portal = units["test"], units["portal"]
-    assert test.last_tag == "wp-test-v0.1.0"                    # not test-v9.9.9, whatever suite that would be
-    assert (test.tag, test.pinned_tag) == ("wp-test-v0.2.0", "wp-test-v0.1.0")   # read with the suite's own parser
-    assert rp.version_choices(two_suites, test)[0][0] == "0.2.0"
-    assert portal.last_tag is None and portal.tag == "wp-portal-v0.1.0"     # the BC250 portal's tag is not its own
-    assert units["core"].prefix == ""
-    bc = {u.key: u for u in rp.load_units(two_suites, "bc")}
-    assert (bc["portal"].last_tag, bc["check"].tag) == ("portal-v3.0.0", "check-v0.1.0")
-    assert rp.manifest_tools(two_suites, "bc") is rp.check_manifest
-    assert rp.manifest_tools(two_suites, "wp").PORTAL_TAG == "wp-portal-v"
-
-
-def test_a_windows_suites_pin_and_portal_bump(two_suites):
-    test = next(u for u in rp.load_units(two_suites, "wp") if u.key == "test")
-    rp.pin(two_suites, test, "AB" * 32, suite="wp")
-    assert 'tag = "wp-test-v0.2.0"\nsha256 = "' + "ab" * 32 + '"' in (two_suites / "wp/portal/apps.toml").read_text()
-    assert rp.changed_pins(two_suites, "HEAD", suite="wp") == ["wp-test-v0.2.0"]
-    assert rp.portal_minimum(two_suites, "HEAD", "0.1.0", suite="wp")[0] == "0.2.0"     # an app minor: a portal minor
+def test_a_suites_tags_carry_its_prefix(repo):
+    """The suite's TAG_PREFIX starts its tags: the apps' and the portal's, never core's; a tag without it is not the
+    suite's."""
+    write(repo / "TAG_PREFIX", "bc250-\n")
+    sh(repo, "tag", "bc250-beta-v0.1.0")
+    assert rp.tag_prefix(repo) == "bc250-"
+    units = {u.key: u for u in rp.load_units(repo)}
+    assert units["beta"].last_tag == "bc250-beta-v0.1.0" and units["alpha"].last_tag is None     # alpha-v0.1.0: no
+    assert units["portal"].tag == "bc250-portal-v0.1.0" and units["core"].prefix == ""
+    beta = units["beta"]
+    rp.set_version(repo, beta, "0.2.0")
+    rp.pin(repo, beta, "AB" * 32)
+    assert 'tag = "bc250-beta-v0.2.0"\nsha256 = "' + "ab" * 32 + '"' in (repo / "portal/apps.toml").read_text()
+    assert rp.changed_pins(repo, "HEAD") == ["bc250-beta-v0.2.0"]
 
 
 def test_units(repo):
@@ -249,48 +209,26 @@ def test_pin_and_portal(repo):
     assert rp.portal_minimum(repo, "pushed", "0.2.0")[0] == "0.2.0"     # already bumped far enough
 
 
-def test_a_repository_of_one_suite_has_ci_and_release(tmp_path):
-    """A repository that is one suite itself runs ci.yml and release.yml, its TAG_PREFIX or not (15-11-2026: the BC250
-    Bazzite Suite's own repository, bc250- tags, looked for release-bc250-bazzite.yml, found no release and showed
-    every step of NRT's release done)."""
-    from nexus_release_tool import flow
-    root = tmp_path / "bc250-bazzite"
-    write(root / "TAG_PREFIX", "bc250-\n")
-    write(root / "portal/VERSION", "1.0.0\n")
-    write(root / "portal/apps.toml", card("check", required=True))
-    write(root / ".github/workflows/release.yml", "name: Release\non:\n  workflow_dispatch:\n")
-    assert rp.suite_workflows(root, flow.HERE) == {"ci.yml", "release.yml"}
-    assert flow.release_suites(root) == [flow.HERE]
-
-
-def test_ticker_follows_the_suite_ticked(two_suites, tmp_path):
-    """Every push starts every suite's CI: the ticker shows the ticked suite's runs and Nexus's, not another
-    suite's (owner, 28-10-2026: the BC250 portal's release showed CI Windows Portable first)."""
-    assert rp.suite_workflows(two_suites, "bc") == {"ci.yml", "release.yml"}
-    assert rp.other_suites_workflows(two_suites, "bc") == {"ci-wp.yml", "release-wp.yml"}
-    assert rp.other_suites_workflows(two_suites, "wp") == {"ci.yml", "release.yml"}
+def test_ticker_shows_the_runs_of_the_push(repo, tmp_path):
+    """The ticker shows every run of the newest push, the running ones first."""
     pytest.importorskip("PyQt6.QtWidgets")
     from PyQt6.QtCore import QSettings
     from PyQt6.QtWidgets import QApplication
     QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, str(tmp_path / "settings"))
     app = QApplication.instance() or QApplication([])          # noqa: F841 (kept alive for the window)
     from nexus_release_tool import main_window
-    w = main_window.ReleaseWindow(two_suites, status_source=None, runs_source=lambda etag, head="": (None, etag),
-                                  notify=lambda *a: None, claude_source=None, jobs_source=None, suite="bc")
-    runs = [run("CI Windows Portable", status="in_progress", n=4), run("CI Nexus", n=3), run(n=2),
-            run("Release", "portal-v3.0.1", status="in_progress", n=1)]
-    for data, path in zip(runs, ("ci-wp.yml", "ci-nexus.yml", "ci.yml", "release.yml")):
+    w = main_window.ReleaseWindow(repo, status_source=None, runs_source=lambda etag, head="": (None, etag),
+                                  notify=lambda *a: None, claude_source=None, jobs_source=None)
+    runs = [run(n=2), run("Release", "portal-v3.0.1", status="in_progress", n=1)]
+    for data, path in zip(runs, ("ci.yml", "release.yml")):
         data["path"] = f".github/workflows/{path}"
     w.build.checked((rp.parse_runs({"workflow_runs": runs}), "e1"))
-    assert w.ticker.line == "Release on portal-v3.0.1: in progress   |   CI Nexus on main: passed   |   CI on main: passed"
-    w.choose_suite("wp")
     w.ticker.checker.stop(2000)
-    assert w.ticker.line.startswith("CI Windows Portable on main: in progress   |   CI Nexus on main: passed")
-    assert "Release on" not in w.ticker.line and "|   CI on main" not in w.ticker.line
+    assert w.ticker.line == "Release on portal-v3.0.1: in progress   |   CI on main: passed"
     w.close()
 
 
-def test_a_pushed_head_without_a_run_is_looked_at_again_soon(two_suites, tmp_path):
+def test_a_pushed_head_without_a_run_is_looked_at_again_soon(repo, tmp_path):
     """GitHub starts the CI of a push seconds after it (owner, 05-11-2026: CI ran on GitHub while the CI passes step
     said it had none, for 5 minutes): while the pushed HEAD has no run, the next look is in 10 s, not 5 minutes."""
     pytest.importorskip("PyQt6.QtWidgets")
@@ -299,9 +237,9 @@ def test_a_pushed_head_without_a_run_is_looked_at_again_soon(two_suites, tmp_pat
     QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, str(tmp_path / "settings"))
     app = QApplication.instance() or QApplication([])          # noqa: F841 (kept alive for the window)
     from nexus_release_tool import main_window
-    w = main_window.ReleaseWindow(two_suites, status_source=None, runs_source=lambda etag, head="": (None, etag),
-                                  notify=lambda *a: None, claude_source=None, jobs_source=None, suite="bc")
-    head = (rp.git(two_suites, "rev-parse", "HEAD") or "").strip()
+    w = main_window.ReleaseWindow(repo, status_source=None, runs_source=lambda etag, head="": (None, etag),
+                                  notify=lambda *a: None, claude_source=None, jobs_source=None)
+    head = (rp.git(repo, "rev-parse", "HEAD") or "").strip()
     w.build.head = head
     w.base = lambda: "HEAD"                                         # HEAD is pushed: on the base
     older = rp.parse_runs({"workflow_runs": [run(n=1, sha="older")]})
@@ -316,9 +254,8 @@ def test_a_pushed_head_without_a_run_is_looked_at_again_soon(two_suites, tmp_pat
     w.close()
 
 
-def test_notifications_follow_the_suite_ticked(two_suites, tmp_path):
-    """A run that finishes is told about only when it is the ticked suite's or Nexus's (owner, 28-10-2026: CI Windows
-    Portable notified while BC250 was released)."""
+def test_a_run_that_finishes_is_told_about(repo, tmp_path):
+    """A run seen running that finishes gives a desktop notification, which names it."""
     pytest.importorskip("PyQt6.QtWidgets")
     from PyQt6.QtCore import QSettings
     from PyQt6.QtWidgets import QApplication
@@ -326,35 +263,28 @@ def test_notifications_follow_the_suite_ticked(two_suites, tmp_path):
     app = QApplication.instance() or QApplication([])          # noqa: F841 (kept alive for the window)
     from nexus_release_tool import main_window
     notes = []
-    w = main_window.ReleaseWindow(two_suites, status_source=None, runs_source=lambda etag, head="": (None, etag),
-                                  notify=lambda *a: notes.append(a), claude_source=None, jobs_source=None, suite="bc")
+    w = main_window.ReleaseWindow(repo, status_source=None, runs_source=lambda etag, head="": (None, etag),
+                                  notify=lambda *a: notes.append(a), claude_source=None, jobs_source=None)
 
     def runs(status, conclusion="success"):
-        found = [run(name, status=status, conclusion=conclusion, n=n) for n, name in
-                 ((3, "CI Windows Portable"), (2, "Nexus index"), (1, "CI"))]
-        for data, path in zip(found, ("ci-wp.yml", "nexus-index.yml", "ci.yml")):
+        found = [run(name, status=status, conclusion=conclusion, n=n) for n, name in ((2, "Release"), (1, "CI"))]
+        for data, path in zip(found, ("release.yml", "ci.yml")):
             data["path"] = f".github/workflows/{path}"
         return rp.parse_runs({"workflow_runs": found})
     w.build.checked((runs("in_progress"), "e1"))
     w.build.checked((runs("completed", "failure"), "e2"))
     assert notes[-1][0] == "GitHub build failed"
-    assert "Nexus index on main" in notes[-1][1] and "CI on main" in notes[-1][1]
-    assert "Windows Portable" not in notes[-1][1]
+    assert "Release on main" in notes[-1][1] and "CI on main" in notes[-1][1]
     w.close()
 
 
 def test_git_button_commands():
     assert rp.add_command() == "git add -A && tools/fix-modes.sh && git status --short"
-    checks = " && ".join(f"python3 {check} --base origin/main" for check in rp.manifest_checks(rp.CHECKOUT))
     assert rp.commit_command("Release alpha-v0.2.0", "origin/main") == (
-        f"python3 {rp.VERSIONS_CHECK} && {checks} && "
+        "python3 tools/check_versions.py && python3 tools/check_manifest.py --base origin/main && "
         "git commit -m 'Release alpha-v0.2.0'")                       # the checks first, the commit only after
-    assert f"python3 {rp.manifest_check(rp.CHECKOUT)} --base origin/main" in checks    # the default suite's among them
     assert rp.commit_command("it's", "pushed", python="/v/python").endswith("git commit -m 'it'\"'\"'s'")
     assert rp.commit_command("", "pushed", amend=True).endswith(" && git commit --amend --no-edit")
-    two = rp.commit_command("m", "pushed", manifests=["a/tools/check_manifest.py", "b/tools/check_manifest.py"])
-    assert two == (f"python3 {rp.VERSIONS_CHECK} && python3 a/tools/check_manifest.py --base pushed && "
-                   "python3 b/tools/check_manifest.py --base pushed && git commit -m m")   # every suite's check
 
 
 def test_git_state(repo):
@@ -463,32 +393,6 @@ def window(repo, tmp_path):
     w.reload()
     yield w
     w.close()
-
-
-def test_nexus_has_a_version_of_its_own(repo):
-    """The root VERSION and CHANGELOG are Nexus's (owner, 28-10-2026): a row beside core, released with a "Release
-    x.y.z." entry, never tagged here; a checkout without a root VERSION has no row."""
-    assert all(u.key != rp.NEXUS for u in rp.load_units(repo))
-    write(repo / "VERSION", "0.1.0\n")
-    write(repo / "CHANGELOG", "Changelog: 01-01-2026 00:00:00\n\nFrom before.\n")
-    nexus = unit(repo, rp.NEXUS)
-    assert (nexus.kind, nexus.path, nexus.tag) == ("nexus", ".", "nexus-v0.1.0")
-    assert nexus.needs_release and nexus.release_reason == "first release" and not nexus.released
-    assert rp.version_choices(repo, nexus) == (["0.1.0", "0.1.1", "0.2.0", "1.0.0"], "the first release")
-    assert rp.set_version(repo, nexus, "0.1.0") == [repo / "VERSION"]         # never the copies of the units
-    assert (repo / "apps/alpha/alpha/__init__.py").read_text() == 'APP = "alpha"\n__version__ = "0.1.0"\n'
-    rp.add_changelog_entry(repo, nexus, rp.release_text("0.1.0", ""))
-    nexus = unit(repo, rp.NEXUS)
-    assert nexus.released and nexus.released_as == "0.1.0" and not nexus.needs_release
-    assert nexus.release_reason == "no"
-    rp.add_changelog_entry(repo, nexus, "Added. The ticker.")
-    rp.add_changelog_entry(repo, nexus, "Fixed. A typo.")
-    nexus = unit(repo, rp.NEXUS)
-    assert nexus.needs_release and nexus.release_reason == "yes: 2 CHANGELOG entries"
-    assert nexus.changed == ["Fixed. A typo.", "Added. The ticker."]
-    choices, why = rp.version_choices(repo, nexus)
-    assert choices[0] == "0.2.0" and why == "minor: 1 Added, 1 Fixed since Release 0.1.0"
-    assert rp.last_release("Changelog: x\n\nRelease 2.0.0. Notes.\n\nChangelog: y\n\nRelease 1.0.0.\n") == "2.0.0"
 
 
 def needs(root):
@@ -927,17 +831,14 @@ def test_window_build_indicator_notifies_when_a_run_ends(repo, tmp_path):
     assert main_window.ReleaseWindow(repo, status_source=None, runs_source=None).build.isHidden()
 
 
-def test_title_names_the_checkouts_commit_and_date(window, repo, tmp_path):
+def test_title_names_the_checkouts_commit_and_date(window, repo):
+    """No version: the tool is never released, so its header names the checkout's commit and its time."""
     from PyQt6.QtWidgets import QLabel
-    from nexus_release_tool import __version__
     head = subprocess.run(["git", "log", "-1", "--format=%h %ct"], cwd=repo, capture_output=True, text=True).stdout.split()
     when = rp.amsterdam_now(datetime.datetime.fromtimestamp(int(head[1]), datetime.timezone.utc))
     stamp = f"{head[0]} · {when:%d-%m-%Y %H:%M}"
-    assert rp.checkout_stamp(repo) == stamp
-    assert any(f"v{__version__} · {stamp}" in label.text() for label in window.findChildren(QLabel))
-    elsewhere = tmp_path / "not-a-checkout"
-    elsewhere.mkdir()
-    assert rp.checkout_stamp(elsewhere) == ""
+    title = next(label.text() for label in window.findChildren(QLabel) if label.text().startswith("Nexus Release Tool"))
+    assert f">{stamp}</span>" in title and ">v" not in title
 
 
 def test_window_withdraws(window, repo, monkeypatch):
@@ -1025,182 +926,19 @@ def test_the_portal_counts_apps_toml_since_its_last_tag(repo):
     assert rp.portal_suggestion(repo, unit(repo, "portal"))[0] == "1.0.0"
 
 
-def test_the_root_copy_of_apps_toml_follows_the_suites(repo, tmp_path):
-    """Nexus keeps a copy of apps.toml at the root for the portals installed before the suite moved into
-    bc250-bazzite/ (check_manifest.py wants it identical; the owner's portal-v10.0.0 commit stopped on it,
-    26-10-2026): every write of the suite's apps.toml, a pin, a moved unreleased pin or a withdrawal, writes the
-    copy too, as long as there is one. A checkout laid out as a suite (the fixture) has no copy."""
-    assert rp.manifest_copy(repo) is None
-    nexus = nexus_layout(repo, tmp_path)
-    suite_toml, copy = nexus / SUITE_DIR / "portal/apps.toml", nexus / "portal/apps.toml"
-    assert rp.manifest_path(nexus) == suite_toml and rp.manifest_copy(nexus) is None
-    copy.parent.mkdir()
-    shutil.copy(suite_toml, copy)
-    assert rp.manifest_copy(nexus) == copy
-    alpha = unit(nexus, "alpha")
-    rp.pin(nexus, alpha, SHA)
-    assert f'sha256 = "{SHA}"' in suite_toml.read_text() and suite_toml.read_bytes() == copy.read_bytes()
-    beta = unit(nexus, "beta")
-    rp.set_version(nexus, beta, "0.2.0")
-    rp.pin(nexus, beta, "")
-    assert 'tag = "beta-v0.2.0"' in copy.read_text() and suite_toml.read_bytes() == copy.read_bytes()
-    changed = rp.withdraw(nexus, unit(nexus, "beta"), "Broken.")
-    assert [p.relative_to(nexus).as_posix() for p in changed] == [
-        f"{SUITE_DIR}/portal/apps.toml", "portal/apps.toml", f"{SUITE_DIR}/apps/beta/CHANGELOG"]
-    assert 'withdrawn = "Broken."' in copy.read_text() and suite_toml.read_bytes() == copy.read_bytes()
-    copy.unlink()                                             # the owner removed the copy: the suite's alone
-    rp.withdraw(nexus, unit(nexus, "beta"), "")
-    assert "withdrawn" not in suite_toml.read_text() and not copy.exists()
-
-
-def nexus_layout(repo: Path, tmp_path: Path, *names: str) -> Path:
-    """The fixture's repository laid out as Nexus is: core and .git at the root, the suite and prefixed copies of
-    it under *names* in folders of their own."""
-    nexus = tmp_path / "nexus"
-    for name in (SUITE_DIR, *names):
-        shutil.copytree(repo, nexus / name)
-        if name == SUITE_DIR:
-            shutil.move(nexus / name / ".git", nexus / ".git")
-            shutil.move(nexus / name / "core", nexus / "core")
-        else:
-            for file in (nexus / name / ".git").rglob("*"):     # git's objects are read-only: Windows refuses
-                if file.is_file():                                # to remove them
-                    file.chmod(0o600)
-            shutil.rmtree(nexus / name / ".git")
-            shutil.rmtree(nexus / name / "core")
-            (nexus / name / "TAG_PREFIX").write_text("zz-\n", encoding="utf-8")
-    sh(nexus, "add", "-A")
-    sh(nexus, "commit", "-q", "-m", "move")
-    return nexus
-
-
-def test_the_suites_of_a_checkout(repo, tmp_path):
-    """Every folder with portal/apps.toml is a suite (tools/suites.py); the per-suite functions take one by name
-    and default to the one without a tag prefix. The fixture, laid out as a suite itself, is its own one suite."""
-    assert rp.suites(repo) == [] and rp.suite_dir(repo) == repo
-    assert rp.check_script(repo) == rp.CHECK_SCRIPT == "tools/check-release.sh"
-    assert rp.manifest_checks(repo) == [rp.MANIFEST_CHECK] == ["tools/check_manifest.py"]
-    nexus = nexus_layout(repo, tmp_path, "zz-suite")
-    assert rp.suites(nexus) == [SUITE_DIR, "zz-suite"]
-    assert rp.suite_dir(nexus) == nexus / SUITE_DIR and rp.suite_dir(nexus, "zz-suite") == nexus / "zz-suite"
-    assert rp.check_script(nexus) == f"{SUITE_DIR}/tools/check-release.sh"
-    assert rp.manifest_checks(nexus) == [f"{SUITE_DIR}/tools/check_manifest.py", "zz-suite/tools/check_manifest.py"]
-    # The commit checks the suites it changes alone (owner, 28-10-2026: one suite's checks never hold another's).
-    assert rp.touched_suites(repo, ["apps/alpha/x.py"]) is None                  # no suite folders: every check
-    assert rp.touched_suites(nexus, [f"{SUITE_DIR}/apps/alpha/x.py", "core/x.py"]) == [SUITE_DIR]
-    assert rp.touched_suites(nexus, ["core/x.py", "tools/x.py"]) == []
-    assert rp.manifest_checks(nexus, ["zz-suite"]) == ["zz-suite/tools/check_manifest.py"]
-    assert rp.version_checks(None) == [rp.VERSIONS_CHECK] and rp.version_checks([]) == [rp.VERSIONS_CHECK]
-    assert rp.version_checks(["zz-suite"]) == [f"{rp.VERSIONS_CHECK} --suite zz-suite"]
-    command = rp.commit_command("m", "pushed", manifests=rp.manifest_checks(nexus, ["zz-suite"]),
-                                versions=rp.version_checks(["zz-suite"]))
-    assert command == ("python3 tools/check_versions.py --suite zz-suite && python3 zz-suite/tools/check_manifest.py "
-                       "--base pushed && git commit -m m")
-    write(nexus / "zz-suite/apps/alpha/new.txt", "x")
-    sh(nexus, "add", "zz-suite/apps/alpha/new.txt")
-    assert rp.staged_suites(nexus) == ["zz-suite"]
-    assert rp.manifest_path(nexus, "zz-suite") == nexus / "zz-suite/portal/apps.toml"
-    first, second = rp.load_units(nexus), rp.load_units(nexus, "zz-suite")
-    assert [u.path for u in first][:3] == ["core", f"{SUITE_DIR}/portal", f"{SUITE_DIR}/apps/alpha"]
-    assert [u.path for u in second][:3] == ["core", "zz-suite/portal", "zz-suite/apps/alpha"]
-    (nexus / "portal").mkdir()
-    shutil.copy(nexus / SUITE_DIR / "portal/apps.toml", nexus / "portal/apps.toml")
-    assert rp.manifest_copy(nexus) == nexus / "portal/apps.toml"      # the root's copy is the first suite's
-    assert rp.manifest_copy(nexus, "zz-suite") is None
-    assert rp.wiki_icon(nexus / "zz-suite") is None
-    write(nexus / "zz-suite/portal/images/zz-suite-suite.webp", "webp")
-    assert rp.wiki_icon(nexus / "zz-suite") == nexus / "zz-suite/portal/images/zz-suite-suite.webp"
-    write(nexus / "nexus/images/nexus-256.png", "png")
-    assert rp.wiki_icon(nexus / "nexus") == nexus / "nexus/images/nexus-256.png"
-
-
-def test_window_suite_column(repo, tmp_path):
-    """The first column lists the suites of the checkout (owner, 27-10-2026: in place of the header's chooser), each
-    by its portal's name with the tag of its version, and is hidden while there is one. Exactly one is ticked: the
-    steps follow it, a click on another row moves the tick there, and the choice is remembered. The git buttons run
-    every suite's manifest check."""
-    pytest.importorskip("PyQt6.QtWidgets")
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    from PyQt6.QtCore import QSettings, Qt
-    from PyQt6.QtWidgets import QApplication
-    app = QApplication.instance() or QApplication([])          # noqa: F841 (kept alive for the window)
-    from nexus_release_tool import main_window
-    one = main_window.ReleaseWindow(repo, status_source=None, runs_source=None, claude_source=None)
-    assert one.suite is None and one.suite_list.isHidden()
-    one.close()
-    nexus = nexus_layout(repo, tmp_path, "zz-suite")
-    write(nexus / "zz-suite/portal/bc250_portal/__init__.py", 'APP_NAME = "Zed Suite"\n__version__ = "0.1.0"\n')
-    write(nexus / "zz-suite/TAG_PREFIX", "zz-\n")
-    settings = QSettings(str(tmp_path / "settings.ini"), QSettings.Format.IniFormat)
-    w = main_window.ReleaseWindow(nexus, status_source=None, runs_source=None, claude_source=None, settings=settings)
-    column = w.suite_list
-    assert w.suite == SUITE_DIR and not column.isHidden() and column.current() == SUITE_DIR
-    rows = [column.item(i) for i in range(column.count())]
-    assert [r.text() for r in rows] == [f"{SUITE_DIR}\nportal-v0.1.0", "Zed Suite\nzz-portal-v0.1.0"]
-    assert [r.checkState() for r in rows] == [Qt.CheckState.Checked, Qt.CheckState.Unchecked]
-    assert w.units[1].path == f"{SUITE_DIR}/portal"
-    write(nexus / "zz-suite/apps/alpha/new.txt", "x")
-    sh(nexus, "add", "zz-suite/apps/alpha/new.txt")
-    cmd = flow.commit_work_command(nexus, "m", "origin/main", "python")  # the suite changed: its checks alone
-    assert "check_versions.py --suite zz-suite" in cmd and "zz-suite/tools/check_manifest.py" in cmd
-    assert f"{SUITE_DIR}/tools/check_manifest.py" not in cmd
-    sh(nexus, "reset", "-q", "zz-suite/apps/alpha/new.txt")
-    (nexus / "zz-suite/apps/alpha/new.txt").unlink()
-    w.reload()
-    column.itemClicked.emit(rows[1])                              # a click on the row
-    assert w.suite == "zz-suite" and column.current() == "zz-suite" and rows[0].checkState() == Qt.CheckState.Unchecked
-    assert w.units[1].path == "zz-suite/portal"
-    assert settings.value("suite") == "zz-suite"
-    rows[1].setCheckState(Qt.CheckState.Unchecked)                # its box unticked: one stays ticked
-    assert column.current() == "zz-suite" and w.suite == "zz-suite"
-    rows[0].setCheckState(Qt.CheckState.Checked)                  # the other box ticked: that suite
-    assert column.current() == SUITE_DIR and w.suite == SUITE_DIR
-    write(nexus / "zz-suite/portal/VERSION", "0.2.0\n")
-    w.refresh()
-    assert rows[1].text() == "Zed Suite\nzz-portal-v0.2.0"        # a bumped portal shows its new tag
-    column.itemClicked.emit(rows[1])
-    w.close()
-    again = main_window.ReleaseWindow(nexus, status_source=None, runs_source=None, claude_source=None,
-                                      settings=settings)
-    assert again.suite == "zz-suite" and again.suite_list.current() == "zz-suite"    # remembered
-    again.close()
-    chosen = main_window.ReleaseWindow(nexus, status_source=None, runs_source=None, claude_source=None,
-                                       settings=settings, suite=SUITE_DIR)
-    assert chosen.suite == SUITE_DIR and chosen.suite_list.current() == SUITE_DIR
-    chosen.close()
-
-
-def test_the_windows_suites_fixtures_are_the_suites_files():
-    """tests/fixtures/prefixed-suite/ holds copies of two files of the Windows Portable Suite, a repository of its
-    own (owner, 13-11-2026): compared while the suite is cloned into the checkout as windows-portable/."""
-    real = rp.CHECKOUT / "windows-portable"
-    if not (real / "portal" / "apps.toml").is_file():
-        pytest.skip("the Windows Portable Suite, a repository of its own, is not in this checkout")
-    copies = Path(__file__).resolve().parent / "fixtures" / "prefixed-suite"
-    for path in ("tools/check_manifest.py", "portal/portable_portal/manifest.py"):
-        assert (copies / path).read_bytes() == (real / path).read_bytes(), f"copy {path} to tests/fixtures/ again"
-
-
 def test_the_suites_names_and_icons(tmp_path):
-    """The first column's rows: each suite by its portal's name, with its portal's icon (both suites since the
-    Windows portal got its images, 28-10-2026), or its own drawing while a portal has no images."""
-    assert rp.suite_name(rp.CHECKOUT, "bc250-bazzite") == "BC250 Bazzite Suite"
-    assert rp.suite_icon(rp.CHECKOUT, "bc250-bazzite").name == "bc250-bazzite-suite.webp"
-    if (rp.CHECKOUT / "windows-portable" / "portal" / "apps.toml").is_file():     # a repository of its own, cloned here
-        assert rp.suite_name(rp.CHECKOUT, "windows-portable") == "Windows Portable Suite"
-        assert rp.suite_icon(rp.CHECKOUT, "windows-portable").name == "windows-portable-suite.webp"
-    bare = tmp_path / "windows-portable"
+    """The suite by its portal's name, with its portal's icon; the folder's name and no icon without them."""
+    assert rp.suite_name(rp.CHECKOUT) == "BC250 Bazzite Suite"
+    assert rp.suite_icon(rp.CHECKOUT).name == "bc250-bazzite-suite.webp"
+    bare = tmp_path / "bare"
     (bare / "portal").mkdir(parents=True)
-    (bare / "portal" / "apps.toml").write_text("")
-    (bare / "icons").mkdir()
-    (bare / "icons" / "windows-portable-256.png").write_bytes(b"png")
-    assert rp.suite_icon(tmp_path, "windows-portable").name == "windows-portable-256.png"
+    assert rp.suite_name(bare) == "bare" and rp.suite_icon(bare) is None
 
 
 def test_the_git_questions_are_asked_once_or_side_by_side(repo, monkeypatch):
     """load_units() reads the tags and the untracked files once, and asks each unit's two questions side by side; the
-    window's step 1 reads its CHANGELOGs at the tags with one git cat-file (owner, 27-10-2026: the window was slow on
-    Windows, some 20 ms per git process). The answers are those of one process per question."""
+    window's step 1 reads its CHANGELOGs at the tags with one git cat-file (owner, 27-10-2026: the window was slow,
+    some 20 ms per git process). The answers are those of one process per question."""
     calls = []
     real = rp.subprocess.run
 
@@ -1210,7 +948,7 @@ def test_the_git_questions_are_asked_once_or_side_by_side(repo, monkeypatch):
     monkeypatch.setattr(rp.subprocess, "run", run)
     units = rp.load_units(repo)
     assert calls.count("tag") == 1 and calls.count("for-each-ref") == 1 and calls.count("merge-base") == 1   # History: once
-    untagged = [u.key for u in units if u.kind != rp.NEXUS and not u.last_tag]
+    untagged = [u.key for u in units if not u.last_tag]
     assert calls.count("rev-list") == len(untagged) and "beta" in untagged   # a never-tagged unit keeps its own count
     for unit in units:
         if unit.kind == "core":
@@ -1238,8 +976,8 @@ def test_read_blobs_reads_each_file_or_none(repo):
 
 
 def test_git_answers_are_utf8_on_every_system(repo):
-    """git() reads git's output as UTF-8: Windows' own encoding garbled a CHANGELOG's é and ×, so step 1 counted
-    every entry of such a CHANGELOG as new since the tag."""
+    """git() reads git's output as UTF-8, whatever the locale: another encoding garbled a CHANGELOG's é and ×, so
+    step 1 counted every entry of such a CHANGELOG as new since the tag."""
     write(repo / "apps/beta/CHANGELOG", "Changelog: 01-01-2026 00:00:00\n\nFixed. Naïve × 3.\n")
     sh(repo, "commit", "-qam", "accents")
     sh(repo, "tag", "beta-v0.1.0")
@@ -1262,52 +1000,8 @@ def test_git_takes_no_optional_locks(repo, monkeypatch):
     assert seen and seen[0].get("GIT_OPTIONAL_LOCKS") == "0" and "PATH" in seen[0]
 
 
-def test_a_suites_release_moves_nexus(two_suites):
-    """Latest, the Nexus index, lists every suite's newest portal: a suite's release since Nexus's last version
-    needs a Nexus release too, minor; a new suite major (owner, 28-10-2026)."""
-    root = two_suites
-    write(root / "VERSION", "0.1.0\n")
-    write(root / "CHANGELOG", "Changelog: 01-01-2026 00:00:00\n\nRelease 0.1.0.\n")
-    sh(root, "add", "-A")
-    sh(root, "commit", "-q", "-m", "Nexus 0.1.0")
-    assert rp.suite_releases(root) == []
-    nexus = next(u for u in rp.load_units(root, "wp") if u.kind == rp.NEXUS)
-    assert not nexus.needs_release and nexus.release_reason == "no"
-
-    write(root / "wp/apps/test/VERSION", "0.3.0\n")              # bumped, not committed or tagged yet: it counts
-    write(root / "bc/apps/check/VERSION", "0.1.1\n")             # another suite's too
-    write(root / "bc/apps/dev/VERSION", "0.2.0\n")
-    write(root / "bc/apps/dev/.checkout-only", "Never released.\n")
-    sh(root, "add", "-A")
-    sh(root, "commit", "-q", "-m", "releases")
-    assert rp.suite_releases(root) == ["check-v0.1.1", "wp-test-v0.3.0"]      # never a checkout-only app
-    nexus = next(u for u in rp.load_units(root, "wp") if u.kind == rp.NEXUS)
-    assert nexus.needs_release and nexus.release_reason == "yes: check-v0.1.1, wp-test-v0.3.0"
-    choices, why = rp.version_choices(root, nexus)
-    assert choices[0] == "0.2.0" and why == "minor: the suites' releases check-v0.1.1, wp-test-v0.3.0 since Release 0.1.0"
-    assert rp.nexus_notes("", nexus.suite_releases) == "Brings check-v0.1.1, wp-test-v0.3.0."
-    assert rp.nexus_notes("Mine.", nexus.suite_releases) == "Mine."
-
-    assert rp.bump_nexus(root, "0.2.0") == "Release 0.2.0. Brings check-v0.1.1, wp-test-v0.3.0."
-    assert (root / "VERSION").read_text() == "0.2.0\n" and rp.suite_releases(root) == []   # the bump takes them in
-    sh(root, "add", "-A")
-    sh(root, "commit", "-q", "-m", "Nexus 0.2.0")
-    assert rp.suite_releases(root) == []
-
-    write(root / "new/portal/apps.toml", card("x", required=True))       # a new suite: major
-    write(root / "new/portal/VERSION", "0.1.0\n")
-    sh(root, "add", "-A")
-    sh(root, "commit", "-q", "-m", "a new suite")
-    assert rp.suite_releases(root) == ["new suite new", "portal-v0.1.0"]
-    nexus = next(u for u in rp.load_units(root, "wp") if u.kind == rp.NEXUS)
-    choices, why = rp.version_choices(root, nexus)
-    assert choices[0] == "1.0.0" and why.startswith("major: new suite new, the suites' releases portal-v0.1.0")
-    assert rp.nexus_notes("", nexus.suite_releases) == "Brings the new suite new, portal-v0.1.0."
-
-
 def test_push_brings_in_what_github_has_first():
-    """The release's Pin ... commit is on main after every release (owner, 31-10-2026: the pre-push hook refused the
-    push): git pull --rebase runs before the push, and before CI's jobs on Linux."""
-    pull = "tools/git-setup.sh && git pull --rebase --autostash"
-    assert rp.push_command(linux=False) == f"{pull} && git push"
-    assert rp.push_command(linux=True) == f"{pull} && {rp.CI_LOCAL} && git push"
+    """The release's Pin ... commit is on main after every release (owner, 31-10-2026: the push failed): git pull
+    --rebase runs before the push, and before CI's jobs here."""
+    assert rp.pull_command() == "git pull --rebase --autostash"
+    assert rp.push_command() == f"git pull --rebase --autostash && {rp.CI_LOCAL} && git push"

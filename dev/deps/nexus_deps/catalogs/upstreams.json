@@ -1,5 +1,5 @@
 {
-  "about": "The programs and firmware the suites' apps use, and where Nexus Deps learns of their updates (nexus_deps/upstreams.py). Hand-written: id, name, what, compare, url, targets, how, and per app its suite, app, module and constants. Synced from the apps' code and their portal's apps.toml by `dev/deps/run.sh --sync-upstreams` (tests/test_upstreams.py fails while it is stale): repo, pin, version, home, version_file, name and launcher.",
+  "about": "The programs and firmware the suite's apps use, and where Nexus Deps learns of their updates (nexus_deps/upstreams.py). Hand-written: id, name, what, compare, url, targets, how, and per app its app, module and constants. Synced from the apps' code and their portal's apps.toml by `dev/deps/run.sh --sync-upstreams` (tests/test_upstreams.py fails while it is stale): repo, pin, version, home, name and launcher.",
   "github": [
     {
       "id": "rpcs3",
@@ -8,7 +8,6 @@
       "compare": "version",
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "rpcs3",
           "module": "rpcs3_manager/emulator.py",
           "constants": {
@@ -32,7 +31,6 @@
       "compare": "version",
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "pcsx2",
           "module": "pcsx2_manager/emulator.py",
           "constants": {
@@ -56,7 +54,6 @@
       "compare": "version",
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "ppsspp",
           "module": "ppsspp_manager/emulator.py",
           "constants": {
@@ -80,7 +77,6 @@
       "compare": "build",
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "vita3k",
           "module": "vita3k_manager/emulator.py",
           "constants": {
@@ -104,7 +100,6 @@
       "compare": "published",
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "xenia",
           "module": "xenia_manager/emulator.py",
           "constants": {
@@ -128,7 +123,6 @@
       "compare": "version",
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "shadps4",
           "module": "shadps4_manager/emulator.py",
           "constants": {
@@ -161,7 +155,6 @@
       },
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "controller",
           "name": "BC-250 Controller",
           "launcher": "~/.local/bin/bc250-controller"
@@ -177,7 +170,6 @@
       "url": "http://fus01.ps4.update.playstation.net/update/ps4/list/us/ps4-updatelist.xml",
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "consoles",
           "name": "BC-250 PS Remote Play",
           "launcher": "~/.local/bin/bc250-console-link"
@@ -192,7 +184,6 @@
       "kind": "on-device",
       "apps": [
         {
-          "suite": "bc250-bazzite",
           "app": "consoles",
           "name": "BC-250 PS Remote Play",
           "launcher": "~/.local/bin/bc250-console-link"

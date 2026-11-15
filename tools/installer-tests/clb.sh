@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/clb/install.sh: install from the checkout (core bundled, the app's own venv, no sudo), a staged
 # release replacing it without the Desktop icon, the refusals, uninstall (settings and the signed-in account kept,
-# the suite's shared venv untouched) and --purge (removed). Runs with the shims from shims.sh (CI, or WSL on
-# Windows).
+# the suite's shared venv untouched) and --purge (removed). Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

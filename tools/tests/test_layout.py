@@ -12,15 +12,10 @@ SUITE = Path(__file__).resolve().parents[2]         # the checkout
 SKIP = {"tests", "__pycache__", ".pytest_cache"}
 
 
-def _suites() -> list[Path]:
-    """The suite: the repository itself, with portal/apps.toml."""
-    return [SUITE]
-
-
 def _apps() -> list[Path]:
-    folders = [suite / "apps" for suite in _suites()] + [SUITE / "dev"]
-    return sorted(path for folder in folders if folder.is_dir() for path in folder.iterdir()
-                  if (path / "VERSION").is_file())
+    """The apps (apps/<name>, each with its VERSION) and the development apps (dev/<name>, which have none)."""
+    return sorted([*(path for path in (SUITE / "apps").iterdir() if (path / "VERSION").is_file()),
+                   *(path for path in (SUITE / "dev").iterdir() if (path / "CHANGELOG").is_file())])
 
 
 def _visible(path: Path, app: Path) -> bool:
@@ -48,11 +43,8 @@ def _installer(app: Path) -> Path:
 
 
 def _installers() -> list[Path]:
-    """Every installer, with the install.ps1 a development app has beside its install.sh (Nexus Release Tool and
-    Nexus Dashboard on Windows)."""
-    return [*(_installer(app) for app in _apps()),
-            *(app / "install.ps1" for app in _apps() if (app / "install.ps1").is_file()),
-            *(suite / "portal" / "install.sh" for suite in _suites())]
+    """Every installer: the apps', the development apps' and the portal's."""
+    return [*(_installer(app) for app in _apps()), SUITE / "portal" / "install.sh"]
 
 
 def test_every_app_has_an_installer_at_its_root():
@@ -61,18 +53,13 @@ def test_every_app_has_an_installer_at_its_root():
 
 
 def test_installers_take_the_standard_options_and_refuse_root():
-    """--no-desktop-shortcut, --uninstall, --uninstall --purge, --help; run as your own user, not with sudo (on
-    Windows: not as administrator)."""
+    """--no-desktop-shortcut, --uninstall, --uninstall --purge, --help; run as your own user, not with sudo."""
     for installer in _installers():
         text = installer.read_text(encoding="utf-8")
-        windows = installer.suffix == ".ps1"
         for option in ("--no-desktop-shortcut", "--uninstall", "--purge", "--help"):
-            assert (f"'{option}'" if windows else f"{option})") in text, \
-                f"{installer.relative_to(SUITE)} does not handle {option}"
+            assert f"{option})" in text, f"{installer.relative_to(SUITE)} does not handle {option}"
         assert "only goes with --uninstall" in text, f"{installer.relative_to(SUITE)} accepts --purge alone"
-        refusal = "not as administrator" if windows else "not with sudo"
-        assert refusal in text, \
-            f"{installer.relative_to(SUITE)} does not refuse to run as {'administrator' if windows else 'root'}"
+        assert "not with sudo" in text, f"{installer.relative_to(SUITE)} does not refuse to run as root"
 
 
 def test_installers_upgrade_the_python_packages():
@@ -86,13 +73,12 @@ def test_installers_upgrade_the_python_packages():
     assert [(path.relative_to(SUITE), line) for path, line in calls if "--upgrade -r" not in line] == []
 
 
-def test_every_suite_names_its_system():
+def test_the_suite_names_its_system():
     import importlib.util
     spec = importlib.util.spec_from_file_location("nexus_suites", SUITE / "tools" / "suites.py")
     suites = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(suites)
-    for folder in _suites():
-        assert suites.system(folder) in suites.SYSTEMS, f"{folder.name}/SYSTEM: one of {', '.join(suites.SYSTEMS)}"
+    assert suites.system() in suites.SYSTEMS, f"SYSTEM: one of {', '.join(suites.SYSTEMS)}"
 
 
 def test_the_tags_start_with_the_suites_prefix():
@@ -122,8 +108,20 @@ def test_every_app_has_tests_and_ci_runs_them():
             listed |= {entry.strip() for entry in static.group(1).replace("\n", " ").split(",")}
         if "tools/ci_matrix.py pytest" in text:
             assert "dir: ${{ fromJSON(needs.plan.outputs.dirs) }}" in text, workflow.name
-            listed |= set(ci_matrix.pytest_dirs(SUITE, SUITE))
+            listed |= set(ci_matrix.pytest_dirs(SUITE))
     folders = {path.parent.relative_to(SUITE).as_posix() for path in SUITE.glob("**/tests")
                if path.is_dir() and not (set(path.relative_to(SUITE).parts) & {".git", "site", "node_modules"})
                and not any(part.startswith(".venv") for part in path.relative_to(SUITE).parts)}
     assert folders <= listed, f"CI's pytest matrix misses {sorted(folders - listed)}"
+
+
+def test_the_dev_venv_installs_every_test_folders_requirements():
+    """requirements-dev.txt at the root, the one venv of ./test.sh and the wiki, takes in the requirements-dev.txt of
+    every folder with tests/."""
+    included = set(re.findall(r"^-r (\S+)/requirements-dev\.txt", (SUITE / "requirements-dev.txt").read_text(
+        encoding="utf-8"), re.M))
+    folders = {path.parent.relative_to(SUITE).as_posix() for path in SUITE.glob("*/tests")} | \
+              {path.parent.relative_to(SUITE).as_posix() for path in SUITE.glob("*/*/tests")
+               if path.parts[-3] in ("apps", "dev")}
+    assert folders == included
+    assert all((SUITE / folder / "requirements-dev.txt").is_file() for folder in included)

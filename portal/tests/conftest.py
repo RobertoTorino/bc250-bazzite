@@ -27,29 +27,18 @@ def home(tmp_path, monkeypatch):
     """HOME and XDG folders inside tmp_path, so detect paths like ~/.local/bin/x resolve there."""
     home = tmp_path / "home"
     (home / ".local" / "bin").mkdir(parents=True)
-    for var in ("HOME", "USERPROFILE"):
-        monkeypatch.setenv(var, str(home))
+    monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("XDG_DATA_HOME", str(home / ".local" / "share"))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(home / ".config"))
     return home
 
 
 @pytest.fixture
-def settings_dir(tmp_path, qapp, monkeypatch):
-    """QSettings files in tmp_path; on Windows the native format (the registry) is turned into an .ini there."""
+def settings_dir(tmp_path, qapp):
+    """QSettings files in tmp_path."""
     from PyQt6.QtCore import QSettings
     for fmt in (QSettings.Format.NativeFormat, QSettings.Format.IniFormat):
         QSettings.setPath(fmt, QSettings.Scope.UserScope, str(tmp_path / "settings"))
-    if sys.platform == "win32":
-        import bc250_core.settings as core_settings
-
-        class FileSettings(QSettings):
-            def __init__(self, *args):
-                if args and isinstance(args[0], str):
-                    args = (QSettings.Format.IniFormat, QSettings.Scope.UserScope, *args)
-                super().__init__(*args)
-
-        monkeypatch.setattr(core_settings, "QSettings", FileSettings)
     return tmp_path / "settings"
 
 

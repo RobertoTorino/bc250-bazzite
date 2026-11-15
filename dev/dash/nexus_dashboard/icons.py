@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Convert a suite's category icons: a front end for tools/sync_icons.py on the suite chosen in the dashboard. A
-suite whose apps take no category icons (no icons/categories.toml) gets the dialog greyed out."""
+"""Convert the suite's category icons: a front end for tools/sync_icons.py of the checkout. A checkout whose apps take
+no category icons (no icons/categories.toml) gets the dialog greyed out."""
 
 from __future__ import annotations
 
@@ -24,9 +24,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from .checkout import suite_folder
-
-SYNC_ICONS = Path("tools") / "sync_icons.py"           # the Nexus tool, from the checkout's root
+SYNC_ICONS = Path("tools") / "sync_icons.py"           # the suite's tool, from the checkout's root
 SIZES = (1024, 512, 256, 128)
 IMAGE_FILTER = "Images (*.png *.webp *.jpg *.jpeg *.bmp *.tif *.tiff);;All files (*)"
 
@@ -45,12 +43,11 @@ def icon_path(suite: Path, category: str, size: int) -> Path:
     return suite / "icons" / category / f"{category}-{size}.{'png' if size == 128 else 'webp'}"
 
 
-def convert_commands(root: Path, suite: str, category: str, whole: Path | None,
-                     sizes: dict[int, Path]) -> list[list[str]]:
-    """The tools/sync_icons.py runs (the checkout *root*'s, on the suite named) for one image for every size and
+def convert_commands(root: Path, category: str, whole: Path | None, sizes: dict[int, Path]) -> list[list[str]]:
+    """The tools/sync_icons.py runs (the checkout *root*'s) for one image for every size and
     images for single sizes; the whole set first, so a size picked on its own replaces that size of it. Each run
     also writes the copies to the apps."""
-    base = [sys.executable, str(root / SYNC_ICONS), "--suite", suite, "--category", category]
+    base = [sys.executable, str(root / SYNC_ICONS), "--category", category]
     commands = [base + ["--from", str(whole)]] if whole is not None else []
     for size in SIZES:
         if size in sizes:
@@ -59,13 +56,13 @@ def convert_commands(root: Path, suite: str, category: str, whole: Path | None,
 
 
 class IconsDialog(QDialog):
-    def __init__(self, root: Path, suite: str, parent: QWidget | None = None) -> None:
-        """*root* is the checkout, *suite* the folder name of the suite chosen in the dashboard."""
+    def __init__(self, root: Path, parent: QWidget | None = None) -> None:
+        """*root* is the checkout: the suite."""
         super().__init__(parent)
         self.setWindowTitle("Suite icons")
         self.resize(640, 560)
-        self.root, self.suite = root, suite
-        self.checkout: Path | None = suite_folder(root, suite)
+        self.root = root
+        self.checkout: Path | None = root
         layout = QVBoxLayout(self)
         intro = QLabel(
             "Make a category's icons from your images: one image for every size, or an image for a single size. "
@@ -75,12 +72,12 @@ class IconsDialog(QDialog):
         intro.setWordWrap(True)
         layout.addWidget(intro)
 
-        suite_row = QHBoxLayout()
-        suite_row.addWidget(QLabel("Suite:"))
-        self.suite_label = QLabel(str(suite_folder(root, suite)))
-        self.suite_label.setToolTip("The suite's folder in the checkout, as chosen in the dashboard")
-        suite_row.addWidget(self.suite_label, 1)
-        layout.addLayout(suite_row)
+        checkout_row = QHBoxLayout()
+        checkout_row.addWidget(QLabel("Checkout:"))
+        self.checkout_label = QLabel(str(root))
+        self.checkout_label.setToolTip("The checkout whose icons are converted")
+        checkout_row.addWidget(self.checkout_label, 1)
+        layout.addLayout(checkout_row)
 
         category_row = QHBoxLayout()
         category_row.addWidget(QLabel("Category:"))
@@ -115,7 +112,7 @@ class IconsDialog(QDialog):
         layout.addLayout(buttons)
         for field in (self.whole, *self.sizes.values()):
             field.textChanged.connect(lambda _text: self._update_convert_button())
-        self._set_checkout(suite_folder(root, suite))
+        self._set_checkout(root)
 
     def _image_row(self, grid: QGridLayout, row: int, label: str) -> QLineEdit:
         grid.addWidget(QLabel(label), row, 1)
@@ -134,7 +131,7 @@ class IconsDialog(QDialog):
             field.setText(selected)
 
     def _set_checkout(self, checkout: Path) -> None:
-        """The suite's folder; a suite without category icons gets the dialog greyed out."""
+        """The checkout; one without category icons gets the dialog greyed out."""
         self.category.clear()
         if not has_category_icons(checkout):
             self.checkout = None
@@ -171,7 +168,7 @@ class IconsDialog(QDialog):
         whole, sizes = self._picked()
         log = []
         ok = True
-        for command in convert_commands(self.root, self.suite, self.category.currentText(), whole, sizes):
+        for command in convert_commands(self.root, self.category.currentText(), whole, sizes):
             try:
                 result = subprocess.run(command, cwd=self.checkout, capture_output=True, text=True, timeout=300)
             except (OSError, subprocess.TimeoutExpired) as exc:

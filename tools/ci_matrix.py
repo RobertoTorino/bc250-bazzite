@@ -12,24 +12,12 @@ tools/tests/test_layout.py checks the folders against this list."""
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SKIPPED = {".git", "site", "node_modules", "__pycache__"}      # never a test folder's parent
-
-
-def _load(name: str, path: Path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-nexus_suites = _load("nexus_suites", ROOT / "tools" / "suites.py")
 
 
 def test_folders(folder: Path, root: Path) -> list[str]:
@@ -42,22 +30,16 @@ def test_folders(folder: Path, root: Path) -> list[str]:
     return sorted(found)
 
 
-def pytest_dirs(suite: Path, root: Path = ROOT) -> list[str]:
-    """The pytest matrix: the suite's folders with tests/."""
-    return test_folders(suite, root)
+def pytest_dirs(root: Path = ROOT) -> list[str]:
+    """The pytest matrix: the repository's folders with tests/."""
+    return test_folders(root, root)
 
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--suite", help="the suite folder (default: tools/suites.py's)")
     parser.add_argument("matrix", choices=("pytest",))
-    args = parser.parse_args(argv)
-    try:
-        suite = nexus_suites.suite(args.suite, ROOT)
-    except LookupError as exc:
-        print(f"ci_matrix.py: {exc}", file=sys.stderr)
-        return 2
-    print(f"dirs={json.dumps(pytest_dirs(suite))}")
+    parser.parse_args(argv)
+    print(f"dirs={json.dumps(pytest_dirs())}")
     return 0
 
 

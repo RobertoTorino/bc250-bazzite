@@ -15,7 +15,7 @@
 * Every pinned tag exists. Without --require-tags a tag that does not exist yet is accepted when its version equals
   the app's VERSION: the release that is about to be tagged. The portal release workflow passes --require-tags.
 * With --base REF (the previous commit, or the PR base): when apps.toml differs from the last portal release (the
-  newest bc250-portal-v<x.y.z> tag; REF while there is no portal tag yet), portal/VERSION must have been bumped from that
+  newest <TAG_PREFIX>portal-v<x.y.z> tag; REF while there is no portal tag yet), portal/VERSION must have been bumped from that
   release at least as much as the largest app bump it pins: an app patch release needs at least a portal patch
   release, an app minor release at least a portal minor release, and so on. An added, removed or withdrawn app
   needs at least a minor bump (a withdrawn one is removed from the boards); any other change to apps.toml (a new
@@ -37,11 +37,13 @@ SUITE = Path(__file__).resolve().parent.parent      # the repository, which is t
 MANIFEST = "portal/apps.toml"
 STANDALONE_MARKER = ".standalone"
 LEVELS = {0: "none", 1: "patch", 2: "minor", 3: "major"}
-_PORTAL_TAG = re.compile(r"^bc250-portal-v(\d+\.\d+\.\d+)$")
+PREFIX = (SUITE / "TAG_PREFIX").read_text(encoding="utf-8").strip()     # the suite's tags: bc250-portal-v...
+_PORTAL_TAG = re.compile(rf"^{re.escape(PREFIX)}portal-v(\d+\.\d+\.\d+)$")
 
 
 def _manifest_module():
-    spec = importlib.util.spec_from_file_location("bc250_manifest", SUITE / "portal" / "bc250_portal" / "manifest.py")
+    path = next(SUITE.glob("portal/*/manifest.py"))                # the portal's package: portal/bc250_portal
+    spec = importlib.util.spec_from_file_location("suite_manifest", path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module             # dataclasses look their module up while the class is built
     spec.loader.exec_module(module)
@@ -138,7 +140,7 @@ def check_board_changes(entries) -> list[str]:
         box = wiki_board_box(chapter.read_text(encoding="utf-8")) if chapter.is_file() else None
         if box is None:
             errors.append(f"docs/apps/{entry.key}.md must open with a {BOARD_BOX} box right after its title")
-        elif box != entry.board_change:
+        elif box != " ".join(entry.board_change.split()):      # the manifest's text may span lines
             errors.append(f"docs/apps/{entry.key}.md: the \"Changes the board\" box differs from "
                           f"[apps.{entry.key}] board_change")
     return errors
@@ -152,7 +154,7 @@ def check_no_checkout_tables(text: str) -> list[str]:
 
 
 def latest_portal_tag(tags) -> str:
-    """The newest bc250-portal-v<x.y.z> among *tags* by version; "" when there is none."""
+    """The newest <prefix>portal-v<x.y.z> among *tags* by version; "" when there is none."""
     found = [(manifest.version_tuple(m.group(1)), tag) for tag in tags if (m := _PORTAL_TAG.match(tag))]
     return max(found)[1] if found else ""
 
@@ -161,9 +163,9 @@ def reference(base: str) -> tuple[str, str | None, str]:
     """What apps.toml and portal/VERSION are compared with: the last portal release (its tag), since a portal
     version that is not tagged yet may still change what it pins; *base* while there is no portal tag. Returns
     (ref, that apps.toml or None when the ref has none, that portal version)."""
-    tag = latest_portal_tag((git("tag", "--list", "bc250-portal-v*") or "").split())
+    tag = latest_portal_tag((git("tag", "--list", f"{PREFIX}portal-v*") or "").split())
     ref = tag or base
-    version = tag[len("bc250-portal-v"):] if tag else (git("show", f"{ref}:portal/VERSION") or "0.0.0").strip()
+    version = tag[len(f"{PREFIX}portal-v"):] if tag else (git("show", f"{ref}:portal/VERSION") or "0.0.0").strip()
     return ref, git("show", f"{ref}:{MANIFEST}"), version
 
 

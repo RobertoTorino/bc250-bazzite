@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import QDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget
 from bc250_core.updates import UpdateChecker
 from bc250_core.widgets import accent_button, hint_label
 
-REPO = "RobertoTorino/bc250-bazzite"            # as tools/nexus_index.py and the suites' pin_app.py name it
+REPO = "RobertoTorino/bc250-bazzite"            # as tools/pin_app.py names it
 ISSUES_URL = f"https://api.github.com/repos/{REPO}/issues?state=open&per_page=100"
 GH_FALLBACK = "/home/linuxbrew/.linuxbrew/bin/gh"   # Homebrew's gh on Bazzite: not on PATH when started from the menu
 

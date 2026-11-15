@@ -1,3 +1,71 @@
+Changelog: 15-11-2026 11:52:08
+
+Fixed. CLAUDE.md says Nexus Release Tool handles the releases (owner, 15-11-2026): it works out each version from
+the CHANGELOG entries since the last tag (Breaking. major, Added. minor, Fixed. patch); it no longer says the owner
+chooses the numbers.
+
+Changelog: 15-11-2026 11:43:00
+
+Fixed. The Portal Tour no longer shows the portal's version (the title card and the header): it was
+recorded before each release, so the video always showed the previous one, while its check, which leaves the
+version out, called it current. The wiki's video is recorded again.
+
+Changelog: 15-11-2026 10:56:14
+
+Fixed. DESIGN.md: HDMI-CEC's display box is the suite's blue #1565c0, as the app draws it since 26-10-2026, not black.
+
+Changelog: 15-11-2026 10:20:56
+
+Breaking. The portal installs in your home folder, as the Bazzite Console Suite's does (owner, 15-11-2026): the
+program in ~/.local/share/bc250-bazzite-suite/portal, what it remembers in ~/.local/share/bc250-bazzite-suite/state,
+no /opt copy and no sudo for the portal (Board Test still asks, for /opt/bc250-board-test). Nothing of the old
+layout is carried over: a fresh install. tools/check-release.sh and the installer tests (portal.sh, release.sh,
+release-check.sh) follow; portal.sh also runs the portal's own update from its state folder and from inside the
+portal's folder. The installer tests no longer mention WSL on Windows.
+
+Changelog: 15-11-2026 10:15:40
+
+Breaking. The tools are single-suite: tools/suites.py names the repository's suite only (system(), tag_prefix(),
+of_tag() giving the app and version), and no tool takes --suite any more (build_release.py, stage_app.py,
+check_versions.py, sync_icons.py, ci_matrix.py, app_tour.py, new_app.py, whose suite argument "." is gone).
+tools/ci_state.py has no --repo, tools/tour_frames.py no set_suite(). tools/tag-release.sh tags this repository only.
+Breaking. tools/git-setup.sh, tools/pre-push.sh and tools/hooks/ are gone, with git's pre-push hook: CI and
+tools/ci-local.sh are the checks before a push. The local core.hooksPath setting was removed.
+Breaking. tools/dev_versions.py is gone, and tools/check_versions.py no longer checks dev/: the development apps
+have no VERSION. It also skips venvs and caches in the folders it reads.
+Breaking. No Windows for the development tools: test.sh, record-tour.sh, record-app-tour.sh and nrt.sh look only
+for .venv-linux/ (or .venv/), nrt.sh no longer runs install.ps1, tour_frames.py lost its Windows path code (and its
+test), and requirements-dev.txt no longer brings tzdata. .gitattributes and .gitignore lost their Windows lines.
+Added. requirements-dev.txt takes in the requirements of every folder with tests/ (every app and every dev app), and
+tools/tests/test_layout.py keeps it so.
+Added. release.yml: a release started by Nexus Release Tool runs only on main's newest commit; the bundled app is
+the one apps.toml marks required; the pin step fetches the tags the app releases just made before it checks them;
+PS Remote Play's wheel is built outside the checkout and handed to build_release.py with BC250_NATIVE_WHEEL_DIR.
+Added. docs.yml also builds the wiki when a release is published (through a run on main), and the wiki's hook
+writes the newest portal release's tag where a page says {{ portal_tag }}.
+Added. tools/tag-release.sh, record-tour.sh, record-app-tour.sh and ci-local.sh take --help; a test keeps their help
+the header comment.
+Added. tools/tests/test_wiki_apps.py (in place of test_wiki_nav.py): every app has its chapter, its line in the
+overviews, the navigation and the README, and nothing lists an app that is gone; the Install page names a portal
+release. tools/tests/test_issue_templates.py: the bug report's App list is portal/apps.toml's.
+Added. The ci.yml docs job installs Bazzite's font for the portal's picture, as docs.yml does, and ci.yml reads the
+repository with read-only permissions.
+Fixed. tools/check_manifest.py compares a "Changes the board" box with its board_change whitespace-normalized (the
+manifest's text may span lines), and reads the tag prefix from TAG_PREFIX.
+Fixed. pin_app.py, suite_release.py and publish_release.sh read the tag prefix from TAG_PREFIX instead of naming it.
+Fixed. tools/ci-local.sh runs the jobs in a copy named as the checkout, as GitHub names it after the repository.
+Fixed. The bug report's App list names every app of portal/apps.toml (it had 8 of 31).
+Fixed. The wiki's home page names every app, and the Install page downloads the newest portal release by its tag
+({{ portal_tag }}), checks it and installs it in one block to paste.
+
+Changelog: 15-11-2026 09:02:31
+
+Breaking. SFTP Tools for Windows has its own repository, github.com/RobertoTorino/sftp-tool (owner, 15-11-2026: it
+has no relation with the suites): the suite no longer builds the Windows executable, so a release of BC-250 SFTP
+Tools has only its tarball. The release workflow's windows job, CI's windows-exe job, tools/build_windows_exe.py and
+the windows= line of suite_release.py's plan are gone. BC-250 SFTP Tools itself, the portal's tile, stays as it was.
+Its chapter of the wiki points to the new repository for Windows.
+
 Changelog: 15-11-2026 07:42:52
 
 Fixed. The wiki's Portal Tour is recorded again from the portal that starts with its example wallpaper and shows a

@@ -1,3 +1,31 @@
+Changelog: 15-11-2026 09:57:54
+
+Breaking. One suite (owner, 15-11-2026): the repository is the suite, so the Portals column, the suite chosen in the
+settings and the release of several suites are gone, and so is Nexus's own version (the root VERSION, its release
+entry and the nexus-v tags). The release is release.yml's, the CI that counts is the repository's, the ticker and the
+notifications show every run of the push. The commit runs tools/check_versions.py and tools/check_manifest.py once.
+The tests use this checkout's own tools; the copied files of another suite's manifest are gone.
+
+Breaking. Windows support is removed (owner, 15-11-2026): no run.ps1 or install.ps1, run.sh uses .venv-linux, and
+the board's buttons (Device test, Test withdrawal, Remove suite) are always on.
+
+Breaking. The pull is git pull --rebase --autostash: tools/git-setup.sh is gone, and with it the pre-push hook the
+steps mentioned. Push runs tools/ci-local.sh before git push, as before.
+
+Breaking. No VERSION (owner, 15-11-2026): the tool is never released, so its header names only the checkout's last
+commit and its time ("5fb1aa8 · 15-11-2026 07:20"), as every development app's does (core's nexus.header()), and
+--version prints the same.
+
+Fixed. Commit offers the portal bump when apps.toml changed since the last portal release: in a repository that is
+one suite the offer was never made, and the commit's manifest check refused the commit.
+
+Changelog: 15-11-2026 08:37:21
+
+Fixed. After Publish, the steps went back to Start new release (owner, 15-11-2026): the portal tag Publish makes
+starts release.yml on the pin commit, a run that ends at once, and the steps took it for the release, on a commit
+this checkout did not have yet. The steps follow only the run Start started on main now. Publish fetches main with
+the new tag, so Bring in the pin commit lights as soon as it ends: the pin commit has no run of its own on main.
+
 Changelog: 15-11-2026 07:50:10
 
 Fixed. Right after a push, the GitHub pill and the line under the pills wait for GitHub to start the runs of the

@@ -32,12 +32,12 @@ def test_the_games_in_steam_are_kept_and_the_ones_no_longer_in_steam_forgotten(t
 
 
 def test_a_game_found_again_takes_the_mark_when_it_is_the_only_match():
-    known = {"Old.iso": "size:5", "Game\EBOOT.BIN": "code:CUSA1", "Twin.iso": "size:9"}
-    found = {"New.iso": "size:5", "Moved\EBOOT.BIN": "code:CUSA1", "Other.iso": "size:7",
+    known = {"Old.iso": "size:5", "Game/EBOOT.BIN": "code:CUSA1", "Twin.iso": "size:9"}
+    found = {"New.iso": "size:5", "Moved/EBOOT.BIN": "code:CUSA1", "Other.iso": "size:7",
              "Twin A.iso": "size:9", "Twin B.iso": "size:9"}
-    in_steam = {"Old.iso", "Game\EBOOT.BIN", "Twin.iso"}
-    assert renamed.follow(known, found, in_steam) == {"New.iso": "Old.iso", "Moved\EBOOT.BIN": "Game\EBOOT.BIN"}
-    assert renamed.follow(known, {**found, "Old.iso": "size:5"}, in_steam)["Moved\EBOOT.BIN"]   # Old still there
+    in_steam = {"Old.iso", "Game/EBOOT.BIN", "Twin.iso"}
+    assert renamed.follow(known, found, in_steam) == {"New.iso": "Old.iso", "Moved/EBOOT.BIN": "Game/EBOOT.BIN"}
+    assert renamed.follow(known, {**found, "Old.iso": "size:5"}, in_steam)["Moved/EBOOT.BIN"]   # Old still there
     assert "New.iso" not in renamed.follow(known, {**found, "Old.iso": "size:5"}, in_steam)
     assert renamed.follow(known, found, {"Old.iso", "New.iso"}) == {}  # the new one is in Steam itself
     assert renamed.follow({}, found, in_steam) == {}                    # nothing known: nothing follows

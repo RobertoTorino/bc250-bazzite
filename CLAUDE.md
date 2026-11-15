@@ -4,8 +4,8 @@
 
 The rules of the **BC250 Bazzite Suite** (exactly that name): tools for the AMD BC-250 on Bazzite. The repository is
 `github.com/RobertoTorino/bc250-bazzite` (branch `main`). The owner works on it from Bazzite (the BC-250 board is the
-development machine) and from Windows, and talks to Claude on both, so this file, not a local memory, carries the
-standing rules.
+development machine); the development tools run on Linux only (owner, 15-11-2026). This file, not a local memory,
+carries the standing rules, and the owner may change them when the need is there.
 
 **It is standalone** (owner, 14-11-2026: "identical to bazzite-console", one repository per suite). Everything it
 needs is in this repository: its tools, its core and its development apps. Nothing here depends on a checkout of
@@ -13,14 +13,24 @@ Nexus (`github.com/RobertoTorino/nexus`) or of another suite, and nothing is tak
 time. The suite was the folder `bc250-bazzite/` of Nexus until 14-11-2026, with its tags, releases and wiki there;
 the tooling began as a copy of Nexus's and is this repository's own now: a change to it is made here.
 
+**Twin of the Bazzite Console Suite** (owner, 15-11-2026: "basically identical, the only difference is that one runs on
+a bc250 board and the other runs on a PlayStation 5 board"). This suite and the Bazzite Console Suite
+(`github.com/RobertoTorino/bazzite-console`, checked out beside this one) share their release logic (NRT, `tools/`, the
+workflows, CI), design features, category icons and the apps' design: these stay equal. A change to any of them is made
+in both repositories in the same piece of work, with each one's CHANGELOG and wiki; only what the hardware makes
+different differs (names, `TAG_PREFIX`, the board's apps and checks). Standalone still holds: neither reads the other at
+run, test or release time. The handover names what changed in each.
+
 ## Rules from the owner
 
 - **Never commit, tag or push.** The owner does every git commit, tag and push. Finish work in the working tree and
   say what is ready; don't offer to commit.
-- **Releases are the owner's, all of it.** Claude never bumps a `VERSION`, tags, builds or publishes release assets,
-  pins a release in `portal/apps.toml` or writes the release entries in the CHANGELOGs, and doesn't offer to. When
-  finished work will need a release or a version bump, the handover says which app and why; the owner decides the
-  number. Claude may change the release tools and their tests.
+- **NRT handles the releases** (owner, 15-11-2026). Nexus Release Tool works out each version from the CHANGELOG
+  entries since the last tag (`Breaking.` major, `Added.` minor, `Fixed.` patch), bumps the `VERSION`s, pins the
+  portal's `apps.toml` and starts the release; the owner runs it. Claude never bumps a `VERSION`, tags, builds or
+  publishes release assets, pins a release in `portal/apps.toml` or writes the release entries in the CHANGELOGs, and
+  doesn't offer to. When finished work will need a release, the handover says which app and why. Claude may change
+  the release tools and their tests.
 - **READMEs and the wiki hold no status, plans, step numbers or decision notes.** No placeholder folders that only
   describe future work. CHANGELOG entries are history and may mention steps.
 - **The wiki keeps up with the work** (owner, 28-10-2026): new information, a new way of working or new logic worth
@@ -29,17 +39,17 @@ the tooling began as a copy of Nexus's and is this repository's own now: a chang
   changed.
 - **CHANGELOG for every change:** the root CHANGELOG for suite-wide changes, the app's (or core's, the portal's, a
   dev app's) for its own. Format: a `Changelog: DD-MM-YYYY HH:MM:SS` line, a blank line, then plain sentences; newest
-  first. The time is Europe/Amsterdam (CET/CEST) on both systems, whatever the machine's own zone:
-  `python3 -c "import datetime, zoneinfo; print(datetime.datetime.now(zoneinfo.ZoneInfo('Europe/Amsterdam')).strftime('%d-%m-%Y %H:%M:%S'))"`
-  (on Windows with `.venv-windows/Scripts/python.exe`). Not `TZ=Europe/Amsterdam date`: Git Bash on Windows has no
-  time zone data and silently gives UTC.
+  first. The time is Europe/Amsterdam (CET/CEST), whatever the machine's own zone:
+  `python3 -c "import datetime, zoneinfo; print(datetime.datetime.now(zoneinfo.ZoneInfo('Europe/Amsterdam')).strftime('%d-%m-%Y %H:%M:%S'))"`.
 - **Every entry starts with its kind** (owner, 15-10-2026): `Breaking.` (removed, or no longer working as before:
-  major), `Added.` (a new feature: minor) or `Fixed.` (a bug or security fix: patch); 0.x apps too. The number stays
-  the owner's.
+  major), `Added.` (a new feature: minor) or `Fixed.` (a bug or security fix: patch); 0.x apps too. NRT takes
+  the number from them.
 - **VERSION is the single source** of each app's version. Copies in code (`__version__`, shell `VERSION=`,
   pyproject, Cargo) must match: `tools/check_versions.py`.
-- **Every folder that was a repository once** (each app, `core/`, `portal/`, each `dev/` app) keeps LICENSE,
-  .gitignore, VERSION and CHANGELOG. GitHub workflows live only in the root `.github/`.
+- **Every folder that was a repository once** (each app, `core/`, `portal/`) keeps LICENSE, .gitignore, VERSION and
+  CHANGELOG; each `dev/` app keeps LICENSE, .gitignore and CHANGELOG, and has no VERSION (owner, 15-11-2026: a
+  development app is never released; its header shows the checkout's commit and its time, as NRT's does). GitHub
+  workflows live only in the root `.github/`.
 - **An info symbol where space is limited** (owner, 01-11-2026): a window never carries long lines of explanation.
   Where a line of hint text would take the room, a small round "i" (core's `InfoButton`) opens the text on a click,
   with its links; a short line under a control stays a `hint_label`.
@@ -47,7 +57,7 @@ the tooling began as a copy of Nexus's and is this repository's own now: a chang
   the boards. Only personal data stays out (names, addresses, host and user names, serial numbers, MAC and IP
   addresses, keys, account details), as the apps mask it in their logs. When in doubt whether something is personal,
   ask.
-- **Ask** before decisions that are the owner's (what an app does, version numbers, repo layout, anything on the
+- **Ask** before decisions that are the owner's (what an app does, repo layout, anything on the
   board). Do the obvious housekeeping without asking.
 - **Warn before board changes.** Apps that change how the board runs (CU/core unlocks, GPU governor, GPU
   overclocking, ACPI override, the patched RADV of ace, the DirectMesh RADV of mesh, the VRAM split of vram, the
@@ -114,8 +124,9 @@ the tooling began as a copy of Nexus's and is this repository's own now: a chang
 A **portal** installs and starts the apps listed in its manifest. **check** (BC-250 Board Test) is always
 installed and always listed first; every other listed app is an optional tile. The release tags are
 `bc250-<app>-v<x.y.z>` and `bc250-portal-v<x.y.z>` (`TAG_PREFIX`, owner 15-11-2026; the releases made in Nexus had
-no prefix). The app ids, the launchers and the state folder on the board (`~/.local/share/bc250-bazzite-suite/`)
-stayed the same through the moves. The wiki is at robertotorino.github.io/bc250-bazzite/. The suite's system is `bazzite` (`SYSTEM`).
+no prefix). The app ids, the launchers and the suite's folder on the board (`~/.local/share/bc250-bazzite-suite/`)
+stayed the same through the moves. The wiki is at robertotorino.github.io/bc250-bazzite/. The suite's system is
+`bazzite` (`SYSTEM`).
 
 Every app has a `category` in `portal/apps.toml`, the same as its icon's in `icons/categories.toml` (sustainable,
 graphics, gaming, utilities): the portal, one fullscreen view for the keyboard, the mouse and a controller (owner,
@@ -124,9 +135,12 @@ graphics, gaming, utilities): the portal, one fullscreen view for the keyboard, 
 
 ## Layout
 
-The repository is the suite (`tools/suites.py` names it `.`):
+The repository is the suite, and the tools know only this one (`tools/suites.py`):
 
 - `portal/`: the portal (`bc250_portal`), `apps.toml` (one pinned release per app), its tests and `install.sh`.
+  It installs as a copy in the home folder (owner, 15-11-2026): the program in
+  `~/.local/share/bc250-bazzite-suite/portal`, what it remembers in `.../state`; no `/opt`, no sudo for the portal.
+  Installed from a checkout, it installs the apps from that checkout.
 - `apps/<name>/`: check, gpu, upscaler, compute, cores, oc, acpi, overlay, turing, webcam, controller, bios, ace, mesh,
   vram, fan, wifi, cec, sftp, consoles, clb, shadps4, rpcs3, ppsspp, pcsx2, vita3k, xenia, datstation, ssd, btpair.
   Each has its own VERSION, CHANGELOG, LICENSE (acpi is MIT; consoles is AGPL-3.0, its protocol code ported from
@@ -137,12 +151,13 @@ The repository is the suite (`tools/suites.py` names it `.`):
   (`tools/stage_app.py`), so each app runs on the core it was tested with; the shared venv
   `~/.local/share/bc250-bazzite-suite/venv` holds only PyQt6 and pygame-ce (the portal's controller reader). In a
   checkout an app's `install.sh` and its tests find core at `../../core` from the app folder. Core's `nexus.py`
-  is the design of the development apps (the theme `NEXUS`).
+  is the design of the development apps (the theme `NEXUS`) and their header (`header()`: the checkout's commit and
+  its time, `checkout_stamp()`).
 - `tools/`: the release and check tools (`build_release.py`, `stage_app.py`, `check_versions.py`,
   `check_manifest.py`, `pin_app.py`, `suite_release.py`, `publish_release.sh`, `tag-release.sh`, `release_commit.py`,
   `ci_state.py`, `ci_matrix.py`, `check-release.sh`: the board checks of a portal release), CI on this machine
   (`ci-local.sh`, `ci_local.py`, `ci-local/`, `ci-qt-libs.sh`), `suites.py`, `sync_icons.py`, `new_app.py`,
-  `check_upstream.py`, `fix-modes.sh`, `git-setup.sh`, `pre-push.sh` with `hooks/pre-push`, the tours
+  `check_upstream.py`, `fix-modes.sh`, `nrt.sh`, the tours
   (`portal_tour.py`, `app_tour.py`, `tour_frames.py`, `record-tour.sh`, `record-app-tour.sh`, their music in
   `sounds/`), `portal_screenshot.py`, `make_portal_sounds.py`, `apply_design.py`, `make_design.py` (DESIGN.md and its
   samples in `design/colors/`), `mkdocs/` (the wiki's hooks, the
@@ -164,27 +179,21 @@ The repository is the suite (`tools/suites.py` names it `.`):
   Pages; `upstream.yml`: the weekly upstream check. `.github/dependabot.yml`: a weekly pull request for newer
   actions.
 
-## Windows and Linux
+## Working tree
 
 - **Line endings:** every text file is LF in git and in the working tree (`.gitattributes`: `* text=auto eol=lf`).
-  On Windows, check line endings by counting bytes in Python: Git Bash's grep and sed hide or strip CR.
-- **Exec bits:** Windows git records new files as 100644. Before committing, `tools/fix-modes.sh` marks every `.sh`
-  executable in the index; CI fails otherwise.
-- **Venvs:** one per OS at the repo root, `.venv-linux/` and `.venv-windows/`; `./test.sh` picks the right one.
-  Bazzite's system `python3` has no PyQt6. Linux: `python3 -m venv .venv-linux && .venv-linux/bin/python -m pip
-  install -r requirements-dev.txt`; Windows (Git Bash): `py -m venv .venv-windows && .venv-windows/Scripts/python.exe
-  -m pip install -r requirements-dev.txt`. On Windows `./test.sh` runs core, tools and dev/ only (the portal and the
-  apps are made for Bazzite).
-- **Tests must not write to the Windows registry** (QSettings' native format there): the conftest fixtures turn
-  settings into .ini files in a temp folder.
+- **Exec bits:** a checkout with `core.fileMode=false` records new files as 100644. Before committing,
+  `tools/fix-modes.sh` marks every `.sh` executable in the index; CI fails otherwise.
+- **Venv:** one at the repo root, `.venv-linux/`; `./test.sh` takes it. Bazzite's system `python3` has no PyQt6:
+  `python3 -m venv .venv-linux && .venv-linux/bin/python -m pip install -r requirements-dev.txt`.
+- **Tests keep settings in a temp folder:** the conftest fixtures turn settings into .ini files there.
 - Keep path and link case exact: Linux and GitHub are case-sensitive.
 
 ## Checks before handing work over
 
 `tools/ci-local.sh` runs every job of ci.yml as GitHub runs it (Python 3.12, each job with only its own
-requirements, in a podman container); run it before saying work is ready. `tools/pre-push.sh` is CI's quick checks
-against `origin/main` (git's pre-push hook, set by `tools/git-setup.sh`), `./test.sh` every test folder. By hand,
-from the repository root:
+requirements, in a podman container); run it before saying work is ready. `./test.sh` runs every test folder. By
+hand, from the repository root:
 
 ```bash
 python3 tools/check_versions.py
@@ -206,9 +215,11 @@ Fedora package Homebrew lacks), not run once in a throwaway container.
 
 ## Releases
 
-Everything about releases is the owner's. Nexus Release Tool's release tab starts `release.yml` on the release
-commit; one release by hand is `tools/tag-release.sh bc250-<app>-v<x.y.z>`. GitHub's Latest release is the newest
-portal.
+Nexus Release Tool handles the releases: it works out the versions from the CHANGELOG kinds, and its release tab
+starts `release.yml` on the release commit; one release by hand is `tools/tag-release.sh bc250-<app>-v<x.y.z>`, which
+tags and pushes only a pushed commit that passed CI, and `release.yml` builds and publishes it on GitHub (owner,
+15-11-2026: the same in both twins).
+GitHub's Latest release is the newest portal.
 `tools/check_upstream.py`, weekly in `.github/workflows/upstream.yml`, says when an upstream an app pins (an
 emulator, HelixSR, DirectMesh, the USB Wi-Fi driver, Mesa, FFmpeg) moved past the pin. Moving a pin is code Claude
 may prepare (with its CHANGELOG entry); the board test and the app's release are the owner's, and the handover says

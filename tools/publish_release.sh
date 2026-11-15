@@ -16,6 +16,7 @@ set -euo pipefail
 tag=$1 commit=$2 dir=$3 draft=false
 [ "${4:-}" = --draft ] && draft=true
 title=$(cat "$dir/title.txt")             # the suite's and the app's names (build_release.py's release_title)
+prefix=$(tr -d '[:space:]' < "$(dirname "${BASH_SOURCE[0]}")/../TAG_PREFIX")     # the suite's tags: bc250-...
 assets=("$dir/$tag.tar.gz" "$dir/SHA256SUMS")
 
 state() {                                 # draft, published or none
@@ -45,7 +46,7 @@ publish() {
 
 create() {
     local latest=false
-    [[ "$tag" == bc250-portal-v* ]] && ! $draft && latest=true
+    [[ "$tag" == "${prefix}portal-v"* ]] && ! $draft && latest=true
     local args=(--title "$title" --notes-file "$dir/notes.md" --target "$commit" "--latest=$latest")
     $draft && args+=(--draft)
     gh release create "$tag" "${assets[@]}" "${args[@]}"

@@ -158,7 +158,7 @@ class CommandLine(QWidget):
         if not self.bash:
             self.line.setEnabled(False)
             self.run_button.setEnabled(False)
-            self.output.setPlainText("No bash found: the command line needs it (on Windows, Git Bash's bash on PATH).")
+            self.output.setPlainText("No bash found: the command line needs it.")
 
     # --- what the steps offer ----------------------------------------------------------------------------------
 
@@ -288,7 +288,7 @@ class CommandLine(QWidget):
         self.kill_timer.start()
 
     def _signal(self, sig) -> None:
-        """*sig* to the command's process group; without one (Windows), terminate or kill (*sig* None) bash."""
+        """*sig* to the command's process group; without one (no setsid), terminate or kill (*sig* None) bash."""
         try:
             if self.grouped:
                 os.killpg(self.pid, sig)

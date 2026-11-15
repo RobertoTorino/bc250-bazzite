@@ -31,6 +31,7 @@ def checkout(tmp_path: Path, body: str = 'touch "$2"') -> Path:
     (root / "portal").mkdir(parents=True)
     (root / "portal" / "apps.toml").write_text(MANIFEST, encoding="utf-8")
     (root / "portal" / "VERSION").write_text("6.4.0\n", encoding="utf-8")
+    (root / "TAG_PREFIX").write_text("bc250-\n", encoding="utf-8")
     for folder, packages, version in (("apps/fan", ["fan_control"], "0.5.1"),
                                       ("apps/compute", ["cu_unlock", "cu_bisect"], "0.3.0"),
                                       ("apps/gone", [], "1.0.0"),
@@ -97,11 +98,10 @@ def test_a_size_other_than_1080p_is_passed_on_and_names_the_video(tmp_path):
         "--seconds", "40", "--size", "1440p"]
     assert tours.portal_video(root).name == "bc250-portal-tour-v6.4.0.mp4"
     assert tours.portal_video(root, "2160p").name == "bc250-portal-tour-v6.4.0-2160p.mp4"
-    (root / "TAG_PREFIX").write_text("wp-\n", encoding="utf-8")         # a suite with a prefix: its videos too
-    assert tours.portal_video(root).name == "wp-portal-tour-v6.4.0.mp4"
-    assert tours.tour_apps(root)[0].file_name == "wp-fan-tour-v0.5.1.mp4"
-    (root / "TAG_PREFIX").unlink()
-    app = TourApp("fan", "Fan", None, "0.5.1")
+    (root / "TAG_PREFIX").unlink()                                      # the names follow the suite's prefix
+    assert tours.portal_video(root).name == "portal-tour-v6.4.0.mp4"
+    assert tours.tour_apps(root)[0].file_name == "fan-tour-v0.5.1.mp4"
+    app = TourApp("fan", "Fan", None, "0.5.1", "bc250-")
     assert app.video() == app.file_name == "bc250-fan-tour-v0.5.1.mp4"
     assert app.video("2160p") == "bc250-fan-tour-v0.5.1-2160p.mp4"
 
@@ -192,8 +192,8 @@ def test_the_portal_dialog_records_into_videos_with_the_wiki_copy_when_asked(qap
     dialog.close()
 
 
-def test_a_suite_without_the_tour_scripts_gets_the_dialog_greyed_out(qapp, tmp_path):
-    """A Windows suite has no record-tour.sh: the dialog says so and records nothing."""
+def test_a_checkout_without_the_tour_scripts_gets_the_dialog_greyed_out(qapp, tmp_path):
+    """Without record-tour.sh the dialog says so and records nothing."""
     root = checkout(tmp_path)
     (root / "tools" / "record-tour.sh").unlink()
 
@@ -202,5 +202,5 @@ def test_a_suite_without_the_tour_scripts_gets_the_dialog_greyed_out(qapp, tmp_p
     assert dialog.checkout is None
     assert "has no tools/record-tour.sh" in dialog.output.toPlainText()
     assert not dialog.record_button.isEnabled()
-    assert dialog.suite_label.text() == str(root)
+    assert dialog.checkout_label.text() == str(root)
     dialog.close()

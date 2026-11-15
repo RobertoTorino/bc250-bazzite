@@ -107,17 +107,8 @@ default keys.
 
 ## On Windows
 
-SFTP Tools also comes as a program for Windows, for connecting to the board from a Windows computer. It is not
-installed by the portal. On the [releases page](https://github.com/RobertoTorino/bc250-bazzite/releases),
-open the latest `sftp` release and download `bc250-sftp-tools-<version>-windows.zip` and its
-`.sha256` file. Check the download (`certutil -hashfile <zip> SHA256` must print the number in the `.sha256`
-file), unzip it, and start `BC250-SFTP-Tools.exe`. It needs no Python.
-
-The program is not signed, so Windows may show a SmartScreen warning the first time: choose *More info*, then
-*Run anyway*. Settings, profiles and the log are in `C:\Users\<you>\.config\bc250-sftp-tools\` and
-`C:\Users\<you>\.local\share\bc250-sftp-tools\`. The beep uses Qt's, not `paplay`. Windows has an
-OpenSSH client with `ssh-keygen` but no `ssh-copy-id`: to log in with a key, copy the public key into
-`~/.ssh/authorized_keys` on the host by hand.
+SFTP Tools for Windows is an app of its own, to reach the board from a Windows computer: its download, its
+manual and its releases are at [github.com/RobertoTorino/sftp-tool](https://github.com/RobertoTorino/sftp-tool).
 
 ## Settings
 

@@ -1,3 +1,20 @@
+Changelog: 15-11-2026 10:09:36
+
+Breaking. One suite (owner, 15-11-2026): the repository is the suite, so the suite chosen in the header, --suite and
+its setting are gone. The tours, Convert icons and Test local apps work on the checkout; Test local apps serves the
+suite's wiki alone (Wiki on the network), and the apps start without --suite.
+
+Breaking. Windows support is removed (owner, 15-11-2026): no run.ps1 or install.ps1, run.sh uses .venv-linux, and an
+app starts with its run.sh.
+
+Breaking. No VERSION (owner, 15-11-2026): a development app is never released, so its header names the checkout's
+last commit and its time ("5fb1aa8 · 15-11-2026 07:20", core's nexus.header()) where it showed a version, and
+--version prints the same. The Dev app versions tile is gone with the versions.
+
+Fixed. A click on the header's icon opens the suite's wiki, not the Nexus page (owner, 15-11-2026). Convert icons
+runs tools/sync_icons.py without --suite, which it no longer takes. A tour video's name starts with the suite's
+TAG_PREFIX, with no bc250- of its own when there is none. The About text names Nexus Deps.
+
 Changelog: 15-11-2026 01:08:09
 
 Fixed. The handling of a suite made for Windows devices is gone (owner, 15-11-2026): a suite's portal and apps no

@@ -4,7 +4,7 @@
 # launchers in the caller's folder, the run wrapper, no sudo) over a standalone Bazzite pkgxtractor and an install
 # from before the own venv, a staged release replacing it, the refusals, uninstall (the installed shadPS4 and the
 # venv removed; shadPS4's own folder, the games, the settings and the log kept) and --purge.
-# Runs with the shims from shims.sh (CI, or WSL on Windows).
+# Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

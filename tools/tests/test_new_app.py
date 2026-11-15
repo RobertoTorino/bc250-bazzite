@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""tools/new_app.py writes a new app of a suite as the architecture chapter describes it, and lists it wherever the
-suite lists its apps, on a small repository laid out as this one is: the suite at the root."""
+"""tools/new_app.py writes a new app of the suite as the architecture chapter describes it, and lists it wherever the
+suite lists its apps, on a small repository laid out as this one is."""
 
 from __future__ import annotations
 
@@ -14,7 +14,6 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-SUITE = "."                     # the repository is the suite
 ICONS = ROOT / "icons" / "utilities"
 
 spec = importlib.util.spec_from_file_location("new_app", ROOT / "tools" / "new_app.py")
@@ -158,7 +157,8 @@ def checkout(tmp_path) -> Path:
     """A repository laid out as this one is: the suite at the root with core and the files the generator lists an
     app in, and one category's icons (tools/sync_icons.py, the real one, writes the copies)."""
     root = tmp_path / "bc250-bazzite"
-    suite = root / SUITE
+    suite = root
+    write(suite / "TAG_PREFIX", "bc250-\n")
     write(root / "core" / "bc250_core" / "__init__.py", "")
     write(suite / "portal" / "apps.toml", MANIFEST)
     write(suite / "portal" / "bc250_portal" / "__init__.py", 'APP_NAME = "BC250 Bazzite Suite"\nAPP_ID = "bc250-bazzite-suite"\n')
@@ -182,19 +182,20 @@ def test_defaults():
     assert na.default_package("Bazzite DatStation") == "datstation"
     assert na.default_package("Turing Screen 3.5") == "turing_screen_3_5"
     assert na.default_package("3D Thing") == "app_3d_thing"
-    suite = na.read_suite(ROOT, SUITE)
+    suite = na.read_suite(ROOT)
     assert (suite.name, suite.app_id, suite.prefix, suite.core) == ("BC250 Bazzite Suite", "bc250-bazzite-suite",
                                                                    "bc250", "bc250_core")
     assert suite.wiki == "https://robertotorino.github.io/bc250-bazzite/"
     assert suite.categories == ("sustainable", "graphics", "gaming", "utilities")      # no Development tab
+    assert suite.tag_prefix == "bc250-"
 
 
 def test_writes_the_app_and_lists_it_everywhere(checkout, capsys):
-    assert na.main([SUITE, "fan2", "BC-250 Fan Two", "--summary", "A second fan.", "--no-check", "--root",
+    assert na.main(["fan2", "BC-250 Fan Two", "--summary", "A second fan.", "--no-check", "--root",
                     str(checkout)]) == 0
     out = capsys.readouterr().out
     assert out.startswith("BC-250 Fan Two (apps/fan2, package fan_two, id bc250-fan2, utilities):")
-    suite = checkout / SUITE
+    suite = checkout
     app = suite / "apps" / "fan2"
     for name in ("fan_two/__init__.py", "fan_two/__main__.py", "fan_two/main_window.py", "tests/conftest.py",
                  "tests/test_main_window.py", "install.sh", "requirements.txt", "requirements-dev.txt", "VERSION",
@@ -205,7 +206,7 @@ def test_writes_the_app_and_lists_it_everywhere(checkout, capsys):
     assert (app / "CHANGELOG").read_text().startswith("Changelog: ") and "\n\nAdded. BC-250 Fan Two" in (app / "CHANGELOG").read_text()
     init = (app / "fan_two" / "__init__.py").read_text()
     assert 'APP_NAME = "BC-250 Fan Two"' in init and 'APP_ID = "bc250-fan2"' in init and '__version__ = "0.1.0"' in init
-    assert 'tag_prefix="fan2-v"' in init and "from bc250_core import AppInfo" in init
+    assert 'tag_prefix="bc250-fan2-v"' in init and "from bc250_core import AppInfo" in init
     for name in ("fan_two/__init__.py", "fan_two/__main__.py", "fan_two/main_window.py", "tests/conftest.py",
                  "tests/test_main_window.py"):
         compile((app / name).read_text(), name, "exec")                   # valid Python
@@ -219,8 +220,7 @@ def test_writes_the_app_and_lists_it_everywhere(checkout, capsys):
     assert "--upgrade -r" in installer and 'APP_ID="bc250-fan2"' in installer and "-m fan_two" in installer
     assert "bc250-bazzite-suite/venv" in installer.replace("$DATA_DIR/bc250-bazzite-suite", "x/bc250-bazzite-suite/venv")
     test = suite / "tools" / "installer-tests" / "fan2.sh"
-    if sys.platform != "win32":                               # Windows has no exec bits (git has them)
-        assert (app / "install.sh").stat().st_mode & 0o111 and test.stat().st_mode & 0o111
+    assert (app / "install.sh").stat().st_mode & 0o111 and test.stat().st_mode & 0o111
     assert "apps/fan2/install.sh" in test.read_text()
     assert "stage_app.py\" fan2" in test.read_text() and "--suite" not in test.read_text()
     if shutil.which("bash"):
@@ -235,7 +235,7 @@ def test_writes_the_app_and_lists_it_everywhere(checkout, capsys):
     manifest = (suite / "portal" / "apps.toml").read_text()
     entry = manifest.index("[apps.fan2]")
     assert manifest.index("[apps.alpha]") < entry
-    assert 'tag = "fan2-v0.1.0"\nsha256 = ""' in manifest and 'detect = ["~/.local/bin/bc250-fan2"]' in manifest
+    assert 'tag = "bc250-fan2-v0.1.0"\nsha256 = ""' in manifest and 'detect = ["~/.local/bin/bc250-fan2"]' in manifest
     assert "\n\n[apps.fan2]" in manifest and manifest.endswith("]]\n")
     assert (checkout / "portal" / "apps.toml").read_text() == manifest
     # The wiki: the chapter with its icon, the nav before Development, the rows in the category's table.
@@ -266,33 +266,30 @@ def test_writes_the_app_and_lists_it_everywhere(checkout, capsys):
 
 
 def test_names_are_the_owners(checkout):
-    assert na.main([SUITE, "cam", "USB Cam Thing", "--id", "bc250-usb-cam", "--package", "usb_cam", "--category",
+    assert na.main(["cam", "USB Cam Thing", "--id", "bc250-usb-cam", "--package", "usb_cam", "--category",
                     "utilities", "--no-check", "--root", str(checkout)]) == 0
-    init = (checkout / SUITE / "apps" / "cam" / "usb_cam" / "__init__.py").read_text()
+    init = (checkout / "apps" / "cam" / "usb_cam" / "__init__.py").read_text()
     assert 'APP_ID = "bc250-usb-cam"' in init
-    assert (checkout / SUITE / "apps" / "cam" / "install.sh").read_text().count("-m usb_cam") == 1
+    assert (checkout / "apps" / "cam" / "install.sh").read_text().count("-m usb_cam") == 1
 
 
 @pytest.mark.parametrize("argv, message", [
-    (["nope", "x", "X"], "not a suite"),
-    ([SUITE, "Bad Name", "X"], "not a name"),
-    ([SUITE, "x", "X", "--category", "games"], "not a category"),
-    ([SUITE, "x", "X", "--package", "Not-Valid"], "not a package name"),
-    ([SUITE, "x", "X", "--id", "Bad_Id"], "not an app id"),
-    ([SUITE, "alpha", "Alpha again"], "exists already"),
+    (["Bad Name", "X"], "not a name"),
+    (["x", "X", "--category", "games"], "not a category"),
+    (["x", "X", "--package", "Not-Valid"], "not a package name"),
+    (["x", "X", "--id", "Bad_Id"], "not an app id"),
+    (["alpha", "Alpha again"], "exists already"),
 ])
 def test_refusals(checkout, argv, message):
-    (checkout / SUITE / "apps" / "alpha").mkdir(parents=True, exist_ok=True)
+    (checkout / "apps" / "alpha").mkdir(parents=True, exist_ok=True)
     with pytest.raises(SystemExit, match=message):
         na.main([*argv, "--no-check", "--root", str(checkout)])
-    assert not (checkout / SUITE / "apps" / "x").exists()
+    assert not (checkout / "apps" / "x").exists()
 
 
-def test_a_suite_without_a_template_is_refused(checkout):
-    write(checkout / "other-suite" / "portal" / "apps.toml", "[apps.check]\n")
-    write(checkout / "other-suite" / "portal" / "other_portal" / "__init__.py", 'APP_NAME = "W"\nAPP_ID = "w"\n')
-    with pytest.raises(SystemExit, match="no app template yet"):
-        na.main(["other-suite", "x", "X", "--no-check", "--root", str(checkout)])
+def test_a_folder_without_a_portal_is_refused(tmp_path):
+    with pytest.raises(SystemExit, match="no portal/apps.toml"):
+        na.main(["x", "X", "--no-check", "--root", str(tmp_path)])
 
 
 def test_the_help_names_the_steps():

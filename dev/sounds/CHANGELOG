@@ -1,3 +1,11 @@
+Changelog: 15-11-2026 10:09:36
+
+Breaking. Windows support is removed (owner, 15-11-2026): no run.ps1, and run.sh uses .venv-linux.
+
+Breaking. No VERSION (owner, 15-11-2026): a development app is never released, so its header names the checkout's
+last commit and its time ("5fb1aa8 · 15-11-2026 07:20", core's nexus.header()) where it showed a version, and
+--version prints the same.
+
 Changelog: 14-11-2026 23:58:33
 
 Fixed. The app is part of the BC250 Bazzite Suite's own repository, github.com/RobertoTorino/bc250-bazzite (owner,

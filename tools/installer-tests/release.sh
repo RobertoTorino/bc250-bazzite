@@ -6,7 +6,7 @@
 # installs that portal tarball as if downloaded from GitHub, and the portal from the checkout copy.
 # It works on a copy of the checkout in which apps.toml pins check and governor to these local builds: the
 # checksums pinned in the repository are those of the real releases, which a local build never matches.
-# Runs with the shims from shims.sh (CI, or WSL on Windows).
+# Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (build_release.py) and core/
@@ -45,8 +45,8 @@ check "exit 0" "[ $rc -eq 0 ]"
 check "check is a release build" "[ -f $T/opt/bc250-board-test/board_test/_build_info.py ]"
 check "its engine hash matches" "grep -q \"\$(sha256sum < $T/opt/bc250-board-test/test-board.sh | cut -d' ' -f1)\" $T/opt/bc250-board-test/board_test/_build_info.py"
 check "no 'not a release build' note" "! grep -q 'not a release build' $T/install.log"
-check "record has the bundled tag" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $D/bc250-bazzite-suite/portal/installed.json"
-check "portal from the release" "[ -f $T/opt/bc250-bazzite-suite/bc250_core/__init__.py ] && [ ! -d $T/opt/bc250-bazzite-suite/bundled ]"
+check "record has the bundled tag" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $D/bc250-bazzite-suite/state/installed.json"
+check "portal from the release" "[ -f $D/bc250-bazzite-suite/portal/bc250_core/__init__.py ] && [ ! -d $D/bc250-bazzite-suite/portal/bundled ]"
 
 echo "== 3. the installed portal fetches and verifies the governor release"
 cat > "$T/fetch.py" <<'PY'
@@ -72,18 +72,18 @@ except SourceError as exc:
 else:
     sys.exit("a tampered tarball was accepted")
 PY
-PYTHONPATH="$T/opt/bc250-bazzite-suite" /usr/bin/python3 "$T/fetch.py" "$T/dist" "$T/work" > "$T/fetch.log" 2>&1; rc=$?
+PYTHONPATH="$D/bc250-bazzite-suite/portal" /usr/bin/python3 "$T/fetch.py" "$T/dist" "$T/work" > "$T/fetch.log" 2>&1; rc=$?
 check "fetched, verified, unpacked; tampered copy refused" "[ $rc -eq 0 ] && grep -q 'refused:' $T/fetch.log"
 check "governor installer runs from the fetched folder" "(cd $T/work/$GOV && bash install.sh --help >/dev/null 2>&1)"
 
 echo "== 4. check-release.sh: the local check, then back to the release"
-R=$D/bc250-bazzite-suite/portal/installed.json
+R=$D/bc250-bazzite-suite/state/installed.json
 bash "$S/tools/check-release.sh" local --no-start > "$T/check-local.log" 2>&1; rc=$?
 check "local: installs the portal from the checkout" "[ $rc -eq 0 ] && grep -q '\"check\": \"local\"' $R"
 mkdir -p "$T/gh/$PORTAL" && cp "$T/build-portal/$PORTAL.tar.gz" "$T/build-portal/SHA256SUMS" "$T/gh/$PORTAL/"
 BC250_RELEASE_URL="file://$T/gh" bash "$S/tools/check-release.sh" release --no-start > "$T/check-release.log" 2>&1; rc=$?
 check "release: downloads and verifies portal/VERSION's tag" "[ $rc -eq 0 ] && grep -q '$PORTAL.tar.gz: OK' $T/check-release.log"
-check "release: installed it, bundled Board Test included" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $R && [ -f $T/opt/bc250-bazzite-suite/bc250_core/__init__.py ]"
+check "release: installed it, bundled Board Test included" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $R && [ -f $D/bc250-bazzite-suite/portal/bc250_core/__init__.py ]"
 BC250_RELEASE_URL="file://$T/gh" bash "$S/tools/check-release.sh" release bc250-portal-v9.9.9 --no-start > "$T/check-missing.log" 2>&1; rc=$?
 check "release: a tag GitHub has not built yet is reported" "[ $rc -ne 0 ] && grep -q 'finished the release workflow' $T/check-missing.log"
 # The device test of a Nexus release (check-release.sh draft): the draft's assets come through gh, stood in for

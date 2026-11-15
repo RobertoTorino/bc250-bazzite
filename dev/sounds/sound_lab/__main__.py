@@ -8,16 +8,17 @@ import sys
 
 from bc250_core import __version__ as CORE_VERSION, instance
 from bc250_core.app import create_app, exec_app
-from bc250_core.nexus import NEXUS
+from bc250_core.nexus import NEXUS, checkout_stamp
 from bc250_core.platform import data_home
 from bc250_core.settings import open_settings
 
-from . import APP_ID, APP_NAME, INFO, __version__
+from . import APP_ID, APP_NAME, CHECKOUT, INFO
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog="sound_lab", description=f"{APP_NAME} {__version__}")
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__} (core {CORE_VERSION})")
+    stamp = checkout_stamp(CHECKOUT)  # never released: the commit says which code runs
+    parser = argparse.ArgumentParser(prog="sound_lab", description=f"{APP_NAME} {stamp}".strip())
+    parser.add_argument("--version", action="version", version=f"%(prog)s {stamp} (core {CORE_VERSION})")
     args, qt_args = parser.parse_known_args()  # noqa: F841 (no options of its own yet)
 
     app = create_app(INFO, qt_args, theme=NEXUS)           # Nexus's design, not a suite's theme

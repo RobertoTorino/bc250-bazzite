@@ -22,3 +22,20 @@ def test_help_is_the_header_comment(script: Path):
     lines = result.stdout.splitlines()
     assert lines and lines[0].startswith(f"{script.name} - "), result.stdout[:200]
     assert "Usage:" in result.stdout and "SPDX" not in result.stdout
+
+
+TOOLS = sorted(path for path in (SUITE / "tools").glob("*.sh") if "--help)" in path.read_text(encoding="utf-8")
+               or '"--help"' in path.read_text(encoding="utf-8") or "== --help" in path.read_text(encoding="utf-8"))
+
+
+@pytest.mark.parametrize("script", TOOLS, ids=lambda p: p.name)
+def test_the_tools_scripts_print_their_header_as_help(script: Path):
+    """tools/*.sh with --help print the comment under the SPDX line, and do nothing else."""
+    result = subprocess.run(["bash", str(script), "--help"], capture_output=True, text=True, timeout=30, check=False)
+    assert result.returncode == 0, result.stderr
+    header = [line[2:] for line in script.read_text(encoding="utf-8").splitlines()[2:] if line.startswith("# ")]
+    assert result.stdout.splitlines()[0] == header[0] and "SPDX" not in result.stdout
+
+
+def test_the_release_and_tour_scripts_have_help():
+    assert {"tag-release.sh", "record-tour.sh", "record-app-tour.sh", "nrt.sh", "ci-local.sh"} <= {p.name for p in TOOLS}

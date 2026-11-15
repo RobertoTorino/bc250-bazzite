@@ -12,10 +12,10 @@ sound drawn beside them and played at every change, a row of buttons to try it w
 Save as WAV for the portal's sounds folder. A development app: it runs from the checkout it lives in and has no releases of
 its own. Start it from [Nexus Dashboard](../dash), or:
 
-| | Linux | Windows (Git Bash) |
-|---|---|---|
-| Open it | `dev/sounds/run.sh` | `dev/sounds/run.sh` (PowerShell: `dev\sounds\run.ps1`) |
-| Menu entry and Desktop icon | `dev/sounds/install.sh` (`--no-desktop-shortcut`, `--uninstall`, `--uninstall --purge`) | |
+| | Linux |
+|---|---|
+| Open it | `dev/sounds/run.sh` |
+| Menu entry and Desktop icon | `dev/sounds/install.sh` (`--no-desktop-shortcut`, `--uninstall`, `--uninstall --purge`) |
 
 Nothing is copied: the entry starts the app of the checkout you installed it from.
 

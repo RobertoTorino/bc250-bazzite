@@ -16,6 +16,9 @@ on:
     branches: ["**"]                    # every branch, no tag. Not tags-ignore alone: GitHub then runs no branch push
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   versions:
     runs-on: ubuntu-latest
@@ -156,7 +159,7 @@ jobs:
         # rest by name: scripts the baseline holds to it (test-board.sh and the bisect scripts do not).
         run: |
           shellcheck -x -S warning install.sh portal/install.sh apps/*/install.sh \
-            apps/*/bc250-*-run tools/*.sh tools/installer-tests/*.sh test.sh tools/hooks/pre-push
+            apps/*/bc250-*-run tools/*.sh tools/installer-tests/*.sh test.sh
           shellcheck -S warning dev/*/*.sh
           shellcheck -S warning apps/cores/bc250-cores-bisect.sh apps/cores/bc250-cores-unlock.sh \
             apps/cores/packaging/bazzite/*.sh
@@ -168,19 +171,21 @@ jobs:
         run: |
           if git ls-files --eol | grep -E '^i/(crlf|mixed)' ; then echo "::error::CRLF in the index (see above)"; exit 1; fi
 
-      # Commits made from Windows record new files as 100644 (core.fileMode=false); tools/fix-modes.sh repairs it.
+      # A checkout with core.fileMode=false records new files as 100644; tools/fix-modes.sh repairs it.
       - name: Scripts are executable
         run: |
-          missing=$(git ls-files -s -- '*.sh' 'tools/hooks/*' | awk '$1 != "100755" { print $4 }')
+          missing=$(git ls-files -s -- '*.sh' | awk '$1 != "100755" { print $4 }')
           if [ -n "$missing" ]; then
             echo "::error::not executable in git (run tools/fix-modes.sh):"; echo "$missing"; exit 1
           fi
 
-      - name: Every former repo has its LICENSE, .gitignore, VERSION and CHANGELOG
+      - name: Every former repo has its LICENSE, .gitignore, VERSION and CHANGELOG (dev/ apps no VERSION)
         run: |
           rc=0
           for d in core portal apps/* dev/*; do
-            for f in LICENSE .gitignore VERSION CHANGELOG; do
+            files="LICENSE .gitignore VERSION CHANGELOG"
+            case "$d" in dev/*) files="LICENSE .gitignore CHANGELOG" ;; esac
+            for f in $files; do
               [ -f "$d/$f" ] || { echo "::error::$d/$f missing"; rc=1; }
             done
           done
@@ -228,20 +233,11 @@ jobs:
       - name: Qt runtime libraries
         timeout-minutes: 5
         run: bash tools/ci-qt-libs.sh
+      - name: Bazzite's font, for the portal's picture
+        timeout-minutes: 5
+        run: sudo apt-get update -q && sudo apt-get install -y -q fonts-noto-core
       - name: The portal's picture on the home page, as docs.yml takes it
         run: |
           python -m pip install -q -r portal/requirements.txt
           QT_QPA_PLATFORM=offscreen python tools/portal_screenshot.py
       - run: mkdocs build --strict
-
-  windows-exe:
-    # The Windows executables of the release workflow, built here too so a broken build shows before a tag.
-    runs-on: windows-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - run: python -m pip install -q -r apps/sftp/requirements.txt pyinstaller pillow
-      - run: python tools/build_windows_exe.py sftp windist

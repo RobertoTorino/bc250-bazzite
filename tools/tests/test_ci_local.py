@@ -17,17 +17,15 @@ import ci_local  # noqa: E402
 
 SUITE = Path(__file__).resolve().parents[2]
 CI = SUITE / ".github" / "workflows" / "ci.yml"
-# ci.yml's plan job runs python3 tools/ci_matrix.py, as in the container; Windows' python3 is the Store's stand-in
-PLAN_JOB = pytest.mark.skipif(sys.platform == "win32", reason="ci.yml's plan job runs python3, as in the container")
 
 
-@PLAN_JOB
 def test_every_job_of_ci_yml_and_every_matrix_entry():
     jobs = {j.name: j for j in ci_local.load_jobs(CI)}
-    assert {"versions", "native", "shell", "installers", "docs", "windows-exe"} <= set(jobs)
-    assert "pytest/apps/gpu" in jobs and "pytest" not in jobs
-    assert jobs["pytest/apps/gpu"].matrix == {"dir": "apps/gpu"}
-    assert not jobs["windows-exe"].runs_here and jobs["shell"].runs_here
+    assert {"versions", "native", "shell", "installers", "docs"} <= set(jobs)
+    assert "pytest/apps/fan" in jobs and "pytest" not in jobs
+    assert jobs["pytest/apps/fan"].matrix == {"dir": "apps/fan"}
+    assert jobs["shell"].runs_here
+    assert not ci_local.Job("windows", {"runs-on": "windows-latest"}).runs_here     # GitHub's only, not here
 
 
 def test_a_matrix_from_a_plan_job_is_read_by_running_it(tmp_path):
@@ -62,13 +60,11 @@ def test_a_matrix_from_a_plan_job_is_read_by_running_it(tmp_path):
     assert not list(tmp_path.glob(".ci-local*"))                   # nothing written into the checkout
 
 
-@PLAN_JOB
-@PLAN_JOB
 def test_expressions_and_selection():
     jobs = ci_local.all_jobs(SUITE)
-    governor = next(j for j in jobs if j.name == "pytest/apps/gpu")
-    assert ci_local.expand("cd ${{ matrix.dir }}", governor, "abc") == "cd apps/gpu"
-    assert ci_local.expand("${{ github.event.pull_request.base.sha || github.event.before }}", governor, "abc") == "abc"
+    fan = next(j for j in jobs if j.name == "pytest/apps/fan")
+    assert ci_local.expand("cd ${{ matrix.dir }}", fan, "abc") == "cd apps/fan"
+    assert ci_local.expand("${{ github.event.pull_request.base.sha || github.event.before }}", fan, "abc") == "abc"
     assert [j.name for j in ci_local.selected(jobs, ["pytest/tools"])] == ["pytest/tools"]
     assert [j.name for j in ci_local.selected(jobs, ["shell"])] == ["shell"]
     assert all(j.name.startswith("pytest/") for j in ci_local.selected(jobs, ["pytest"]))

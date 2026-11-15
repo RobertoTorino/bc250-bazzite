@@ -2,16 +2,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Build the release assets of one tag:
 
-    python3 tools/build_release.py [--suite NAME] <app>-v<x.y.z> <out-dir> [--bundle DIR]
+    python3 tools/build_release.py bc250-<app>-v<x.y.z> <out-dir> [--bundle DIR]
 
-The tag names its suite (tools/suites.py: a suite's TAG_PREFIX, none for this repository); --suite overrides it.
+The tag starts with the suite's TAG_PREFIX (tools/suites.py) and names an app or the portal of this repository.
 
 <out-dir> gets <tag>.tar.gz (unpacks into <tag>/), SHA256SUMS, notes.md and title.txt (the release's title). The
-tag's version must equal the app's VERSION. An app in NATIVE_WHEELS needs the wheel of its native core in that folder
-first, built by release.yml; it goes into the tarball, so the portal's checksum covers it. Board Test (check) gets
-its engine checksum recorded (development/tools/build_info.py), which makes it a release build that refuses a changed
-engine. A portal tag needs --bundle: a folder with the pinned check release (<tag>.tar.gz and SHA256SUMS, as
-published); it is verified against apps.toml and unpacked into bundled/.
+tag's version must equal the app's VERSION. An app in NATIVE_WHEELS needs the wheel of its native core, built by
+release.yml: in the folder BC250_NATIVE_WHEEL_DIR names (release.yml's, outside the checkout), else in the app's
+folder NATIVE_WHEELS gives; it goes into the tarball, so the portal's checksum covers it. An app with
+development/tools/build_info.py (Board Test) gets its engine checksum recorded, which makes it a release build that
+refuses a changed engine. A portal tag needs --bundle: a folder with the pinned release of the required app
+(<tag>.tar.gz and SHA256SUMS, as published); it is verified against apps.toml and unpacked into bundled/.
 
 The tar inside is reproducible and the same on Linux and Windows: sorted entries, root:root, the commit time (or
 SOURCE_DATE_EPOCH) as mtime, and modes set here (755 for folders and scripts, 644 for the rest), not taken from the
@@ -28,6 +29,7 @@ import importlib.util
 import io
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -39,8 +41,10 @@ ROOT = Path(__file__).resolve().parent.parent
 INDEX_URL = "https://github.com/RobertoTorino/bc250-bazzite/releases/latest"
 _TAG = re.compile(r"^(?P<app>[a-z0-9-]+)-v(?P<version>\d+\.\d+\.\d+)$")
 # The app's folder for the wheel of its native core (Rust with FFmpeg inside), which release.yml builds before this
-# runs: users install it with pip and need no compiler. Its version is the app's.
+# runs: users install it with pip and need no compiler. Its version is the app's. NATIVE_WHEEL_DIR, when set, is the
+# folder the wheel is taken from instead; it is copied into this folder of the staged app.
 NATIVE_WHEELS = {"consoles": Path("native/wheel")}
+NATIVE_WHEEL_DIR = "BC250_NATIVE_WHEEL_DIR"
 
 
 def _load(name: str, path: Path):
@@ -53,16 +57,16 @@ def _load(name: str, path: Path):
 
 suites = _load("nexus_suites", ROOT / "tools" / "suites.py")
 stage_app = _load("bc250_stage_app", ROOT / "tools" / "stage_app.py")
-SUITE = stage_app.SUITE                     # the default suite; main() takes the tag's (tools/suites.py)
+SUITE = stage_app.SUITE                     # the repository; the tests set another
 MANIFEST = SUITE / "portal" / "apps.toml"
 
 
 def portal_package(suite: Path | None = None) -> Path:
-    suite = suite or SUITE                  # the selected suite, not the default one bound when this was defined
+    suite = suite or SUITE                  # SUITE as it is now, not as it was when this was defined
     packages = [path for path in (suite / "portal").iterdir()
                 if path.is_dir() and (path / "__init__.py").is_file()]
     if len(packages) != 1:
-        raise SystemExit(f"{suite.name}/portal must have one Python package")
+        raise SystemExit(f"{suite}/portal must have one Python package")
     return packages[0]
 
 
@@ -71,13 +75,6 @@ def load_manifest(suite: Path):
 
 
 manifest = load_manifest(SUITE)
-
-
-def select(suite: Path) -> None:
-    """Work on *suite* (its manifest and portal) instead of the default one."""
-    global SUITE, MANIFEST, manifest
-    SUITE, MANIFEST = suite, suite / "portal" / "apps.toml"
-    manifest = load_manifest(suite)
 
 
 def portal_stage() -> tuple[str, str]:
@@ -154,7 +151,7 @@ def latest_changes(changelog: Path) -> str:
 
 
 def bundle_required_app(stage_dir: Path, bundle: Path) -> str:
-    """Verify the first required app release in *bundle* and unpack it into stage_dir/bundled/. Returns its tag."""
+    """Verify the required app's release in *bundle* and unpack it into stage_dir/bundled/. Returns its tag."""
     entry = next(e for e in manifest.load(MANIFEST) if e.required)
     archive = bundle / entry.asset
     if not archive.is_file():
@@ -183,7 +180,7 @@ def native_wheel(app: str, src: Path, version: str) -> str | None:
     """The name of the app's native wheel, None for an app without one; refuses a missing or stale wheel."""
     if app not in NATIVE_WHEELS:
         return None
-    folder = src / NATIVE_WHEELS[app]
+    folder = Path(os.environ.get(NATIVE_WHEEL_DIR) or src / NATIVE_WHEELS[app])
     wheels = sorted(folder.glob("*.whl"))
     if len(wheels) != 1:
         raise SystemExit(f"{app} ships the wheel of its native core: {folder} must hold exactly one .whl, built by "
@@ -194,9 +191,10 @@ def native_wheel(app: str, src: Path, version: str) -> str | None:
 
 
 def build(tag: str, out: Path, bundle: Path | None = None) -> Path:
-    match = _TAG.match(tag.removeprefix(suites.tag_prefix(SUITE)))
+    prefix = suites.tag_prefix(SUITE)
+    match = _TAG.match(tag.removeprefix(prefix)) if tag.startswith(prefix) else None
     if not match:
-        raise SystemExit(f"{tag} is not <app>-v<x.y.z>")
+        raise SystemExit(f"{tag} is not {prefix}<app>-v<x.y.z>")
     app, version = match["app"], match["version"]
     src = stage_app.source_dir(app, SUITE)
     if (src / ".checkout-only").is_file():
@@ -216,10 +214,16 @@ def build(tag: str, out: Path, bundle: Path | None = None) -> Path:
                   "This tarball is what the portal downloads; install it by hand only without the portal.", ""]
     with tempfile.TemporaryDirectory() as tmp:
         stage_dir = stage_app.stage(app, Path(tmp) / tag, SUITE)
+        if wheel is not None and os.environ.get(NATIVE_WHEEL_DIR):
+            wheel_dest = stage_dir / NATIVE_WHEELS[app]
+            shutil.rmtree(wheel_dest, ignore_errors=True)
+            wheel_dest.mkdir(parents=True)
+            shutil.copy2(Path(os.environ[NATIVE_WHEEL_DIR]) / wheel, wheel_dest / wheel)
         epoch = source_epoch()
-        if app == "check":                   # its build date is the commit time too: the same tag, the same bytes
-            subprocess.run([sys.executable, str(stage_dir / "development" / "tools" / "build_info.py")], check=True,
-                           stdout=subprocess.DEVNULL, env=dict(os.environ, SOURCE_DATE_EPOCH=str(epoch)))
+        build_info = stage_dir / "development" / "tools" / "build_info.py"
+        if build_info.is_file():             # its build date is the commit time too: the same tag, the same bytes
+            subprocess.run([sys.executable, str(build_info)], check=True, stdout=subprocess.DEVNULL,
+                           env=dict(os.environ, SOURCE_DATE_EPOCH=str(epoch)))
         if app == "portal":
             if bundle is None:
                 raise SystemExit("a portal release needs --bundle with its required app release")
@@ -251,15 +255,8 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("tag")
     parser.add_argument("out", type=Path)
-    parser.add_argument("--bundle", type=Path, help="folder with the pinned check release (portal tags)")
-    suites.add_argument(parser)
+    parser.add_argument("--bundle", type=Path, help="folder with the pinned release of the required app (portal tags)")
     args = parser.parse_args(argv)
-    try:
-        suite = suites.suite(args.suite) if args.suite else suites.of_tag(args.tag)[0]
-    except LookupError as exc:
-        raise SystemExit(str(exc)) from None
-    if suite != SUITE:
-        select(suite)
     archive = build(args.tag, args.out, args.bundle)
     print(f"{archive} {sha256_of(archive)}")
     return 0

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/cores/install.sh: install from the checkout (root-owned versioned /opt copy, one venv, two
 # launchers), --bisect-only and --no-desktop-shortcut, a staged release replacing it, the refusal to run as root,
-# and uninstall with and without --purge. Runs with the shims from shims.sh (CI, or WSL on Windows).
+# and uninstall with and without --purge. Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

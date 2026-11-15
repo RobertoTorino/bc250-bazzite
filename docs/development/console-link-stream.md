@@ -21,7 +21,7 @@ interpreter lock (the GIL) matters for it, and how to measure it. For the app it
 ## The GIL
 
 Only one thread runs Python code at a time: the one holding the GIL. A call into the native core keeps the GIL
-unless the core lets go of it (`py.allow_threads` in PyO3), and while it keeps it, every other Python thread waits.
+unless the core lets go of it (`py.detach` in PyO3), and while it keeps it, every other Python thread waits.
 
 Decoding a 1080p H.264 frame in software takes about 5 ms on the BC-250. At 60 frames per second that is about
 300 ms of every second. While the decoder kept the GIL:

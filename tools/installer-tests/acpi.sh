@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/acpi/install.sh: install from the checkout, Desktop icon on and off, a staged release
-# replacing it, uninstall with --purge, and the refusal to run as root. Runs with the shims from shims.sh (CI, or
-# WSL on Windows). The ACPI override itself is tested in apps/acpi/tests.
+# replacing it, uninstall with --purge, and the refusal to run as root. Runs with the shims from shims.sh (CI).
+# The ACPI override itself is tested in apps/acpi/tests.
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

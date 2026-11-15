@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # tools/check-release.sh: a test's install is marked and removed again, the board's own install is kept; status and
 # remove, with and without --purge.
-# Runs with the shims from shims.sh (CI, or WSL on Windows).
+# Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 T=/tmp/bc250-release-check-test
@@ -13,7 +13,7 @@ check() { if eval "$2"; then echo "  ok   $1"; else echo "  FAIL $1"; fail=1; fi
 CHECK="$SUITE/tools/check-release.sh"
 BIN=$HOME/.local/bin
 MARK=$XDG_DATA_HOME/bc250-bazzite-suite/TEST-INSTALL
-STATE=$XDG_DATA_HOME/bc250-bazzite-suite/portal
+STATE=$XDG_DATA_HOME/bc250-bazzite-suite/state
 run() { "$CHECK" "$@" > "$T/out.log" 2>&1; }
 
 echo "== 1. a test on a board without the suite"
@@ -35,7 +35,7 @@ check "remove succeeds" "[ $rc -eq 0 ]"
 check "the portal, Board Test and the app are gone" \
     "[ ! -e $BIN/bc250-bazzite-suite ] && [ ! -e $BIN/bc250-board-test ] && [ ! -e $BIN/bc250-ssd-check ]"
 check "the suite's folder is gone, with what the test's portal remembered" "[ ! -e $XDG_DATA_HOME/bc250-bazzite-suite ]"
-check "Board Test and the portal left /opt" "[ ! -e $T/opt/bc250-board-test ] && [ ! -e $T/opt/bc250-bazzite-suite ]"
+check "Board Test left /opt" "[ ! -e $T/opt/bc250-board-test ]"
 
 echo "== 3. the test removes itself when the portal closes"
 run local; rc=$?                         # the shims' portal starts and closes at once

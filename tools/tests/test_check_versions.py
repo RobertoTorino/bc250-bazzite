@@ -42,11 +42,27 @@ def test_the_suite_passes():
     assert check_versions.main() == 0
 
 
-def test_one_suite_at_a_time(capsys):
-    """--suite names the suite: this repository is one (".") with core, dev/, its portal and its apps."""
+def test_core_the_portal_and_the_apps_not_dev(capsys, tmp_path, monkeypatch):
+    """The released folders have a VERSION; the development apps in dev/ have none and are not checked."""
     root = check_versions.ROOT
-    folders = 1 + len([p for p in (root / "dev").glob("*") if p.is_dir()]) + 1 + len(
-        [p for p in (root / "apps").iterdir() if p.is_dir()])           # core, dev/, the portal, the apps
-    assert check_versions.main(["--suite", "."]) == 0
+    folders = 2 + len([p for p in (root / "apps").iterdir() if p.is_dir()])       # core, the portal, the apps
+    assert len(check_versions.units()) == folders
+    assert not any(unit.parent.name == "dev" for unit in check_versions.units())
+    assert check_versions.main([]) == 0
     assert f"in {folders} folders" in capsys.readouterr().out
-    assert check_versions.main(["--suite", "no-such-suite"]) == 1
+
+
+def test_venvs_caches_and_tests_hold_no_copies(tmp_path, monkeypatch):
+    for unit in ("core", "portal", "apps/a"):
+        (tmp_path / unit).mkdir(parents=True)
+        (tmp_path / unit / "VERSION").write_text("1.0.0\n")
+    for skipped in (".venv/lib", ".venv-linux/lib", "__pycache__", "tests", "target"):
+        (tmp_path / "apps/a" / skipped).mkdir(parents=True)
+        (tmp_path / "apps/a" / skipped / "x.py").write_text('__version__ = "0.0.1"\n')
+    (tmp_path / "apps/a/a.py").write_text('__version__ = "1.0.0"\n')
+    monkeypatch.setattr(check_versions, "ROOT", tmp_path)
+    assert check_versions.units(tmp_path) == [tmp_path / "core", tmp_path / "portal", tmp_path / "apps/a"]
+    monkeypatch.setattr(check_versions, "units", lambda: [tmp_path / "core", tmp_path / "portal", tmp_path / "apps/a"])
+    assert check_versions.main([]) == 0
+    (tmp_path / "apps/a/a.py").write_text('__version__ = "0.9.0"\n')
+    assert check_versions.main([]) == 1

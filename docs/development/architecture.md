@@ -42,7 +42,7 @@ apps/<name>/
 ├── requirements-dev.txt       -r requirements.txt plus pytest
 ├── VERSION                    the version: the single source
 ├── CHANGELOG                  the history, newest first
-├── LICENSE                    GPL-3.0-or-later (acpi: MIT)
+├── LICENSE                    GPL-3.0-or-later (acpi: MIT; consoles: AGPL-3.0-or-later)
 ├── .gitignore
 └── README.md                  title, one paragraph, link to the manual, license
 ```
@@ -56,8 +56,8 @@ apps/<name>/
 - **Data** the package reads ships inside the package (DatStation's `data/questions.json`) or next to it
   in the app folder (acpi's `tables/`). Never one folder up from where the installer copies the app.
 - An app with a shell script as its engine keeps that script in the app folder too
-  (`apps/cores-bisect/bc250-cores-bisect.sh`).
-- **No placeholder folders** for future work. Plans and status go in MIGRATION.md, not in the app or the manual.
+  (`apps/cores/bc250-cores-bisect.sh`).
+- **No placeholder folders** for future work. Plans and status stay out of the app and the manual.
 - **A native core** (only BC-250 PS Remote Play so far) is a Rust crate in `native/`, with PyO3 for Python. Its protocol
   code builds and tests without Python (`cargo test`); maturin builds the Python module from `native/pyproject.toml`
   as a wheel for Python 3.10 and newer. Its version equals the app's VERSION (`tools/check_versions.py` reads
@@ -86,7 +86,7 @@ from bc250_core import AppInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 LOGO_PATH = ROOT / "images" / f"{APP_ID}.webp"
-INFO = AppInfo(app_id=APP_ID, name=APP_NAME, version=__version__, logo=LOGO_PATH, tag_prefix="example-v",
+INFO = AppInfo(app_id=APP_ID, name=APP_NAME, version=__version__, logo=LOGO_PATH, tag_prefix="bc250-example-v",
                settings_ini=True)
 ```
 
@@ -317,17 +317,16 @@ an extracted release, and needs no network except for pip.
 ## Tests
 
 - **`apps/<name>/tests/`:** pytest, offscreen. `conftest.py` puts core from the checkout on the path, provides a
-  `qapp` fixture, and points QSettings and the XDG folders at a temp folder, so tests never touch your settings or
-  the Windows registry. Fake `/sys`, `/proc` and command runners stand in for the board; data recorded on a real
-  board makes good fixtures. Tests also cover other setups.
+  `qapp` fixture, and points QSettings and the XDG folders at a temp folder, so tests never touch your settings.
+  Fake `/sys`, `/proc` and command runners stand in for the board; data recorded on a real board makes good
+  fixtures. Tests also cover other setups.
 - **Every app has `tests/`** and a `requirements-dev.txt` (its `requirements.txt` plus pytest); CI's pytest matrix
   is read from the folders with `tests/` (`tools/ci_matrix.py`), so the app is in it at once.
 - **The installer test:** `tools/installer-tests/<name>.sh` installs from the checkout and from a staged release,
   with and without the Desktop icon, and uninstalls. It runs without root or network: `shims.sh` turns sudo into
   fakeroot and pip into a stub. CI runs each installer test in its own step. [Nexus Installer
   Tests](dashboard.md#installer-tests) lists the scripts in that folder by itself.
-- **`./test.sh`** runs every test folder in the repository: core, tools, `dev/`, the portal and the apps (on
-  Bazzite, the system `SYSTEM` names).
+- **`./test.sh`** runs every test folder in the repository: core, tools, `dev/`, the portal and the apps.
 
 `tools/tests/test_installer_tests.py` fails when an app or a portal entry has no installer test, or when CI does
 not run one.
@@ -350,7 +349,7 @@ not run one.
 
   An app at 0.x follows the same table: a new feature takes 0.1.4 to 0.2.0, a breaking change to 1.0.0. The portal
   moves at least as far as the largest app release it pins, and a minor step when an app is added or removed.
-  Nexus Release Tool offers that version first; `tools/tests/test_changelog_kinds.py` checks the entries.
+  Nexus Release Tool offers that version first.
 - Each app is released on its own tag, `bc250-<name>-v<x.y.z>`. The portal pins one release of each app in
   `portal/apps.toml`. The steps are in [Portal](../portal.md#appstoml-and-releases).
 
@@ -360,7 +359,7 @@ not run one.
 template cannot drift from the checks; it then runs the checks on it:
 
 ```bash
-python3 tools/new_app.py . fan2 "BC-250 Fan Two" --category sustainable --summary "What it does."
+python3 tools/new_app.py fan2 "BC-250 Fan Two" --category sustainable --summary "What it does."
 python3 tools/new_app.py --help     # --id, --package: the app id and the package, when the defaults are not yours
 ```
 

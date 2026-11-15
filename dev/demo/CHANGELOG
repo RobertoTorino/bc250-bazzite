@@ -1,3 +1,12 @@
+Changelog: 15-11-2026 10:09:36
+
+Breaking. Windows support is removed (owner, 15-11-2026): run.sh uses .venv-linux, and the window's text no longer
+mentions Windows.
+
+Breaking. No VERSION (owner, 15-11-2026): a development app is never released, so its header names the checkout's
+last commit and its time ("5fb1aa8 · 15-11-2026 07:20", core's nexus.header()) where it showed a version, and
+--version prints the same.
+
 Changelog: 15-11-2026 03:58:53
 
 Fixed. Names BC-250 Board Test, BC-250 Webcam, BC-250 Controller, BC-250 Turing Screen, BC-250 Wi-Fi Adapter, BC-250

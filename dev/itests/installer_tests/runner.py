@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The installer tests of a suite and how they run: each script in its own process, one after another, with its
-output as it comes. The tests are bash scripts with fakeroot (from Homebrew on Bazzite): they run on Linux."""
+output as it comes. The tests are bash scripts (fakeroot from Homebrew on Bazzite)."""
 
 from __future__ import annotations
 
 import codecs
 import os
-import sys
 from pathlib import Path
 
 from PyQt6.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, pyqtSignal
@@ -16,8 +15,8 @@ HOMEBREW_BIN_DIRS = (
     Path("/var/home/linuxbrew/.linuxbrew/bin"),
     Path.home() / ".linuxbrew" / "bin",
 )
-HELPERS = {"shims.sh"}                              # beside the tests: the shims they source
-KINDS = {".sh": "bash"}                              # a test script's kind by its suffix, and what runs it
+HELPERS = {"shims.sh"}                              # beside the tests: the shims
+SUFFIX = ".sh"                                      # a test script: bash runs it
 
 
 def _path_with_fakeroot(path: str) -> str:
@@ -34,18 +33,13 @@ def tests_dir(suite: Path) -> Path:
     return suite / "tools" / "installer-tests"
 
 
-def runs_here(platform: str = sys.platform) -> bool:
-    """Whether the tests run on this system: on Linux, not on a Windows PC the app may run on."""
-    return platform != "win32"
-
-
 def discover_tests(directory: Path) -> list[Path]:
-    """The runnable test scripts in *directory* (its .sh files) in a stable order, the helpers left out."""
+    """The runnable test scripts in *directory* in a stable order, the helpers left out."""
     resolved_directory = directory.resolve()
     return sorted(
         (
             path.resolve()
-            for path in directory.glob("*.sh")
+            for path in directory.glob(f"*{SUFFIX}")
             if path.name not in HELPERS and path.is_file() and path.resolve().parent == resolved_directory
         ),
         key=lambda path: path.name,
@@ -111,7 +105,7 @@ class InstallerTestRunner(QObject):
 
     def _validate_script(self, script: Path) -> Path:
         path = script.resolve(strict=True)
-        if path.parent != self.tests_directory or path.suffix not in KINDS or path.name in HELPERS:
+        if path.parent != self.tests_directory or path.suffix != SUFFIX or path.name in HELPERS:
             raise ValueError(f"Not an installer test script: {script}")
         if not path.is_file():
             raise ValueError(f"Not a regular file: {script}")

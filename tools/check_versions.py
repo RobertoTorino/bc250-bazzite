@@ -4,14 +4,11 @@
 ``VERSION="x.y.z"``, pyproject and Cargo.toml ``version = "x.y.z"``, and a Rust crate's own entry in its
 Cargo.lock) must equal that folder's VERSION file. VERSION is the single source; the literals exist so each script
 and package still works on its own. Cargo.lock matters because CI builds with --locked, which fails when the lock
-file's version of the crate differs from Cargo.toml. A VERSION at the root, when there is one, must be x.y.z; it
-has no copies.
+file's version of the crate differs from Cargo.toml. The development apps (dev/) have no VERSION.
 
-    python3 tools/check_versions.py                        # core, dev/, the portal and the apps
-    python3 tools/check_versions.py --suite NAME           # core, dev/ and that suite's folders only"""
+    python3 tools/check_versions.py                        # core, the portal and the apps"""
 
 import argparse
-import importlib.util
 import re
 import sys
 from pathlib import Path
@@ -58,38 +55,22 @@ def version_pattern(path: Path) -> re.Pattern | None:
     return PATTERNS.get(path.suffix)
 
 
-def _suites():
-    spec = importlib.util.spec_from_file_location("nexus_suites", ROOT / "tools" / "suites.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+SKIPPED = {"tests", "target", "__pycache__", ".venv"}      # test data, cargo's build output, caches, venvs
 
 
-suites = _suites()
+def units(root: Path = ROOT) -> list[Path]:
+    """The folders with a VERSION of their own: core, the portal and the apps (the development apps in dev/ have
+    none: they are never released)."""
+    return [root / "core", root / "portal", *sorted(p for p in (root / "apps").iterdir() if p.is_dir())]
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--suite", metavar="NAME", help="only this suite's folders, besides core and dev/")
-    args = parser.parse_args([] if argv is None else argv)
-    try:
-        chosen = [suites.suite(args.suite)] if args.suite else suites.suites()
-    except LookupError as exc:
-        print(exc, file=sys.stderr)
-        return 1
+    parser.parse_args([] if argv is None else argv)
     errors = []
     checked = 0
-    # A version of the whole repository (the root VERSION), when there is one: no copies to compare, its folder is
-    # the whole checkout, whose copies are the units' below.
-    nexus = ROOT / "VERSION"
-    if nexus.is_file() and not re.fullmatch(r"\d+\.\d+\.\d+", nexus.read_text(encoding="utf-8").strip()):
-        errors.append(f"VERSION: {nexus.read_text(encoding='utf-8').strip()!r} is not x.y.z")
-    units = [ROOT / "core", *sorted(p for p in (ROOT / "dev").glob("*") if p.is_dir())]   # the Nexus apps
-    for suite in chosen:                        # the suite: its portal, apps and Installer Tests
-        units += [suite / "portal", *sorted(p for p in (suite / "apps").iterdir() if p.is_dir())]
-        if (suite / "tools" / "installer-tests" / "gui").is_dir():
-            units.append(suite / "tools" / "installer-tests" / "gui")
-    for unit in units:
+    found = units()
+    for unit in found:
         version_file = unit / "VERSION"
         if not version_file.is_file():
             errors.append(f"{unit.relative_to(ROOT)}: no VERSION file")
@@ -98,7 +79,8 @@ def main(argv: list[str] | None = None) -> int:
         if not re.fullmatch(r"\d+\.\d+\.\d+", want):
             errors.append(f"{version_file.relative_to(ROOT)}: {want!r} is not x.y.z")
         for path in unit.rglob("*"):
-            if not path.is_file() or "tests" in path.parts or "target" in path.parts:
+            parts = path.relative_to(unit).parts
+            if not path.is_file() or set(parts) & SKIPPED or any(p.startswith(".venv") for p in parts):
                 continue
             pattern = version_pattern(path)
             if pattern is None:
@@ -114,7 +96,7 @@ def main(argv: list[str] | None = None) -> int:
         print(e, file=sys.stderr)
     if errors:
         return 1
-    print(f"OK: {checked} versions in {len(units)} folders match their VERSION file")
+    print(f"OK: {checked} versions in {len(found)} folders match their VERSION file")
     return 0
 
 

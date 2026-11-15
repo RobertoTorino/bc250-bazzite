@@ -270,7 +270,7 @@ FAMILIES = [
         ("#10d040", "hardware", "The light bar's green; `#00ff00` the color wheel's."),
     ]),
     ("Blue", [
-        ("#1565c0", "family", "Info; the check app's GPU score box; HDMI CEC's adapter box."),
+        ("#1565c0", "family", "Info; the check app's GPU score box; HDMI CEC's adapter and display boxes."),
         ("#64b5f6", "tint", "Blue text on a dark surface: the check app's info and hint findings."),
         ("#0a55b0", "brand", "Gaming blue, the gaming apps': the emulator managers' primary button, with `#2a6cc4` "
                              "under the pointer and `#08448d` pressed; `#5b93da` their links."),
@@ -436,8 +436,8 @@ OTHER_TEXT = [
 OTHER_BLOCKS = [
     ("#1f3e9c", "BIOS Reader: the bar and the selection."),
     ("#c6c6c6", "BIOS Reader: the screen."),
-    ("#1565c0", "HDMI-CEC: the adapter box."),
-    ("#000000", "HDMI-CEC: the display box; BC-250 Controller: the light bar off."),
+    ("#1565c0", "HDMI-CEC: the adapter and display boxes."),
+    ("#000000", "BC-250 Controller: the light bar off."),
     ("#c62828", "SFTP: the errors button."),
     ("#5f6368", "VRAM: firmware in the memory map."),
     ("#00838f", "VRAM: zswap in the memory map."),

@@ -15,6 +15,9 @@ The controller beside the board on the home page changes with every portal relea
 are in docs/images/home/controllers/controllers.toml, and the number of "Release" entries in portal/CHANGELOG picks
 one, from the first again after the last. The home page names any of them; the build puts the chosen one there.
 
+A page that says {{ portal_tag }} gets the tag of the newest published portal release there (the Install page's
+download link): docs.yml builds the wiki again when a release is published.
+
 The wiki's own icon is a real file in docs/: images/wiki-icon.webp in the header and footer, images/wiki-icon.png as
 the favicon (a PNG favicon works everywhere)."""
 
@@ -22,6 +25,7 @@ from __future__ import annotations
 
 import io
 import re
+import subprocess
 import tomllib
 from functools import lru_cache
 from pathlib import Path
@@ -34,6 +38,7 @@ CONVERTED = {".png", ".jpg", ".jpeg"}
 WEBP_QUALITY = 85
 _ASSET = re.compile(r"assets/[a-z0-9-]+/[A-Za-z0-9_.-]+\.(?:png|jpe?g)\b")
 _webp: set[str] = set()                 # the asset paths that have a WebP copy in this build
+PORTAL_TAG = "{{ portal_tag }}"       # in a page: the tag of the newest published portal release
 CONTROLLERS = SUITE / "docs" / "images" / "home" / "controllers"
 _CONTROLLER = re.compile(r"!\[[^\]]*\]\(images/home/controllers/[^)\s]+\)")
 _RELEASE = re.compile(r"^Release \d+\.\d+\.\d+", re.M)
@@ -105,9 +110,27 @@ def on_files(files, config):
     return files
 
 
+def portal_tag() -> str:
+    """The tag of the newest published portal release, bc250-portal-v21.1.0: the newest portal tag in the checkout (a
+    portal's tag is made when its release is published, so a draft is never linked to). Without tags (a checkout
+    without them), the tag portal/VERSION names."""
+    prefix = (SUITE / "TAG_PREFIX").read_text(encoding="utf-8").strip() + "portal-v"
+    try:
+        tags = subprocess.run(["git", "tag", "--list", f"{prefix}*"], cwd=SUITE, capture_output=True, text=True,
+                              timeout=20).stdout.split()
+    except (OSError, subprocess.SubprocessError):
+        tags = []
+    versions = sorted(tuple(int(part) for part in tag[len(prefix):].split("."))
+                      for tag in tags if re.fullmatch(r"\d+\.\d+\.\d+", tag[len(prefix):]))
+    if versions:
+        return prefix + ".".join(str(part) for part in versions[-1])
+    return prefix + (SUITE / "portal" / "VERSION").read_text(encoding="utf-8").strip()
+
+
 def on_page_markdown(markdown, page, config, files):
     """Point the page at the WebP copies; the chapter's own text keeps the PNG names. The home page gets the
-    controller of this portal release."""
+    controller of this portal release, and {{ portal_tag }} the newest portal release's tag."""
+    markdown = markdown.replace(PORTAL_TAG, portal_tag())
     if _CONTROLLER.search(markdown):
         file, alt = controller()
         markdown = _CONTROLLER.sub(lambda m: f"![{alt}](images/home/controllers/{file})", markdown)

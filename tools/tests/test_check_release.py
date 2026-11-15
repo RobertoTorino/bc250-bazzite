@@ -14,9 +14,6 @@ import pytest
 
 SCRIPT = Path(__file__).resolve().parents[1] / "check-release.sh"
 
-pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="check-release.sh is bash")
-
-
 def test_draft_uses_homebrews_gh(tmp_path):
     brew = tmp_path / "brew"
     (brew / "bin").mkdir(parents=True)

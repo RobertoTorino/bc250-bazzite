@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """tools/sync_icons.py: a suite's category icons in icons/<category>/, converted from dropped images, and their
-copies in the suite's apps and portal (icons/categories.toml). A Nexus tool since 02-11-2026: --suite names the
-suite, and every function takes the suite's folder."""
+copies in the suite's apps and portal (icons/categories.toml). Every function takes the suite's folder."""
 
 from __future__ import annotations
 
@@ -124,27 +123,19 @@ def test_from_options_that_do_not_go_together_are_refused(argv, tmp_path):
     assert stop.value.code == 2
 
 
-def test_suite_picks_the_suite_and_one_without_category_icons_is_refused(tmp_path, monkeypatch, capsys):
-    """--suite names the suite as every Nexus tool does (tools/suites.py); the default is the checkout's default
-    suite. A suite whose apps take no category icons has no icons/categories.toml."""
-    root = tmp_path / "nexus"
-    suite = _suite(root / "bc250-bazzite")
-    (suite / "portal").mkdir(exist_ok=True)
-    (suite / "portal" / "apps.toml").write_text("", encoding="utf-8")
-    other = root / "windows-portable"
-    (other / "portal").mkdir(parents=True)
-    (other / "portal" / "apps.toml").write_text("", encoding="utf-8")
-    (other / "TAG_PREFIX").write_text("wp-\n", encoding="utf-8")
-    monkeypatch.setattr(sync_icons.suites, "ROOT", root)
-
-    assert sync_icons.main(["--check"]) == 0                       # the default suite: the one without a prefix
-    assert sync_icons.main(["--check", "--suite", "bc250-bazzite"]) == 0
-    with pytest.raises(SystemExit) as stop:                         # suites.suite() looks in the real checkout:
-        sync_icons.main(["--check", "--root", str(other)])          # this one by its folder
-    assert stop.value.code == 2 and "no icons/categories.toml" in capsys.readouterr().err
+def test_root_picks_the_suite_and_one_without_category_icons_is_refused(tmp_path, monkeypatch, capsys):
+    """The default is the checkout; --root names a suite folder anywhere (tools/new_app.py). A suite whose apps take
+    no category icons has no icons/categories.toml."""
+    suite = _suite(tmp_path / "suite")
+    other = tmp_path / "other"
+    other.mkdir()
+    monkeypatch.setattr(sync_icons, "ROOT", suite)
+    assert sync_icons.main(["--check"]) == 1                        # the copies are not written yet
+    assert sync_icons.main([]) == 0 and sync_icons.main(["--check"]) == 0
+    assert sync_icons.main(["--check", "--root", str(suite)]) == 0
     with pytest.raises(SystemExit) as stop:
-        sync_icons.main(["--check", "--suite", "nope"])
-    assert stop.value.code == 2 and "no suite 'nope'" in capsys.readouterr().err
+        sync_icons.main(["--check", "--root", str(other)])
+    assert stop.value.code == 2 and "no icons/categories.toml" in capsys.readouterr().err
 
 
 def test_the_suite_is_in_step():

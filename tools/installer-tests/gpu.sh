@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/gpu/install.sh: install from the checkout, Desktop icon on and off, a staged release, an
-# unknown option, and uninstall. Runs with the shims from shims.sh (CI, or WSL on Windows). The governor service
+# unknown option, and uninstall. Runs with the shims from shims.sh (CI). The governor service
 # and its config.toml are not the installer's: they are left alone.
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)

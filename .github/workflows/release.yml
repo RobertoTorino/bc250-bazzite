@@ -19,24 +19,20 @@ name: Release
 #   in vain.
 #
 # The assets are <tag>.tar.gz, SHA256SUMS and the notes, all built by tools/build_release.py, so a local build has
-# the same content (the suite's wiki, "Checking a release"). A portal release bundles the release of Board Test
-# (check) that portal/apps.toml pins (downloaded from its own release and checked against the pin) and requires
-# every pinned tag to exist. GitHub's "Latest" is the newest portal (publish_release.sh, and Publish for a draft), so
+# the same content (the suite's wiki, "Checking a release"). A portal release bundles the release of the required
+# app (Board Test, check) that portal/apps.toml pins (downloaded from its own release and checked against the pin) and
+# requires every pinned tag to exist. GitHub's "Latest" is the newest portal (publish_release.sh, and Publish for a draft), so
 # the releases page and the app releases' notes lead there.
 #
-# BC-250 PS Remote Play ships the wheel of its native core in the tarball (native/wheel, build_release.py checks it is
-# there): built here from the tag, with FFmpeg from its pinned sources (native/ffmpeg/build.sh), so installing
-# needs only pip.
-#
-# An app that ships a Windows executable (tools/build_windows_exe.py, WINDOWS_APPS; the plan step lists its tags
-# as windows=) gets a second job on Windows after its tarball is published: it builds the .exe and adds
-# <app-id>-<version>-windows.zip and its .sha256 to the release. They are separate downloads; the portal and
-# SHA256SUMS only know the tarball.
+# BC-250 PS Remote Play ships the wheel of its native core in the tarball (native/wheel): built here from the tag,
+# with FFmpeg from its pinned sources (native/ffmpeg/build.sh), outside the checkout (BC250_NATIVE_WHEEL_DIR, which
+# build_release.py reads), so installing needs only pip.
 #
 # Only a commit that CI passed becomes a release: the first job waits for CI (ci.yml) on the commit, up to 75
-# minutes. A release commit that only writes the release (versions, Release entries, apps.toml's tags:
-# tools/release_commit.py) takes the CI that passed on its work commit, the parent (owner, 30-10-2026: CI ran twice
-# on the same code); anything more waits for CI on the commit itself. The pin commit changes only sha256 lines and is
+# minutes; a release started by Nexus Release Tool also only on main's newest commit. A release commit that only
+# writes the release (versions, Release entries, apps.toml's tags: tools/release_commit.py) takes the CI that passed
+# on its work commit, the parent (owner, 30-10-2026: CI ran twice on the same code); anything more waits for CI on
+# the commit itself. The pin commit changes only sha256 lines and is
 # checked here (check_manifest.py --require-tags). tools/tag-release.sh asks the same before it tags.
 #
 # By hand: gh workflow run release.yml --ref main -f commit="$(git rev-parse origin/main)"
@@ -90,6 +86,13 @@ jobs:
         with:
           ref: ${{ inputs.commit || github.sha }}
           fetch-depth: 2                # the parent: a release commit's work commit
+      - name: The release commit is main's newest
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch -q origin main
+          head=$(git rev-parse origin/main)
+          [ "$head" = "$(git rev-parse HEAD)" ] ||
+            { echo "main is $head, not the release commit $COMMIT: start the release again on the new main." >&2; exit 1; }
       - name: CI passed on this commit
         if: steps.out.outputs.out != 'true'
         env:
@@ -103,7 +106,6 @@ jobs:
     timeout-minutes: 10
     outputs:
       apps: ${{ steps.plan.outputs.apps }}
-      windows: ${{ steps.plan.outputs.windows }}
       portal: ${{ steps.plan.outputs.portal }}
       draft: ${{ steps.plan.outputs.draft }}
     env:
@@ -114,21 +116,24 @@ jobs:
         with:
           ref: ${{ inputs.commit || github.sha }}
           fetch-depth: 0                # tags, for check_manifest
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
       - name: Checks
         env:
           TAG: ${{ github.event_name == 'push' && github.ref_name || '' }}
         run: |
-          python3 tools/check_versions.py
+          python tools/check_versions.py
           case "$TAG" in
-            bc250-portal-v*) python3 tools/check_manifest.py --require-tags ;;
-            *)         python3 tools/check_manifest.py ;;
+            *-portal-v*) python tools/check_manifest.py --require-tags ;;
+            *)           python tools/check_manifest.py ;;
           esac
       - name: What this run releases
         id: plan
         env:
           TAG: ${{ github.event_name == 'push' && github.ref_name || '' }}
         run: |
-          python3 tools/suite_release.py plan ${TAG:+--tag "$TAG"} | tee -a "$GITHUB_OUTPUT"
+          python tools/suite_release.py plan ${TAG:+--tag "$TAG"} | tee -a "$GITHUB_OUTPUT"
 
   apps:
     needs: plan
@@ -161,7 +166,8 @@ jobs:
           ffmpeg/build.sh "$RUNNER_TEMP/ffmpeg"
           python -m pip install -q "maturin>=1.5,<2"
           BC250_FFMPEG_DIR="$RUNNER_TEMP/ffmpeg" maturin build --release --locked --compatibility linux \
-            --features python,pyo3/extension-module,decoder -o wheel
+            --features python,pyo3/extension-module,decoder --out "$RUNNER_TEMP/wheel"
+          echo "BC250_NATIVE_WHEEL_DIR=$RUNNER_TEMP/wheel" >> "$GITHUB_ENV"
 
       - name: Build
         run: |
@@ -170,47 +176,6 @@ jobs:
 
       - name: Publish
         run: bash tools/publish_release.sh "$TAG" "$COMMIT" dist
-
-  windows:
-    # The Windows executable of each app in tools/build_windows_exe.py's WINDOWS_APPS (sftp), added to the release
-    # its tarball job made
-    needs: [plan, apps]
-    # needs.plan.result: a tag whose release is out already skips plan, and its empty windows= is no list
-    if: ${{ !cancelled() && !failure() && needs.plan.result == 'success' && needs.plan.outputs.windows != '[]' }}
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        tag: ${{ fromJSON(needs.plan.outputs.windows) }}
-    env:
-      TAG: ${{ matrix.tag }}
-      GH_TOKEN: ${{ github.token }}
-      GH_REPO: ${{ github.repository }}
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.commit || github.sha }}
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-
-      - name: Install
-        run: |
-          app=${TAG%-v*}; app=${app#bc250-}
-          python -m pip install -q -r "apps/$app/requirements.txt" pyinstaller pillow
-
-      - name: Build the executable
-        run: |
-          app=${TAG%-v*}; app=${app#bc250-}
-          python tools/build_windows_exe.py "$app" windist
-
-      - name: Add it to the release
-        run: gh release upload "$TAG" windist/*.zip windist/*.zip.sha256 --clobber
 
   pin:
     needs: [plan, apps]
@@ -230,10 +195,13 @@ jobs:
         with:
           ref: ${{ inputs.commit || github.sha }}
           fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
       - name: Pin the new app releases
         id: pin
         run: |
-          mapfile -t tags < <(python3 -c 'import json, os; print("\n".join(json.loads(os.environ["APPS"])))')
+          mapfile -t tags < <(python -c 'import json, os; print("\n".join(json.loads(os.environ["APPS"])))')
           if [ "$DRAFT" != true ] || [ ${#tags[@]} -eq 0 ] || [ -z "${tags[0]}" ]; then
             echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"          # a tag pushed by hand, or nothing to pin
             exit 0
@@ -254,9 +222,10 @@ jobs:
           for tag in "${tags[@]}"; do
             gh release download "$tag" --pattern SHA256SUMS --dir "sums/$tag"
           done
-          python3 tools/suite_release.py pin sums "${tags[@]}"
+          python tools/suite_release.py pin sums "${tags[@]}"
           rm -rf sums
-          python3 tools/check_manifest.py --require-tags
+          git fetch -q --tags origin                     # the tags the apps' releases just made
+          python tools/check_manifest.py --require-tags
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add portal/apps.toml
@@ -289,11 +258,11 @@ jobs:
           python tools/check_versions.py
           python tools/check_manifest.py --require-tags
 
-      - name: Bundled Board Test
+      - name: The bundled required app
         run: |
-          bt=$(python -c 'import tomllib; print(tomllib.load(open("portal/apps.toml", "rb"))["apps"]["check"]["tag"])')
+          required=$(python -c 'import tomllib; apps = tomllib.load(open("portal/apps.toml", "rb"))["apps"]; print(next(a["tag"] for a in apps.values() if a.get("required")))')
           mkdir -p bundle
-          gh release download "$bt" --pattern "$bt.tar.gz" --pattern SHA256SUMS --dir bundle
+          gh release download "$required" --pattern "$required.tar.gz" --pattern SHA256SUMS --dir bundle
 
       - name: Build
         run: |

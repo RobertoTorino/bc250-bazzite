@@ -4,7 +4,7 @@
 # replacing it (and restarting the watcher service when it is there, and saying when the boot service in /etc is from
 # another version, without sudo), uninstall with and without other venv users (the CEC daemon settings kept, the
 # watcher service removed, the boot service removed with sudo), --purge (removed), and the refusal to run as root.
-# Runs with the shims from shims.sh (CI, or WSL on Windows).
+# Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

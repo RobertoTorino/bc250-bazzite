@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 name: Idea or feature request
-description: A setting, a test, a control or an improvement you'd like to see.
+description: A setting, a test, a control, an app or an improvement you'd like to see.
 labels: [enhancement]
 body:
   - type: input

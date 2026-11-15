@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/upscaler/install.sh: install from the checkout, Desktop icon on and off, a staged release over a
 # copy under the old name (HelixSR Manager), an unknown option, and uninstall, which keeps the imported HelixSR
-# payload. Runs with the shims from shims.sh (CI, or WSL on Windows).
+# payload. Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

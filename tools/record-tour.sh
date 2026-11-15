@@ -11,24 +11,24 @@
 #
 # Music: tools/sounds/the_quiet_engine_remix.ogg (made with generative AI tools), faded out over the last two
 # seconds.
-# Default output: ~/Videos/bc250-portal-tour-v<portal version>.mp4 (an earlier file of that name is replaced).
-# Interpreter: $PYTHON if set, else the venv for this OS, as test.sh. Needs ffmpeg with libx264.
+# Default output: ~/Videos/<tag prefix>portal-tour-v<portal version>.mp4 (an earlier file of that name is replaced).
+# Interpreter: $PYTHON if set, else the checkout's venv, as test.sh. Needs ffmpeg with libx264.
 set -euo pipefail
+if [[ "${1:-}" == -h || "${1:-}" == --help ]]; then
+    sed -n '3,15p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0
+fi
 SUITE=$(cd "$(dirname "$0")/.." && pwd -P)       # the suite: the repository
 cd "$SUITE"                                      # the repository: the venvs
 
 PY=${PYTHON:-}
 if [[ -z "$PY" ]]; then
-    case "$(uname -s)" in
-        MINGW*|MSYS*|CYGWIN*) candidates=(.venv-windows/Scripts/python.exe .venv/Scripts/python.exe) ;;
-        *)                    candidates=(.venv-linux/bin/python .venv/bin/python) ;;
-    esac
-    for candidate in "${candidates[@]}"; do
+    for candidate in .venv-linux/bin/python .venv/bin/python; do
         [[ -x "$candidate" ]] && PY="$PWD/$candidate" && break
     done
 fi
 if [[ -z "$PY" ]]; then
-    echo "No venv for this OS. Create one, e.g. on Linux:" >&2
+    echo "No venv in the checkout. Create one:" >&2
     echo "  python3 -m venv .venv-linux && .venv-linux/bin/python -m pip install -r requirements-dev.txt" >&2
     exit 1
 fi
@@ -44,7 +44,8 @@ for ((i = 1; i <= $#; i++)); do
         [[ "${!j}" == 1080p ]] || size=-${!j}
     fi
 done
-out=$HOME/Videos/bc250-portal-tour-v$(tr -d '[:space:]' < "$SUITE/portal/VERSION")$size.mp4
+prefix=$(tr -d '[:space:]' < "$SUITE/TAG_PREFIX")
+out=$HOME/Videos/${prefix}portal-tour-v$(tr -d '[:space:]' < "$SUITE/portal/VERSION")$size.mp4
 if [[ $# -gt 0 && "$1" != -* ]]; then
     out=$1
     shift

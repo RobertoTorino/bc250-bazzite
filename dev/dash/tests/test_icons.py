@@ -10,19 +10,18 @@ from nexus_dashboard import CHECKOUT, icons
 SUITE = CHECKOUT
 
 
-def _checkout(root: Path, suite: str = "suite") -> Path:
-    """A checkout with the Nexus tool and one suite with two categories; the suite's folder."""
+def _checkout(root: Path) -> Path:
+    """A checkout with the suite's tool and two categories."""
     (root / "tools").mkdir(parents=True, exist_ok=True)
     (root / "tools" / "sync_icons.py").write_text("", encoding="utf-8")
-    folder = root / suite
-    (folder / "icons" / "leaf").mkdir(parents=True)
-    (folder / "icons" / "gear").mkdir()
-    (folder / "icons" / "categories.toml").write_text("", encoding="utf-8")
-    return folder
+    (root / "icons" / "leaf").mkdir(parents=True)
+    (root / "icons" / "gear").mkdir()
+    (root / "icons" / "categories.toml").write_text("", encoding="utf-8")
+    return root
 
 
 def test_a_suite_with_category_icons_is_told_apart(tmp_path):
-    suite = _checkout(tmp_path)
+    suite = _checkout(tmp_path / "suite")
     assert icons.has_category_icons(suite) and not icons.has_category_icons(tmp_path)
     assert icons.categories(suite) == ["gear", "leaf"]
     assert icons.has_category_icons(SUITE)
@@ -31,15 +30,15 @@ def test_a_suite_with_category_icons_is_told_apart(tmp_path):
 
 def test_whole_set_runs_first_then_each_size_in_order(tmp_path):
     _checkout(tmp_path)
-    tool = [sys.executable, str(tmp_path / "tools" / "sync_icons.py"), "--suite", "suite", "--category", "leaf"]
+    tool = [sys.executable, str(tmp_path / "tools" / "sync_icons.py"), "--category", "leaf"]
 
     whole, small, medium = Path("/a.png"), Path("/s.png"), Path("/m.png")
-    assert icons.convert_commands(tmp_path, "suite", "leaf", whole, {128: small, 512: medium}) == [
+    assert icons.convert_commands(tmp_path, "leaf", whole, {128: small, 512: medium}) == [
         tool + ["--from", str(whole)],
         tool + ["--from", str(medium), "--size", "512"],
         tool + ["--from", str(small), "--size", "128"],
     ]
-    assert icons.convert_commands(tmp_path, "suite", "leaf", None, {}) == []
+    assert icons.convert_commands(tmp_path, "leaf", None, {}) == []
 
 
 def test_icon_names_match_the_nexus_tool():
@@ -62,8 +61,8 @@ def test_dialog_runs_the_conversions_and_shows_their_output(qapp, tmp_path, monk
         return subprocess.CompletedProcess(command, 0, stdout="converted: leaf-512\n", stderr="")
 
     monkeypatch.setattr(icons.subprocess, "run", run)
-    dialog = icons.IconsDialog(tmp_path, "suite")
-    assert dialog.suite_label.text() == str(root)
+    dialog = icons.IconsDialog(tmp_path)
+    assert dialog.checkout_label.text() == str(root)
     assert not dialog.convert_button.isEnabled()
     dialog.category.setCurrentText("leaf")
     dialog.sizes[512].setText("/new.png")
@@ -71,7 +70,7 @@ def test_dialog_runs_the_conversions_and_shows_their_output(qapp, tmp_path, monk
 
     assert dialog.convert()
 
-    assert runs == [icons.convert_commands(tmp_path, "suite", "leaf", None, {512: Path("/new.png")})[0]]
+    assert runs == [icons.convert_commands(tmp_path, "leaf", None, {512: Path("/new.png")})[0]]
     assert "converted: leaf-512" in dialog.output.toPlainText()
     assert dialog.sizes[512].text() == ""
     dialog.close()
@@ -87,7 +86,7 @@ def test_dialog_stops_at_the_first_failure(qapp, tmp_path, monkeypatch):
                                            stderr="/a.png: 512 x 256 px, an icon must be square\n")
 
     monkeypatch.setattr(icons.subprocess, "run", run)
-    dialog = icons.IconsDialog(tmp_path, "suite")
+    dialog = icons.IconsDialog(tmp_path)
     dialog.whole.setText("/a.png")
     dialog.sizes[128].setText("/b.png")
 
@@ -101,8 +100,8 @@ def test_dialog_stops_at_the_first_failure(qapp, tmp_path, monkeypatch):
 
 
 def test_dialog_on_a_suite_without_category_icons_is_greyed_out(qapp, tmp_path):
-    (tmp_path / "plain" / "icons").mkdir(parents=True)
-    dialog = icons.IconsDialog(tmp_path, "plain")
+    (tmp_path / "icons").mkdir(parents=True)
+    dialog = icons.IconsDialog(tmp_path)
     assert dialog.category.count() == 0 and dialog.checkout is None
     assert not dialog.convert_button.isEnabled()
     assert "no category icons" in dialog.output.toPlainText()
@@ -113,13 +112,12 @@ def test_dialog_converts_real_images_in_a_copy_of_the_icons(qapp, tmp_path):
     """The whole way, with the suite's own tool on a copy of its icons and the apps' copies."""
     import shutil
 
-    root = tmp_path / "bc250-bazzite"                          # a suite laid out as the real one, by that name
+    root = tmp_path / "suite"                                  # a suite laid out as the real one
     shutil.copytree(SUITE / "icons", root / "icons")
     (root / "portal").mkdir()
     (root / "portal" / "apps.toml").write_text("", encoding="utf-8")
-    (tmp_path / "tools").mkdir()
-    for name in ("sync_icons.py", "suites.py"):                 # the Nexus tool and what it reads the suites with
-        shutil.copy(CHECKOUT / "tools" / name, tmp_path / "tools")
+    (root / "tools").mkdir()
+    shutil.copy(CHECKOUT / "tools" / "sync_icons.py", root / "tools")
     for copy in [p for p in (SUITE / "apps").glob("*/images/*") if p.suffix in (".png", ".webp")] + \
             list((SUITE / "portal" / "images" / "apps").glob("*.webp")):
         target = root / copy.relative_to(SUITE)
@@ -127,7 +125,7 @@ def test_dialog_converts_real_images_in_a_copy_of_the_icons(qapp, tmp_path):
         shutil.copy(copy, target)
     from PIL import Image
     Image.new("RGBA", (300, 300), "blue").save(tmp_path / "blue.png")
-    dialog = icons.IconsDialog(tmp_path, "bc250-bazzite")
+    dialog = icons.IconsDialog(root)
     dialog.category.setCurrentText("gaming")
     dialog.sizes[256].setText(str(tmp_path / "blue.png"))
 

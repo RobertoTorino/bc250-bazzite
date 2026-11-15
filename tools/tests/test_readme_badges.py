@@ -40,7 +40,7 @@ def license_of(folder: Path) -> Path:
 
 def test_every_readme_has_the_three_badges():
     names = readmes()
-    assert "README.md" in names and len(names) > 30
+    assert "README.md" in names and {f"apps/{p.name}/README.md" for p in (ROOT / "apps").iterdir()} <= set(names)
     for name in names:
         path = ROOT / name
         lines = path.read_text(encoding="utf-8").split("\n")

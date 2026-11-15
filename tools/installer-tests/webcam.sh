@@ -3,7 +3,7 @@
 # Exercise apps/webcam/install.sh: install from the checkout (core bundled, shared venv, the load service, no sudo), a
 # staged release replacing it, uninstall with and without other venv users (the app's udev rule removed with sudo,
 # the load service removed, the firmware kept), --purge (the firmware too), and the refusal to run as root.
-# Runs with the shims from shims.sh (CI, or WSL on Windows).
+# Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

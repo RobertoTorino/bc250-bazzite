@@ -7,7 +7,9 @@
 #   ./install.sh                         # install or update
 #   ./install.sh --no-desktop-shortcut   # app menu entries only, no icons on the Desktop
 #   ./install.sh --uninstall             # remove the portal, Board Test and (asked per app) the other apps;
-#                                        # keeps settings and results
+#                                        # keeps settings, results and the wallpaper
 #   ./install.sh --uninstall --purge     # also remove settings, history and results
+#   ./install.sh --uninstall --all       # the whole suite: every other app too, without a question per app,
+#                                        # after one confirmation; with --purge their settings go as well
 set -euo pipefail
 exec bash "$(dirname "${BASH_SOURCE[0]}")/portal/install.sh" "$@"

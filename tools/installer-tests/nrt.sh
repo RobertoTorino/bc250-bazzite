@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise dev/nrt/install.sh (and tools/nrt.sh, which forwards to it): the launcher, menu entry and
 # Desktop icon point at this checkout, --no-desktop-shortcut drops the icon, root is refused, and uninstall leaves
-# the checkout alone. Runs with the shims from shims.sh (CI, or WSL on Windows).
+# the checkout alone. Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/

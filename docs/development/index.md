@@ -7,7 +7,7 @@ the versions and releases fit together. How every app is built, and how to add o
 [Architecture and consistency](architecture.md). The development apps, from Nexus Dashboard to Nexus Deps:
 [Dashboard](dashboard.md). How a release is made and published: [Releases](releases.md) and, step by step,
 [Portal](../portal.md#appstoml-and-releases). The repository's settings on GitHub and Dependabot's pull requests:
-[GitHub settings](github-settings.md). The tools a machine needs to work on it, on Bazzite or Windows, and how they
+[GitHub settings](github-settings.md). The tools a machine needs to work on it, on Bazzite, and how they
 stay up to date: [The development machine](https://robertotorino.github.io/nexus/machine/) on the Nexus page.
 
 ## Layout
@@ -19,10 +19,9 @@ portal/                       the portal: app, apps.toml (the pinned app release
 apps/<name>/                  one folder per app, each with its own VERSION, CHANGELOG, LICENSE and .gitignore
 core/bc250_core/              the shared Python package the apps bundle at release time (see bc250_core below)
 tools/                        release and CI (build_release, stage_app, check_versions, check_manifest, pin_app,
-                              tag-release.sh, ci_state, ci_matrix, check-release.sh, ci-local.sh, pre-push.sh,
-                              git-setup.sh), new_app, sync_icons (the category icons), check_upstream, the
-                              screenshot and tour scripts, mkdocs/ (the wiki's hooks and design panel), tests/
-                              and installer-tests/
+                              tag-release.sh, ci_state, ci_matrix, check-release.sh, ci-local.sh), new_app,
+                              sync_icons (the category icons), check_upstream, the screenshot and tour scripts,
+                              mkdocs/ (the wiki's hooks and design panel), tests/ and installer-tests/
 dev/<name>/                   the development apps, run from the checkout and never released: dev/dash/ is Nexus
                               Dashboard (the door to the others), dev/nrt/ Nexus Release Tool, dev/demo/ Nexus
                               Demo Recorder, dev/itests/ Nexus Installer Tests, dev/sounds/ Nexus Sound Lab,
@@ -33,6 +32,7 @@ DESIGN.md design/colors/      every color of the suite and its samples (tools/ma
 install.sh                    the portal's installer for a checkout
 test.sh                       runs every test folder (core, tools, dev/, the portal and the apps)
 SYSTEM                        the system the suite is made for: bazzite
+TAG_PREFIX                    the prefix of every release tag: bc250-
 .github/workflows/            ci.yml (every check), release.yml (a release), docs.yml (the wiki on GitHub Pages),
                               upstream.yml (the weekly upstream check)
 ```
@@ -40,27 +40,21 @@ SYSTEM                        the system the suite is made for: bazzite
 ## Set up and test
 
 ```bash
-# Linux
 python3 -m venv .venv-linux && .venv-linux/bin/python -m pip install -r requirements-dev.txt
-# Windows (Git Bash)
-py -m venv .venv-windows && .venv-windows/Scripts/python.exe -m pip install -r requirements-dev.txt
 
-./test.sh                                   # every test folder, offscreen; picks this OS's venv
-NEXUS_SYSTEM=bazzite ./test.sh              # the portal's and the apps' tests too, on Windows
+./test.sh                                   # every test folder, offscreen
 python3 tools/check_versions.py             # hard-coded versions = VERSION
 mkdocs build --strict                       # the wiki
 ```
 
-The suite is worked on and tested on Bazzite: `./test.sh` runs the portal's and the apps' tests on Linux, and core,
-tools and `dev/` on both systems.
+The suite is worked on and tested on Bazzite.
 
 ### CI on your own machine
 
 GitHub runs `ci.yml` on every push and pull request: the versions and the portal's manifest, the pytest matrix
 (core, tools, every `dev/` app, the portal and every app), the native Rust job for PS Remote Play, the shell checks
 (`bash -n`, shellcheck, line endings, exec bits, the four files of every folder, workflows only at the root), the
-installer tests, the wiki build and the Windows `.exe` of SFTP Tools. A release waits for it: a commit CI did not
-pass gets no release.
+installer tests and the wiki build. A release waits for it: a commit CI did not pass gets no release.
 
 The matrices are read from the folders in a first job, `plan` (`tools/ci_matrix.py`): the pytest matrix is every
 folder with `tests/`. The installers job runs every `tools/installer-tests/*.sh` it finds. So a new app needs no
@@ -80,54 +74,20 @@ tools/ci-local.sh --list                     # the jobs
 It reads the jobs from the workflow itself, a matrix from the folders as the plan job does, so a new app needs no
 change. The first run builds the image from `tools/ci-local/Containerfile` (Python 3.12 and the packages GitHub's
 runner has) and PS Remote Play's FFmpeg; both are kept, with the venvs and the logs, in `~/.cache/bc250-ci-local`.
-It works on a copy of the checkout with every change staged, as the commit will have it. Only the Windows job does
-not run here. One run goes at a time on a computer: a second one, from a terminal or Nexus Release Tool's Push, says
-that another run is going and waits until it ends, as the two would share the venvs and the logs. The push commands Nexus Release Tool shows run it first (`tools/ci-local.sh && git push`): no push
-when a job fails.
+It works on a copy of the checkout with every change staged, as the commit will have it. The copy is named as the
+checkout, as GitHub's is named after the repository. One run goes at a time on a computer: a second one, from a
+terminal or Nexus Release Tool's Push, says that another run is going and waits until it ends, as the two would share
+the venvs and the logs. The push commands Nexus Release Tool shows run it first (`tools/ci-local.sh && git push`): no
+push when a job fails.
 
-On Windows it runs in podman's machine, a small Fedora in WSL that reaches the checkout under `/mnt/c`. Install
-podman once (`winget install RedHat.Podman`, then `podman machine init` and `podman machine start`), and run it
-from Git Bash as the machine's own user, not root: the installers refuse root.
+### Line endings and file names
 
-```bash
-podman machine ssh "su - user -c 'cd /mnt/c/Projects/bc250-bazzite && bash tools/ci-local.sh'"   # your checkout's folder
-```
-
-`tools/pre-push.sh` runs CI's quick checks in a few seconds: the versions, `portal/apps.toml` with the portal bump
-it needs against what the remote has, the scripts' exec bits and the line endings. The checks read the commit that
-is pushed, in a checkout of it of their own (a few seconds more), as CI does: a fix that is in the working tree but
-not committed never lets a push through. `tools/git-setup.sh`, once per checkout, makes it git's pre-push hook
-(`core.hooksPath`):
-
-```bash
-tools/git-setup.sh                      # once per checkout: the hook
-BC250_PRE_PUSH=full git push            # also every CI job (tools/ci-local.sh)
-```
-
-Nexus Release Tool's **git pull** runs `tools/git-setup.sh` first, so a checkout it pulls in is set up.
-
-When the hook stops a push, CI would fail on the same commit: fix it, commit, and push again. Pushing past it with
-`git push --no-verify` sends the failure to GitHub, and the release waits until a new push passes CI.
-
-When the remote has commits this checkout lacks, pushed from the other machine, the hook says so and stops before
-the checks: run `git pull --rebase`, then push again.
-
-### Working from both Linux and Windows
-
-The repository is used from both systems, so it is set up to behave the same on each:
-
-- **Line endings:** `.gitattributes` makes every text file LF in the repository and in the working tree on both
-  systems, regardless of `core.autocrlf` (Git for Windows sets it to `true`). Scripts, units and `.desktop` files
-  reach the board with LF, and moving between systems never shows files as changed. CI rejects CRLF.
-- **Executable bit:** Git for Windows runs with `core.fileMode=false` and records new files as not executable. After
-  `git add` and before committing, run `tools/fix-modes.sh`: it marks every `.sh` as executable in the index (this
-  works the same on both systems). CI fails when a script is missing the bit.
-- **Venvs:** a venv only runs on the OS that created it, so keep one per system (`.venv-linux/`, `.venv-windows/`).
-  Both are ignored by git.
-- **Tests:** some app tests use Linux-only calls (`os.getuid`, file modes) and fail on Windows; Linux and CI are
-  the reference. Core's tests run on both and never write to the Windows registry.
-- **File names:** Linux is case-sensitive and Windows is not, so a link or path whose case only matches on Windows
-  breaks on Linux and on GitHub. Keep links and asset names in exactly the case of the file.
+- **Line endings:** `.gitattributes` makes every text file LF in the repository and in the working tree. Scripts,
+  units and `.desktop` files reach the board with LF. CI rejects CRLF.
+- **Executable bit:** when a script lost its executable bit, run `tools/fix-modes.sh` after `git add`: it marks every
+  `.sh` as executable in the index. CI fails when a script is missing the bit.
+- **Venv:** one venv in the checkout, `.venv-linux/`, ignored by git.
+- **File names:** Linux and GitHub are case-sensitive. Keep links and asset names in exactly the case of the file.
 
 ## Colors
 
@@ -150,6 +110,13 @@ stylesheet goes into the listing too, with what it is for.
 To preview the wiki locally, run `mkdocs serve` from the repository root with the development venv active,
 then open <http://127.0.0.1:8000/bc250-bazzite/>. Stop the server with Ctrl+C.
 
+`.github/workflows/docs.yml` builds the wiki from `main` on every push and publishes it on GitHub Pages at
+<https://robertotorino.github.io/bc250-bazzite/>. The Install page's link to the portal's release and the archive's
+name are the tag of the newest published portal release (`tools/mkdocs/hooks.py`), so publishing a portal release
+builds the wiki again. GitHub Pages deploys from `main` only, and a release's run belongs to its tag: that run starts
+the workflow on `main` and builds nothing itself, so the Actions list shows two Wiki runs for a release. By hand:
+`gh workflow run docs.yml --ref main`.
+
 The picture of the portal on the home page (`docs/images/home/portal.webp`) is taken from the portal itself:
 `tools/portal_screenshot.py` opens its window offscreen on this checkout's `apps.toml` and icons, in a home folder
 of its own, with a fixed demo state (one update, the Sustainable tab open), and saves it. The wiki's workflow runs it
@@ -166,7 +133,8 @@ records the portal's tour, about two minutes, with music under it that fades out
 (`tools/sounds/the_quiet_engine_remix.ogg`, made with generative AI tools; `--no-music` leaves it out).
 `tools/record-tour.sh --wiki` also writes the copy on the [Portal Tour](../portal-tour.md) page,
 `docs/videos/portal-tour.mp4` (1280 × 720, about 6 MB) and its poster, and a fingerprint of the portal it was recorded from
-(`tools/portal-tour.stamp`: the portal's code and pictures, and the tour's script). The checks fail when
+(`tools/portal-tour.stamp`: the portal's code and pictures, and the tour's script). The video shows no version
+number, so a release does not make it out of date. The checks fail when
 the portal changed since, until the tour is recorded again with `--wiki`;
 `python3 tools/portal_tour.py --check` says so from a terminal, and `--stamp` marks the video as current
 for a change that does not show in it. A change the wiki describes goes into its [Portal](../portal.md) page in the
@@ -197,9 +165,10 @@ a transparent background, like the others) and add it at the end of the list wit
 
 ## Where things are installed
 
-- **Root-owned `/opt`:** the portal (`/opt/bc250-bazzite-suite`), Board Test (`check`), cores, oc and
-  acpi, whose scripts run as root: a normal user cannot change code that sudo runs.
-- **Your home folder:** the shared venv `~/.local/share/bc250-bazzite-suite/venv` (PyQt6, used by all suite
+- **Root-owned `/opt`:** Board Test (`check`), cores, oc and acpi, whose scripts run as root: a normal user cannot
+  change code that sudo runs.
+- **Your home folder:** the portal (`~/.local/share/bc250-bazzite-suite/portal`, what it remembers beside it in
+  `~/.local/share/bc250-bazzite-suite/state`), the shared venv `~/.local/share/bc250-bazzite-suite/venv` (PyQt6, used by all suite
   GUIs and removed with the last of them), plus each app's settings, results and launchers.
 - **`bc250_core` per app:** each app's release carries the `bc250_core` it was tested with, next to its own code.
   Apps with different release tags never share a core version they were not tested with.
@@ -210,7 +179,8 @@ a transparent background, like the others) and add it at the end of the list wit
 
 `core/`, `portal/` and every app have a `VERSION` file; it is the single source of the version. Versions that are
 also written in a script or package (`VERSION="…"`, `__version__ = "…"`, pyproject `version`) must match it, which
-CI checks with `tools/check_versions.py`. Everything started at 0.1.0 with the suite.
+CI checks with `tools/check_versions.py`. Everything started at 0.1.0 with the suite. The development apps in
+`dev/` have no version: they are never released, and their header shows the checkout's last commit and its time.
 
 Each app is released on its own tag (`bc250-check-v0.1.0`, `bc250-gpu-v0.4.0`, …); the release workflow builds
 `<tag>.tar.gz` and `SHA256SUMS`. The portal has `bc250-portal-vX.Y.Z` and pins one release of every app in
@@ -344,15 +314,17 @@ Code shared by the suite's apps (`core/`). Nothing in it imports an app: each ap
 | `settings` | `open_settings(info)` at each app's existing file, geometry helpers, `SettingsStore` (typed defaults) | board-test's `AppSettings` |
 | `help` | `HelpView` (the content stays in the app) | upscaler |
 | `updates` | `latest_release()` (with a tag prefix for the per-app tags: GitHub's release pages, newest first, are followed until one holds the prefix, since other releases can fill the first page), `UpdateStatus`, `UpdateChecker` (any job, off the GUI thread) | upscaler + governor |
-| `platform` | XDG folders, `xdg_open()`, `launch_in_terminal()` (with an exit file the caller can watch); for Windows (the development apps, SFTP Tools' `.exe`), `open_path()` and a PowerShell window; `private()`, a path or a text with the user's folders as `%LOCALAPPDATA%`, `%APPDATA%` and `%USERPROFILE%` (`~` on Linux), never the user's name, which `applog.setup(private=True)` applies to every line of a log; `outside_bundle()` and `start_program()`: a program a PyInstaller-built app starts without the app's own DLL directory and PATH, which it would otherwise inherit | the bisect GUIs' `terminal.py` |
+| `platform` | XDG folders, `xdg_open()`, `launch_in_terminal()` (with an exit file the caller can watch), `show_in_folder()`; `private()`, a path or a text with the home folder as `~`, never the user's name, which `applog.setup(private=True)` applies to every line of a log | the bisect GUIs' `terminal.py` |
 | `steam` | Steam's folders and users, `installed()`, `with_steam_closed()`, `shortcuts.vdf` and the shortcuts' artwork in `grid/`, `shortcut_number()` and `play_url()` (a shortcut's number in Steam's file, and the address that starts it) (standard library only) | consoles |
 | `steam_art` | `draw_icon_art()`: a shortcut's four pictures drawn from an app's icon, in the icon's color | consoles |
 | `upstream` | `publish()` / `read_all()`: the updates outside the suite an app can install now, for the portal's notice (standard library only; HelixSR carries a copy) | new: helixsr, pcsx2, portal |
 | `sensors` | `Sensors.read()`: the board's live values from `/proc` and `/sys` without root (CPU, GPU, the governor's range, VRAM, RAM, temperatures, network, disk, fans), `Reading`, `Fan` | System Overlay; used by BC-250 Turing Screen too |
+| `nexus` | The development apps' design (the theme `NEXUS`) and their header (`header()`: the checkout's last commit and its time in place of a version) | new |
 | `wifi` | The Wi-Fi adapters and whether the running kernel has a driver and firmware for them, `report()` (standard library only; `python3 -m bc250_core.wifi`) | new: check's test 53, wifi |
 
 Core is **bundled per app**: `tools/stage_app.py` copies `bc250_core/` next to the package of every app that
-imports it, so each release runs on the core it was tested with.
+imports it, so each release runs on the core it was tested with. The development apps import it from the
+checkout.
 
 ### Tests
 

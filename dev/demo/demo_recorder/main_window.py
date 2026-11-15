@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Demo Recorder's window: OBS, the portal release and the app to show, and the recording. The release is an
 extracted portal release in Downloads, found by itself, or the suite in the checkout the app lives in; while the
-recording runs the window hides, and the global shortcut (the desktop portal's, on Windows a hot key of Windows')
-stops it and brings it back."""
+recording runs the window hides, and the global shortcut (the desktop portal's) stops it and brings it back."""
 
 from __future__ import annotations
 
@@ -33,9 +32,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from bc250_core.widgets import AppHeader, InfoButton
+from bc250_core.nexus import header as nexus_header
+from bc250_core.widgets import InfoButton
 
-from . import APP_NAME, CHECKOUT, LOGO_PATH, __version__
+from . import APP_NAME, CHECKOUT, LOGO_PATH
 from .global_shortcut import GlobalShortcutManager
 from .workflow import (
     PORTAL_LAUNCHER,
@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
     def _build_ui(self) -> None:
         central = QWidget()
         layout = QVBoxLayout(central)
-        header = AppHeader(LOGO_PATH, APP_NAME, __version__)
+        header = nexus_header(LOGO_PATH, APP_NAME, CHECKOUT)  # the checkout's commit, never a version
         header.add_action(InfoButton(ABOUT, "What this app does"))
         header.add_second(QLabel("A portal installation, recorded with OBS."))
         header.second_row.addStretch(1)
@@ -200,19 +200,17 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "OBS not found", "Install OBS Studio, then use this button to open it.")
             return
         try:
-            # on Windows OBS starts only from its own folder (it finds its data from there)
             subprocess.Popen(command, stdin=subprocess.DEVNULL, start_new_session=True)
         except OSError as exc:
             QMessageBox.critical(self, "Could not open OBS", str(exc))
 
     def _show_obs_help(self) -> None:
-        capture = "2. On Wayland, choose Screen Capture (PipeWire) and approve the sharing prompt.\n"
         QMessageBox.information(
             self,
             "Prepare OBS",
             "In OBS:\n"
             "1. Create a scene and add a screen-capture source.\n"
-            f"{capture}"
+            "2. On Wayland, choose Screen Capture (PipeWire) and approve the sharing prompt.\n"
             "3. Open Tools → WebSocket Server Settings and enable the server.\n"
             "4. Note the server port (usually 4455) and password, then test the connection here.\n\n"
             f"{APP_NAME} does not change OBS settings or select a capture source for you.",
@@ -518,7 +516,7 @@ class MainWindow(QMainWindow):
             self._update_start_button()
             return
         self.instructions.setText(
-            f"The portal is installed. Open it, show BC-250 Board Test, "
+            "The portal is installed. Open it, show BC-250 Board Test, "
             "install the selected optional app, "
             "then open that app for the peek."
         )

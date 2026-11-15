@@ -32,9 +32,9 @@ URL=${BC250_RELEASE_URL:-https://github.com/RobertoTorino/bc250-bazzite/releases
 GH_REPO_NAME=RobertoTorino/bc250-bazzite
 CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/bc250-release-check"
 PORTAL="$HOME/.local/bin/bc250-bazzite-suite"
-PORTAL_LINK="${BC250_OPT_DIR:-/opt}/bc250-bazzite-suite"           # the installed portal (portal/install.sh)
 SUITE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/bc250-bazzite-suite"
-STATE_DIR="$SUITE_DIR/portal"           # what the portal remembers
+PORTAL_DIR="$SUITE_DIR/portal"          # the installed portal (portal/install.sh)
+STATE_DIR="$SUITE_DIR/state"            # what the portal remembers
 MARK="$SUITE_DIR/TEST-INSTALL"          # where the test came from, and the time of the launcher it installed
 
 info() { printf '\033[1;35m==>\033[0m %s\n' "$1"; }
@@ -60,10 +60,10 @@ launcher_time() { stat -c %.9Y "$PORTAL" 2>/dev/null || echo none; }
 test_install() { [ -f "$MARK" ] && [ -e "$PORTAL" ] && [ "$(sed -n 2p "$MARK")" = "$(launcher_time)" ]; }
 
 status() {
-    local key name launcher version found=0
+    local key name launcher version="" found=0
     if [ -e "$PORTAL" ]; then
         found=1
-        version=$(readlink -f "$PORTAL_LINK" 2>/dev/null | sed -n 's/.*-v\([0-9.]*\)$/\1/p')
+        [ ! -f "$PORTAL_DIR/VERSION" ] || version=$(tr -d '[:space:]' < "$PORTAL_DIR/VERSION")
         if test_install; then
             echo "Portal ${version:-?}: a test install ($(head -n 1 "$MARK"))"
         else
@@ -94,7 +94,7 @@ remove_suite() {
         bash "$REPO/apps/$key/install.sh" --uninstall "$@" < /dev/null ||
             { failed=1; echo "$name could not be removed." >&2; }
     done 3< <(apps)
-    if [ -e "$PORTAL" ] || [ -e "$PORTAL_LINK" ]; then
+    if [ -e "$PORTAL" ] || [ -d "$PORTAL_DIR" ]; then
         info "Removing the portal and Board Test (Board Test is in /opt: sudo asks for the password)"
         bash "$REPO/portal/install.sh" --uninstall "$@" < /dev/null || failed=1
     fi

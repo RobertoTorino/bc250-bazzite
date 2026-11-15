@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The steps of a release of the BC250 Bazzite Suite that its release workflow (release.yml) runs besides the build,
-from the checkout of the release commit (owner, 04-11-2026: the same steps for every suite; the Windows Portable
-Suite's suite_release.py is the model):
+from the checkout of the release commit:
 
     python3 tools/suite_release.py plan [--tag TAG]   # what the run releases, for $GITHUB_OUTPUT
     python3 tools/suite_release.py pin DIR TAG...     # each TAG's sha256 into portal/apps.toml
 
-plan prints four lines: apps=<JSON list of tags>, windows=<JSON list of those tags whose app ships a Windows
-executable too, tools/build_windows_exe.py>, portal=<tag or nothing> and draft=<true|false>. With --tag (a tag
-pushed by hand) it is that one tag, published at once. Without it (a release started by Nexus Release Tool's Start
+plan prints three lines: apps=<JSON list of tags>, portal=<tag or nothing> and draft=<true|false>. With --tag (a
+tag pushed by hand) it is that one tag, published at once. Without it (a release started by Nexus Release Tool's Start
 new release): every app tag apps.toml pins that has no published release yet, and bc250-portal-v<portal/VERSION>
 when that has none, as a draft: Nexus Release Tool publishes it after the device test on a board. A draft counts as
 not released, so a run started again makes it anew.
@@ -21,7 +19,6 @@ of that app in portal/apps.toml; the tag lines are the release commit's and stay
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import re
 import subprocess
@@ -31,7 +28,7 @@ from pathlib import Path
 
 SUITE = Path(__file__).resolve().parent.parent          # the repository, which is the suite
 MANIFEST = SUITE / "portal" / "apps.toml"
-PREFIX = "bc250-"                                       # the suite's tags (TAG_PREFIX)
+PREFIX = (SUITE / "TAG_PREFIX").read_text(encoding="utf-8").strip()     # the suite's tags start with it
 _TAG = re.compile(rf"^{re.escape(PREFIX)}(?P<app>[a-z0-9-]+)-v\d+\.\d+\.\d+$")
 
 
@@ -42,15 +39,6 @@ def published(tag: str) -> bool:
     return result.returncode == 0 and result.stdout.strip() == "false"
 
 
-def windows_apps() -> set[str]:
-    """The apps that ship a Windows executable beside the tarball (tools/build_windows_exe.py's WINDOWS_APPS)."""
-    path = SUITE / "tools" / "build_windows_exe.py"
-    spec = importlib.util.spec_from_file_location("build_windows_exe", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return set(module.WINDOWS_APPS)
-
-
 def pinned_tags(text: str) -> list[tuple[str, str]]:
     """(app, tag) of every [apps.<app>] in apps.toml that is not withdrawn, in the file's order."""
     import tomllib
@@ -59,8 +47,8 @@ def pinned_tags(text: str) -> list[tuple[str, str]]:
 
 
 def plan(text: str, portal_version: str, released: Callable[[str], bool] = published,
-         tag: str | None = None, windows: set[str] = frozenset()) -> dict:
-    """What a run releases: {"apps": [tags], "windows": [tags], "portal": tag or "", "draft": bool}. Raises
+         tag: str | None = None) -> dict:
+    """What a run releases: {"apps": [tags], "portal": tag or "", "draft": bool}. Raises
     ValueError for a tag that is not the suite's, and for apps to release without a portal release to bring them."""
     if tag:
         match = _TAG.match(tag)
@@ -68,8 +56,7 @@ def plan(text: str, portal_version: str, released: Callable[[str], bool] = publi
             raise ValueError(f"{tag} is not {PREFIX}<app>-v<x.y.z>")
         portal = match["app"] == "portal"
         apps = [] if portal else [tag]
-        return {"apps": apps, "windows": [t for t in apps if _TAG.match(t)["app"] in windows],
-                "portal": tag if portal else "", "draft": False}
+        return {"apps": apps, "portal": tag if portal else "", "draft": False}
     apps = [pinned for _key, pinned in pinned_tags(text) if not released(pinned)]
     portal = f"{PREFIX}portal-v{portal_version}"
     if released(portal):
@@ -77,13 +64,12 @@ def plan(text: str, portal_version: str, released: Callable[[str], bool] = publi
             raise ValueError(f"{', '.join(apps)} would have no portal to bring them: {portal} is out already, bump "
                              "portal/VERSION")
         portal = ""
-    return {"apps": apps, "windows": [t for t in apps if _TAG.match(t)["app"] in windows], "portal": portal,
-            "draft": True}
+    return {"apps": apps, "portal": portal, "draft": True}
 
 
 def output_lines(found: dict) -> list[str]:
-    return [f"apps={json.dumps(found['apps'])}", f"windows={json.dumps(found['windows'])}",
-            f"portal={found['portal']}", f"draft={'true' if found['draft'] else 'false'}"]
+    return [f"apps={json.dumps(found['apps'])}", f"portal={found['portal']}",
+            f"draft={'true' if found['draft'] else 'false'}"]
 
 
 def sha256_of(sums: str, asset: str) -> str:
@@ -126,7 +112,7 @@ def main(argv: list[str]) -> int:
     try:
         if args.step == "plan":
             version = (SUITE / "portal" / "VERSION").read_text(encoding="utf-8").strip()
-            print("\n".join(output_lines(plan(text, version, tag=args.tag, windows=windows_apps()))))
+            print("\n".join(output_lines(plan(text, version, tag=args.tag))))
             return 0
         for tag in args.tags:
             sha = sha256_of((args.sums / tag / "SHA256SUMS").read_text(encoding="utf-8"), f"{tag}.tar.gz")

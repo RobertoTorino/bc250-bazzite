@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import gc
 import os
-import sys
 import uuid
 from pathlib import Path
 
@@ -31,23 +30,10 @@ def qapp():
 
 @pytest.fixture
 def settings_dir(tmp_path, qapp, monkeypatch):
-    """Point QSettings files at tmp_path for the duration of a test.
-
-    On Windows the native format is the registry, which setPath() cannot redirect, so there QSettings(org, app) is
-    turned into the same call with IniFormat: a file under tmp_path, as on Linux, where native is a .conf file."""
+    """Point QSettings files at tmp_path for the duration of a test."""
     from PyQt6.QtCore import QSettings
     for fmt in (QSettings.Format.NativeFormat, QSettings.Format.IniFormat):
         QSettings.setPath(fmt, QSettings.Scope.UserScope, str(tmp_path))
-    if sys.platform == "win32":
-        import bc250_core.settings as core_settings
-
-        class FileSettings(QSettings):
-            def __init__(self, *args):
-                if args and isinstance(args[0], str):
-                    args = (QSettings.Format.IniFormat, QSettings.Scope.UserScope, *args)
-                super().__init__(*args)
-
-        monkeypatch.setattr(core_settings, "QSettings", FileSettings)
     yield tmp_path
 
 

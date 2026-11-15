@@ -5,14 +5,17 @@
 #   ./install.sh                         # install or update
 #   ./install.sh --no-desktop-shortcut   # app menu entries only, no icons on the Desktop
 #   ./install.sh --uninstall             # remove the portal, Board Test and (asked per app) the other apps;
-#                                        # keeps settings and results
+#                                        # keeps settings, results and the wallpaper
 #   ./install.sh --uninstall --purge     # also remove settings, history and results
 #   ./install.sh --uninstall --all       # the whole suite: every other app too, without a question per app,
 #                                        # after one confirmation; with --purge their settings go as well
 #
-# Run it as your own user, not with sudo: only the copies to /opt ask for the sudo password.
-#  * /opt/bc250-bazzite-suite-v<version>, root-owned, with /opt/bc250-bazzite-suite pointing at it: the portal,
-#    its apps.toml and the bc250_core it was tested with. Older versions are removed.
+# Run it as your own user, not with sudo: only Board Test's copy to /opt asks for the sudo password.
+#  * ~/.local/share/bc250-bazzite-suite/portal: the portal, its apps.toml and the bc250_core it was tested
+#    with, a copy of your own that every install replaces. Installed from a checkout, it names the checkout
+#    (suite-checkout) and installs the other apps from there.
+#  * ~/.local/share/bc250-bazzite-suite/state: what the portal remembers (the apps it installed and their releases,
+#    the wallpaper, the music).
 #  * ~/.local/share/bc250-bazzite-suite/venv: the suite's shared venv with PyQt6 and pygame-ce (the portal's
 #    controller reader), removed with the last suite app that uses it.
 #  * ~/.local/bin/bc250-bazzite-suite, an app menu entry and a Desktop icon.
@@ -22,18 +25,19 @@ set -euo pipefail
 
 APP_ID="bc250-bazzite-suite"
 APP_NAME="BC250 Bazzite Suite"
-OPT_DIR="${BC250_OPT_DIR:-/opt}"            # override only for testing
+OPT_DIR="${BC250_OPT_DIR:-/opt}"            # where Board Test is installed; override only for testing
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 SUITE_DIR="$DATA_DIR/$APP_ID"
 VENV="$SUITE_DIR/venv"
 VENV_USERS="$SUITE_DIR/venv-users"
-STATE_DIR="$SUITE_DIR/portal"
+PORTAL_DIR="$SUITE_DIR/portal"          # the installed portal
+STATE_DIR="$SUITE_DIR/state"            # what the portal remembers: the installed apps, downloads, the wallpaper
 LAUNCHER="$HOME/.local/bin/$APP_ID"
 MENU_ENTRY="$DATA_DIR/applications/$APP_ID.desktop"
 DESKTOP_DIR=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
 DESKTOP_ICON="$DESKTOP_DIR/$APP_ID.desktop"
-LINK="$OPT_DIR/$APP_ID"
+BT_KEY="check"
 BT_ID="bc250-board-test"
 
 SRC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
@@ -41,17 +45,14 @@ SRC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 if [ -d "$SRC/bc250_core" ]; then CORE_SRC="$SRC/bc250_core"; else CORE_SRC="$SRC/../core/bc250_core"; fi
 BT_SRC=""
 if [ -d "$SRC/bundled" ]; then
-    BT_SRC=$(find "$SRC/bundled" -mindepth 1 -maxdepth 1 -type d -name 'bc250-check-v*' | sort -V | tail -1)
+    BT_SRC=$(find "$SRC/bundled" -mindepth 1 -maxdepth 1 -type d -name "bc250-$BT_KEY-v*" |
+        sort -V | tail -1)
 fi
 BT_TAG=$(basename "${BT_SRC:-local}")
-[ -n "$BT_SRC" ] || BT_SRC="$SRC/../apps/check"
+[ -n "$BT_SRC" ] || BT_SRC="$SRC/../apps/$BT_KEY"
 
 info() { printf '\033[1;35m==>\033[0m %s\n' "$1"; }
 die()  { printf '\033[1;31mERROR:\033[0m %s\n' "$1" >&2; exit 1; }
-
-as_root() {
-    if [ "$(id -u)" -eq 0 ]; then "$@"; else sudo "$@"; fi
-}
 
 usage() { sed -n '3,11p' "$0" | sed 's/^# \{0,1\}//'; }
 
@@ -72,7 +73,7 @@ done
 $PURGE && ! $UNINSTALL && die "--purge only goes with --uninstall."
 $ALL && ! $UNINSTALL && die "--all only goes with --uninstall."
 
-[ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the venv and the launcher belong in your home folder."
+[ "$(id -u)" -ne 0 ] || die "Run this as your own user, not with sudo: the portal, the venv and the launcher belong in your home folder."
 
 remove_menu_entries() {
     rm -f "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON"
@@ -80,26 +81,36 @@ remove_menu_entries() {
 }
 
 release_venv() {
-    rm -f "$VENV_USERS/$APP_ID"
+    rm -f "${VENV_USERS:?}/${APP_ID:?}"
     rmdir "$VENV_USERS" 2>/dev/null || true
     if [ -d "$VENV_USERS" ]; then
         info "Keeping the suite venv: other suite apps still use it ($(ls "$VENV_USERS" | tr '\n' ' '))"
     else
         info "Removing the suite venv"
-        rm -rf "$VENV"
+        rm -rf "${VENV:?}"
     fi
+}
+
+# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
+# for no password and says the suite is not installed.
+installed_here() {
+    local path
+    for path in "$@"; do
+        compgen -G "$path" >/dev/null && return 0
+    done
+    return 1
 }
 
 # The other suite apps that are installed, one per line: key, name, the folder its uninstaller runs in (empty when
 # there is none) and its uninstall commands, tab-separated. Read from the installed portal's apps.toml, the one
 # that installed them; the folder is the release the portal kept, or the app staged afresh from the checkout. An app
-# this portal no longer lists (dropped from the manifest, installed by an earlier portal) is found by the record and release folder
-# the portal kept for it, else by its own installed copy (~/.local/share/<app-id>/app or /opt/<app-id>, an install.sh
-# with the suite installers' options), and uninstalled with that installer.
+# this portal no longer lists (dropped from the manifest, installed by an earlier portal) is found by the record and
+# release folder the portal kept for it, else by its own installed copy (~/.local/share/<app-id>/app or
+# /opt/<app-id>, an install.sh of this suite), and uninstalled with that installer.
 installed_apps() {
     local manifest="$SRC/apps.toml" checkout=""
-    [ -f "$LINK/apps.toml" ] && manifest="$LINK/apps.toml"
-    if [ -f "$LINK/suite-checkout" ]; then checkout=$(cat "$LINK/suite-checkout")
+    [ -f "$PORTAL_DIR/apps.toml" ] && manifest="$PORTAL_DIR/apps.toml"
+    if [ -f "$PORTAL_DIR/suite-checkout" ]; then checkout=$(cat "$PORTAL_DIR/suite-checkout")
     elif [ -f "$SRC/../tools/stage_app.py" ]; then checkout=$(cd "$SRC/.." && pwd -P); fi        # <checkout>/portal
     python3 - "$manifest" "$STATE_DIR" "$checkout" "$1" "$DATA_DIR" "$OPT_DIR" "$APP_ID" "$BT_ID" <<'PY'
 import json, os, re, subprocess, sys, tomllib
@@ -135,13 +146,19 @@ def row(key, name, folder, commands):
 
 
 def suite_installer(folder):
-    """Whether *folder* holds a suite app's install.sh: one with the options every suite installer has, of this suite
-    (its names start with bc250: another suite's apps may sit in /opt beside them)."""
+    """Whether *folder* holds an install.sh of this suite's apps: one with the options every one of them has, that
+    uses the suite's venv or bundles its core (another suite's apps may sit in /opt beside them)."""
     try:
         text = (folder / "install.sh").read_text(encoding="utf-8", errors="replace")
     except OSError:
         return False
-    return "--no-desktop-shortcut)" in text and "--uninstall)" in text and "not with sudo" in text and "bc250" in text
+    return ("--no-desktop-shortcut)" in text and "--uninstall)" in text and "not with sudo" in text
+            and ("bc250-bazzite-suite" in text or "bc250_core" in text))
+
+
+def kept_folder(key, record):
+    """The release folder the portal kept for *key*: <tag>, or local-<key> for an install from the checkout."""
+    return state / "releases" / (f"local-{key}" if record.startswith("local") else record)
 
 
 app_ids = set()                         # the ids of the apps this portal lists: their launchers' names
@@ -149,9 +166,7 @@ for key, app in apps.items():
     app_ids |= {Path(p).name for p in app.get("detect", [])}
     if app.get("required") or not present(app.get("detect", [])):
         continue
-    # The portal keeps releases/<tag> (from a release) or releases/local-<key> (from the checkout).
-    kept = [state / "releases" / name for name in (records.get(key, ""), "local-" + key, app.get("tag", ""))
-            if name and name != "local"]
+    kept = [kept_folder(key, name) for name in (records.get(key, ""), "local", app.get("tag", "")) if name]
     folder = next((f for f in kept if f.is_dir()), None)
     if folder is None and suite and (suite / "apps" / key).is_dir():
         dest = staging / key
@@ -169,9 +184,9 @@ if releases.is_dir():
         match = re.match(r"^(?:bc250-)?(.+)-v\d+\.\d+\.\d+$", path.name)
         key = match[1] if match else path.name.removeprefix("local-")
         if key not in apps and key not in candidates:
-            candidates[key] = path.name
+            candidates[key] = "local" if path.name.startswith("local-") else path.name
 for key, tag in sorted(candidates.items()):
-    folder = releases / (f"local-{key}" if tag == "local" else tag)
+    folder = kept_folder(key, tag)
     app_id = installer_value(folder, "APP_ID")
     if (not app_id or app_id in own_ids or app_id in app_ids or not folder.is_dir()
             or not present([str(data_dir / app_id / "app"), str(opt_dir / app_id), f"~/.local/bin/{app_id}"])):
@@ -194,10 +209,9 @@ PY
 # whole uninstall. Without a terminal nothing is asked and the apps stay, as they are named at the end. With --all,
 # one confirmation instead, then every app goes (with --purge, their settings too); it needs a terminal.
 uninstall_other_apps() {
-    local staging list key name folder commands answer names
+    local list key name folder commands answer names
     local -a chosen=() failed=()
-    staging=$(mktemp -d)
-    list=$(installed_apps "$staging") || die "Could not read the list of installed apps."
+    list=$(installed_apps "$STAGING/apps") || die "Could not read the list of installed apps."
     if $ALL && [ -n "$list" ]; then
         { [ -t 0 ] || [ -n "${BC250_INTERACTIVE:-}" ]; } || die "--all needs a terminal to confirm; nothing was uninstalled."
         names=$(cut -f2 <<<"$list" | paste -sd, - | sed 's/,/, /g')
@@ -207,7 +221,7 @@ uninstall_other_apps() {
         read -r answer || answer=n
         case "${answer,,}" in
             y|yes) ;;
-            *) rm -rf "$staging"; info "Canceled: nothing was uninstalled."; exit 1 ;;
+            *) info "Canceled: nothing was uninstalled."; exit 1 ;;
         esac
         mapfile -t chosen < <(cut -f1 <<<"$list")
     elif [ -n "$list" ] && { [ -t 0 ] || [ -n "${BC250_INTERACTIVE:-}" ]; }; then   # BC250_INTERACTIVE: tests only
@@ -219,7 +233,7 @@ uninstall_other_apps() {
                 case "${answer,,}" in
                     y|yes) chosen+=("$key"); break ;;
                     s|skip) break ;;
-                    c|cancel) rm -rf "$staging"; info "Canceled: nothing was uninstalled."; exit 1 ;;
+                    c|cancel) info "Canceled: nothing was uninstalled."; exit 1 ;;
                 esac
             done
         done 3<<<"$list"
@@ -241,7 +255,6 @@ uninstall_other_apps() {
             failed+=("$name")
         fi
     done <<<"$list"
-    rm -rf "$staging"
     [ ${#failed[@]} -eq 0 ] || info "Not uninstalled: ${failed[*]}"
     if $PURGE && [ ${#chosen[@]} -gt 0 ] && ! $ALL; then
         info "Their own settings are kept: --purge applies to the portal and Board Test (with --all, to every app)."
@@ -250,7 +263,7 @@ uninstall_other_apps() {
 
 # Like the portal after an uninstall: drop the app from installed.json and the release folder it kept.
 forget_app() {
-    case "$2" in "$STATE_DIR"/releases/*) rm -rf "$2" ;; esac
+    case "$2" in "${STATE_DIR:?}"/releases/?*) rm -rf "$2" ;; esac
     [ -f "$STATE_DIR/installed.json" ] || return 0
     python3 - "$STATE_DIR/installed.json" "$1" <<'PY'
 import json, sys
@@ -269,10 +282,10 @@ PY
 
 # After the uninstall without --purge: keep only what an app that is still installed needs (its record and the
 # release folder its uninstaller runs from); records and folders of apps that are gone, and Board Test's, go.
-# With nothing left, the portal's state folder goes too.
+# The rest of the state (the wallpaper, the music) stays; an empty state folder goes.
 prune_state() {
     local manifest="$SRC/apps.toml"
-    [ -f "$LINK/apps.toml" ] && manifest="$LINK/apps.toml"
+    [ -f "$PORTAL_DIR/apps.toml" ] && manifest="$PORTAL_DIR/apps.toml"
     [ -d "$STATE_DIR" ] || return 0
     python3 - "$manifest" "$STATE_DIR" <<'PY'
 import json, os, re, shutil, sys, tomllib
@@ -291,7 +304,7 @@ def installed(key):
     return not app.get("required") and any(Path(os.path.expandvars(os.path.expanduser(p))).exists()
                                            for p in app.get("detect", []))
 records = {k: v for k, v in records.items() if installed(k)}
-keep = {f"local-{k}" if v == "local" else v for k, v in records.items()}
+keep = {f"local-{k}" if str(v).startswith("local") else v for k, v in records.items()}
 releases = state / "releases"
 if releases.is_dir():
     for path in releases.iterdir():
@@ -299,39 +312,28 @@ if releases.is_dir():
         key = match[1] if match else path.name.removeprefix("local-")
         if path.name not in keep and (key in apps or key not in records):
             shutil.rmtree(path, ignore_errors=True)
+    if not any(releases.iterdir()):
+        releases.rmdir()
 if records:
     tmp = state / "installed.tmp"
     tmp.write_text(json.dumps(records, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     tmp.replace(state / "installed.json")
 else:
-    shutil.rmtree(state, ignore_errors=True)
+    (state / "installed.json").unlink(missing_ok=True)
 PY
-}
-
-# Whether anything the uninstall removes is on this computer (paths and globs): without, it removes nothing, asks
-# for no password and says the suite is not installed.
-installed_here() {
-    local path
-    for path in "$@"; do
-        compgen -G "$path" >/dev/null && return 0
-    done
-    return 1
-}
-
-# Nothing of the portal, of Board Test or of another suite app: nothing to uninstall.
-nothing_installed() {
-    local staging list
-    installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "$LINK" "$OPT_DIR/$APP_ID"-v* "$OPT_DIR/$BT_ID" \
-        "$VENV_USERS/$APP_ID" && return 1
-    $PURGE && installed_here "${STATE_DIR:?}" "${CONFIG_DIR:?}/$APP_ID" && return 1
-    staging=$(mktemp -d)
-    list=$(installed_apps "$staging" 2>/dev/null) || list=""
-    rm -rf "${staging:?}"
-    [ -z "$list" ]
+    rmdir "$STATE_DIR" 2>/dev/null || true      # nothing remembered: nothing to keep
 }
 
 if $UNINSTALL; then
-    if nothing_installed; then
+    STAGING=$(mktemp -d)                              # where apps are staged for their uninstallers
+    trap 'rm -rf "${STAGING:?}"' EXIT
+    mkdir "$STAGING/check" "$STAGING/apps"
+    # Nothing of the portal, of Board Test or of another suite app: nothing to uninstall.
+    found=false
+    installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "$PORTAL_DIR" "$VENV_USERS/$APP_ID" \
+        "$OPT_DIR/$BT_ID" && found=true
+    $PURGE && installed_here "${STATE_DIR:?}" "${CONFIG_DIR:?}/$APP_ID" && found=true
+    if ! $found && [ -z "$(installed_apps "$STAGING/check" 2>/dev/null)" ]; then
         info "$APP_NAME is not installed: nothing to remove."
         exit 0
     fi
@@ -345,12 +347,12 @@ if $UNINSTALL; then
     $PURGE || prune_state
     info "Removing the portal's launcher and menu entry"
     remove_menu_entries
-    info "Removing $LINK and the installed versions (sudo)"
-    as_root rm -rf "$LINK" "$OPT_DIR/$APP_ID"-v*
+    info "Removing the portal from $PORTAL_DIR"
+    rm -rf "${PORTAL_DIR:?}"
     release_venv
     if $PURGE; then
         info "Removing the portal's settings and state"
-        rm -rf "${STATE_DIR:?}" "${CONFIG_DIR:?}/$APP_ID"
+        rm -rf "${STATE_DIR:?}" "${CONFIG_DIR:?}/${APP_ID:?}"
     fi
     rmdir "$SUITE_DIR" 2>/dev/null || true             # nothing of the suite left in it
     others=""
@@ -361,7 +363,7 @@ if $UNINSTALL; then
 fi
 
 # --- Checks ------------------------------------------------------------------------------------
-[ "$(uname -s)" = Linux ] || die "This app runs on Linux (Bazzite) only."
+[ "$(uname -s)" = Linux ] || die "This suite runs on Linux (Bazzite) only."
 for f in apps.toml requirements.txt bc250_portal/__init__.py bc250_portal/__main__.py; do
     [ -f "$SRC/$f" ] || die "$f is missing: run install.sh from the extracted release folder."
 done
@@ -374,57 +376,66 @@ command -v python3 >/dev/null 2>&1 || die "python3 is not installed."
 python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))' || die "Python 3.11 or newer is needed."
 python3 -c 'import venv, ensurepip' 2>/dev/null || die "python3 has no venv/ensurepip module."
 
-TARGET="$OPT_DIR/$APP_ID-v$VERSION"
 info "Installing $APP_NAME $VERSION"
 
-# --- 1. Root-owned copy in /opt -----------------------------------------------------------------
-if [ "$SRC" = "$(cd "$TARGET" 2>/dev/null && pwd -P)" ]; then
-    info "Already running from $TARGET, no copy needed"
-else
-    info "Copying to $TARGET (sudo)"
-    STAGE="$OPT_DIR/.$APP_ID-v$VERSION.new"
-    as_root rm -rf "$STAGE"
-    as_root mkdir -p "$STAGE"
-    # Plain copy, no -a: the files get /opt's default SELinux label instead of the Downloads one. The bundled
-    # Board Test is installed by its own installer below, so it is not part of the portal's copy.
-    (cd "$SRC" && tar --exclude='./bundled' --exclude='./tests' --exclude='./.git' --exclude='__pycache__' \
-        --exclude='./requirements-dev.txt' -cf - .) | as_root tar -xf - -C "$STAGE" --no-same-owner
-    if [ "$CORE_SRC" != "$SRC/bc250_core" ]; then         # from the checkout: bundle core like a release
-        as_root mkdir -p "$STAGE/bc250_core"
-        (cd "$CORE_SRC" && tar --exclude='__pycache__' -cf - .) |
-            as_root tar -xf - -C "$STAGE/bc250_core" --no-same-owner
-        # The installed portal installs the other apps from this checkout too, as when it runs from here: the
-        # repository, one level up from <checkout>/portal.
-        (cd "$SRC/.." && pwd -P) | as_root tee "$STAGE/suite-checkout" >/dev/null
-    fi
-    # The release's tarball beside the unpacked folder, as the install steps and check-release.sh leave it: its
-    # sha256 goes beside the program, so the portal can tell a release built again under this version from the
-    # build it runs (build.sha256; the portal's update check reads the newest release's SHA256SUMS).
-    tarball="$SRC/../$(basename "$SRC").tar.gz"
-    if [ -f "$tarball" ]; then
-        sha256sum "$tarball" | as_root tee "$STAGE/build.sha256" >/dev/null
-    fi
-    as_root chown -R root:root "$STAGE"
-    as_root find "$STAGE" -type d -exec chmod 755 {} +
-    as_root find "$STAGE" -type f -exec chmod go-w,a+r {} +
-    as_root rm -rf "$TARGET"
-    as_root mv "$STAGE" "$TARGET"
-    command -v restorecon >/dev/null 2>&1 && as_root restorecon -R "$TARGET" 2>/dev/null || true
-fi
-as_root ln -sfn "$(basename "$TARGET")" "$LINK"
-for old in "$OPT_DIR/$APP_ID"-v*; do
-    [ -d "$old" ] && [ "$old" != "$TARGET" ] || continue
-    info "Removing the previous version $(basename "$old")"
-    as_root rm -rf "$old"
-done
+# --- 1. BC-250 Board Test, always part of the suite -------------------------------------------
+# First, while the release folder is whole: the portal's own update runs this script from a folder that the copy
+# below may replace (an earlier portal kept its downloads in what is the portal's own folder now).
+info "Installing BC-250 Board Test ($BT_TAG)"
+bt_args=()
+$DESKTOP_SHORTCUT || bt_args+=(--no-desktop-shortcut)
+bash "$BT_SRC/install.sh" ${bt_args[@]+"${bt_args[@]}"}
+# Tell the portal which Board Test it installed ("local" from a checkout), as it does for apps it installs.
+mkdir -p "$STATE_DIR"
+python3 - "$STATE_DIR/installed.json" "$BT_KEY" "$BT_TAG" <<'PY'
+import json, sys
+from pathlib import Path
+path, key, tag = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data = data if isinstance(data, dict) else {}
+except (OSError, ValueError):
+    data = {}
+data[key] = tag
+tmp = path.with_suffix(".tmp")
+tmp.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+tmp.replace(path)
+PY
 
-# --- 2. Shared suite venv with PyQt6 and pygame-ce ------------------------------------------------------------
+# --- 2. The portal's copy in the home folder -----------------------------------------------------
+info "Copying the portal to $PORTAL_DIR"
+# The new portal is copied beside the installed one first and takes its place only then. The bundled Board Test is
+# installed by its own installer below, so it is not part of the portal's copy.
+NEW_DIR="$SUITE_DIR/.portal.new"
+rm -rf "${NEW_DIR:?}"
+mkdir -p "$NEW_DIR"
+(cd "$SRC" && tar --exclude='./bundled' --exclude='./tests' --exclude='./.git' --exclude='__pycache__' \
+    --exclude='./requirements-dev.txt' -cf - .) | tar -xf - -C "$NEW_DIR"
+if [ "$CORE_SRC" != "$SRC/bc250_core" ]; then         # from the checkout: bundle core like a release
+    mkdir -p "$NEW_DIR/bc250_core"
+    (cd "$CORE_SRC" && tar --exclude='__pycache__' -cf - .) | tar -xf - -C "$NEW_DIR/bc250_core"
+    # The installed portal installs the other apps from this checkout too, as when it runs from here: the
+    # repository, one level up from <checkout>/portal.
+    (cd "$SRC/.." && pwd -P) > "$NEW_DIR/suite-checkout"
+fi
+# The release's tarball beside the unpacked folder, as the install steps and check-release.sh leave it: its sha256
+# goes beside the program, so the portal can tell a release built again under this version from the build it runs
+# (build.sha256; the portal's update check reads the newest release's SHA256SUMS).
+tarball="$SRC/../$(basename "$SRC").tar.gz"
+if [ -f "$tarball" ]; then
+    sha256sum "$tarball" > "$NEW_DIR/build.sha256"
+fi
+rm -rf "${PORTAL_DIR:?}"
+mv "$NEW_DIR" "$PORTAL_DIR"
+cd "$SUITE_DIR"                         # the folder this ran from may be gone with the old copy
+
+# --- 3. Shared suite venv with PyQt6 and pygame-ce ------------------------------------------------------------
 # A venv made by an older Python has no site-packages for the one that runs it now (a Bazzite update moves
 # /usr/bin/python3 to the next version, and the venv's python links to it): make it again.
 VENV_FITS='import os, sysconfig; raise SystemExit(not os.path.isdir(sysconfig.get_path("purelib")))'
 if [ ! -x "$VENV/bin/python" ] || ! "$VENV/bin/python" -c "$VENV_FITS" 2>/dev/null; then
     info "Creating the suite venv in $VENV"
-    rm -rf "$VENV"
+    rm -rf "${VENV:?}"
     mkdir -p "$SUITE_DIR"
     python3 -m venv "$VENV"
 fi
@@ -432,17 +443,17 @@ mkdir -p "$VENV_USERS"
 touch "$VENV_USERS/$APP_ID"
 info "Installing PyQt6 and pygame-ce into the venv (downloads ~110 MB the first time)"
 "$VENV/bin/python" -m pip install -q --disable-pip-version-check --upgrade pip
-"$VENV/bin/python" -m pip install -q --disable-pip-version-check --upgrade -r "$LINK/requirements.txt"
+"$VENV/bin/python" -m pip install -q --disable-pip-version-check --upgrade -r "$PORTAL_DIR/requirements.txt"
 "$VENV/bin/python" -c 'import PyQt6.QtWidgets' || die "PyQt6 does not load from the venv."
 
-# --- 3. Launcher, menu entry, Desktop icon ------------------------------------------------------
+# --- 4. Launcher, menu entry, Desktop icon ------------------------------------------------------
 info "Creating the launcher $LAUNCHER"
 mkdir -p "$(dirname "$LAUNCHER")"
 cat >"$LAUNCHER" <<EOF
 #!/usr/bin/env bash
-# $APP_NAME launcher, written by install.sh. Starts from the root-owned portal folder, so Python imports the
+# $APP_NAME launcher, written by install.sh. Starts from the installed portal's folder, so Python imports the
 # portal and the bc250_core bundled there, never a copy from the current directory.
-cd "$LINK" || { echo "$APP_NAME is not installed in $LINK; run install.sh again." >&2; exit 1; }
+cd "$PORTAL_DIR" || { echo "$APP_NAME is not installed in $PORTAL_DIR; run install.sh again." >&2; exit 1; }
 exec "$VENV/bin/python" -m bc250_portal "\$@"
 EOF
 chmod 755 "$LAUNCHER"
@@ -454,7 +465,7 @@ Name=$APP_NAME
 GenericName=BC-250 tools
 Comment=Install and start the BC-250 tools for Bazzite
 Exec=$LAUNCHER
-Icon=$LINK/images/$APP_ID-128.png
+Icon=$PORTAL_DIR/images/$APP_ID-128.png
 Terminal=false
 Categories=System;Settings;
 Keywords=BC-250;Bazzite;suite;portal;
@@ -476,28 +487,6 @@ if $DESKTOP_SHORTCUT && [ -d "$DESKTOP_DIR" ]; then
 elif ! $DESKTOP_SHORTCUT; then
     rm -f "$DESKTOP_ICON"
 fi
-
-# --- 4. BC-250 Board Test, always part of the suite -------------------------------------------
-info "Installing BC-250 Board Test ($BT_TAG)"
-bt_args=()
-$DESKTOP_SHORTCUT || bt_args+=(--no-desktop-shortcut)
-bash "$BT_SRC/install.sh" "${bt_args[@]}"
-# Tell the portal which Board Test it installed ("local" from a checkout), as it does for apps it installs.
-mkdir -p "$STATE_DIR"
-python3 - "$STATE_DIR/installed.json" "check" "$BT_TAG" <<'PY'
-import json, sys
-from pathlib import Path
-path, key, tag = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
-try:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    data = data if isinstance(data, dict) else {}
-except (OSError, ValueError):
-    data = {}
-data[key] = tag
-tmp = path.with_suffix(".tmp")
-tmp.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-tmp.replace(path)
-PY
 
 info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run: $APP_ID"
 case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) info "Note: ~/.local/bin is not on your PATH, so the terminal command needs the full path: $LAUNCHER" ;; esac

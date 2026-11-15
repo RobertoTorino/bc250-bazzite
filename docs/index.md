@@ -57,15 +57,21 @@ beside the system Mesa.
 #### :material-gamepad-variant: Gaming
 
 [shadPS4 Manager](apps/shadps4.md) plays PS4 games with the shadPS4 emulator,
-[RPCS3 Manager](apps/rpcs3.md) PS3 games with the RPCS3 emulator, and
-[BC-250 PS Remote Play](apps/consoles.md) finds, wakes and registers PS4 and PS5 consoles for Remote Play.
+[RPCS3 Manager](apps/rpcs3.md) PS3 games with the RPCS3 emulator,
+[PPSSPP Manager](apps/ppsspp.md), [PCSX2 Manager](apps/pcsx2.md), [Vita3K Manager](apps/vita3k.md) and
+[Xenia Manager](apps/xenia.md) bring the PSP, PS2, PS Vita and Xbox 360 emulators,
+[BC-250 PS Remote Play](apps/consoles.md) finds, wakes and registers PS4 and PS5 consoles for Remote Play,
+[BC-250 XB Remote Play](apps/clb.md) streams from an Xbox, and
+[Bazzite DatStation](apps/datstation.md) is a PlayStation reference.
 </div>
 <div class="home-card" markdown>
 #### :material-television: Living room
 
 [BC-250 CEC Manager](apps/cec.md) turns the TV on and off with the board, [SFTP Tools](apps/sftp.md) moves files
-between computers, [Webcam](apps/webcam.md) makes the PS5 HD Camera a webcam, and
-[Controller](apps/controller.md) updates the DualSense's firmware.
+between computers, [Webcam](apps/webcam.md) makes the PS5 HD Camera a webcam,
+[Controller](apps/controller.md) updates the DualSense's firmware,
+[Bluetooth Pairing](apps/btpair.md) pairs your Bluetooth keyboard, mouse and controllers at every boot, and
+[SSD Check](apps/ssd.md) checks a drive's health and speed.
 </div>
 </div>
 

@@ -10,7 +10,6 @@ not an enlarged one, so the text stays crisp; it takes about four times as long.
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 import subprocess
@@ -18,31 +17,16 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def _suites():
-    spec = importlib.util.spec_from_file_location("nexus_suites", ROOT / "tools" / "suites.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-suites = _suites()
-SUITE = suites.suite()                              # the default suite; set_suite() for another (--suite)
+SUITE = ROOT                                        # the repository, which is the suite
 
 
 def set_scale(scale: float) -> None:
-    """How large the window is drawn in the layout: 1.2 (1600 x 900 logical, the BC250 portal's) or 1.5 (1280 x
-    720). Before prepare_home(); read it as tour_frames.SCALE afterwards."""
+    """How large the window is drawn in the layout: 1.2 (1600 x 900 logical, the portal's) or 1.5 (1280 x
+    720, a handheld's). Before prepare_home(); read it as tour_frames.SCALE afterwards."""
     global SCALE
     SCALE = scale
 
 
-def set_suite(name: str | None) -> None:
-    """The suite the tour works on, by its folder name (tools/suites.py); None keeps the default. Read it as
-    tour_frames.SUITE afterwards, not as a name imported before."""
-    global SUITE
-    SUITE = suites.suite(name)
 WIDTH, HEIGHT = 1920, 1080                          # the layout: every position in the tours is in these pixels
 SCALE = 1.2                                         # the window is 1600 x 900 at 120 %: readable on a phone too
 MUSIC_DIR = ROOT / "tools" / "sounds"               # the tours' music, every suite's (owner, 02-11-2026)
@@ -61,19 +45,6 @@ def size() -> tuple[int, int]:
     return round(WIDTH * ZOOM), round(HEIGHT * ZOOM)
 
 
-def platform_path(path: Path) -> str:
-    """*path* as QT_QPA_PLATFORM's options can take it: Qt splits them at every ':', so a Windows drive letter
-    (C:\\...) left only "C" of it. Without the drive there, from the working folder's drive; on another drive the
-    working folder moves to the file's folder (the tours resolve their own paths before)."""
-    drive, rest = os.path.splitdrive(str(path))
-    if not drive:
-        return str(path)
-    if drive.lower() != os.path.splitdrive(os.getcwd())[0].lower():
-        os.chdir(path.parent)
-        return path.name
-    return rest
-
-
 def prepare_home(home: Path) -> None:
     for var, sub in (("HOME", ""), ("XDG_DATA_HOME", ".local/share"), ("XDG_CONFIG_HOME", ".config"),
                      ("XDG_STATE_HOME", ".local/state"), ("XDG_CACHE_HOME", ".cache")):
@@ -85,7 +56,7 @@ def prepare_home(home: Path) -> None:
     screen = {"screens": [{"name": "tour", "x": 0, "y": 0, "width": width, "height": height,
                            "logicalDpi": 96, "logicalBaseDpi": 96, "dpr": 1}]}
     (home / "screen.json").write_text(json.dumps(screen), encoding="utf-8")
-    os.environ["QT_QPA_PLATFORM"] = f"offscreen:configfile={platform_path(home / 'screen.json')}"
+    os.environ["QT_QPA_PLATFORM"] = f"offscreen:configfile={home / 'screen.json'}"
     os.environ["QT_SCALE_FACTOR"] = str(SCALE * ZOOM)
     os.environ.pop("QT_SCREEN_SCALE_FACTORS", None)
     sys.path[:0] = [str(ROOT / "core")]

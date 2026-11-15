@@ -90,18 +90,13 @@ def game_mode() -> bool:
     return "gamescope" in os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
 
 
-def _steam_program() -> str:
-    """The Steam client to run: steam, on PATH."""
-    return "steam"
-
-
 def start_command() -> list[str]:
     """Steam started again after with_steam_closed(), in the background as the desktop starts it at login."""
     return ["bazzite-steam" if shutil.which("bazzite-steam") else "steam", "-silent"]
 
 
 def shutdown_command() -> list[str]:
-    return [_steam_program(), "-shutdown"]
+    return ["steam", "-shutdown"]
 
 
 def play_url(number: int) -> str:

@@ -2,36 +2,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Build the install tree of one app (or the portal) from the checkout:
 
-    python3 tools/stage_app.py [--suite NAME] <app|portal> <dest-dir>
+    python3 tools/stage_app.py <app|portal> <dest-dir>
 
 <dest-dir> gets the app's own files without development leftovers (tests, venvs, caches) and, when the app imports
 bc250_core, a copy of core/bc250_core beside its package: each app ships the core it was tested with, and its
 launcher starts from that folder so this copy is the one Python imports. An app also gets its chapter of the
-manual (<suite>/docs/apps/<app>.md) as MANUAL.md, so it can be read without a network.
+manual (docs/apps/<app>.md) as MANUAL.md, so it can be read without a network.
 
-The app comes from the suite (apps/<app>, portal; tools/suites.py), core from core/ at the root.
+The app comes from apps/<app> (or portal/), core from core/bc250_core.
 The release workflow tars this tree; the portal uses the same function to install from a local checkout."""
 
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import re
 import shutil
 import sys
 from pathlib import Path
 
 
-def _load(name: str, path: Path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-suites = _load("nexus_suites", Path(__file__).resolve().with_name("suites.py"))
-ROOT = suites.ROOT
-SUITE = suites.suite()                      # the default suite (tools/suites.py); main() takes --suite
+ROOT = Path(__file__).resolve().parent.parent
+SUITE = ROOT                                # the repository is the suite; the functions take another for the tests
 SKIP_DIRS = {"tests", "python", "_python", "__pycache__", ".pytest_cache", ".idea", ".venv",
              "target"}                          # cargo's build output (consoles/native)
 SKIP_FILES = {"requirements-dev.txt", ".gitignore", ".gitattributes", ".standalone"}
@@ -61,10 +52,8 @@ def manual_chapter(name: str, suite: Path = SUITE) -> Path | None:
 
 
 def core_dir(suite: Path = SUITE) -> Path:
-    """core/bc250_core: at the root of the repository, which is the suite; in a repository that holds suites as
-    folders (the tests make some), beside them."""
-    root = suite if (suite / "core" / "bc250_core").is_dir() else suite.parent
-    return root / "core" / "bc250_core"
+    """core/bc250_core of the suite."""
+    return suite / "core" / "bc250_core"
 
 
 def stage(name: str, dest: Path, suite: Path = SUITE) -> Path:
@@ -84,17 +73,11 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("app", help="the app's key, or portal")
     parser.add_argument("dest", type=Path, help="the folder to create")
-    suites.add_argument(parser)
     args = parser.parse_args(argv)
     if args.dest.exists():
         print(f"{args.dest} exists already", file=sys.stderr)
         return 1
-    try:
-        suite = suites.suite(args.suite)
-    except LookupError as exc:
-        print(exc, file=sys.stderr)
-        return 1
-    stage(args.app, args.dest, suite)
+    stage(args.app, args.dest)
     print(f"staged {args.app} in {args.dest}" + (" (with bc250_core)" if (args.dest / "bc250_core").is_dir() else ""))
     return 0
 

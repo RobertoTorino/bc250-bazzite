@@ -33,9 +33,9 @@ def test_the_catalog_is_in_sync_with_the_apps():
 
 
 def test_every_app_with_a_pinned_upstream_is_listed():
-    listed = {(app["suite"], app["app"]) for item in catalog()["github"] for app in item["apps"]}
+    listed = {app["app"] for item in catalog()["github"] for app in item["apps"]}
     assert listed == upstreams.apps_with_upstreams()
-    assert ("bc250-bazzite", "rpcs3") in listed
+    assert "rpcs3" in listed
 
 
 def test_the_constants_are_read_without_running_the_module(tmp_path):
@@ -83,7 +83,7 @@ def test_installed_behind_the_pin_and_upstream_past_it(tmp_path):
     app = vita["apps"][0]
     install(tmp_path, app, "4200")
     source = upstreams.check_github(vita, release(str(int(app["pin"]) + 14)), tmp_path)
-    assert [update.name for update in source.updates] == ["Vita3K Manager (BC250 Bazzite Suite): installed",
+    assert [update.name for update in source.updates] == ["Vita3K Manager: installed",
                                                           "Vita3K on GitHub"]
     assert source.manual and source.step is None                        # never by a click
     assert "use its Install" in source.note and "comes with a release of the app" in source.note

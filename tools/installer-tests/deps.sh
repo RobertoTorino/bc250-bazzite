@@ -5,7 +5,7 @@
 # Dependency Checker of the suite (the app it was) and its timer go, the development machine's hourly
 # nexus-dev-updates timer goes, --no-desktop-shortcut drops the icon, root and
 # unknown options are refused, uninstall removes the timer and leaves the checkout and the settings, --purge removes
-# them. Runs with the shims from shims.sh (CI, or WSL).
+# them. Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)
 NEXUS=$SUITE                        # the repository: dev/ and core/

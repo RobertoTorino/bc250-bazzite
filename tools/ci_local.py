@@ -6,15 +6,14 @@ GitHub runs them, inside the container tools/ci-local.sh starts: Python
 pass in the suite's full venv on a newer Python can still fail in CI; this shows it before the push.
 
     tools/ci-local.sh [--list] [--all] [--workers N] [job[/matrix value] ...]
-    e.g.  tools/ci-local.sh pytest/apps/gpu pytest/tools
+    e.g.  tools/ci-local.sh pytest/apps/fan pytest/tools
 
 Without job names it runs the workflows the push would start on GitHub: those whose push paths match a file that
-differs from origin/main (the commits not pushed yet and the changes not committed), so one suite's jobs never hold
-another suite's push (owner, 07-11-2026). --all runs every workflow; so does a checkout without origin/main. Job
+differs from origin/main (the commits not pushed yet and the changes not committed). --all runs every workflow; so does a checkout without origin/main. Job
 names run those jobs, whatever changed.
 
 The jobs come from the workflows themselves, so a new app in the matrix or a new installer step is run without
-changing this; a matrix a plan job reads from the suite's folders (tools/ci_matrix.py, fromJSON(needs.plan.outputs.x))
+changing this; a matrix a plan job reads from the repository's folders (tools/ci_matrix.py, fromJSON(needs.plan.outputs.x))
 is read the same way here, by running that job's steps.
 What cannot run here is reported, not hidden: a job for another system (windows-latest), apt-get steps (the image
 has those packages) and actions/cache (its folder is kept in ~/.cache/bc250-ci-local instead). The work happens on a
@@ -44,7 +43,6 @@ WORK = Path(os.environ.get("CI_LOCAL_WORK", "/tmp/ci-local-work"))   # the copy 
 CACHE = Path(os.environ.get("CI_LOCAL_CACHE", "/cache"))     # venvs, pip's cache, logs: kept between runs
 WORKFLOWS = (("ci.yml", ""),)                               # each workflow run here, with the prefix of its job names
 COPY_EXCLUDES = (".venv*", "target", "site", "__pycache__", ".pytest_cache", "dist", "node_modules")
-OWN_REPOSITORIES: tuple[str, ...] = ()                     # folders left out of the copy: none here
 SHELL = ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c"]      # GitHub's shell for run steps on Linux
 EXPR = re.compile(r"\$\{\{\s*(.*?)\s*\}\}")
 NEEDS = re.compile(r"^\$\{\{\s*fromJSON\(needs\.(\w[\w-]*)\.outputs\.(\w+)\)\s*\}\}$")   # a plan job's output
@@ -76,7 +74,7 @@ class Result:
 
 def job_outputs(jobs: dict, name: str, root: Path) -> dict[str, object]:
     """The outputs of the job *name* as its steps write them to $GITHUB_OUTPUT (key=value lines), run here in
-    *root*: the plan job of a suite's CI, which reads the matrix from the suite's folders (tools/ci_matrix.py).
+    *root*: the plan job of ci.yml, which reads the matrix from the repository's folders (tools/ci_matrix.py).
     A value that is JSON is parsed, as fromJSON would."""
     found: dict[str, object] = {}
     with tempfile.NamedTemporaryFile("w+", encoding="utf-8", prefix="ci-local-outputs-") as output:   # not in root:
@@ -95,7 +93,7 @@ def job_outputs(jobs: dict, name: str, root: Path) -> dict[str, object]:
 
 
 def load_jobs(workflow: Path, prefix: str = "") -> list[Job]:
-    """Every job of the workflow, a matrix job once per combination ("pytest/apps/gpu"), *prefix* before each name.
+    """Every job of the workflow, a matrix job once per combination ("pytest/apps/fan"), *prefix* before each name.
     A matrix given as ${{ fromJSON(needs.plan.outputs.dirs) }} is the plan job's output, read by running it."""
     jobs = []
     specs = yaml.safe_load(workflow.read_text(encoding="utf-8"))["jobs"]
@@ -264,8 +262,8 @@ def prepare_copy() -> str:
     """The checkout copied to WORK with every change staged, as the commit would have it; returns origin/main."""
     if WORK.exists():
         shutil.rmtree(WORK)
+    WORK.parent.mkdir(parents=True, exist_ok=True)
     excludes = [f"--exclude={pattern}" for pattern in COPY_EXCLUDES]
-    excludes += [f"--exclude=/{name}/" for name in OWN_REPOSITORIES]
     subprocess.run(["rsync", "-a", "--delete", *excludes, f"{SRC}/", f"{WORK}/"], check=True)
     subprocess.run(["git", "add", "-A"], cwd=WORK, check=True)
     base = subprocess.run(["git", "rev-parse", "origin/main"], cwd=WORK, capture_output=True, text=True)

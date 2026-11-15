@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise dev/itests/install.sh, Nexus Installer Tests's installer: the launcher, menu entry and Desktop icon point at this
 # checkout, --no-desktop-shortcut drops the icon, root and unknown options are refused, uninstall leaves the
-# checkout alone and keeps the settings, --purge removes them. Runs with the shims from shims.sh (CI, or WSL).
+# checkout alone and keeps the settings, --purge removes them. Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)
 NEXUS=$SUITE                        # the repository: dev/ and core/
