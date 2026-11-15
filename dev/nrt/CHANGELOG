@@ -1,0 +1,946 @@
+Changelog: 15-11-2026 01:08:09
+
+Fixed. The handling of a suite made for Windows devices is gone (owner, 15-11-2026): its check-release.ps1 on the
+handheld, its portal's run.ps1 in the commands of a portal release and a withdrawal, its .zip release, and the device
+test's PowerShell line. The board tests run on Linux; on a Windows PC the buttons are off and say so. The tool itself
+still runs on Windows.
+
+Changelog: 14-11-2026 23:58:33
+
+Fixed. The app is part of the BC250 Bazzite Suite's own repository, github.com/RobertoTorino/bc250-bazzite (owner,
+14-11-2026), where the suite is the repository itself: Start new release starts the repository's release.yml on the
+release commit (workflow_dispatch, no suites input), and follows that workflow's runs, named Release. Publish makes
+the portal GitHub's Latest release: the latest release is the newest portal, where the app releases' notes send
+people.
+
+Changelog: 13-11-2026 19:25:53
+
+Version 2.0.0.
+
+Changelog: 13-11-2026 19:01:22
+
+Fixed. The first column lists the suites of Nexus's own repository only. A suite in a repository of its own, cloned
+into the checkout as its folder (the Windows Portable Suite, owner 13-11-2026), is not listed: the commits, tags and
+releases the tool makes are Nexus's repository's, and that suite is released in its own. The tests build their
+sample Windows suite from copies of two of that suite's files in tests/fixtures/windows-suite/, and compare the
+copies with the suite's files while it is in the checkout.
+
+Changelog: 11-11-2026 22:19:14
+
+Fixed. GitHub status showed Up while an incident was still open (owner, 11-11-2026: the CI runs had waited in
+queued for 45 minutes while GitHub worked through the Actions backlog). githubstatus.com puts its indicator back to
+All Systems Operational once an incident is being monitored, and the pill went by that indicator alone; an open
+incident now counts as a problem by itself, and the tooltip names each incident with its stage (monitoring).
+
+Changelog: 07-11-2026 17:08:25
+
+Fixed. With the portal's version raised in a commit after its release was published, the steps showed the release
+on GitHub done and lit Device test for a draft no run had built (owner, 07-11-2026: wp-portal-v10.1.0 after the
+10.0.0 release; the device test downloaded nothing and the portal never showed). The draft a release run leaves is
+now read from portal/VERSION at the run's own commit, not the checkout's, so that release counts as over and Start
+new release is the step to do.
+
+Changelog: 06-11-2026 10:55:45
+
+Added. Run again in the workflow ticker (owner, 06-11-2026): while a run of the newest push has failed, it starts that
+run's failed jobs again on the same commit (gh run rerun --failed) in the Commands tab. A run canceled for a later run
+of its workflow does not count.
+
+Changelog: 06-11-2026 01:49:21
+
+Fixed. Publish is pressed once (owner, 06-11-2026: it stayed lit after the release was published, so it was pressed
+twice): the command fetches the new portal tag right after gh release edit, so the step sees the release published
+as soon as the command ends, instead of after GitHub's runs were read again. The Nexus page's Releases chapter says
+so.
+
+Changelog: 05-11-2026 22:24:55
+
+Fixed. Device test and its step's line follow the portal picked in the choice beside it, at once.
+
+Fixed. The portal choice of Device test has room before its text, which stood against the left border; the
+field only, the theme every app shares stays as it is.
+
+Changelog: 05-11-2026 21:14:15
+
+Fixed. A step whose command runs says so (owner, 05-11-2026: Push stayed lit during the push, which read as "push
+again"): a teal ⋯ in place of the orange ▶, and its line says what runs and that the output is on the Commands
+tab; for Push them, that CI's jobs run here first (a couple of minutes on Linux), then git push. Its pill stays
+gray until the command ends, then the next step lights.
+
+Changelog: 05-11-2026 21:05:30
+
+Fixed. After a push the CI passes step sees GitHub's CI within seconds (owner, 05-11-2026: CI ran on GitHub while
+the step said it had no CI run yet): the look right after the push comes before GitHub has started the runs, and
+the next one came 5 minutes later. While the pushed HEAD has no run on GitHub, the build pill looks every 10 s.
+
+Changelog: 05-11-2026 20:58:16
+
+Fixed. Refresh says it is at it (owner, 05-11-2026: it seemed to do nothing, or to be very slow): its pill reads
+"Refreshing…", with the busy cursor while the checkout is read, until GitHub's runs are in, then "Refreshed" with
+the time. A refresh takes a second or two: about 0.6 s for the checkout, 1.3 s for GitHub's runs.
+
+Changelog: 05-11-2026 20:41:56
+
+Breaking. A Nexus release is of the suite ticked in the Portals column, and only it (owner, 05-11-2026: the Windows
+draft, waiting for its device test on the handheld, held up the board's next release). The Contents tab and Start
+take that suite's apps and portal (core and Nexus when they changed); Start passes it to release-nexus.yml as the
+suites input (-f suites=bc250-bazzite), so the run carries only that suite and its title says so ("Release Nexus:
+bc250-bazzite"); Start again on this commit passes the run's suites again. The steps follow the ticked suite's
+release: its newest run, and only its own draft keeps it open, so the other suite's draft no longer holds Start
+new release back. A run started before (titled "Release Nexus") counts for every suite.
+
+Fixed. The Device test step says where the draft is tested when that is another system: "wp-portal-v8.2.0 is a
+draft: Device test on the handheld (Windows), then Publish when it works or Not OK." (owner, 05-11-2026: on the
+board Device test was gray, with no word why).
+
+Changelog: 05-11-2026 19:21:28
+
+Fixed. The portal choice of Device test and Publish holds only the portals that are still drafts: after one suite's
+Publish it moves to the next draft (owner, 05-11-2026: it stayed on portal-v15.2.0, so Publish published that one
+again and wp-portal-v8.2.0 stayed a draft).
+
+Changelog: 05-11-2026 13:42:23
+
+Added. The commit message field of Commit your changes starts with "see changelog", and holds it again after each
+commit; type over it for another message.
+
+Changelog: 04-11-2026 21:04:31
+
+Version 1.0.0.
+
+Changelog: 04-11-2026 19:05:17
+
+Fixed. The test of the board checks' terminal expects the checkout's folder quoted as shlex quotes it, which a
+Windows path needs.
+
+Changelog: 04-11-2026 14:09:55
+
+Fixed. A release lasts while one of its portal drafts waits for its device test, also when other work is pushed
+on top: Device test and Publish stay lit for it, and Start new release does not offer to replace it (owner,
+04-11-2026: a fix pushed before the Windows portal's device test, and NRT offered a new release). A draft marked
+Not OK still ends it, so a new release can replace it.
+
+Fixed. Start and Fetch tags take the Nexus index's tag (nexus-v...) as GitHub has it: the index makes it anew on
+main's newest commit each time it runs, so the copy here no longer stops the fetch with "would clobber existing
+tag".
+
+Changelog: 04-11-2026 10:54:41
+
+Breaking. Test on this board holds the board tests of a release alone: Test app updates, Test Portal release
+and Test withdrawal (owner, 04-11-2026: the release tool is the release). Test local apps (the suite's apps and
+wikis from the checkout, Wikis on the network) and Close issues moved to Nexus Dashboard, with their code
+(plan.launch_targets, portal_target, docs_targets, fetch_open_issues and the rest) and tests. Installer tests and
+Record portal tour are gone: the dashboard's Nexus Installer Tests and Portal video tour tiles do the same on the
+suite chosen there (on a Windows suite, Nexus Installer Tests runs its .ps1 tests; check-release.ps1 installer
+still runs them all from PowerShell). The local apps' logs are no longer in ~/.cache/nexus-release-tool/run/.
+
+Changelog: 04-11-2026 02:05:35
+
+Added. The BC250 Bazzite Suite is on the Nexus release (owner, 04-11-2026: the same steps for every suite): the
+suite whose tags have no prefix is on it when release.yml can be called (flow.on_nexus_release(), as
+tools/nexus_release.py reads it), so the Nexus release tab's steps, the Contents tab, the device test
+(check-release.sh draft on the board) and Publish work for it as for the Windows Portable Suite. With two suites
+on the release, core is offered when an app of either bundles its change (it was read from the first suite's apps
+alone, which left core out once that suite's apps were all released on the current core).
+
+Changelog: 04-11-2026 01:02:52
+
+Fixed. The CI passes step and Run CI again counted another suite's CI (owner, 04-11-2026: CI Windows Portable
+failed on the portal-v14.0.0 commit, over a core test that expects Linux's path masking, and the step said CI
+failed while the BC250 suite's CI and Nexus's had passed). They now follow the ticked suite's CI and Nexus's, as
+the ticker and the notifications do: a suite's releases wait for its own CI, never another suite's.
+
+Changelog: 04-11-2026 00:12:32
+
+Fixed. The CI passes step saw no CI run on a commit whose release started more runs than the header's page holds
+(owner, 04-11-2026: the release of 26 apps started 26 Release runs and as many Nexus index runs after the CI runs
+on 899c722f, so the step said "GitHub has no CI run on this commit yet" while CI had passed). When that page is
+full and ends on a run of HEAD, the header now reads the rest of HEAD's runs from GitHub's list of that commit's
+runs, with an ETag of its own, so the CI runs under the page are seen, the GitHub pill counts every run of the
+push and a CI run started again (Run CI again) is followed to its end. The same page held Pin: step 2 showed "no
+run seen" for the 20 releases of the night under it and for five releases of the morning (acpi-v0.4.2,
+compute-v0.4.2, cores-v0.4.2, gpu-v0.4.2, oc-v0.3.2, published but never pinned, their runs long gone from the
+page), so Pin stayed gray. A release step 2 waits for whose run is not among the runs read now gets its own list
+from GitHub, the runs on its tag, so every published release reads as ready.
+
+Changelog: 03-11-2026 17:05:01
+
+Fixed. The suite's check-release script run from the Commands line goes to a terminal window instead, and the
+output says why (owner, 03-11-2026: step 4 of Bump's commands, bc250-bazzite/tools/check-release.sh release
+portal-v13.1.1, run on the line, asked for the sudo password through KDE's dialog at every one of the portal
+installer's 14 sudo calls, since the line has no terminal for sudo to remember the password in; in a terminal it
+asks once). The same for a pill that runs it (run_now) and for a Windows suite's check-release.ps1. The terminal starts in
+the line's folder (the checkout), since it opens in the home folder by itself (owner, 03-11-2026: "No such file or
+directory"). Without a terminal to hand it to, the line says so (command_line.needs_terminal,
+CommandLine(terminal=)). The Nexus page's Releases chapter says so.
+
+Changelog: 03-11-2026 15:55:10
+
+Fixed. Bump portal pressed again with nothing new changes nothing and says so in a popup (owner, 03-11-2026: a
+second Bump after the commit gave the portal's "Release 13.1.0. Pins bios-v1.0.1." entry a new time, so
+tag-release.sh refused the uncommitted portal, and bumped Nexus once more, 1.35.0 to 1.36.0, which had to be thrown
+away). When the portal is at the version chosen and the newest entry of its CHANGELOG is the one Bump would write,
+Bump writes nothing, not Nexus either, says it is bumped already and shows the commands again (commit, test, push,
+tag). The Nexus page's Releases chapter says so.
+
+Changelog: 03-11-2026 12:57:20
+
+Fixed. Start new release and the Fetch tags pill only said that git fetch --tags failed (owner, 03-11-2026:
+nexus-v1.33.0 was tagged here on the commit before the one GitHub's release was published from, so git refused to
+move it, "would clobber existing tag", and the window gave no reason). The message now carries git's own words and,
+for a tag here that points to another commit than GitHub's, names the tag and gives the two commands that drop it
+and fetch again (git tag -d <tag>; git fetch --tags), GitHub's tag being the published one. flow.fetch_tags returns
+a FetchFailed with that text instead of None; plan.git_run is git() with git's exit code and words. The Nexus
+page's release chapter says so.
+
+Changelog: 02-11-2026 01:47:18
+
+Added. Commit (the Nexus release tab) offers the portal bump when its manifest check would refuse the commit
+(owner, 02-11-2026: a suite's apps.toml had changed since its last portal release, an app removed, and the step
+only refused with the check's message; the bump was step 1's Apply or step 2's Bump portal). It asks per touched
+suite: the version step 2 would suggest (the portal's CHANGELOG entries count: a Breaking entry makes it major), or
+the least the check accepts, whichever is higher, and writes it with its CHANGELOG entry on a yes, then commits; a
+no leaves the commit where it is and says why. Step 1's Apply writes its minimum bump through the same code.
+
+Changelog: 02-11-2026 01:00:58
+
+Added. Installer tests (Test on this board) opens Nexus Installer Tests (dev/itests, every suite's since
+02-11-2026, where BC-250 Installer Tests was the BC250 suite's tools/installer-tests/gui) on the ticked suite
+(--suite). Nexus's theme comes from core's nexus.py, every Nexus app's; style.py keeps the window's own style
+sheets on it.
+
+Changelog: 02-11-2026 00:13:54
+
+Added. A size box beside Record portal tour: 1080p (as before, the default), 1440p or 2160p (4K, for YouTube,
+which shows a 4K upload far sharper than a 1080p one). It passes --size to the suite's record-tour.sh (only for a
+size other than 1080p) and names the video as the script does, -2160p before .mp4. The box is greyed out with the
+button.
+
+Changelog: 01-11-2026 23:22:00
+
+Breaking. The git row under the tabs (git pull, git add, the commit message, Amend, git commit, git push, git tag)
+is gone (owner, 01-11-2026: a cleaner window; the Nexus release tab's steps had taken its work over). Commit your
+changes and Push them commit and push, also for a suite that releases by tags; git tag is a button of step 1 (its
+app releases) and of step 2 (the portal's release), with the same checks as before. The Logs tab is gone: what a
+step writes shows in Commands under a line that names the step, with the commands' output, and goes into the day's
+command log. The Working tree pill and the footer line are gone: step 2 says when there are changes, the Portals
+column which suite is ticked.
+
+Changelog: 01-11-2026 23:21:00
+
+Added. The Contents tab: what the release holds, a tab of its own after Nexus release (owner, 01-11-2026: with the
+steps on one tab the table was squeezed on a small screen). The steps' pills keep one width, so each step's line
+has the room to be read. Every tab explains itself behind a round "i" in its first row (core's InfoButton) instead of
+a paragraph on top of the page (owner, 01-11-2026: an info symbol where space is limited).
+
+Changelog: 01-11-2026 23:20:00
+
+Fixed. The window reads the checkout with a handful of git processes per suite instead of two per app (plan.py's
+History: one git log from the tags' common ancestor, the files verified against the tags by their blob ids, the same
+answers as before; owner, 01-11-2026: "awfully slow", a refresh started some 135 git processes, 20 ms each on
+Windows), and a finished command that changed nothing in the checkout (HEAD, the last push, the working tree, the
+tags) does not read it again.
+
+Changelog: 01-11-2026 21:48:00
+
+Fixed. The ticker under the pills wraps its line when it is longer than the window is wide, instead of cutting it
+off at one line (owner, 01-11-2026: the end of the line was not visible).
+
+Changelog: 01-11-2026 21:20:00
+
+Fixed. git pull (and the pull before git push) runs tools/git-setup.sh first, the checkout's git settings: the
+pre-push hook and the CHANGELOGs' merge driver, so a pull that brings in an entry from the other machine while an
+entry is written here no longer ends in a conflict (owner, 01-11-2026: "I have this every time").
+
+Changelog: 01-11-2026 09:07:39
+
+Fixed. The commit command no longer fails now and then with "Unable to create .git/index.lock: File exists": the
+build pill's poll ran git status, which took the index lock to refresh the index, and a poll that came during git
+add -A or git commit held it. Nexus Release Tool's own git reads now take no optional locks (GIT_OPTIONAL_LOCKS=0).
+
+Changelog: 31-10-2026 19:41:52
+
+Fixed. The tests of Start's catch-up pass on CI's runner too: their origin is made with the branch main (the runner's
+git makes master, so the clone checked out nothing) and they give git rebase a committer, which the runner lacks.
+
+Changelog: 31-10-2026 19:30:03
+
+Fixed. A release no longer needs anything by hand after the last one (owner, 31-10-2026: "this is not gonna work
+like this", with seven apps refused as already tagged and a push refused). Push brings in what GitHub has first
+(git pull --rebase --autostash), such as the release's Pin ... commit, so the pre-push hook no longer refuses it.
+Start new release fetches the tags and main, puts what came in under this checkout (catch_up()), reads the versions
+again and goes straight on to its question, without a second Start. The table keeps only versions the owner typed:
+an offer made before the tags were fetched (5.3.0, already tagged) no longer stays as if typed.
+
+Changelog: 31-10-2026 15:27:28
+
+Fixed. Start new release fetches GitHub's tags first (owner, 31-10-2026: wp-portal-v6.2.0 was published, so tagged
+on GitHub, but not fetched here; the tool still read 6.1.0 as the last portal release, took the VERSION 6.2.0 for
+the new one without a bump, and CI's check_manifest.py refused the release commit). New tags read the versions
+again and stop Start, so the table can be checked first; a failed fetch stops it too (flow.fetch_tags).
+
+Changelog: 30-10-2026 23:55:24
+
+Fixed. Step 9, Bring in the pin commit, lights as soon as GitHub has the release's Pin ... commit (owner,
+30-10-2026: every step showed done and its git pull could not be pressed, while the bottom bar's git pull (new) was
+lit). The steps counted only the commits git had fetched; they now also see a push on main that GitHub's runs name
+and this checkout lacks, as the bottom bar does.
+
+Changelog: 30-10-2026 22:44:13
+
+Fixed. Not OK shows that it was pressed (owner, 30-10-2026: "the not ok button does not seem to do anything"; it
+only wrote a line in the output below): the Device test step turns red (!) with what comes next, fix, Commit your
+changes, Push them and Start new release once CI passes, until the fix is committed. It is kept in NRT's settings by
+the run (release/rejected), so a restart of NRT still shows it, and a run made again, whose draft is new, is not
+marked. Device test and Publish stay at hand, for a Not OK pressed by mistake.
+
+Changelog: 30-10-2026 19:10:40
+
+Added. Step 4, CI passes, lights Run CI again when CI failed on the commit (owner, 30-10-2026: CI failed while GitHub's
+Actions were degraded): it starts the failed jobs of that commit's CI runs again (flow.failed_ci(), rerun_ci_command():
+gh run rerun --failed). The line says when to use it, GitHub's own trouble, and when to fix and commit instead.
+
+Changelog: 30-10-2026 18:40:10
+
+Fixed. A draft portal left unpublished (Not OK, or NRT started again, which keeps nothing of its own: every step is read
+from git and GitHub) is said at step 7 while the fix goes through steps 1 to 5: "wp-portal-v5.0.0 is still a draft, not
+published: Start new release replaces it with a new one" (owner, 30-10-2026: after a restart the tab opened on a tree
+that was not clean, without a word of the draft).
+
+Changelog: 30-10-2026 16:28:14
+
+Added. A Nexus release whose run failed gets its fix and starts again on it (owner, 30-10-2026: CI failed on the
+release commit; a second Start would have written every Release entry twice and moved Nexus's version on): while the
+release run failed, the steps go Commit your changes, Push them and CI passes for the fix, then step 6 lights Start
+again on this commit, which starts Release Nexus on HEAD (flow.restart_command()) with the release as it is written.
+Resume run stays for a run that failed on something of GitHub's, on the same commit.
+
+Changelog: 30-10-2026 15:58:58
+
+Added. The Nexus release tab shows the release as nine numbered steps in their order, each with its pill (owner,
+30-10-2026: "if I open NRT I want to see exactly what has to be done in their logical sequence ... we make pills for
+them that can be clicked"): Get up to date (git pull), Commit your changes (a message and Commit: every change staged
+and committed after the suites' version and manifest checks), Push them, CI passes (read from GitHub's runs of the
+commit), Start new release, the release on GitHub (Stop run, Resume run), Device test, Publish (or Not OK) and Bring
+in the pin commit. The step to do now has an orange arrow and its pill lit, done ones a green check, a failed one a red
+exclamation mark; the line beside each says what there is to do (flow.current_step(), step_states(), ci_state(),
+cycle_run()).
+Before, committing and pushing your own work was left to the git row at the bottom, and Start stood alone.
+
+Changelog: 30-10-2026 04:04:06
+
+Added. The Nexus release, the first tab (owner, 30-10-2026: "there is just one action in the tool to perform
+which is start new release"): it lists what the release holds (each changed app of a suite on the Nexus release, its
+portal, core, Nexus), with the version offered first and room to type another (auto: a portal's and Nexus's version,
+worked out when it is written). Start new release writes the release, commits it, pushes it and starts
+release-nexus.yml on GitHub, in one command; Push and start when the push stopped. The tab follows the run (Stop run,
+Resume run), then Device test installs a suite's draft portal on its device (check-release draft) and Publish makes
+it a release; Not OK leaves it a draft. The steps stay for the BC250 Bazzite Suite and for doing a step by hand.
+
+Changelog: 30-10-2026 03:25:12
+
+Breaking. Nexus Releases is now the Nexus Release Tool, NRT (owner, 30-10-2026): the folder dev/nrt/ (was
+dev/releases/), the package nexus_release_tool, the app id nexus-release-tool and tools/nrt.sh (was tools/release.sh).
+install.sh and install.ps1 remove the launcher, menu entry, Desktop icon and Start-menu shortcuts of the earlier name,
+and on Windows its icon and app ID; run the installer once again after the update. The app takes over the settings of
+the earlier name the first time it starts.
+
+Changelog: 30-10-2026 01:16:05
+
+Fixed. The GitHub pill said Failed for a push whose runs all passed but one canceled Nexus index run (owner,
+30-10-2026: 1759427): GitHub cancels a waiting run of nexus-index.yml when a later one of the same concurrency group
+comes, and each release run of a push starts one. A run canceled for a later run of its workflow on the same commit
+no longer counts (plan.superseded()): not in the pill, the notification or what a click opens; hover says "replaced
+by a later run". A canceled run nothing replaced still makes the push failed.
+
+Changelog: 29-10-2026 21:46:34
+
+Fixed. Test local apps shows the ticked suite's own wiki and the Nexus page, never another suite's (owner,
+29-10-2026: the BC250 Bazzite Suite's wiki sat under the Windows Portable Suite); a wiki keeps its port whichever suite
+is ticked. The Windows Portable Suite's portal is the first icon there now, started from the checkout as the BC250
+suite's is (owner, 29-10-2026: no local test for the Windows Portable Suite): plan.portal_target() finds a suite's
+portal package, not only bc250_portal, and its icon by the suite's folder.
+
+Changelog: 29-10-2026 21:37:16
+
+Fixed. Pin and Bump on the portal step are ordinary buttons, as Retract and Run, instead of the large header pills
+(owner, 29-10-2026: make them smaller).
+
+Changelog: 29-10-2026 20:45:40
+
+Fixed. Bump portal replaced the newest "Release x.y.z." entry of the same version even when it was already
+pushed (the portal's "Release 3.2.0. Pins ...", written by the app release before it), so the push failed
+check_changelogs.py. An entry the last push (origin/main) has now stays, and the new one goes on top of it; Apply
+and Nexus's entry do the same.
+
+Changelog: 29-10-2026 19:13:47
+
+Fixed. git tag was lit while the staged changes were not committed yet, since nothing was ahead of the last push;
+it stays greyed out now until they are committed ("Commit first"), then pushed.
+
+Changelog: 29-10-2026 00:15:57
+
+Added. Apply is a pill in the header beside Refresh, Apply over New app releases (owner, 28-10-2026); Pin and
+Bump are pills too, Bump without the word portal. Step 2's
+portal and Nexus versions are two lines with the Bump pill beside them.
+
+Added. Apply is greyed out once it wrote the ticked releases, until another app is to be released or one is ticked by
+hand (owner, 28-10-2026); an app left unticked when it was pressed is not ticked again by the reload.
+
+Fixed. Step 2 was empty between step 1 and the app tags (owner, 28-10-2026: the apps to pin used to show, with Pin
+greyed out until they were built): it lists every app whose VERSION is not pinned with its checksum from Apply on,
+the not yet tagged ones as such, and Pin is greyed out until every ticked one is built.
+
+Changelog: 28-10-2026 23:22:28
+
+Fixed. Applying a release again, after a check stopped its commit, wrote a second "Release x.y.z." entry on top of the
+first (owner, 28-10-2026: Windows Portable Test and its portal each had "Release 1.3.0." twice): the same release now
+replaces the newest entry, with the latest notes; another release or another kind of entry is added as before.
+
+Added. Every command the command line runs, the git buttons' too, is kept with its whole output and its exit code in
+~/.cache/nexus-releases/commands/commands-<date>.log (owner, 28-10-2026: only the commands were kept, so a release
+that went wrong could not be read back).
+
+Changelog: 28-10-2026 21:33:59
+
+Fixed. The test of the Windows suite's test buttons failed in CI on Linux (28-10-2026): it set sys.platform to win32
+for the whole run, so Python's shutil.which took Windows' path. It now stands in for this computer's system in
+Nexus Releases' own check alone.
+
+Changelog: 28-10-2026 21:14:11
+
+Added. The Test on this board tab runs a Windows suite's tests on Windows (owner, 28-10-2026: on Windows Test app
+updates, Test Portal release, Test withdrawal and Installer tests were all off, "Linux only"). The buttons follow the
+ticked suite's own system: the BC250 suite's on Linux with its check-release.sh, the Windows Portable Suite's on
+Windows with its tools\check-release.ps1 (local, release, installer) in a PowerShell window. Record portal tour stays
+the BC250 suite's, on Linux; a greyed-out button says on which system its tests run.
+
+Changelog: 28-10-2026 18:30:12
+
+Added. A suite's release needs a Nexus release too (owner, 28-10-2026: Latest, the Nexus index, said v0.3.0
+while a suite had changed under it): the nexus row needs one when an app or a portal of any suite has a VERSION it
+did not have when the root VERSION last changed, tagged or about to be (plan.py: suite_releases), and says which.
+The version offered first counts a suite's release as minor and a new suite as major, with the root CHANGELOG's own
+kinds (nexus_level). Ticking an app in step 1 ticks nexus too; step 2 has Nexus too beside Bump portal, with its
+version (bump_nexus). Without notes, the Release entry names what the suites bring (nexus_notes).
+
+Changelog: 28-10-2026 16:36:06
+
+Fixed. The GitHub column of step 2's pin table, and the ready to pin notification, follow a suite's own release
+workflow too: a Windows Portable Suite tag showed no run seen while Release Windows Portable had built it (owner,
+28-10-2026; plan.py: is_release).
+
+Changelog: 28-10-2026 15:18:36
+
+Fixed. git commit ran every suite's check_versions.py and check_manifest.py first, so a failing check of one suite
+held a commit of another (owner, 28-10-2026: the suites stand apart). It runs the checks of the suites the staged
+changes touch now, check_versions.py --nexus when none (plan.py: touched_suites, staged_suites, version_checks;
+manifest_checks takes the suites); its tooltip shows which.
+
+Changelog: 28-10-2026 14:32:15
+
+Fixed. A build that passed or failed was told about for every workflow of the push, so CI Windows Portable notified
+while the BC250 suite was released (owner, 28-10-2026): every push starts every suite's CI. The notifications now
+follow the suite ticked in the Portals column, as the ticker does: its CI and releases and Nexus's own workflows.
+The GitHub pill still counts every run.
+
+Changelog: 28-10-2026 14:04:11
+
+Added. A git pull button, first in the git row (owner, 28-10-2026: a push from the other machine only showed as a
+push that failed). It runs git pull --rebase --autostash in the Commands tab: what was pushed elsewhere, with this
+checkout's commits on top and its changes not committed yet kept. It reads git pull (2) when the remote's main, as
+last fetched, has two commits HEAD lacks (plan.py, behind), and git pull (new) when the GitHub pill's newest push
+on main is no commit here; its tooltip says which.
+
+Changelog: 28-10-2026 13:48:22
+
+Fixed. On Windows the notifications named Python as their source (owner, 28-10-2026). When it starts, the app now
+registers its Windows app ID for the current user (HKCU\Software\Classes\AppUserModelId\Nexus.NexusReleases: the
+name Nexus Releases and its 128 px icon) and gives it to its process (__main__.py, windows_app_id), so its
+notifications and its taskbar button are Nexus Releases'. install.ps1 --uninstall removes the key; the installer
+test stands it in with a folder (WPS_APP_ID_KEY), so no test writes the registry.
+
+Changelog: 28-10-2026 13:40:41
+
+Fixed. On Windows no notification came when a build passed or failed, or a release was ready to pin (owner,
+28-10-2026): they went through notify-send, which Windows does not have. Without notify-send they now come from the
+app's icon in the notification area (Qt's QSystemTrayIcon; main_window.py, tray_notify), as Windows' own
+notifications; a click on one, or on the icon, brings the window to the front, and the icon goes when the window
+closes. Linux keeps notify-send, as before.
+
+Changelog: 28-10-2026 13:15:16
+
+Added. Step 1 lists Nexus's own version as the row nexus, beside core (owner, 28-10-2026): the root VERSION and
+CHANGELOG. It is ticked when the root CHANGELOG has entries since its last "Release x.y.z." entry, with the version
+their kinds ask for (the first release as it is). Apply writes the root VERSION alone (none of the checkout's copies,
+which are the other units') and the "Release x.y.z." entry; the commands commit and push and tag nothing: the push
+makes GitHub's Latest release nexus-v<x.y.z> (nexus-index.yml). plan.py: NEXUS, Unit.released_as, last_release,
+nexus_commands. A checkout without a root VERSION has no such row.
+
+Changelog: 28-10-2026 13:04:40
+
+Fixed. The ticker showed the Windows Portable Suite's CI first while the BC250 suite's portal was being released
+(owner, 28-10-2026): every push starts every suite's CI. It now shows the runs of the suite ticked in the Portals
+column and Nexus's own (CI Nexus, Manual), not another suite's CI or releases (plan.py, suite_workflows and
+other_suites_workflows, from each run's workflow file). The GitHub build pill still counts every run of the push.
+
+Changelog: 28-10-2026 12:34:26
+
+Fixed. The commands after Bump portal and Retract told the Windows Portable Suite to test on a BC-250 with a
+check-release.sh it does not have (owner, 28-10-2026). For a suite whose SYSTEM is windows they now start its portal
+from the checkout on the handheld (portal/run.ps1 --windowed), and after the tag download the published release
+(gh release download) to install it as the portal's README says (plan.py, portal_run_script; portal_commands and
+withdraw_commands take it). The BC250 suite's commands are unchanged, byte for byte.
+
+Changelog: 28-10-2026 12:15:41
+
+Added. A ticker between the header's pills and the tabs says where the workflow runs of the newest push stand
+(owner, 28-10-2026: no switching to the browser for it): for each run that is still going, its jobs done of all,
+each job that runs with the step it is at and the time since it started, counted every second; a failed run names
+its job and step. Hover for every job, click to open the one that runs or failed (main_window.py, WorkflowTicker;
+plan.py, fetch_jobs and ticker_line). It reads the jobs every 10 seconds while a run goes, only with a gh login;
+without one it shows the runs, so GitHub's 60 requests an hour stay for the GitHub pill. fetch_runs and fetch_jobs
+share their request (plan.github_get).
+
+Changelog: 28-10-2026 10:52:37
+
+Fixed. Step 2 offers a portal that was never tagged at its own version first, as step 1 offers an app's first
+release (owner, 28-10-2026; plan.py, portal_suggestion): the Windows Portable Suite's portal at 1.0.0 was offered
+1.0.1 first, counted up from its VERSION as if 1.0.0 had been released.
+
+Changelog: 28-10-2026 10:47:39
+
+Added. The Portals column's title is drawn as a tab on its list, as the selected step's tab: a box as wide as the
+column with rounded top corners and the teal edge on top (owner, 28-10-2026; nexus_releases/style.py,
+TAB_TITLE_STYLESHEET). The columns sit twice the layout's spacing under the header's pills, where they sat one.
+
+Changelog: 28-10-2026 10:47:38
+
+Fixed. The checkboxes (the Release and Pin ticks, the Portals column, Amend, Wikis on the network) were dark on dark
+and hardly visible: they have a teal edge and a teal checkmark now (owner, 28-10-2026; nexus_releases/check.svg,
+CHECK_STYLESHEET), a disabled one the dimmed edge. Step 2's note "Nothing to pin" read as if the portal had to wait
+for a pin: while the portal's version has no tag it now says the portal can be released with the pins it has.
+
+Changelog: 28-10-2026 00:48:41
+
+Fixed. The Windows Portable Suite's row shows its portal's icon (windows-portable/portal/images/
+windows-portable-suite.webp, since the portal has images); the test of the fallback to a suite's own drawing uses a
+bare suite folder. Nothing changes in the code.
+
+Changelog: 27-10-2026 20:04:40
+
+Fixed. The window answers faster, on Windows most of all (owner, 27-10-2026: it was slow there, where starting a
+git process takes some 20 ms): reading the checkout started about 230 git processes, one after the other, on the
+window's own thread; now about 75, eight at a time. The tags and the new files are read once instead of once per
+app, the check for tags made before their bump reads every VERSION with one git cat-file, and so does step 1 for
+the CHANGELOGs at the last tags. A Refresh on Windows takes under a second instead of about four; the answers are
+the same.
+
+Fixed. On Windows, step 1's suggested versions counted CHANGELOG entries as new that were not: git's output was read
+in Windows' own encoding, which garbled every é and × of a CHANGELOG read at a tag, so none of its entries matched
+the current file. It is read as UTF-8 now, as on Linux.
+
+Changelog: 27-10-2026 19:55:31
+
+Added. The suites are the window's first column (owner, 27-10-2026: in place of the chooser in the header), under
+Portals: each suite by its portal's name and icon, with the tag of its portal's current version
+(bc250-bazzite's portal-v11.0.0, windows-portable's wp-portal-v0.1.0), and a tick on the one this window releases,
+always exactly one. A click on a row ticks that suite; the steps, the pins and the board tests follow it, and the
+window opens on the one ticked last. After Bump portal its row shows the new tag. Hidden while the checkout holds
+one suite.
+
+Changelog: 27-10-2026 18:14:02
+
+Added. Nexus Releases on Windows (owner, 27-10-2026: on every device): run.ps1 starts it from PowerShell with the
+checkout's .venv-windows (--list too), and install.ps1 adds a Start-menu entry and a Desktop shortcut that start it
+from the checkout, with install.sh's options (--no-desktop-shortcut, --uninstall, --uninstall --purge); install.sh on
+Windows, and tools/release.sh --install from Git Bash, point there. Its installer test is the Windows Portable Suite's
+tools/installer-tests/releases.ps1.
+
+Fixed. A suite with a tag prefix gets its own tags: the Windows Portable Suite's apps and portal are wp-test-v0.1.0
+and wp-portal-v0.1.0, read, offered and pinned as such, with that suite's own manifest and portal bump rules
+(windows-portable/tools/check_manifest.py) and its release's checksum of <tag>.zip. Before, it took the BC250
+portal's portal-v10.1.0 for the Windows portal's last release and read no pins from its apps.toml.
+
+Changelog: 27-10-2026 17:02:23
+
+Fixed. The window's icon (images/nexus-releases.webp) is the owner's new Nexus drawing again, a lossless WebP
+copy written by tools/make_icons.py; a PNG had taken its place, which the app did not load.
+
+Changelog: 26-10-2026 20:45:22
+
+Fixed. The release log names the files it changed with / on Windows too (it showed apps\beta\VERSION). The tests run
+on Windows: the portal tour's test skips there (a bash script recording a Linux desktop), and a suite's copied .git
+folder is made writable before it is removed (Windows refuses read-only files).
+
+Changelog: 26-10-2026 13:46:32
+
+Fixed. The tables' grid lines are the theme's thin dimmed-silver edge, as the border around a table (owner,
+26-10-2026: Qt's own lines were brighter and heavier).
+
+Changelog: 26-10-2026 13:42:28
+
+Fixed. The portal version field on step 2 is wide enough for a version like 10.1.0 (owner, 26-10-2026: the
+field cut the text off).
+
+Changelog: 26-10-2026 13:21:15
+
+Added. The window has Nexus's design, not the suite's theme (owner, 26-10-2026: a Nexus app follows Nexus):
+nexus_releases/style.py turns the Nexus page's colors (ink, silver, teal; nexus/docs/stylesheets/nexus.css) into a
+theme for core's widgets, which create_app(theme=NEXUS) sets; the selection and focus outlines are teal. The states
+(the working tree, a build, a release) keep the state family every app shares. The icon is the Nexus drawing: the
+window header, the window icon, the menu entry and the Desktop icon (dev/releases/images/nexus-releases.webp and
+-128.png) and the tile on the BC250 suite's portal, lossless copies written by tools/make_icons.py.
+
+Changelog: 26-10-2026 12:28:08
+
+Added. The app is Nexus Releases, a Nexus app in dev/releases/ (package nexus_releases, app id nexus-releases; was
+BC250 Suite Releases in bc250-bazzite/apps/suite, 26-10-2026: the release flow is the repository's, only the device
+checks are a suite's). The header has a suite chooser, every folder with portal/apps.toml (tools/suites.py), hidden
+while the checkout holds one suite; the steps, the pins, Retract and Test on this board work on the chosen suite,
+which is remembered; git commit runs every suite's check_manifest.py; the wikis, the git buttons and GitHub stay
+the repository's. Test on this board runs the suite's own tools/check-release.sh (from apps/suite/check-release.sh)
+and tools/record-tour.sh, and says so when the suite has none. The portal lists it as [checkout.releases] with
+nexus = true. A launcher or menu entry of BC250 Suite Releases (bc250-release) points at the old folder: run
+dev/releases/install.sh (or tools/release.sh --install, or Install in a portal from the checkout) again, which
+removes them; the settings and the command history start afresh under ~/.config/nexus-releases, the logs under
+~/.cache/nexus-releases.
+
+Changelog: 26-10-2026 11:55:20
+
+Fixed. Pin, a moved unreleased pin and Retract write the root's copy of apps.toml as well as the suite's, while
+there is one (owner, 26-10-2026: the portal-v10.0.0 commit stopped on check_manifest.py, which wants the copy the
+portals installed before the move read at a tag identical; nothing had written it since the move).
+
+Changelog: 26-10-2026 11:28:54
+
+Fixed. The commit command and the checks before it run the suite's manifest check at its place since the move,
+bc250-bazzite/tools/check_manifest.py (owner, 26-10-2026: the commit from the window stopped on the old path).
+
+Changelog: 26-10-2026 09:42:18
+
+Fixed. Works on the repository with the suite in bc250-bazzite/ (26-10-2026): the units' paths, the manifest, the
+checks and the tours come from the suite's folder, core and the Nexus tools from the root; run.sh and install.sh
+find the dev venv at the root.
+
+Changelog: 25-10-2026 11:56:16
+
+Added. Test local apps has an icon for each wiki in the checkout (each mkdocs.yml: the BC250 Bazzite Suite's,
+the Nexus page's) in place of Manual (local), each served on a port of its own (8765, 8766) with a log of its
+own, and opened with its design panel. Wikis on the network serves them on every address of the computer, at
+ports of their own (8785, 8786), so the other devices on the network open them too; the page shows their
+addresses.
+
+Changelog: 25-10-2026 00:51:24
+
+Fixed. check-release.sh downloads the release assets from the suite's new name, Nexus (RobertoTorino/nexus, renamed
+25-10-2026); GitHub redirects the old address.
+
+Changelog: 23-10-2026 07:13:18
+
+Fixed. The confirmation before tagging no longer mentions an approval on GitHub: the release workflow asks for none.
+
+Changelog: 21-10-2026 12:22:00
+
+Fixed. The line that says the portal's release is being built by GitHub (Bump portal and pin) is orange instead of
+blue (owner, 21-10-2026), like the other warnings that wait on something.
+
+Changelog: 21-10-2026 11:42:36
+
+Added. The portal's icon under Test local apps warns when a portal is already open (owner, 21-10-2026): a second portal
+never opens, starting it only brings the open window to the front, so the checkout would not be tested. It looks
+for the open portal without disturbing it, and does not start another.
+
+Changelog: 21-10-2026 11:39:11
+
+Added. Test local apps, on the Test on this board tab, has the portal as its first icon (owner, 21-10-2026): a click
+starts it from the checkout (python -m bc250_portal in portal/, with the checkout's core), to try a change to the
+portal before its release, as the apps' icons do.
+
+Changelog: 21-10-2026 09:57:39
+
+Added. git push and git tag ask first (owner, 21-10-2026), with the commits or tags they send and the command.
+When the GitHub token on the machine is a gh login or a classic token, which reach every repository of the
+account, the question says so and points to a fine-grained token for this repository (plan.token_warning).
+Tests: tests/test_plan.py.
+
+Changelog: 21-10-2026 09:29:19
+
+Added. Close issues on the Test on this board tab: a window lists the open issues on GitHub (plan.fetch_open_issues,
+with the token of a gh login when there is one), each with a tick box, and Run closes the ticked ones with gh issue
+close in the Commands tab, with the comment typed under the list on each. A double click opens an issue. The
+Upstream workflow never closes its issue; this closes it once handled. Tests: tests/test_plan.py,
+tests/test_main_window.py.
+
+Changelog: 21-10-2026 00:39:06
+
+Added. A Claude tokens today pill at the end of the header: the tokens Claude Code on this machine used since
+midnight, read from its transcripts (~/.claude/projects, or CLAUDE_CONFIG_DIR), each answer once. The tooltip adds
+the last 5 hours, the input, output and cache tokens and each model; a click opens Claude's usage page. Hidden
+without Claude Code; it looks every 5 minutes and on Refresh. Tests: tests/test_main_window.py.
+
+Fixed. GitHub API left has a green left edge while plenty of requests are left; it had none (gray) until fewer than
+a tenth were left. Tests: tests/test_plan.py.
+
+Changelog: 20-10-2026 21:54:38
+
+Added. Record portal tour on the Test on this board tab (owner, 20-10-2026): it runs tools/record-tour.sh in the
+background, with its output in Logs, and records the portal's video tour from the checkout into
+~/Videos/bc250-portal-tour-v<portal version>.mp4, then opens it in the video player. The button is off while it
+records; closing the window stops a recording. Tests: tests/test_plan.py.
+
+Changelog: 20-10-2026 20:21:21
+
+Added. The header is a row of pills of equal width, as the apps' status boxes (owner, 20-10-2026): Refresh (was a
+small button), Working tree (Clean, Changed), GitHub build (Building, Passed, Failed, Offline, Limited; a click opens
+the run), GitHub API left (the requests left this hour) and GitHub status (Up, Problem; a click opens the status page).
+Tests: tests/test_main_window.py, tests/test_plan.py.
+
+Fixed. Under Test local apps every app that changes the board shows it: an orange ! on its icon, and a line in its
+tooltip. It was a third line of text under the icon, cut off by the grid's cell when the name took two lines. Tests:
+tests/test_plan.py.
+
+Changelog: 20-10-2026 10:16:46
+
+Added. Clearer names for a first release (owner, 20-10-2026): the tabs are 1. Release apps, 2. Pin and release
+Portal and 3. Retract app. A git tag button after git push runs tools/tag-release.sh with the tags of the step open:
+on tab 2 the portal's release, on the other tabs step 1's app releases that have no tag yet; it works once HEAD is
+pushed. A new tab, Test on this board, holds the tests of a release: Test app updates, Test Portal release and Test
+withdrawal (which left tabs 2 and 3), Installer tests (opens BC-250 Installer Tests from the checkout) and, under
+Test local apps, the icons of the former Local app test tab. Tests: tests/test_plan.py, tests/test_main_window.py.
+
+Changelog: 19-10-2026 17:58:49
+
+Added. GitHub status in the header, beside the build indicator (owner, 19-10-2026): a green dot while
+githubstatus.com reports every part of GitHub up, a red dot while it reports a problem (an incident, or a part such
+as Actions or Pages degraded or down), gray while it is not known. Hover for the incident and the parts affected;
+a click opens https://www.githubstatus.com/. It looks every 5 minutes, and Refresh looks at once.
+
+Changelog: 19-10-2026 02:46:23
+
+Added. git add, git commit and git push are buttons under the tabs, with the checks in between, so no command has
+to be typed or copied (owner, 19-10-2026). git add stages everything and sets the exec bits (tools/fix-modes.sh);
+git commit runs check_versions.py and check_manifest.py first and commits only when they pass, with the message
+Apply or Bump portal filled in (or Amend, when their commands add to the unpushed release commit); git push runs
+tools/ci-local.sh first on Linux and pushes only when CI's jobs pass. Each button works only when it has something
+to do, and none while a command runs; the output shows in the Commands tab. Tagging stays a command. Renamed (owner,
+19-10-2026): the tabs Log 1 and Log 2 are Logs and Commands, Run from checkout is Local app test and 3. Withdraw is
+3. Retract, with its Withdraw button Retract; Test updates is Test app updates and Test release is Test Portal
+release.
+
+Changelog: 17-10-2026 14:01:24
+
+Fixed. The app's folder in the suite is apps/suite (was apps/suite-releases) and its package is suite_releases (was
+bc250_suite_releases): the suite's naming convention (owner, 17-10-2026), a short folder name and the package named
+after the app without the BC250 prefix; both names are the owner's. With the folder go its key in the portal
+([checkout.suite]), its installer test, its tile icon and the path to check-release.sh; tools/release.sh starts it
+from there. The app keeps its name, its launcher bc250-release and its settings. A launcher written before the move
+points at the old folder: run apps/suite/install.sh again (or Install in the portal) after updating the checkout.
+
+Changelog: 17-10-2026 10:34:20
+
+Added. Step 2 follows the releases it waits for on GitHub, from the runs the header's indicator already reads. The
+pin table has a GitHub column (no run seen, building, ready, failed) and Pin waits for a release that is still
+building, or says that its workflow failed, instead of failing on the checksum that is not there yet (owner,
+17-10-2026: Pin errored a few times because the packaging was not finished). A desktop notification says when
+the release of an app to pin is ready, whether the run was seen running or not (one that starts and ends between
+two looks, or before the window opened, is told at the next look; each once), and when the portal's release is
+built. A line under the portal version says where the portal's own release stands: not tagged yet after Bump
+portal and the commit, with the tag command, then building, released or failed (17-10-2026: portal-v1.16.0 was
+committed and pushed but never tagged, and nothing in the window said so).
+
+Changelog: 17-10-2026 08:22:18
+
+Fixed. Step 2 offered 1.13.1 for the portal after the bump to 1.13.0 had gone out with the apps' releases: the
+minimum CI accepts was counted from the last push, where pinning the checksums is a change again. It is now
+counted from the last portal release, as tools/check_manifest.py does since this change, so the version bumped
+before the push stays the one offered, and Apply makes no second bump for the pins.
+
+Changelog: 17-10-2026 08:33:32
+
+Fixed. The logs are two tabs after the steps, each the whole tab area: Log 1, the log of the step last open (what
+Apply, Pin, Bump portal, Withdraw or an app started from the checkout wrote; a step that writes its log opens
+it), and Log 2, the command line with its output. Before, the step's log sat inside its tab above the command
+line, and the two flat boxes were hard to read (owner, 17-10-2026).
+
+Changelog: 17-10-2026 08:07:25
+
+Fixed. The two log boxes under the steps sit side by side, each the full height of that area: the step's own
+log (what Apply, Bump portal, Withdraw or a started app wrote; it follows the open tab) on the left, the command
+line with its output on the right. Before, the step's log sat inside its tab above the command line, and the two
+flat boxes were hard to read (owner, 17-10-2026). The line between them widens one; the line above gives both
+more room.
+
+Changelog: 17-10-2026 07:44:51
+
+Added. Apply makes the portal bump itself when the push of step 1 needs one (apps.toml changed since the last
+push: an app added, removed or moved, or a never-released pin moved along): portal/VERSION and its copies go to
+the lowest version CI accepts, with the portal's CHANGELOG entry listing the changed pins, and the log says so.
+Before, Apply only said that step 2's Bump portal had to come first, and the owner's release of 17-10-2026 was
+committed without it and failed ci-local on check_manifest. The portal release itself stays step 2.
+
+Changelog: 17-10-2026 06:41:05
+
+Added. Bump portal done before step 1's push (an app added to apps.toml needs the bump in the push that adds it)
+shows step 1's commands with the bump in them: git add, the release commit (amended when it is already made and
+not pushed, as on 17-10-2026), ci-local and push, then the app tags; the portal release's commands come once every
+app's version is tagged (plan.py: untagged_releases, unpushed_release_commit, app_commands with amend). Before,
+Bump portal always showed the portal release's commands, also while the portal could not be released yet.
+
+Changelog: 17-10-2026 06:29:57
+
+Fixed. Pin no longer closes the window when tools/pin_app.py refuses an entry: it says so in the log ("not
+pinned (...)") and pins the others. And pin_app itself now adds the sha256 line a new app's entry lacks until its
+first release, which is what closed the window on the owner's Pin of fan-control-v0.1.0.
+
+Changelog: 16-10-2026 11:57:04
+
+Fixed. When apps.toml changed since the last push, the commands after step 1's Apply start with "First: step 2's
+Bump portal (portal x.y.z)": before, they began with git commit, so a release committed without the portal bump
+failed CI on the push (plan.py: app_commands takes the portal version the push needs).
+
+Changelog: 16-10-2026 05:54:31
+
+Added. Step 1 ticks every app that needs a release by itself, when the window opens and on each reload; Tick what
+needs a release still ticks them all again. Refresh keeps your own ticks and unticks, and ticks an app that needs a
+release only since the last refresh. A core that already holds its changes stays unticked, as before.
+
+Changelog: 15-10-2026 23:22:38
+
+Added. Semantic versioning (owner's decision, 15-10-2026): the version step 1 offers first follows the CHANGELOG
+entries since the app's last tag, counted from that tag: Breaking. asks for a major release, Added. for a minor one,
+Fixed. (or an entry without a kind, from before the rule) for a patch; core's entries count for the apps that carry
+a core change. A VERSION bumped further already, or a first release, still comes first. Step 2 offers the higher of
+CI's minimum and the portal's own: its CHANGELOG entries and apps.toml since the last portal tag, so an app added and
+pushed before the portal release still asks for a minor portal release. The version box says why in its tooltip
+(plan.py: version_choices, portal_suggestion).
+
+Changelog: 15-10-2026 23:13:51
+
+Added. Step 1's Apply also runs check_manifest.py against the last push, and says when apps.toml changed since then (an app
+added, removed or moved to another section, not only a pin that moves along) so that the push needs a portal bump
+too: before, only check_versions.py ran there, and a release push failed CI on the portal bump. The push commands of
+both steps run tools/ci-local.sh first on Linux (tools/ci-local.sh && git push): no push when a CI job fails.
+
+Changelog: 15-10-2026 21:11:49
+
+A command line under the steps (command_line.py), in a splitter with them, so the commands a step shows run without a
+separate terminal (owner's request). A command runs with bash -lc in the checkout, in the folder the last cd left, and
+its output streams in as it runs (color codes removed). Commands lists the commands the last Apply, Bump portal or
+Withdraw showed, without their comments, to put one on the line. Up and Down go through the history, kept in the
+settings (200 commands). Stop or Ctrl+C sends Ctrl+C to the command's own process group (setsid), so a job it started
+in the background ends too, and kills it if it has not ended 3 seconds later; clear and Clear empty the output. Input
+is closed and git is told not to prompt, to use no editor and no pager, so no command waits for an answer that cannot
+come. After each command the window reads the checkout again, as Refresh does. Tests: output, cd, exit codes, closed
+input, Stop with a background job, history, the commands offered, the pane in the window.
+
+Changelog: 15-10-2026 21:03:51
+
+images/bc250-release-128.png is the 128 px copy of the new icon (images/bc250-release.png), scaled from the 512 px
+file; the wiki's portal chapter and the portal's tile show it.
+
+Changelog: 15-10-2026 07:07:27
+
+Core's row offers its current version when that version already holds every core change (plan.core_is_current: nothing under core/bc250_core changed since the commit that last changed core/VERSION, or a bump not committed yet), with its tick off and "0.1.5 has it: goes into 1 app release". It offered the next version (0.1.6) before, as if core needed one, when only the portal still carried an older core. A core change after its last bump offers the next version as before. Tests: core current after a bump, committed or not, and not after a later change; the row in the window.
+
+Changelog: 15-10-2026 06:31:03
+
+A selected cell in the tables and the input field being typed in show a purple outline with rounded corners (the accent color) on a transparent background, instead of the desktop's solid blue highlight (SELECTION_STYLESHEET on the window). The line edit inside an editable version box keeps the box's own frame. Tests: a selected cell rendered, outline and no fill.
+
+Changelog: 15-10-2026 05:37:03
+
+The commit in the title has its time beside the date ("v0.1.0 · 5c225cb · 15-10-2026 05:35"), in Europe/Amsterdam like the CHANGELOG lines, whatever the commit's own zone (plan.checkout_stamp reads the commit timestamp). Tests: the stamp with the time.
+
+Changelog: 15-10-2026 05:27:59
+
+New icon: images/bc250-release.png (512 px) and its 128 px copy.
+
+Changelog: 15-10-2026 05:13:53
+
+The title shows the checkout's last commit and its date beside the version ("v0.1.0 · 6de8ccd · 15-10-2026"; plan.checkout_stamp): the app runs from the checkout and is never released, so VERSION stays put and the commit says which code runs. Uncommitted changes show beside it as before ("working tree has changes"). Tests: the stamp, and the title with it.
+
+Changelog: 15-10-2026 05:08:01
+
+The GitHub API line beside the GitHub button is in the theme's text color (white on a dark desktop, dark on a light one) instead of gray, which was barely readable on a dark desktop; orange and red still mark few and none left.
+
+Changelog: 15-10-2026 04:13:25
+
+Beside the GitHub button the window shows GitHub's hourly API limit as its last answer reported it ("GitHub API: 4,894 of 5,000 left until 04:16, signed in"; orange under a tenth, red at none), read from the X-RateLimit headers of every answer, the unchanged ones that do not count included; its tooltip says that none left is GitHub's limit, not a fault. plan.fetch_runs returns that RateInfo as a third value. github_token() is safe when checks overlap: it asked gh after storing "" already, so a second check in that moment went out without the token; it now holds a lock and stores only the finished answer. Tests: the limit from normal and unchanged answers, the label's text and colors, overlapping token lookups.
+
+Changelog: 15-10-2026 04:06:38
+
+The GitHub button uses the token of a gh login when there is one (GITHUB_TOKEN or GH_TOKEN first, else gh auth token, also Homebrew's gh when started from the menu): GitHub then allows 5,000 requests an hour instead of 60, which a running build used up in about half an hour of looking every 30 seconds. The token is only sent to GitHub's API and never stored; a refused token is dropped and the button goes on without it. When the limit is used up the button says "GitHub: limit reached, back at HH:MM" instead of "not reachable", with a hint to sign in with gh when it was not signed in, and looks again only after the reset. Tests: the token lookup, the signed-in and refused requests, the limit and the button's waiting; a version bump keeps a comment after the copy.
+
+Changelog: 15-10-2026 02:31:31
+
+No translations (owner's decision): core's create_app() no longer takes lang, and AppInfo no longer has languages; the app was English only already and stays so.
+
+Changelog: 14-10-2026 18:22:56
+
+A test comment names Console Link without the BC250 prefix.
+
+Changelog: 13-10-2026 11:45:43
+
+Withdrawing a release (owner's decisions, 13-10-2026): tab 3. Withdraw. Withdraw marks an app's pinned release withdrawn in portal/apps.toml with the reason and adds a CHANGELOG entry to the app; Take back removes the mark; Test withdrawal runs check-release.sh local, so a board with the app installed shows the portal removing it; the commands for the rest (the GitHub release marked as a pre-release named Withdrawn: <tag>, then the portal release). Bump portal lists the withdrawals since the last push in the portal's CHANGELOG entry. plan.py: set_withdrawn, withdrawable (never the required app), withdraw, changed_withdrawals, withdraw_commands. Tests: the edit and its undo, the CHANGELOG entries, the minor bump, the commands, the tab.
+
+Changelog: 12-10-2026 23:09:42
+
+Apply also writes the new version into a Rust crate's own entry in its Cargo.lock (as tools/check_versions.py now checks it), so CI's cargo build with --locked keeps working after a release; the hint names Cargo.toml and Cargo.lock.
+
+Changelog: 12-10-2026 08:23:31
+
+install.sh takes --uninstall --purge (also the settings in ~/.config/bc250-release; the checkout stays), also through tools/release.sh --uninstall --purge, and checks for root before it uninstalls too.
+
+Changelog: 12-10-2026 08:07:21
+
+The window has the suite's header: the icon at 96 px beside the title with the version, and a second row below it with the working tree's state and the GitHub build; Refresh stays at the right (core's AppHeader; it was a 40 px icon in one line).
+
+Changelog: 12-10-2026 05:57:00
+
+A double-click on the Desktop icon opened the window twice: Suite Releases was the one app on bc250_core without the single-instance guard. It now asks bc250_core.instance first, as the other apps do; a second launch brings the running window to the front and exits.
+
+Changelog: 11-10-2026 20:54:31
+
+Hovering or clicking the GitHub build status stopped the app (SIGABRT): BuildIndicator kept the main window in an attribute named window, which hides QWidget.window(), and the suite's tooltip calls window() on the widget it is shown for (TypeError: 'ReleaseWindow' object is not callable). The attribute is release_window now, also in the three pages that had the same name. tests/test_main_window.py checks that every widget of the window keeps window() and shows the tooltip over the build indicator.
+
+Changelog: 11-10-2026 17:35:05
+
+The commands after Apply and Bump portal tag with tools/tag-release.sh instead of git tag, so a tag cannot land on a
+commit from before the bump; the red line for such a tag names it too. Step 3 of the portal commands says that the
+tag goes on the commit of step 1.
+
+Changelog: 11-10-2026 17:23:05
+
+The header shows whether GitHub built the last push (GitHub: building, passed or failed): the workflow runs of its
+commit, from the public Actions API with an ETag, every 30 s while a build runs and every 5 minutes otherwise, and at
+Refresh. Hover lists each run; a click opens the failed or running run. A run seen running that finishes gives a
+desktop notification (notify-send) and flags the window.
+
+Changelog: 11-10-2026 17:04:46
+
+Run from checkout has a Manual (local) icon after the apps: it serves the manual from the checkout with mkdocs serve
+(on 127.0.0.1:8765, the path of site_url) and opens it in the browser once the server answers. When it already runs,
+a click only opens the page again. The manual's release front end section says so.
+
+Changelog: 11-10-2026 14:34:03
+
+New page, Run from checkout: every app window in the checkout as an icon (each package with a __main__.py under
+apps/, tests and the checkout-only apps left out), with its name, version and icon. A click starts that app from the
+checkout, to try a change before its release: python -m <package> with this venv and the checkout's core on the path,
+as run.sh starts this app (plan.launch_targets and plan.launch_command). Apps that portal/apps.toml marks
+changes_board ask first. Each app runs in its own session, so it keeps running when the window closes, and writes its
+output to ~/.cache/bc250-release/run/<package>.log; when it stops with an error, the end of that log shows on the
+page. docs/portal.md describes the page. Tests: the targets and their command, the page (start, the question for board
+apps, the log tail of a failed app) and a real start that keeps its output in the log.
+
+Changelog: 11-10-2026 12:34:52
+
+The board test buttons of step 2 are renamed: Check updates is now Test updates, Check release is now Test release, in the window, its hint, the command list and docs/portal.md. They do what they did.
+
+Changelog: 11-10-2026 12:19:03
+
+A Refresh button in the header reads the checkout and its tags again, for changes made in a terminal while the window is open (commits, reverts, tags, edited files). It keeps what was entered: the ticks, versions and notes of step 1, and the portal version and notes of step 2. A version is kept only when it was typed or picked, not when it is still the one offered, so a version changed in a terminal shows its new choices.
+
+Changelog: 11-10-2026 09:24:18
+
+BC250 Suite Releases becomes an app of its own, moved from tools/: the window (tools/release_ui.py, now bc250_suite_releases/main_window.py), the release logic (tools/release_plan.py, now plan.py), the board checks (tools/check-release.sh, now check-release.sh), its icon and its tests. It keeps the name, the app id bc250-release and its settings. run.sh starts it with the checkout's dev venv (--list prints the overview with the system python3); install.sh makes the launcher, menu entry and Desktop icon for this checkout. It has a .standalone marker (not in the portal) and a .checkout-only marker: it edits the checkout it lives in, so it has no releases, the release tool leaves it out and build_release.py refuses its tags. The footer shows its version and the checkout it edits.

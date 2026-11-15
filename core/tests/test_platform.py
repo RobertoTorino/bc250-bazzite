@@ -1,0 +1,230 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+from __future__ import annotations
+
+import base64
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from types import SimpleNamespace
+
+import pytest
+
+from bc250_core import platform, steam
+
+
+def _working_bash() -> bool:
+    """A bash that runs a command: on GitHub's Windows runner the first bash is WSL's launcher, without a Linux to
+    run it in, so a test that runs bash skips there; with Git Bash first, as ./test.sh has it, it runs."""
+    if shutil.which("bash") is None:
+        return False
+    try:
+        result = subprocess.run(["bash", "-c", "echo ok"], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return result.returncode == 0 and result.stdout.strip() == "ok"
+
+
+NEEDS_BASH = pytest.mark.skipif(not _working_bash(), reason="needs a bash that runs (not WSL's launcher alone)")
+
+
+def test_terminal_command_plain_keeps_window_open():
+    assert platform.terminal_command("bash x.sh") == "bash x.sh; echo; read -rp 'Press Enter to close... ' _"
+    assert platform.terminal_command("bash x.sh", keep_open=False) == "bash x.sh"
+
+
+def test_terminal_command_exit_file_covers_whole_command():
+    line = platform.terminal_command("cd /a && bash x.sh", keep_open=False, exit_file=PurePosixPath("/tmp/st 1"))
+    assert line == "( cd /a && bash x.sh ); echo $? > '/tmp/st 1'"
+
+
+def test_terminal_command_on_error_pauses_only_after_a_failure():
+    """keep_open="on_error" (owner, 26-10-2026): the window of a command that ended well closes by itself, one with
+    an error waits for Enter; the exit file gets the status either way."""
+    pause = "echo; read -rp 'Press Enter to close... ' _"
+    line = platform.terminal_command("cd /a && bash x.sh", keep_open="on_error", exit_file=PurePosixPath("/tmp/st 1"))
+    assert line == "( cd /a && bash x.sh ); s=$?; echo $s > '/tmp/st 1'; [ \"$s\" = 0 ] || { " + pause + "; }"
+    assert platform.terminal_command("bash x.sh", keep_open="on_error") == \
+        "( bash x.sh ); s=$?; [ \"$s\" = 0 ] || { " + pause + "; }"
+
+
+@NEEDS_BASH
+@pytest.mark.parametrize("command, status, paused", [("true", "0", False), ("true && false", "1", True),
+                                                      ("exit 3", "3", True)])
+def test_on_error_runs_the_pause_only_on_a_failure(tmp_path, command, status, paused):
+    exit_file = tmp_path / "status"
+    line = platform.terminal_command(command, keep_open="on_error", exit_file=Path(exit_file.as_posix()))
+    # Without a terminal "read" shows no prompt and ends at once; the pause's echo leaves its blank line.
+    result = subprocess.run(["bash", "-c", line.replace(str(exit_file.as_posix()), "status")], cwd=tmp_path,
+                            check=False, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+    assert (tmp_path / "status").read_text().strip() == status
+    assert (result.stdout == "\n") is paused
+
+
+@NEEDS_BASH
+@pytest.mark.parametrize("command, status", [("true", "0"), ("true && false", "1"), ("exit 3", "3")])
+def test_exit_file_gets_the_status(tmp_path, command, status):
+    exit_file = tmp_path / "status"
+    line = platform.terminal_command(command, keep_open=False, exit_file=Path(exit_file.as_posix()))
+    subprocess.run(["bash", "-c", line.replace(str(exit_file.as_posix()), "status")], cwd=tmp_path, check=False)
+    assert (tmp_path / "status").read_text().strip() == status
+
+
+def test_no_terminal_raises(monkeypatch):
+    monkeypatch.setattr(platform, "WINDOWS", False)                    # Linux's terminals, on either system
+    monkeypatch.delenv("TERMINAL", raising=False)
+    monkeypatch.setattr(platform.shutil, "which", lambda name: None)
+    assert platform.find_terminal() is None
+    with pytest.raises(RuntimeError, match="No terminal emulator found"):
+        platform.launch_in_terminal("true")
+
+
+def test_terminal_preference_and_argv(monkeypatch):
+    started = []
+    monkeypatch.setattr(platform, "WINDOWS", False)
+    monkeypatch.delenv("TERMINAL", raising=False)
+    monkeypatch.setattr(platform.shutil, "which", lambda name: f"/usr/bin/{name}" if name in ("ptyxis", "xterm") else None)
+    monkeypatch.setattr(platform.subprocess, "Popen", lambda argv, **kw: started.append((argv, kw)))
+    platform.launch_in_terminal("bash x.sh", keep_open=False)
+    argv, kw = started[0]
+    assert argv == ["ptyxis", "--", "bash", "-lc", "bash x.sh"]           # ptyxis comes before xterm
+    assert kw["start_new_session"] is True
+
+
+def test_expand_and_xdg(monkeypatch, tmp_path):
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+    assert platform.data_home() == tmp_path / "data"
+    monkeypatch.setenv("BC250_X", "abc")
+    assert platform.expand("$BC250_X/y").as_posix().endswith("abc/y")
+
+
+# The Windows side (the development apps, SFTP Tools' .exe): faked here on either system, run for real on Windows below.
+
+WINDOWS_ONLY = pytest.mark.skipif(sys.platform != "win32", reason="runs PowerShell and writes a shortcut")
+
+
+@pytest.fixture
+def windows(monkeypatch, tmp_path):
+    monkeypatch.setattr(platform, "WINDOWS", True)
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
+    monkeypatch.setenv("APPDATA", str(tmp_path / "Roaming"))
+    return tmp_path
+
+
+
+def test_the_old_folders_stay_where_they_were_on_windows(windows, monkeypatch):
+    """Bazzite SFTP's Windows executable keeps its settings and data in ~/.config and ~/.local/share."""
+    for name in ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_BIN_HOME"):
+        monkeypatch.delenv(name, raising=False)
+    assert platform.data_home() == Path.home() / ".local" / "share"
+    assert platform.config_home() == Path.home() / ".config"
+    assert platform.bin_home() == Path.home() / ".local" / "bin"
+
+
+
+
+def test_open_path_on_windows(windows, monkeypatch):
+    opened = []
+    monkeypatch.setattr(platform.os, "startfile", opened.append, raising=False)
+    assert platform.open_path(windows / "a file.txt") and opened == [str(windows / "a file.txt")]
+
+    def refuse(target):
+        raise OSError("no program for it")
+    monkeypatch.setattr(platform.os, "startfile", refuse, raising=False)
+    assert not platform.open_path("x.unknown")
+
+
+def test_open_path_elsewhere_is_xdg_open(monkeypatch):
+    monkeypatch.setattr(platform, "WINDOWS", False)
+    monkeypatch.setattr(platform, "xdg_open", lambda target: target == "https://example.org")
+    assert platform.open_path("https://example.org")
+
+
+def test_show_in_folder(monkeypatch, tmp_path):
+    """A saved screenshot shows itself (owner, 06-11-2026): Explorer with the file selected on Windows; elsewhere the
+    file manager over D-Bus, else the folder with xdg-open."""
+    shot = tmp_path / "it's a shot.png"
+    started, ran, opened = [], [], []
+    monkeypatch.setattr(platform.subprocess, "Popen", lambda command, **kw: started.append(command))
+    monkeypatch.setattr(platform, "WINDOWS", True)
+    assert platform.show_in_folder(shot) and started == [f'explorer /select,"{shot}"']
+
+    class Done:
+        returncode = 0
+    monkeypatch.setattr(platform, "WINDOWS", False)
+    monkeypatch.setattr(platform.shutil, "which", lambda name: "/usr/bin/gdbus" if name == "gdbus" else None)
+    monkeypatch.setattr(platform.subprocess, "run", lambda command, **kw: ran.append(command) or Done())
+    monkeypatch.setattr(platform, "xdg_open", lambda target: opened.append(target) or True)
+    assert platform.show_in_folder(shot) and opened == []
+    assert ran[0][-2] == f"['{shot.resolve().as_uri()}']" and "%27" in ran[0][-2]   # the quote cannot end the list
+    Done.returncode = 1                                                         # no FileManager1 on the bus
+    assert platform.show_in_folder(shot) and opened == [shot.parent]
+
+
+def test_powershell_command():
+    exit_file = PureWindowsPath("C:/Users/it's me/status")
+    script = platform.powershell_command("cmd.exe /c exit 3", keep_open="on_error", exit_file=exit_file)
+    assert script.splitlines() == [
+        "$ErrorActionPreference = 'Stop'", "$global:LASTEXITCODE = 0",
+        "try { cmd.exe /c exit 3 } catch { Write-Host $_ -ForegroundColor Red; $global:LASTEXITCODE = 1 }",
+        "$s = [int]$LASTEXITCODE",
+        r"Set-Content -LiteralPath 'C:\Users\it''s me\status' -Value $s -Encoding Ascii",
+        "if ($s -ne 0) { Write-Host; Read-Host 'Press Enter to close' | Out-Null }",
+        "exit $s"]
+    assert "Read-Host" in platform.powershell_command("x")                      # keep_open=True: always
+    plain = platform.powershell_command("x", keep_open=False)
+    assert "Read-Host" not in plain and "Set-Content" not in plain
+
+
+def test_powershell_argv_carries_the_script_encoded():
+    argv = platform.powershell_argv("Write-Output \"a; b & 'c'\"")
+    assert argv[:-1] == ["powershell.exe", "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-EncodedCommand"]
+    assert base64.b64decode(argv[-1]).decode("utf-16-le") == "Write-Output \"a; b & 'c'\""
+
+
+def test_launch_in_terminal_on_windows_opens_powershell(windows, monkeypatch):
+    started = []
+    monkeypatch.setattr(platform.subprocess, "Popen", lambda argv, **kw: started.append((argv, kw)))
+    platform.launch_in_terminal("Write-Output hi", keep_open=False, exit_file=PureWindowsPath("C:/t/status"))
+    argv, kw = started[0]
+    assert argv == platform.powershell_argv(platform.powershell_command(
+        "Write-Output hi", keep_open=False, exit_file=PureWindowsPath("C:/t/status")))
+    assert kw["creationflags"] == platform.NEW_CONSOLE | platform.NEW_PROCESS_GROUP   # a window of its own
+
+
+@WINDOWS_ONLY
+@pytest.mark.parametrize("command, status", [("Write-Output hi", 0), ("cmd.exe /c exit 3", 3),
+                                             ("Get-Item -LiteralPath 'C:/no/such/file'", 1),
+                                             ("Write-Output \"it's; & fine\"", 0),
+                                             ("cmd.exe /c exit 3; Write-Output after", 3)])
+def test_powershell_reports_the_status(tmp_path, command, status):
+    """The last program's exit code, 1 for PowerShell's own error, in the exit file (a quote in its path too)."""
+    exit_file = tmp_path / "it's" / "status"
+    exit_file.parent.mkdir()
+    script = platform.powershell_command(command, keep_open=False, exit_file=exit_file)
+    result = subprocess.run(platform.powershell_argv(script), capture_output=True, text=True, timeout=60)
+    assert result.returncode == status
+    assert exit_file.read_text().strip() == str(status)
+
+
+def test_private_writes_the_users_folders_by_their_variable(monkeypatch):
+    """The privacy rule (owner, 29-10-2026: a folder on the screen showed the user's name): the user's folders as
+    %LOCALAPPDATA%, %APPDATA% and %USERPROFILE% on Windows, ~ elsewhere, wherever they are in the text."""
+    from pathlib import Path
+    from bc250_core import platform
+    if platform.WINDOWS:
+        monkeypatch.setenv("USERPROFILE", r"C:\Users\Someone")
+        monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\Someone\AppData\Local")
+        monkeypatch.setenv("APPDATA", r"C:\Users\Someone\AppData\Roaming")
+        monkeypatch.setattr(Path, "home", lambda: Path(r"C:\Users\Someone"))
+        assert platform.private(Path(r"C:\Users\Someone\AppData\Local\windows-portable-suite\x")) == \
+            r"%LOCALAPPDATA%\windows-portable-suite\x"
+        assert platform.private(r"Added: c:\users\someone\Games (2 games); kept C:\Users\Someone2\x") == \
+            r"Added: %USERPROFILE%\Games (2 games); kept C:\Users\Someone2\x"      # a longer name is someone else
+        assert platform.private(r"%APPDATA% or C:\Users\Someone\AppData\Roaming\s.ini") == r"%APPDATA% or %APPDATA%\s.ini"
+        assert platform.private("D:\PSP") == "D:\PSP"
+    else:
+        monkeypatch.setattr(Path, "home", lambda: Path("/home/someone"))
+        assert platform.private("/home/someone/Games and /home/someone2") == "~/Games and /home/someone2"
+

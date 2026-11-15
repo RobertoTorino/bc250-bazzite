@@ -1,0 +1,69 @@
+Changelog: 15-11-2026 02:37:59
+
+Fixed. The main branch's ruleset lets repository admins bypass it too (owner, 15-11-2026), as the repository has it:
+the wiki's GitHub settings page says so.
+
+Changelog: 15-11-2026 02:35:15
+
+Fixed. The release-tag ruleset lets repository admins bypass it (owner, 15-11-2026), as the repository has it: the
+wiki's GitHub settings page says so, and tools/tag-release.sh, refusing a tag that exists, says a repository admin
+can move it instead of telling to disable the ruleset.
+
+Changelog: 15-11-2026 02:33:54
+
+Fixed. The wiki's GitHub settings page names the release-tag ruleset's rules as the repository has them
+(owner, 15-11-2026): Restrict deletions and Block force pushes.
+
+Changelog: 15-11-2026 02:03:59
+
+Breaking. The release tags start with bc250- (owner, 15-11-2026): bc250-<app>-v<x.y.z> and bc250-portal-v<x.y.z>, the
+prefix in the new TAG_PREFIX file, as the Bazzite Console Suite's start with ps5-. The releases made in Nexus keep
+their plain tags. portal/apps.toml pins the bc250- tags; the portal's manifest, tools/check_manifest.py,
+tools/pin_app.py, tools/suite_release.py, tools/publish_release.sh (a bc250-portal-v release is GitHub's Latest),
+tools/check-release.sh, tools/tag-release.sh, release.yml (the portal's checks, PS Remote Play's wheel, the Windows
+executable's app) and the installer tests use them; tools/build_release.py, Nexus Release Tool and the tours read the
+prefix from TAG_PREFIX. The wiki's tags and file names follow.
+
+Changelog: 15-11-2026 01:35:46
+
+Added. DESIGN.md and its color samples in design/colors/ are back, as the Bazzite Console Suite has them (owner,
+15-11-2026): every color of the suite, where it is defined and what it is for, written by tools/make_design.py (taken
+over from Nexus, with the suite's colors alone: the BC250 rules, the color families, the apps' themes and state
+colors, the wiki, the development apps' Nexus design, the apps' own colors and the portal screenshot's palette).
+tools/make_design.py --check, run by tools/tests, says when DESIGN.md or a sample is out of date, and when the wiki's
+stylesheet and the listing disagree. The block samples are the same files Nexus had; the text samples show a sentence
+about the suite instead of one about Nexus.
+
+Changelog: 15-11-2026 01:08:09
+
+Fixed. The code paths for a suite made for Windows devices are gone from the tools (owner, 15-11-2026): new_app.py's
+Windows template, build_release.py's refusal of a Windows suite's tag, ci_matrix.py's installers matrix and
+core-first order, sync_icons.py's PNG and wide icons ([icons] format and wide), and the Windows system in suites.py
+(SYSTEM is bazzite). Their tests went with them. Core, Nexus Release Tool, Nexus Dashboard, Nexus Installer Tests and
+Nexus Demo Recorder lost theirs too (their CHANGELOGs). The development apps still run on Windows where they did, and
+SFTP Tools keeps its Windows executable.
+
+Changelog: 14-11-2026 23:58:33
+
+Breaking. The BC250 Bazzite Suite is a repository of its own, github.com/RobertoTorino/bc250-bazzite (owner,
+14-11-2026: one repository per suite, standalone with its own tooling, as the Bazzite Console Suite). Its files were
+the folder bc250-bazzite/ of github.com/RobertoTorino/nexus and are now this repository's root: portal/, apps/,
+docs/ with mkdocs.yml, icons/, install.sh and tools/. What it took from Nexus is its own now: core/ (bc250_core,
+bundled in every app), the tools (the release and CI tools, the design panel and the disclaimer hook, the tours'
+shared code and music, sync_icons.py, new_app.py), the development apps in dev/ (Nexus Dashboard, Nexus Release Tool,
+Nexus Demo Recorder, Nexus Installer Tests, Nexus Sound Lab, Nexus Deps), test.sh and the root's files. The history
+of these files stays in Nexus.
+
+The releases are made here, with the same tags (<app>-v<x.y.z>, portal-v<x.y.z>), and the apps and the portal look
+for them here; GitHub's Latest release is the newest portal. A portal or app installed from a release made in Nexus
+keeps looking there and sees no newer release: installing the portal from this repository's latest release once
+brings it here. The wiki is at robertotorino.github.io/bc250-bazzite/, built by this repository's docs.yml.
+
+ci.yml runs every check on every push: the suite's and those that ran in Nexus's ci-nexus.yml (core, tools, dev/,
+line endings, exec bits, the four files of every folder, workflows only at the root). release.yml is started by Nexus
+Release Tool's Start new release on the release commit, or by hand (gh workflow run release.yml -f commit=...), and
+waits for ci.yml alone. Gone with Nexus: the root's copy of portal/apps.toml (pin_app.py, suite_release.py,
+check_manifest.py and new_app.py no longer write or compare it), the Nexus release and its version, the Nexus index,
+the wait for ci-nexus.yml (tag-release.sh, release.yml, ci_local.py), make_icons.py and ICONS.md, and the tests of
+Nexus's own rules for several suites. The tools find the suite at the root (tools/suites.py names it "."), and their
+paths, the installer tests and the wiki's hooks are written for that layout.

@@ -1,0 +1,985 @@
+Changelog: 15-11-2026 01:08:09
+
+Breaking. The code that only the Windows Portable Suite used is gone (owner, 15-11-2026: this repository is the BC250
+Bazzite Suite alone): the modules browse, play, heat, chip, power, sound_output, xbox and portable (the portable
+window and its design); in gone, the play mode's full-screen screen (show(), GoneWindow, message()), so the apps'
+desktop message box (show_dialog()) is what is left; in steam, the Windows side (Steam's folder from the registry,
+steam.exe in the process list, signed_in(), open_url(), hand_over()); in platform, the touch keyboard, the window and
+monitor helpers, built_in_screens(), start_program(), make_shortcut(), start_menu(), outside_bundle() with the DLL
+helpers, suite_data(), suite_config() and PATH_BUDGET; in applog, the suite's own log folder (setup(suite=...)). No
+BC250 app used any of it: what they do on the board is unchanged. platform keeps its Windows side for the development
+apps on Windows and SFTP Tools' Windows executable.
+
+Changelog: 14-11-2026 23:58:33
+
+Fixed. Core is part of the BC250 Bazzite Suite's own repository, github.com/RobertoTorino/bc250-bazzite (owner,
+14-11-2026), at core/ in its root. SUITE_REPO_URL names it, so the apps look for their releases there, and
+SUITE_MANUAL_URL names the wiki's new address, robertotorino.github.io/bc250-bazzite/.
+
+Changelog: 12-11-2026 14:51:59
+
+Version 3.2.0.
+
+Changelog: 12-11-2026 13:24:27
+
+Added. action_tab: ActionTab, the last tab of a QTabWidget as a button (owner, 12-11-2026: Start game in the BC250
+Bazzite Suite's game managers). A click on it acts and the open page stays open; reached with the keyboard it does
+nothing. steam.shortcut_number(): the appid of a shortcut as Steam's file has it for the first user with one (from its
+program and name when the file names none), for play_url(), which starts it.
+
+Changelog: 12-11-2026 13:24:26
+
+Added. exit_keys: Escape and a controller's B close an app's window, for an app that asks for it with install(app)
+(owner, 12-11-2026, for the BC250 Bazzite Suite's apps). Escape that nothing in the window took for itself closes the
+window through its closeEvent; the window's own keyPressEvent has the key first, a dialog and a menu keep Qt's Escape,
+and a window with the class attribute exit_keys = False keeps every key. B is read with pygame-ce (BackButton) and
+sent as Escape to what has the focus, only while the app has the focus and has had it for half a second: every app
+reads the same press, so the one that closes on it would take the app behind it along. SDL's dummy video driver is in
+the environment only while SDL starts, so a program the app starts later (Steam, an emulator) does not inherit it.
+install(app, controller=False) is Escape alone. The module is self-contained, so an app not on core carries a copy
+(tools/tests/test_instance_copies.py). Nothing changes for an app that does not call it.
+
+Changelog: 11-11-2026 20:05:07
+
+Version 3.1.2.
+
+Changelog: 09-11-2026 14:43:34
+
+Version 3.1.1.
+
+Changelog: 07-11-2026 20:31:02
+
+Fixed. bc250_core.egg-info is out of the repository: pip writes it when it installs core from the checkout, and the
+copy in git still named version 0.1.2. .gitignore leaves it out from now on.
+
+Changelog: 07-11-2026 18:41:30
+
+Fixed. RoundedToolTip frames every tooltip in the theme's outline, silver in the suite's themes, as the borders
+under the mouse already were (owner, 07-11-2026); it was the accent, a blueish gray on Gunmetal. A theme without an
+outline of its own (Nexus's, the Windows Portable Suite's) keeps its accent, as before.
+
+Changelog: 07-11-2026 17:15:29
+
+Version 3.1.0.
+
+Changelog: 07-11-2026 15:57:37
+
+Added. sound_output.py: where Windows plays the sound, the kind of its default sound output (PC speakers, Other
+screen for a TV's or a monitor's HDMI or DisplayPort, headphones), read from Core Audio's form factor with
+ctypes, never a device's name (owner, 07-11-2026: hardware changes). About 5 ms a read on the ROG XBOX Ally X.
+
+Changelog: 07-11-2026 14:30:37
+
+Version 3.0.0.
+
+Changelog: 07-11-2026 11:35:01
+
+Breaking. The suite's screens are PC screen and Other screen, never a screen's name (owner, 07-11-2026: "just call
+it Other screen"; hardware changes and an app must not fail on a name). own_screen() is the device's own screen,
+the one Windows reports built in (platform.built_in_screens(): QueryDisplayConfig's connection of each screen),
+else Windows' main display; screen_label() says PC screen for it and Other screen for any other;
+set_start_screen() keeps own or other in look/screen, and start_screen() opens on the device's own screen or on
+the first other one there is. A screen's name kept before is forgotten once: the apps open on the main display
+until one is moved again.
+
+Changelog: 07-11-2026 11:01:22
+
+Fixed. A full-screen PortableWindow keeps to its screen, as WindowManager keeps a game's window (owner, 07-11-2026:
+the portal's bottom row was cut off on the TV again). Moved or resized from outside (a display switch, a title bar
+added), Qt no longer counted the window as full screen and held it to its layout's height for its width: 1536 x 888
+on a 1536 x 864 TV. Filling a screen, the window now has no height for its width (the screen sizes it), and 1.5
+seconds after it or its screens change (it moves or changes size, its screen's size or scaling changes, a screen is
+attached, taken away or made the main one) it checks Windows' own rectangle of its monitor against its own and puts
+itself back on it exactly when they differ (at most three times in a row), full screen to Qt again; on a screen of
+another size than the one it was sized for it starts again there. platform has window_rect(), monitor_rect() and
+fill_monitor() for it (GetWindowRect, MonitorFromWindow with GetMonitorInfo, SetWindowPos). Checked on the Ally with
+the TV attached: the window pushed 40 pixels taller and off its corner went back on the TV's 1920 x 1080.
+
+Changelog: 07-11-2026 01:32:26
+
+Version 2.12.1.
+
+Changelog: 07-11-2026 01:03:47
+
+Fixed. show_in_folder() lets Explorer take the front on Windows (AllowSetForegroundWindow): a saved screenshot's folder
+opened behind the full-screen app (owner, 07-11-2026).
+
+Changelog: 06-11-2026 22:16:42
+
+Version 2.12.0.
+
+Changelog: 06-11-2026 10:55:45
+
+Added. show_in_folder(path) in platform: the file's folder in the file manager with the file selected (Explorer's
+/select on Windows, org.freedesktop.FileManager1 over D-Bus on Linux, else the folder opened with xdg-open). The apps
+call it when a screenshot is saved (owner, 06-11-2026).
+
+Changelog: 06-11-2026 09:57:11
+
+Fixed. The core tests' session teardown takes the tooltip filter off the app (RoundedToolTip.uninstall(), which
+nothing called) and collects the leftover widgets while the app is whole. create_app() in a test left the filter on
+the session's QApplication, and pytest's final garbage collection crashed on it now and then after every test had
+passed (CI, 06-11-2026: a segmentation fault in about one run in seven, none in 120 runs with the fix). A test checks
+that uninstall() really stops the filter seeing events. The apps' code is unchanged.
+
+Changelog: 06-11-2026 02:33:59
+
+Version 2.11.0.
+
+Changelog: 06-11-2026 01:49:21
+
+Added. status_clock() takes the portal's clock settings (owner, 06-11-2026): seconds, 12 hours with AM and PM, and
+a zone, "cet" (Amsterdam time: CET, CEST from 01:00 UTC on the last Sunday of March to 01:00 UTC on the last Sunday
+of October, the EU's rule, without time zone data) or "utc", its name after the time. Without them it is as before,
+the device's own time.
+
+Changelog: 06-11-2026 00:58:47
+
+Version 2.10.0.
+
+Changelog: 06-11-2026 00:27:29
+
+Added. The play mode can see to an emulator's windows while the game runs (owner, 06-11-2026, for Vita3K's library
+window): run(windows=) calls what it is given every half second with the emulator's process until the quit; each line
+it returns is logged once, and one that fails is logged and not called again, the game running on. The Nexus page's
+development chapter says so.
+
+Changelog: 05-11-2026 23:17:00
+
+Added. The play mode shows a notice when View, LB and RB are held (owner, 05-11-2026: show that the game is being
+quit): "Closing the game" at the top of every screen, in the suite's design and over the game, as the heat warning
+shows (heat.Banner: it takes neither the focus nor a press). It goes up when the two seconds are reached, before the
+emulator is asked to close, and stays at least a second (play.SHOWN), so an emulator that closes at once does not
+take it away before it can be read; it comes down when the play mode ends. A notice that cannot show is logged and
+the game closes all the same. Every game manager has it with the new core; their wiki chapters say so.
+
+Changelog: 05-11-2026 22:54:10
+
+Fixed. The controller reader (gamepad.py) reads the pad over XInput on Windows, not over Windows' raw input
+(SDL_JOYSTICK_RAWINPUT=0): on the owner's Ally (05-11-2026, after a restart), read as the play mode reads it while a
+game is in front, SDL got the pad's triggers over raw input but not one button, so View + LB + RB never quit the game,
+while XInput had every one; over XInput every button arrives. A program the app starts does not inherit the setting
+(platform.APP_VARIABLES), so Steam and the emulators keep SDL's own choice.
+
+Changelog: 05-11-2026 18:44:37
+
+Version 2.9.0.
+
+Changelog: 05-11-2026 18:18:09
+
+Added. A silver outline per theme (owner, 05-11-2026): Theme.outline, outline() and OUTLINE in theme.py and outline() in widgets.py. The borders under the mouse, with the focus and of the chosen tab take it: #c0c4c9 on
+Gunmetal and Warm, a darker #7d8389 on Silver, where the light silver would vanish. The pills' hover and focus
+border and an active red button's hover border take it too. A theme without an outline of its own (Nexus's, the
+Windows Portable Suite's) keeps its accent there, so nothing changes outside the BC250 Bazzite Suite.
+
+Changelog: 05-11-2026 15:00:29
+
+Fixed. A portable app started again on another screen takes the front (owner, 05-11-2026, on the Ally: the portal
+did not answer the controller after Play on the TV): before it ends, the app allows the next one to take the front
+(AllowSetForegroundWindow), and the one started again raises and activates its window as its controller starts.
+Windows leaves a window started from the background behind, and the controller counts in the active window only.
+
+Changelog: 04-11-2026 02:22:10
+
+Version 2.8.0.
+
+Changelog: 04-11-2026 01:02:52
+
+Fixed. The test of the desktop message for a game that is gone (tests/test_gone.py) expected the Linux masking, ~,
+and failed in the Windows Portable Suite's CI, which runs core's tests on Windows, where the temp folder is masked
+as %LOCALAPPDATA% (the two runs of 03-11-2026 on 2de865e9 and 8d0b5784). It now expects what platform.private()
+writes on the system it runs on. The test of the controller reader's SDL variables (tests/test_platform.py) took
+the desktop's own SDL variable for the app's (SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS, set on the board's session after a
+reboot, 04-11-2026) and failed there: it now starts from an environment without any.
+
+Changelog: 03-11-2026 22:09:14
+
+Added. settings_page.py: a settings page for the BC250 suite's emulator managers whose window has no tabs, and
+the window that holds it (SettingsDialog; owner, 03-11-2026, from the Windows Portable Suite's settings panes):
+one box per group, each setting a choice, a switch or a percentage, read through the app's own model and written
+the moment it is changed, while the emulator does not run; a value the app does not offer is shown as it is.
+
+Changelog: 03-11-2026 21:16:12
+
+Added. drives.py, for the BC250 suite's game managers (owner, 03-11-2026, from the Windows Portable Suite's
+managers: fixed folders, no folder choosing): removable_drives(), the mounted removable drives under /run/media
+(udisks' <user>/<drive>, Bazzite's media-automount's system/<drive>, each once) and /media, and game_folders(), an
+app's own game folder in the home folder (made with its subfolders) and the same folder on each drive that has one.
+Added. keep_dialog.py: the keep page as a window of its own for the BC250 suite's desktop apps (owner,
+03-11-2026, from the Windows Portable Suite's managers: before deleting anything, let the user decide what to
+keep): core's keep.Item rows with their sizes, each ticked (Delete) at first, Delete marked and Cancel.
+Added. gone.desktop_message() and gone.show_dialog(): the BC250 suite's desktop apps' message for a game that
+is no longer there, a message box in the suite's design that closes by itself, which the run wrappers show
+instead of the emulator (owner, 03-11-2026).
+
+Changelog: 03-11-2026 12:29:35
+
+Version 2.7.2.
+
+Changelog: 02-11-2026 14:09:45
+
+Version 2.7.1.
+
+Changelog: 02-11-2026 01:29:42
+
+Version 2.7.0.
+
+Changelog: 02-11-2026 01:00:58
+
+Added. nexus.py: Nexus's design (the theme NEXUS and its colors ink, silver and teal) for the Nexus apps in dev/,
+Nexus Dashboard, Nexus Release Tool, Nexus Demo Recorder and Nexus Installer Tests, with create_app(theme=NEXUS).
+It was Nexus Release Tool's style.py alone; the suites' apps keep their own themes.
+
+Changelog: 02-11-2026 00:48:53
+
+Version 2.6.0.
+
+Changelog: 02-11-2026 00:23:01
+
+Added. heat.py, the play mode's heat warning (owner, 02-11-2026: the Ally got hot on the outside during a game in Xenia with a second screen attached): while a game runs, play.run() reads the CPU's and the GPU's temperature every two seconds (chip.Temperatures); when the hotter stays above 90 °C for 30 s, a banner in the portable design shows at the top of every screen for eight seconds, on top of the game without taking the focus or a press, and the controller rumbles three short times (PygameSource.rumble(), new); again at most every five minutes. The game is never touched. When the game ends, the log says the hottest reads and how long they were above the limit. A sensor or a banner that fails is logged and the game goes on.
+
+Changelog: 01-11-2026 23:28:28
+
+Added. play.missing() and gone.py: the play mode no longer starts the emulator with a game that is no longer there (renamed, moved or deleted after it was put in Steam, or on an SD card that is not in); a screen in the portable design says which file and what to do, closed with A, B, View or a tap, and by itself after a minute. And renamed.py: a game manager remembers what each game in Steam is (its code, else its file's size), and a game found again under another name or in another folder takes the mark of the one no longer found when it is the only match (owner, 01-11-2026: Xenia opened without the game, its error under Steam's keyboard).
+
+Changelog: 01-11-2026 22:54:19
+
+Fixed. A portable card without an icon gives its text the room of two lines at 100 high: margins of 8 above and below, 2 between the title and the text, the title at its own height. The second line of a card's text was cut off at the bottom (a g or a p), in the game managers' cards and Windows Portable Test's Hardware card (owner, 01-11-2026).
+
+Changelog: 01-11-2026 21:51:44
+
+Version 2.5.1.
+
+Changelog: 01-11-2026 20:36:00
+
+Fixed. latest_release() (updates.py) follows GitHub's release pages until one holds the app's tag prefix, instead
+of reading the first 100 releases only. The Windows Portable Suite's releases of 01-11-2026 filled that first page,
+so every installed BC250 app, and the installed portal, said "no release tagged <prefix>* yet" and would not have
+offered its next release. The pages are read newest first, 100 a page, until the prefix is found, the list ends or
+ten pages were read.
+
+Changelog: 01-11-2026 18:11:40
+
+Version 2.5.0.
+
+Changelog: 01-11-2026 16:56:02
+
+Added. keep.py, deciding what to keep before anything is deleted (owner, 01-11-2026: before deleting anything, let
+the user decide what to keep): the rows of a page that lists what would go (a game's folder, its update, a package,
+a BIOS file, a Steam shortcut), each with its size and marked Delete at first; A turns a row to Keep and back, X
+deletes the rows still marked Delete, B deletes nothing (keep.Item, rows(), toggle(), chosen(), measure(), human(),
+delete(), read-only files too). The game managers of the Windows Portable Suite use it.
+
+Changelog: 01-11-2026 17:36:48
+
+Version 2.4.0.
+
+Changelog: 01-11-2026 14:10:30
+
+Added. InfoButton (widgets.py): a small round "i" in the accent that opens its explanation below it on a click,
+in the tooltip's style, with the links in it clickable; it stays until a click elsewhere or Escape. For the places
+where a line of hint text would take the room (owner, 01-11-2026: where space is limited, an info symbol that
+opens the text instead of long lines of text in the window); BC-250 Memory Manager is the first to use it.
+
+Changelog: 01-11-2026 04:54:34
+
+Version 2.3.2.
+
+Changelog: 01-11-2026 04:33:13
+
+Fixed. A full-screen portable window is never taller than its screen (owner, 01-11-2026: shadPS4 Manager's row at
+the bottom was cut off, 1280 x 755 on the Ally and 1920 x 1110 on a 1080p TV). PortableWindow.showFullScreen() takes
+Windows' frame away first: with it, a window whose layout asks for more width than the screen came out a title bar
+taller than its screen. PortableWindow also sets its layout free of a minimum in setVisible(), before the show,
+instead of in showEvent(): Qt activates the layout during the show, and the window kept the minimum height it set
+then, the hidden pages of a stack counted too.
+
+Changelog: 31-10-2026 19:52:27
+
+Version 2.3.1.
+
+Changelog: 31-10-2026 18:31:09
+
+Fixed. The legend's R3 entry shows a keyboard drawn (KeyboardIcon) instead of the word Keyboard, and a status part
+given in a color of its own is extra bold (owner, 31-10-2026, from the device test: the red letter was too faint).
+The keyboard shortcut's key caps sit closer together, and KeyHint takes SCREEN_ICON for a symbol drawn instead of its
+words (ScreenIcon: two screens with an arrow between them), so the portal's row at the bottom fits with a second
+screen (owner, 31-10-2026: a symbol saves space). The last entry of the row at the bottom reads Exit instead of Exit app (owner, 31-10-2026).
+
+Changelog: 31-10-2026 18:10:30
+
+Version 2.3.0.
+
+Changelog: 31-10-2026 17:55:40
+
+Added. R3, the right stick pressed, shows Windows' touch keyboard in every portable window, or hides it (owner,
+31-10-2026): Gamepad reports it as the action keyboard, PortableWindow.show_keyboard() toggles the keyboard through
+its host's own interface (platform.toggle_touch_keyboard(), ITipInvocation; no administrator, nothing in the
+registry), starting the host TabTip.exe first when it does not answer and asking again for three seconds. When it
+cannot open, a popup says why (keyboard_problem()). KEYBOARD is the legend's R3 Keyboard entry.
+
+Changelog: 31-10-2026 17:38:51
+
+Added. The portable window's LT (owner, 31-10-2026): Gamepad reports a pull of the left trigger past halfway
+as the action lt, once until it is let go, as RT's rt, and a tap on a legend's LT entry does the same. Legend's
+set_items() takes a keyboard shortcut for its left end, what it does and its keys, drawn as key caps (KeyHint,
+KeyCap; WINDOWS_KEY draws the Windows key's four panes): owner, 31-10-2026, "with icons, not a long line of text".
+PortableHeader.set_status() takes a part as (text, color), shown in that color; a line without one stays plain
+text, as before.
+
+Changelog: 31-10-2026 15:07:26
+
+Version 2.2.0.
+
+Changelog: 31-10-2026 14:56:28
+
+Added. PortableWindow follows the screen it is on (owner, 31-10-2026: moved from a TV to the Ally's own screen, the
+portal kept the TV's sizes and ran off the Ally's screen). Moved to another screen (Win + Shift + an arrow, or
+move_to()), the window remembers it for the suite (suite.ini, look/screen), and the suite's apps open on it from
+then on while it is attached (start_screen(); otherwise Windows' main display). On a screen of another size the app
+starts again there, sized for it: PowerShell waits for the app to end, then starts its own command line again
+(restart_command(), RESTARTED set). Not while it is busy (can_restart(): the managers' busy flag; the portal's
+download or install): it waits and says so (waiting_to_move()).
+
+Changelog: 31-10-2026 14:36:22
+
+Fixed. PortableWindow: the screen sizes a window, never its layout. With wrapped text in it (the portal's line
+under the tiles) Qt took the layout's minimum height at the window's narrowest width, where the text needs more
+lines, and made a full-screen window taller than its screen: the portal was 1920 x 1099 on a 1080p TV, its
+bottom 19 px on the Ally's screen under it (owner, 31-10-2026). The layout now sets no size on the window
+(SizeConstraint.SetNoConstraint).
+
+Changelog: 31-10-2026 12:33:29
+
+Version 2.1.1.
+
+Changelog: 31-10-2026 00:13:44
+
+Fixed. RoundedToolTip: a tooltip with no room below the cursor opens above it (left of it with no room to the
+right), as Qt's own does, where it was pushed up over the cursor and the button under it; and clicks go
+through a tooltip to the widget below. A click on a button low in the window only hid the tooltip and took
+two or three tries (Nexus Release Tool, owner, 31-10-2026).
+
+Changelog: 30-10-2026 23:24:23
+
+Version 2.1.0.
+
+Changelog: 30-10-2026 22:46:16
+
+Added. xbox.remove(): a program taken out of the XBOX app's library again, every entry of it, the others kept, the
+file backed up and written with the XBOX app closed as add() does (owner, 30-10-2026: the portal's XBOX menu row
+removes the suite too); False, nothing written, when it is not there. add() and remove() write through one _write().
+
+Changelog: 30-10-2026 21:48:01
+
+Version 2.0.0.
+
+Changelog: 30-10-2026 21:19:45
+
+Breaking. play.py's chord is View, LB and RB held for two seconds (CHORD back, leftshoulder, rightshoulder; owner,
+30-10-2026), no longer View and Menu, which Windows ("Use View + Menu as Guide button in apps", on by default) and
+Steam Input (Select + Start) take as the guide button: their overlays opened over the game and took its focus.
+QUIT_HINT says the new one.
+
+Changelog: 30-10-2026 21:19:45
+
+Added. chip.py, the chip's live values on a Windows handheld: the temperatures and the power draw moved from Windows
+Portable Test's temps.py, unchanged, with the GPU's load (ADL's INFO_ACTIVITY_GFX), the CPU's load (CpuLoad,
+Windows' GetSystemTimes) and parts() for a header (owner, 30-10-2026: the portal's). portable.py: which wallpaper
+the suite shows (owner, 30-10-2026): a picture dropped in the suite's wallpapers folder (wallpaper_folder(),
+wallpapers(), picture_problem(): PNG, JPEG or WebP, wider than high, at least 1280 x 720), kept in suite.ini
+(wallpaper_picture(), set_wallpaper_picture()), the suite's own while none is chosen or it is gone; and its
+transparency in % (wallpaper_veil(), shade(), PortableWindow.set_wallpaper_veil()), SHADE until one is set, so the
+look stays as it was.
+
+Changelog: 30-10-2026 19:43:49
+
+Version 1.1.0.
+
+Changelog: 30-10-2026 19:09:13
+
+Fixed. xbox.py reads and writes the XBOX app's paths as Windows paths on any system (ntpath, PureWindowsPath): on Linux a
+Windows path was one name without folders, so an app added was never found as listed (CI Nexus, pytest (core), on the
+push of 30-10-2026). On Windows as before.
+
+Changelog: 30-10-2026 18:17:38
+
+Added. xbox.py, the XBOX app's library on Windows (owner, 30-10-2026: the Windows Portable Suite in the XBOX menu):
+the apps added there with My Library's + are in the XBOX app's own JSON file,
+LocalState\ThirdPartyLibraries\CustomLibraryManagement\CustomLibraryManagement.manifest in its package folder (as
+the XBOX app 2611.1001.9.0 wrote it on the owner's Ally; the CustomLibraryManagement\ beside ThirdPartyLibraries\ stays
+empty). add() writes an entry as the XBOX app writes one (gameCache, {guid}: id, title, installLocation,
+executableName, imagePath, the dates), never twice, the file backed up (.bak) first and written with the XBOX app
+closed (with_xbox_closed(), started again after); a file in another shape is never written (FormatError).
+
+Changelog: 30-10-2026 17:55:08
+
+Fixed. The play mode closes only the emulator's main windows (play.main_windows(): visible, top-level, without an
+owner, not a tool window): Steam's overlay has windows in the game's process too, and a close sent to every window opened
+it over the game (the owner's Ally, 30-10-2026, shadPS4 with Galaga). play.run() takes confirm (press_enter(): Enter in
+the main window, ASK = 1 s after the close) for an emulator that asks before it quits: shadPS4's "Are you sure you want
+to quit?", which it has no setting to skip, stayed on the screen.
+
+Changelog: 30-10-2026 17:55:08
+
+Added. power.text() says Plugged in while the device is on its charger (owner, 30-10-2026), its percentage on battery;
+status_clock() comes before it: the header shows the battery last of its values.
+
+Changelog: 30-10-2026 17:18:10
+
+Fixed. A program an app starts on Windows never gets the controller reader's SDL variables (platform.outside_bundle(),
+APP_VARIABLES: SDL_VIDEODRIVER=dummy, SDL_AUDIODRIVER, SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS, PYGAME_HIDE_SUPPORT_PROMPT),
+from a release and from the checkout alike. Steam draws with SDL3: started with SDL_VIDEODRIVER=dummy it made its login
+window without a window and never signed in, in Desktop and in XBOX mode (the owner's Ally, 30-10-2026: started so,
+Logged Off; without them, signed in within 15 s). That, not the lower-case name of Steam's program (windows_steam(),
+1.0.0), kept the game managers' Steam from signing in: every start that failed had the variables. An emulator that
+draws with SDL, started without Steam, would have shown no game either.
+
+Changelog: 30-10-2026 16:11:24
+
+Version 1.0.0.
+
+Changelog: 30-10-2026 14:49:38
+
+Added. play.py, the game managers' play mode (owner, 30-10-2026: one way out of every game, "Hold View + Menu,
+everywhere"): play.run() starts the emulator outside the app's bundle, watches the controller (core's PygameSource)
+and, with View and Menu held together for two seconds (HOLD), sends WM_CLOSE to the emulator's windows and its
+children's, as Alt+F4 does; one still running ten seconds (GRACE) later is ended. It ends with the emulator, with its
+exit code. play.launcher(): what a game's Steam shortcut starts, the app's own program with --play in a release, its
+run.ps1 in a hidden PowerShell window from the checkout; played() tells such a shortcut from one made before.
+QUIT_HINT, the line the managers show when a game starts.
+
+Changelog: 30-10-2026 14:49:38
+
+Fixed. steam.write_shortcuts() takes the artwork of a shortcut it takes out under the number that shortcut has, also
+when the change's own entry would number it otherwise (a shortcut another program started, such as one made before a
+game manager's play mode).
+
+Changelog: 30-10-2026 14:49:18
+
+Fixed. On Windows, Steam's folder is its name as on the disk (windows_steam(), os.path.realpath): Steam's registry
+key has it in lower case, and steam.exe started as c:\program files (x86)\steam\steam.exe never signed in, its
+login window made off the screen and the client Logged Off for hours (the owner's Ally, 30-10-2026, in Steam's own
+logs: every start by that name, the game managers' since 29-10-2026, against every start as C:\Program Files
+(x86)\Steam\steam.exe, which signed in within 15 seconds). That, not -silent, kept Steam from signing in.
+
+Changelog: 30-10-2026 14:49:18
+
+Fixed. An information popup's text box is as high as its text, up to 0.7 of the window: the text is measured as the
+view lays it out, as plain text (a label took "[PS4] <title>" for HTML and left out what followed, so Your games'
+information stayed four lines high with the window's room to spare; owner, 30-10-2026).
+
+Changelog: 30-10-2026 13:35:58
+
+Added. RT is a button of the portable window (owner, 30-10-2026: RT Steam in the portal): Gamepad's action rt when
+the right trigger is pulled past halfway, once until it is let go (under 0.3), and the legend's RT entry, which a tap
+does the same as. steam.installed(): whether Steam's program is there (steam.exe in Steam's folder on Windows, steam on
+PATH elsewhere), signed in once or not. platform.start_program(): a program started on its own outside the app's
+bundle (outside_bundle(), moved from steam.py), for a game manager's emulator started without Steam.
+
+Changelog: 30-10-2026 12:54:34
+
+Fixed. On Windows, in an app built with PyInstaller, Steam starts outside the app's bundle (platform's outside_bundle(),
+round every steam.exe command and steam:// address): the bootloader's DLL directory and the PyQt6 hook's PATH entry are the
+app's _internal folder, and a program the app started inherited both, so Steam, whose folder has no VCRUNTIME140.dll,
+ucrtbase.dll or OpenSSL of its own, loaded the app's copies before Windows' own (owner, 30-10-2026: Open Steam and a
+game's Play in shadPS4 Manager never got Steam running, where Steam started by hand did). The DLL directory, PATH,
+QT_PLUGIN_PATH and QML2_IMPORT_PATH are taken away while Steam starts and put back after; Linux and an app run from
+the checkout as before.
+
+Changelog: 30-10-2026 00:42:29
+
+Fixed. On Windows, steam.open_url() starts a Steam that does not run as a plain steam.exe and hands it the steam://
+address once it has signed in (hand_over(), signed_in(): HKCU\Software\Valve\Steam\ActiveProcess, ActiveUser), off
+the caller's thread (owner, 30-10-2026: Play and Open Steam after a reboot showed "Updating Steam" and stopped:
+steam.exe -- steam://open/bigpicture as Steam's first start never made its login window, where a plain steam.exe
+signed in within seconds). A running Steam gets the address at once; Linux as before. The portable window's
+information popup is larger: 900 wide and its text up to 0.7 of the window high before it scrolls (POPUP_WIDTH,
+POPUP_TEXT; owner, 30-10-2026: 640 by half the window was cramped).
+
+Changelog: 29-10-2026 23:14:12
+
+Fixed. On Windows, with_steam_closed() starts Steam again as a plain steam.exe, not steam.exe -silent (owner,
+29-10-2026: Steam would not load after Update Steam in shadPS4 Manager): Steam's logs on the Ally showed every
+steam.exe -silent the game managers started staying Logged Off, one of them for six hours, with no window to sign in
+from, so Play and Open Steam went nowhere, where every plain start signed in. Linux starts Steam as before.
+
+Changelog: 29-10-2026 21:33:37
+
+Breaking. InfoPopup has no Close pill any more (owner, 29-10-2026: no big amber buttons, the buttons in a legend at
+the bottom): its panel ends in a legend, B Close, with show_popup(actions=) for a popup's own entries before it
+(("A", "Show")); a tap on B Close closes it. Its text is a TextView at most half the window high, so a long text
+scrolls with the d-pad's up and down or a finger (owner, 29-10-2026: a long info text was cut off); InfoPopup.text
+is that view now, and pills() holds it while it scrolls.
+
+Added. Card.set_dot(): a red dot at a card's top right corner, for an update on the portal's tile (owner,
+29-10-2026). portable.sound_on() and set_sound_on(): the suite's sounds on or off (suite.ini, look/sound), for the
+portal's Suite page. browse.remembered() and remember(): a browser opens in the folder chosen last, while it is
+there (owner, 29-10-2026). steam.play_url(), open_url() and OPEN_URL: a non-Steam game started through Steam
+(steam://rungameid/), and Steam's library opened (owner, 29-10-2026: a game started from its manager, an Open Steam
+button). TextView takes its background (transparent in a popup) and draws a thin scroll bar without arrows.
+
+Changelog: 29-10-2026 16:36:08
+
+Fixed. browse.drives() leaves out a drive letter whose root cannot be read (a card reader or an SD slot without a
+card: Windows raises WinError 1005, no recognized file system, where the PC's E: and F: were, 29-10-2026), so the
+browser's places never end the app; browse.mounted() is the test, and drives() takes another for the tests.
+
+Changelog: 29-10-2026 13:17:58
+
+Added. platform.private(): a path or a text with the user's folders written as %LOCALAPPDATA%, %APPDATA% and
+%USERPROFILE% (~ on Linux), so no user name shows (owner, 29-10-2026: a folder on the screen showed it, against the
+privacy rule); applog.setup(private=True) applies it to every line of the log, and browse shows the places and the
+way up through it.
+
+Changelog: 29-10-2026 13:03:08
+
+Fixed. In a pane the d-pad stays in it (owner, 29-10-2026: at the top or bottom of a list the focus jumped back to
+the cards on the left): PortableWindow.move_focus() only moves to what is in the same pane, and stops at its edges; B
+goes back to the card. From a card the d-pad still moves between the cards.
+
+Changelog: 29-10-2026 12:46:22
+
+Breaking. The information icon (IconPill, InfoPill, LightPill) is touch only (owner, 29-10-2026): the d-pad never
+lands on it, so A in a pane is always the pane's own action; Menu opens the information, and closing it gives the
+focus back to where it was, not to the icon.
+
+Added. browse: choosing a folder or a file with the controller, where Windows' own folder and file windows cannot be
+used (owner, 29-10-2026: a game folder could not be chosen): places() (the user's Games, Downloads, Documents and
+Desktop folders, then every drive), Browser (rows(), open(), up()), listing() without the hidden and system ones.
+TextView: a long text read in a pane (the log, instead of Notepad, which no button closes), the d-pad's up and down
+scroll it. Pane.tapped: a tap on a pane, for its A where that is safe. A beside a card or a pill reaches the page's
+own bind("accept"), so every action, A too, can be a legend entry and no pane needs a pill.
+
+Changelog: 29-10-2026 11:35:27
+
+Added. The buttons every portable window shares (owner, 29-10-2026: "Close" on B was not clear): B goes back (from a pane to its card, from a page to where it came from; on a card it does nothing), View (⧉) exits the app and Menu (☰) opens the information of the pane that shows.
+PortableWindow.go_back() takes the focus from a pane back to its card, exit_app() closes (an app overrides it to ask
+first while it is busy), Menu opens the shown pane's InfoPill (info_pill(), show_info()) and closes the popup again;
+common_items() ends a legend with ☰ Info, B Back (while B can act) and ⧉ Exit app, and update_legend() is called on
+every move of the focus, so the legend follows it. VIEW, MENU, INFO, BACK and EXIT are core's; a tap on the ⧉ entry
+now acts (the legend knew View only by the name "View").
+
+Changelog: 29-10-2026 11:04:36
+
+Fixed. The text of one pane showed through another (owner, 29-10-2026, in PCSX2 Manager and PPSSPP Manager, with
+the wallpaper on): a switch away from the page that held the focus (RB Steam artwork from a game in the list) handed
+the focus to the first card, whose own pane was switched to inside the first switch, and QStackedLayout then left
+both pages visible, the see-through one over the other. PortableWindow now keeps every stack of its window to its
+current page after each switch (one_page()).
+
+Changelog: 29-10-2026 06:16:12
+
+Fixed. The cards and panes over the wallpaper are more see-through: 160 of 255 opaque instead of 200 (owner,
+29-10-2026: "the cards are not semi-transparent"; at 200 over the shaded picture they read as solid). The shade
+over the wallpaper stays 150, so the text keeps its contrast.
+
+Changelog: 29-10-2026 04:28:23
+
+Added. The legend is the row of actions (owner, 29-10-2026: "we have update steam 2 times ... if we can use that
+bottom row for actions we should do that"): every entry of a Legend is a LegendItem that, tapped, does what its
+button does, through PortableWindow.act() (on_action() without the active-window rule, which is the controller's).
+An action with a controller button is in the legend alone, not on a pill too; the pills are the actions without a
+button and A. set_items() with the same entries again leaves the row as it is, so a page may refresh it freely.
+
+Added. Tabs and TabLabel are core's, from the portal's widgets: tabs between the LB and RB glyphs, step(±1) bound to
+previous and next, a tap selects one, changed(key) tells; for the portal's categories and a page's parts (PCSX2
+Manager's settings).
+
+Fixed. An IconPill (the information icon, the light bulb) shows its focus: the ring and the sign amber (owner,
+29-10-2026: "it's hard to see which button is active"; dimmed as a pill is, it hardly showed).
+
+Fixed. steam.field() reads a shortcut's field whatever the case of its name (Steam has written AppName as appname and
+Exe as exe in some versions): the artwork's number and a kept play time use it, and the apps' shortcut readers can.
+
+Changelog: 29-10-2026 02:51:30
+
+Added. A popup can hold controls (owner, 29-10-2026: "if we are short in space somewhere we should consider an icon
+and popup window"): show_popup() and InfoPopup take content, a widget with pills; while it shows, the d-pad moves
+between its pills and Close only, A presses the focused one and B closes it. IconPill is a small round icon at a
+pane's top right with a sign drawn in it, InfoPill and the new LightPill (a bulb) among them.
+
+Fixed. Closing a popup gave the focus to the first card on the way, which showed that card's pane instead of the
+one the popup was opened from: the focus goes back before the popup hides.
+
+Changelog: 29-10-2026 02:41:27
+
+Fixed. A pill's A showed as a black square on the Ally, not a circle (owner, 29-10-2026): a QLabel's stylesheet
+border-radius was not applied there. Glyph paints its own circle now, its colors set with set_colors(), for the
+pills and the legend alike. Pill's docstring says the suite never disables a pill.
+
+Changelog: 29-10-2026 02:21:23
+
+Fixed. One kind of pill in the portable window (owner, 29-10-2026: "why are the buttons not the same everywhere?"): every Pill is amber with a dark label, its glyph's letter amber on dark, the same height and minimum width with a button or without one; under the pointer it dims as with the focus, and disabled it is gray with a dimmed label. pill_row() puts a pane's pills in a row at its bottom right, the A pill last.
+
+Added. Where you are reads at a glance (owner, 29-10-2026): PortableWindow follows the focus, and a Pane with the focus inside it gets the focused card's amber edge and glow (on its QStackedWidget when it is in one, which would cut the glow off), while the card whose pane it is keeps the edge without the glow (Card.set_selected); back on the cards, the pane is plain again. Row is a list's or a setting's row: left-aligned text, and with the focus lighter (#3a3d45) with the amber edge.
+
+Changelog: 29-10-2026 01:47:57
+
+Added. The wallpaper is the suite's (owner, 29-10-2026: "available throughout the suite"): core's
+PortableWindow draws it behind every window of a suite (bc250_core/images/wallpaper.webp, darkened, the cards
+see-through), on or off for every app of the suite at once in <suite>\suite.ini (look/wallpaper: wallpaper_on(),
+set_wallpaper_on(), PortableWindow.set_wallpaper()). A window of no suite shows none.
+
+Changelog: 29-10-2026 00:46:14
+
+Fixed. On Windows a bare QSettings() of an app with .ini settings (AppInfo settings_ini) wrote to the registry,
+under HKCU\Software\<org>: create_app() now makes .ini the default format there, so it is the file
+%APPDATA%\<org>\<app>.ini that open_settings() opens (owner, 29-10-2026: %APPDATA%\windows-portable-suite was
+empty; the portal's and PCSX2 Manager's settings were in the registry). Linux is unchanged.
+
+Changelog: 29-10-2026 00:18:23
+
+Added. steam.py on Windows (the Windows Portable Suite's PCSX2 Manager, 29-10-2026): Steam's folder from its registry
+key (HKCU\Software\Valve\Steam, SteamPath; only read), whether it runs from Windows' process list (steam.exe), and
+its own steam.exe to close it and start it again (shutdown_command(), start_command()). Linux works as before.
+
+Changelog: 28-10-2026 23:55:54
+
+Fixed. A tile's icon (Card with an icon) is drawn without its transparent edges, and a wide one (the Gaming icon's
+handheld, 2:1) in a box up to twice as wide and a quarter taller than a square icon's: it was half the size of the
+Test icon beside it (owner, 28-10-2026: "the game icon is way too small").
+
+Changelog: 28-10-2026 23:07:51
+
+Fixed. portable.scale() adapts to a smaller screen too (owner, 28-10-2026: "can it not auto adapt to the screen
+it's on"): the layout is drawn smaller than the mock-up where the screen is (a 1080p screen at 175 % is 1097 x 617:
+0.86), down to MIN_SCALE 0.6, and PortableWindow reads the whole screen rather than the part beside the taskbar, as the
+apps run full screen over it (the Ally stays at 1). pin_scale() keeps a size for the windows made afterwards (tests,
+pictures for the wiki).
+
+Added. PortableWindow.restyle() draws every card and pane again after glass() changed, so a wallpaper switches on and
+off in a running window; Pane(solid=True) is never see-through (an InfoPopup's panel).
+
+Changelog: 28-10-2026 20:01:44
+
+Added. portable.InfoPill and InfoPopup: an information icon (a ring with an i drawn in it, 32 px) for more text
+than fits on a page (owner, 28-10-2026); A or a tap shows the text under its title in a solid panel over the
+darkened window, A, B, Escape or a tap beside it closes it and the focus goes back to the icon.
+PortableWindow.show_popup() opens one; while it shows, the other buttons do nothing.
+
+Added. PortableHeader.set_status() takes a second line, shown under the status line when given (owner, 28-10-2026:
+Windows Portable Test's temperatures under the battery, the date and the time).
+
+Added. portable.glass(): how opaque the cards and panes are, set by a window with a wallpaper behind it so the
+picture shines through (owner, 28-10-2026); a focused card stays solid, so its amber glow does not tint it.
+
+Changelog: 28-10-2026 18:12:48
+
+Version 0.2.0.
+
+Changelog: 28-10-2026 18:04:37
+
+Added. portable.status_clock(): the date and the time for the portable header's status line, "Wednesday
+28/10/2026" and "17:04", the day's name in English whatever Windows' language (owner, 28-10-2026).
+
+Fixed. power.text() writes the percentage without a space before its sign: 82%, 64% charging (owner,
+28-10-2026).
+
+Changelog: 28-10-2026 00:48:41
+
+Added. power.py, the battery for the portable header's status line (Windows' GetSystemPowerStatus), from Windows
+Portable Test, so the Windows portal reads it too. portable: a Card with an icon is a tile (the Windows portal's
+apps): the icon (ICON, 64) centered above the title and the text, both centered; Card.set_text(text, color) for a
+status in amber. A Card without an icon is drawn as before.
+
+Changelog: 27-10-2026 17:02:23
+
+Fixed. portable: the main pill is #cd8b22 (owner, 27-10-2026, a trial; BUTTON), its glyph's letter with it; the
+focus and everything else stay as they were. PortableHeader draws an icon only when it is given one (owner,
+27-10-2026: the test app's screen is too small for it); it no longer keeps the icon's space empty.
+
+Changelog: 26-10-2026 22:54:30
+
+Added. portable: Pane, the detail pane (a card's surface for what the focused card shows). The window registers
+the bundled Inter itself, and the legend's old buttons leave at once when it changes; they were only detached
+first, which on the Ally could take the focus events from the window (found while building Windows Portable Test).
+The header's status line (battery and time) is 18 pt bold in the text color, level with the header's top, its parts
+divided by a bar (owner, 26-10-2026: 13 pt dimmed was too small).
+
+Changelog: 26-10-2026 22:37:18
+
+Added. portable: the portable window of the Windows Portable Suite (owner, 26-10-2026: direction D, B's amber on C's
+cards). PORTABLE is its design as a theme for core's widgets; PortableHeader, Card, Pill, Legend and PortableWindow
+are what its apps are built of. Sizes are the mock-up's at 1280 x 720 and scale with the screen. The focused card
+is raised with an amber edge and glow; a focused pill is dimmed. The d-pad, the left stick or the arrow keys move the
+focus to the nearest card or pill, A or Enter acts, B or Escape goes back, and a page binds its own buttons (X, Y,
+LB, RB). The controller counts only while the window is active.
+
+Added. gamepad: a game controller read with pygame-ce for the portable window: the window's actions (a held
+direction repeats) and every button, stick and trigger as it is, for a controller test. Without pygame-ce or a
+controller nothing happens. The BC250 portal keeps its own gamepad.py.
+
+Changelog: 26-10-2026 22:01:21
+
+Added. applog: an app can name its suite (log_file() and setup() take suite=), and its log goes to the suite's
+folder: %LOCALAPPDATA%\windows-portable-suite\<app id>\<app id>.log for the Windows Portable Suite's apps. An app
+that names none keeps ~/.local/share/<app id>/<app id>.log, as before.
+
+Changelog: 26-10-2026 21:46:30
+
+Added. platform: the Windows side, for the Windows Portable Suite. suite_data() and suite_config() give a suite's
+folder (%LOCALAPPDATA% and %APPDATA% on Windows, the XDG folders elsewhere), start_menu() the Start-menu programs
+folder, open_path() opens a file, folder or URL with its own program (os.startfile on Windows, xdg-open elsewhere),
+launch_in_terminal() runs a PowerShell command in a window of its own on Windows (powershell_command(): the exit file
+and the "Press Enter" pause as with bash), and make_shortcut() writes a Windows shortcut. PATH_BUDGET (240 of
+Windows' 260 characters) is what a suite's paths stay within. data_home(), config_home(), bin_home() and xdg_open()
+are unchanged on every system, and nothing changes on Linux.
+
+Changelog: 26-10-2026 20:45:22
+
+Fixed. The tests run on Windows: wifi's skip there (sysfs and kernel modules), as do the instance tests that run the
+server and the client in one thread (a named pipe on Windows; two processes reach each other, as two launches of an
+app do), and the SteamGridDB key's file mode is checked on Linux only. The code is unchanged.
+
+Changelog: 26-10-2026 13:21:15
+
+Added. widgets: the theme the widgets draw with can be set (set_theme(), current_theme(), accent()), and
+create_app(theme=) sets the one an app passes: an app that is not a suite's draws with its own design (owner,
+26-10-2026: Nexus Releases takes Nexus's). Without one the suite's chosen theme applies, as before; theme.py is
+unchanged, so the apps' copies of it stay equal.
+
+Changelog: 26-10-2026 04:16:33
+
+Fixed. widgets: a MetricBox or Pill with the neutral color (GRAY, the default) has the suite's blue left edge, as
+the portal's pills (owner, 26-10-2026: the header boxes of several apps showed a near-black edge, the theme's edge
+color). A state or an app's own color still takes its place.
+
+Changelog: 26-10-2026 03:49:35
+
+Fixed. widgets: RoundedToolTip shows a tab's own tooltip (setTabToolTip) in the rounded style with the thin accent
+border, as every other tooltip (owner, 26-10-2026: the portal's tabs showed Qt's plain one).
+
+Changelog: 26-10-2026 03:19:06
+
+Added. platform: terminal_command() and launch_in_terminal() take keep_open="on_error" (owner, 26-10-2026): the
+"Press Enter" pause comes only when the command failed, so a terminal whose command ended well closes by itself; the
+exit file gets the status either way. The portal uses it for installs and uninstalls.
+
+Changelog: 25-10-2026 01:12:22
+
+Fixed. appinfo: SUITE_MANUAL_URL is the suite's own wiki, robertotorino.github.io/nexus/bc250-bazzite-suite/ (owner,
+25-10-2026); robertotorino.github.io/nexus/ is now the Nexus page.
+
+Changelog: 25-10-2026 00:51:24
+
+Fixed. appinfo: SUITE_REPO_URL and SUITE_MANUAL_URL use the suite's new name, Nexus (RobertoTorino/nexus, renamed
+25-10-2026). GitHub redirects the repository's old address, so update checks kept working; the wiki's old address
+ended with the rename, so every app's wiki link works again from its first release on this core.
+
+Changelog: 24-10-2026 23:19:01
+
+Added. sound: unmute(), the sound of an application unmuted in Bazzite's sound settings (owner, 24-10-2026: an
+Unmute button beside Bazzite's volume in the managers; shadPS4 was found muted there, and the owner had muted
+nothing). WirePlumber keeps the remembered mute in memory and writes its file itself, so the file is never
+written: the application's playing streams are unmuted through PipeWire's PulseAudio interface (pactl), and
+without one a silent stream of two seconds is opened under its name (paplay), unmuted and closed, which
+WirePlumber stores as it stores a change in the sound applet; the stored value is read back. Proved on the board:
+muted to stored unmuted in about 2 s, nothing left running (wpctl set-mute hung on such a stream there, so pactl
+it is). The muted message names the button. Tests: with a stream playing, without one, and the failures.
+
+Changelog: 24-10-2026 20:46:27
+
+Fixed. widgets: WrappedLabel, a word-wrapped label whose minimum height follows its width, and
+hint_label(follow_height=True) for one. A wrapped QLabel tells its layout a minimum of one line whatever it wraps
+to, so a window at its minimum height took the extra lines from the widget with the stretch below: RPCS3 Manager's
+Settings tab, its Sound box squeezed unreadable under the three-line introduction on the board (owner,
+24-10-2026). Opt-in, nothing else changes. Test: the minimum follows the width and the text.
+
+Changelog: 24-10-2026 19:23:03
+
+Added. sound: the volume the desktop remembers per application (owner, 24-10-2026: every manager shows it; found
+on the board with RPCS3 muted in Bazzite's sound settings, a game playing without a sound). WirePlumber's
+restore-stream module keeps a volume and a mute per application in ~/.local/state/wireplumber/stream-properties,
+also once the application is closed; stream_sound(name) reads the line of an application's output stream, and
+describe(app, sound) gives the words a manager's Settings tab shows beside the emulator's own volume (Muted, 0 %
+or the percentage, in red when a game would play without a sound) and the advice (the sound applet while a game
+plays). Read only. Moved here from RPCS3 Manager, which found it; PCSX2 Manager takes it the same day. Tests: the
+file as the board writes it (a space in a name, another stream's line, broken JSON), the state folder, the words.
+
+Changelog: 24-10-2026 07:20:00
+
+Fixed. covers: the Covers dialog (the SteamGridDB key) wraps its text at a readable width; as one line it made the
+dialog as wide as the screen (owner, 24-10-2026, from PCSX2 Manager). Its text names the app's button for Steam
+through a new edit_key(button=...) argument, "Update Game Mode" as before unless the app says otherwise; PCSX2
+Manager says Update Steam. Test: the button's name in the dialog's text.
+
+Changelog: 24-10-2026 05:06:10
+
+Added. applog: a log file per app (owner, 24-10-2026), ~/.local/share/<app id>/<app id>.log, one line per thing the
+app says or does with the time (DD-MM-YYYY HH:MM:SS), and every uncaught error with its traceback; the file turns
+over at 1 MB with three older kept, and goes to stderr when its folder cannot be made. setup(app_id) once at start,
+logger(app_id) wherever the app logs, tail() for a Log tab. PCSX2 Manager uses it first; the other apps can follow.
+Test: tests/test_applog.py.
+
+Changelog: 23-10-2026 07:00:42
+
+Fixed. widgets: a Pill that cannot be clicked (setEnabled(False)) shows its value and caption in the theme's muted
+text color, as a disabled button does; before, it looked the same as one that can be clicked. The rule is on the
+labels' own disabled state, as Qt ignores an ancestor's pseudo-state in a selector. No other app disables a pill, so
+only USB HD Control's Update pill changes. Test: tests/test_widgets.py.
+
+Changelog: 22-10-2026 21:10:49
+
+Added. sensors: the board's live values from /proc and /sys without root (CPU load, clock and temperature, GPU load,
+clock, power, voltage and temperature, the GPU governor's range, VRAM, RAM, VRM and NVMe temperatures, network,
+disk and fans), moved here unchanged from System Overlay so that USB IPS3.5 reads the same. New with it:
+interfaces() lists the network interfaces, and net() and read() (Sensors.interface) can measure one of them; each
+interface keeps its own previous reading. Without one, as System Overlay asks, the network is all interfaces but
+loopback, as before. Test: tests/test_sensors.py
+(moved with it, and a test for one interface) on the fake board in tests/board.py.
+
+Changelog: 22-10-2026 18:07:44
+
+Added. covers: artwork from SteamGridDB for the games the managers put in Steam (owner, 22-10-2026), with one API key
+of the user's own for the whole suite in ~/.config/bc250-bazzite-suite/steamgriddb-key (mode 0600; edit_key() asks
+for it in a dialog). A game is looked up by its title, without ™, ® and the bracket tags of a file name: the exact
+name, else the first found; of each kind asked for (the portrait, the wide picture, the banner, the logo) the still
+picture with the highest score, leaving out those marked nsfw, humor or epilepsy. What is found is kept in the app's
+covers folder under Steam's own names, with a .done marker, so a game is asked for once; art() fits the pictures to
+steam.ART's sizes for an app to lay over its drawn ones. A refused key or no network stops the lookup with a
+message; the key goes only to SteamGridDB's API and is in no message. Test: tests/test_covers.py, with SteamGridDB's
+answers recorded.
+
+Changelog: 20-10-2026 20:21:21
+
+Added. widgets: Pill, a MetricBox that is a button (the accent edge under the mouse or the keyboard focus; a click,
+Enter or Space emits clicked), moved from the portal so every app can use it; same_width() keeps a row of boxes or
+pills as wide as the widest, also when a value changes. Tests: tests/test_widgets.py.
+
+Changelog: 19-10-2026 23:41:01
+
+Added. theme: the suite's theme, gunmetal (the default), silver or warm, one choice for every app in
+~/.config/bc250-bazzite-suite/theme (theme_name(), save_theme_name()). apply_theme() puts its palette and style sheet
+on the application (buttons and tabs with a sheen, thin borders, the accent on focus and selection); create_app()
+calls it, with the app's own sheet after the theme's. ACCENT is the theme's accent, surface_style() and muted() give
+an app the theme's surfaces and secondary text. Self-contained, so an app not on core carries a copy.
+
+Added. widgets: StatusPill, MetricBox and AppHeader follow the theme: a pill or box is the theme's surface with its
+state or color as a thick left edge, the text in the theme's color; MetricBox.set_colour() changes it. The room
+inside stays as it was. The tooltip's border is the theme's accent.
+
+Changelog: 19-10-2026 03:24:21
+
+Added. upstream: publish() and read_all(), the updates outside the suite an app can install now (a newer
+HelixSR, a newer PCSX2 nightly build), one file per app in ~/.local/share/bc250-bazzite-suite/upstream/, for the
+portal's notice. Standard library only and self-contained, so an app not on core yet carries a copy
+(tools/tests/test_instance_copies.py keeps them equal).
+
+Changelog: 19-10-2026 03:05:03
+
+Added. wifi: every Wi-Fi adapter on the board (USB or PCIe) and whether the running kernel has a driver and
+firmware for it, read from /sys, modules.dep and modules.alias, this boot's kernel log and iw, with rfkill and the
+connection's band, signal and speed (the network's name left out); report() says what it means as BC-250 Bazzite
+Test's levels. Standard library only, so the system python3 runs it (python3 -m bc250_core.wifi). It only reads.
+
+Changelog: 18-10-2026 22:28:23
+
+Added. steam.shortcut_icon(): the icon file for a Steam shortcut, the PNG beside an app's WebP icon
+(images/<app-id>-128.png), as Steam may not read WebP. steam_art.draw_icon_art() writes the logo over the banner as
+PNG when the icon is not one, since Steam's grid files are PNG.
+
+Changelog: 16-10-2026 04:52:58
+
+Added. steam_art.draw_icon_art(): the four pictures of a Steam shortcut drawn from an app's icon, for apps with no
+pictures of their own. The background is near black in the icon's own color (the mean of its bright, saturated
+pixels), lighter towards the middle, with a glow of that color; the portrait and the wide picture have the icon, a
+title and a line under it, the banner the title and its own line centered, and the icon file itself is the logo. A
+long title wraps and shrinks to fit. Without the icon the background is dark blue and the title is the logo. Moved
+from Console Link, which drew it first; Console Link, the PCSX2 Manager and Bazzite DatStation use it. Tests: Steam's
+sizes, the icon as the logo, the color taken from the icon, a long title and no icon.
+
+Changelog: 15-10-2026 22:35:35
+
+steam.write_shortcuts: a shortcut that is renamed gets a new Steam number (from its program and name), so the
+artwork under its old number is removed, for every Steam user, unless another shortcut in the same change takes that
+number. Before, it stayed behind in grid/. The emulator managers rename their shortcuts to "[PS4] Title" and the like.
+
+Changelog: 15-10-2026 05:51:59
+
+Version 0.1.5.
+
+Changelog: 15-10-2026 05:41:13
+
+AppHeader: the title has no padding any more. Its "padding:0 2px" moved the title text about 9 px to the right of the second row; now both start at the same place. Tests: the title's text lines up with the second row's (rendered).
+
+Changelog: 15-10-2026 03:27:56
+
+Version 0.1.4.
+
+Changelog: 15-10-2026 02:31:31
+
+No translations: create_app() and run_app() take no lang any more and load no translator (Qt's own, core's or the app's); AppInfo loses translations_dir, catalog and languages, and DEFAULT_LANGUAGES is gone; help keeps HelpView and loses HelpPage, which only added a language picker; updates and widgets use their English text directly. text.fmt() and fill() stay, for placeholders. Tests follow.
+
+Changelog: 15-10-2026 02:10:51
+
+Version 0.1.3.
+
+Changelog: 15-10-2026 02:01:27
+
+instance: a second launch can hand its arguments to the running instance. already_running(app_id, args) sends them after the show request as an args line (a JSON list), and serve(app_id, window, on_args) gives them to on_args in the running instance, after showing the window. Without arguments the request is the plain show request it always was; an instance without on_args, or one on an older core, only shows its window; a malformed args line is dropped. For the apps that open what they are given on the command line (Bazzite pkgxtractor, Bazzite NetcatGUI, Bazzite UMD File Renamer). RoundedToolTip.install removes its event filter when the app quits (aboutToQuit): the filter saw the events of widgets and sockets destroyed after the event loop had ended, while Python was tearing down, which crashed Bazzite NetcatGUI at exit. Tests: test_instance (the plain request unchanged, the arguments handed over, no handler or a bad line only shows), test_widgets (the filter removed on quit).
+
+Changelog: 14-10-2026 00:36:43
+
+New module steam: Steam's own files for apps that add non-Steam games for Game Mode. Finding Steam and its users, whether it runs (a zombie steam process does not count), closing it for a change and starting it again (with_steam_closed), the binary shortcuts.vdf (read_vdf, write_vdf), a non-Steam game's appid, the shortcut's fields in Steam's order (shortcut_entry), adding, updating (the play time kept) and removing shortcuts beside the others, and write_shortcuts(), which writes several shortcuts and their artwork for every Steam user, each file once. Moved from BC250 Console Link (its own code, there AGPL-3.0-or-later, relicensed by the owner to GPL-3.0-or-later for core, 14-10-2026), which now uses it; tests/test_steam.py covers it.
+
+Changelog: 12-10-2026 08:07:21
+
+AppHeader in widgets: the first line of every app window, the icon at 96 px spanning the title row (name with the version, states, actions) and a second row (status boxes or main controls), as Bazzite Test and the Governor Manager draw it. test_widgets checks the layout.
+
+Changelog: 11-10-2026 20:58:28
+
+MetricBox centers its value and caption by default, like Bazzite Test's stats boxes; centered=False keeps them left-aligned. test_widgets checks the default; test_parity compares centered and left-aligned boxes with both governor's and helixsr's copies.
+
+Changelog: 11-10-2026 19:02:46
+
+instance.py: Two launches at the same moment (a double-click on a Desktop icon that opens on one click) no longer
+open two windows. Both found no running instance, since the window and its socket take a while to appear, and the
+second then removed the first one's socket. The first launch now takes a lock file at once; a launch that finds it
+taken waits up to 10 s for that instance's socket and hands over instead. A crashed instance's lock is stale, so the
+next launch starts as before. The apps that bundle core (portal, Bazzite Test, ACE Queues, BIOS Reader, Memory
+Manager, System Overlay, Portal dependency checker) get it with their next release. Tests in tests/test_instance.py.
+
+Changelog: 11-10-2026 07:28:24
+
+Version 0.1.2. Shared UI improvements
+
+Changelog: 11-10-2026 01:05:44
+
+Header status widget StatusText: a colored dot and the state in bold, in the color of its kind (red bad, orange warn, green ok, blue info, the normal text color for neutral), with the same set_status() and text() as StatusPill. For a state next to an app's title, where a pill is too heavy; StatusPill stays for cards.
+
+Changelog: 10-10-2026 20:56:48
+
+Version 0.1.1. Initial release
+
+Changelog: 09-10-2026 22:59:08
+
+SUITE_MANUAL_URL: the address of the suite manual on GitHub Pages. README: short, with a link to the manual.
+
+Changelog: 09-10-2026 18:22:39
+
+MetricBox has an optional centered=True that centers the value and caption (helixsr's header uses it); the default
+renders as before. The parity test covers the centered box against helixsr's copy.
+
+tests/test_instance.py deletes its server and window explicitly: left to Python's collection at exit, they made the
+interpreter crash after the last test in about half of the runs (the tests themselves passed).
+
+Changelog: 09-10-2026 17:51:51
+
+New module bc250_core.instance: one running instance per app and user over a local socket (after the
+governor's instance.py). A second launch hands its Wayland activation token to the running instance,
+which brings its window to the front. Tests in core/tests/test_instance.py.
+
+Changelog: 08-10-2026 22:26:29
+
+Initial version 0.1.0 of bc250_core, the code the suite's apps share. It is bundled into each app release.
+- appinfo: AppInfo.
+- theme: the palette and Inter font.
+- text: fmt, fill, plain_tooltip, window_title.
+- widgets: StatusPill, MetricBox, ClickableLogo, Terminal, TextDialog, RoundedToolTip with show/hide_tooltip,
+  page_header, hint_label, accent_button, set_button_active.
+- app: create_app, run_app, exec_app.
+- settings: open_settings at each app's existing file, geometry helpers, SettingsStore.
+- help: HelpView, HelpPage.
+- updates: latest_release with a tag prefix for the suite's per-app tags, UpdateStatus, UpdateChecker.
+- platform: XDG folders, xdg_open, launch_in_terminal with an exit file.

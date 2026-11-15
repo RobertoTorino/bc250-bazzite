@@ -1,0 +1,56 @@
+Changelog: 15-11-2026 01:08:09
+
+Breaking. Linux only (owner, 15-11-2026): the Windows mode, which recorded the install of a Windows Portable Suite
+portal release with install.ps1 in a PowerShell window and stopped on a Windows hot key, is gone with its run.ps1.
+The recorder records a BC250 portal installation, as before.
+
+Changelog: 14-11-2026 23:58:33
+
+Fixed. The app is part of the BC250 Bazzite Suite's own repository, github.com/RobertoTorino/bc250-bazzite (owner,
+14-11-2026), where the suite is the repository itself: the portal install it records is the repository's own
+portal/install.sh.
+
+Changelog: 13-11-2026 19:25:42
+
+Version 0.2.1.
+
+Changelog: 10-11-2026 00:39:40
+
+Fixed. The global shortcut (Ctrl+Alt+F12) talks to the desktop portal through dbus-fast instead of dbus-next, which
+is no longer maintained and does not load on Python 3.15 (it needs typing.no_type_check_decorator, which 3.15
+removed): on Bazzite with Python 3.15 the shortcut failed and the shortcut service's test stopped ./test.sh. dbus-fast
+is installed on Linux only, where the service runs, and the test skips on Windows.
+
+Changelog: 04-11-2026 21:04:25
+
+Version 0.2.0.
+
+Changelog: 04-11-2026 20:08:16
+
+Added. Nexus Demo Recorder runs on Windows (owner, 04-11-2026), where it records the Windows Portable Suite's
+portal: a portal release (wp-portal-v<x.y.z>.zip) extracted in Downloads, or chosen, whose install.ps1 runs in a
+PowerShell window of its own; the status it ends with goes back to the window as install.sh's does. There is no
+install from the checkout on Windows. Ctrl+Alt+F12, which stops the recording, is a hot key of Windows' own
+(RegisterHotKey, in a thread of its own) and says so when another program holds it. OBS is found in Program Files
+and started from its own folder, as it needs to be, and the portal opened after the install is the installed
+Windows-Portable-Suite.exe. The window's texts name PowerShell, Display Capture and Windows Portable Test there.
+run.ps1 starts it, and run.sh from Git Bash takes .venv-windows. On Linux nothing changes; the tests run both
+systems' paths on either system.
+
+Changelog: 04-11-2026 19:05:17
+
+Fixed. Two tests pass on Windows: the player's file is compared as a path, and the test manifest writes its paths
+with forward slashes (a backslash in a TOML string is an escape).
+
+Changelog: 02-11-2026 00:44:49
+
+Added. Nexus Demo Recorder, a Nexus app in dev/demo/ (owner, 02-11-2026: the tools for working on the suites are
+Nexus's, in one place, and the Media Tool, released as an app of the BC250 Bazzite Suite, was dev work in a
+portal): the OBS part of the Media Tool (mtool-v1.0.1, its last release) as an app of its own. It records a demo of
+a portal installation with OBS: an extracted portal release in Downloads, found by itself, or, without one, the
+BC250 Bazzite Suite in this checkout; the optional app to show; the global shortcut of the desktop portal that
+stops the recording and brings the window back; Recent recordings with the player. It runs from the checkout with
+the dev venv (run.sh, bc250_core from core/), takes Nexus's design and icon (core's nexus.py), and is never
+released (.checkout-only). The recordings go to ~/Videos/demos (they went to ~/MediaToolRecordings, which stays).
+install.sh writes the launcher, menu entry and Desktop icon for this checkout, and removes the Media Tool's own
+copy, venv and entries (and Simple Demo Tool's before it). The video tours and the icons went to Nexus Dashboard.
