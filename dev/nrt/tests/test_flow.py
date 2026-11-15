@@ -80,6 +80,43 @@ def test_nothing_changed_nothing_to_release(nexus):
     assert flow.picks(nexus) == []
 
 
+def test_a_portal_bump_with_nothing_else_is_nothing_to_release(nexus):
+    """Only the version and its Release entry moved since the tags (owner, 15-11-2026: Bump wrote portal 21.0.2 while
+    21.0.1 waited for its device test, and Start released it, a second portal of the same apps)."""
+    sh(nexus, "tag", "-f", "wp-test-v0.1.0")
+    (nexus / "VERSION").unlink()                                    # as this repository: no Nexus version of its own
+    write(nexus / "wp/portal/VERSION", "1.0.1\n")
+    write(nexus / "wp/portal/CHANGELOG", "Changelog: 03-01-2026 00:00:00\n\nRelease 1.0.1.\n\n"
+                                        "Changelog: 01-01-2026 00:00:00\n\nRelease 1.0.0.\n")
+    sh(nexus, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-am", "bump")
+    portal = next(u for u in rp.load_units(nexus, "wp") if u.kind == "portal")
+    assert portal.changed == [] and not portal.needs_release
+    assert flow.picks(nexus) == []
+    write(nexus / "wp/portal/CHANGELOG", "Changelog: 04-01-2026 00:00:00\n\nFixed. A tile.\n\n"
+                                        + (nexus / "wp/portal/CHANGELOG").read_text())
+    assert [p.unit.key for p in flow.picks(nexus)] == ["portal"]    # a change of its own: released
+
+
+def test_a_version_copy_that_moved_with_something_else_still_counts(nexus):
+    sh(nexus, "tag", "-f", "wp-test-v0.1.0")
+    write(nexus / "wp/apps/test/VERSION", "0.1.1\n")
+    write(nexus / "wp/apps/test/app.py", "__version__ = \"0.1.1\"\nprint('hello')\n")
+    unit = next(u for u in rp.load_units(nexus, "wp") if u.key == "test")
+    assert unit.changed == ["wp/apps/test/app.py"]                  # VERSION is only the bump; app.py is more
+    write(nexus / "wp/apps/test/app.py", "print('hello')\n")
+    unit = next(u for u in rp.load_units(nexus, "wp") if u.key == "test")
+    assert unit.changed == [] and not unit.needs_release
+
+
+def test_a_withdrawal_entry_is_no_release_of_the_app(nexus):
+    """Retract writes a Withdrawn: entry in the app's CHANGELOG: the app ships nothing new, its portal does."""
+    sh(nexus, "tag", "-f", "wp-test-v0.1.0")
+    write(nexus / "wp/apps/test/CHANGELOG", "Changelog: 05-01-2026 00:00:00\n\nWithdrawn: wp-test-v0.1.0. Broken.\n\n"
+                                            + (nexus / "wp/apps/test/CHANGELOG").read_text())
+    unit = next(u for u in rp.load_units(nexus, "wp") if u.key == "test")
+    assert not unit.needs_release
+
+
 def test_start_writes_the_release_as_steps_one_and_two_would(nexus):
     log, tags = flow.write(nexus, flow.picks(nexus), base="HEAD")
     assert tags == ["wp-test-v0.2.0", "wp-portal-v1.1.0", "nexus-v0.6.0"]
@@ -176,7 +213,7 @@ def release_window(nexus, tmp_path):
     launched: list[str] = []
     w = main_window.ReleaseWindow(nexus, launch=launched.append, runs_source=None, status_source=None,
                                   claude_source=None, suite="wp")
-    w.portal_page.base_edit.setText("HEAD")
+    w.base_ref = "HEAD"
     w.reload()
     w.launched = launched
     yield w
@@ -237,7 +274,7 @@ def test_start_fetches_the_tags_and_main_first_and_goes_on(release_window, monke
     write(other / "wp/portal/apps.toml", (other / "wp/portal/apps.toml").read_text() + "\n")
     sh(other, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-am", "Pin wp-test-v0.1.0")
     sh(other, "push", "-q", "origin", "HEAD:main")
-    w.portal_page.base_edit.setText("origin/main")
+    w.base_ref = "origin/main"
     ran, asked = [], []
     monkeypatch.setattr(w, "confirm_git", lambda *a: asked.append(a[1]) or True)
     monkeypatch.setattr(w, "run_git", ran.append)
@@ -290,8 +327,6 @@ def test_start_shows_why_the_fetch_failed(release_window, monkeypatch, tmp_path)
     monkeypatch.setattr(w, "run_git", ran.append)
     w.release_page.start()
     assert ran == [] and len(shown) == 1 and "git tag -d wp-test-v0.1.0" in shown[0]
-    w.portal_page.fetch_tags()                                       # the Fetch tags pill says the same
-    assert "git tag -d wp-test-v0.1.0" in w.portal_page.output.toPlainText()
 
 
 def test_catch_up_brings_in_mains_commits_under_this_checkouts(nexus, tmp_path, monkeypatch):

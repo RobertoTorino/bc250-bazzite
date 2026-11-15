@@ -193,7 +193,7 @@ NEXUS_APP_BLOCKS = [
                 "row of a table."),
     ("#0f0f0f", "Main color: the fields, lists and tables; the top of a button's or a box's sheen."),
     ("#17b6a7", "Teal: the accent: the selection, the outline of a selected cell or a focused field, a button or "
-                "pill under the pointer, the main action (Apply, Bump portal, Retract), the progress bar."),
+                "pill under the pointer, the main action (Commit, Start new release, Retract), the progress bar."),
     ("#80808066", "Dimmed silver (40 %): the borders of the fields, boxes, tabs and buttons, and a box's neutral "
                   "edge."),
 ]

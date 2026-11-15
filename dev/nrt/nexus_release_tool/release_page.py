@@ -396,8 +396,8 @@ class ReleasePage(QWidget):
 
     def offer_portal_bumps(self) -> bool:
         """A suite whose apps.toml changed since its last portal release needs a portal bump, or the commit's
-        manifest check refuses the commit (owner, 02-11-2026: the step only refused): the bump is offered here, as
-        step 2 would suggest it, and written with its CHANGELOG entry on a yes. False when a no leaves the commit
+        manifest check refuses the commit (owner, 02-11-2026: the step only refused): the bump is offered here
+        (plan.portal_offer), and written with its CHANGELOG entry on a yes. False when a no leaves the commit
         where it is."""
         window = self.release_window
         root, base = window.root, window.base()
@@ -413,7 +413,7 @@ class ReleasePage(QWidget):
                 f"({reason}) and write its CHANGELOG entry, then commit?")
             if answer != QMessageBox.StandardButton.Yes:
                 self.output.set_text(f"Not committed: {name}'s portal needs a bump first (apps.toml changed: {why}). "
-                                     "Bump portal on step 2 writes it, or say yes here.")
+                                     "Say yes here to write it.")
                 return False
             changed, text = rp.write_portal_bump(root, suite, base, version)
             self.output.set_text(f"{name}: portal {version} in " + ", ".join(p.relative_to(root).as_posix()

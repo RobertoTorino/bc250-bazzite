@@ -328,7 +328,7 @@ Background colors:
 | --- | --- | --- |
 | ![#010101](design/colors/block-010101.svg) | `#010101` | Ink: the window, the header and the dialogs; the bottom of a button's or a box's sheen; every other row of a table. |
 | ![#0f0f0f](design/colors/block-0f0f0f.svg) | `#0f0f0f` | Main color: the fields, lists and tables; the top of a button's or a box's sheen. |
-| ![#17b6a7](design/colors/block-17b6a7.svg) | `#17b6a7` | Teal: the accent: the selection, the outline of a selected cell or a focused field, a button or pill under the pointer, the main action (Apply, Bump portal, Retract), the progress bar. |
+| ![#17b6a7](design/colors/block-17b6a7.svg) | `#17b6a7` | Teal: the accent: the selection, the outline of a selected cell or a focused field, a button or pill under the pointer, the main action (Commit, Start new release, Retract), the progress bar. |
 | ![#80808066](design/colors/block-80808066.svg) | `#80808066` | Dimmed silver (40 %): the borders of the fields, boxes, tabs and buttons, and a box's neutral edge. |
 
 ## The apps' own colors

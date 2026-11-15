@@ -52,7 +52,7 @@ def remote_tags(root: Path) -> str:
 
 
 def test_refuses_a_bump_that_is_not_committed(repo):
-    (repo / "portal" / "VERSION").write_text("0.9.5\n")             # Bump portal wrote it; no commit yet
+    (repo / "portal" / "VERSION").write_text("0.9.5\n")             # written, not committed yet
     result = tag(repo, "portal-v0.9.5")
     assert result.returncode != 0 and "not committed yet" in result.stderr
     assert git(repo, "tag") == "" and remote_tags(repo) == ""

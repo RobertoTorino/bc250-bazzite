@@ -3,9 +3,9 @@
 # Releases
 
 The **Nexus Release Tool**, NRT for short (`dev/nrt/` in the repository), is the suite's release front end: a
-window that makes the file edits of a release for you, the versions, the CHANGELOG entries, the pins and the portal
-bump, and runs the board checks. It commits, tags and pushes only when you press its git buttons: after each step it
-shows the git commands to run. It edits the checkout it lives in, so it is not in the portal's releases and has
+window that makes a release with one action, **Start new release**: it writes the versions, the CHANGELOG entries,
+the pins and the portal bump, commits and pushes them and starts the release on GitHub, then runs the device test on
+a board. It commits and pushes only when you press a step's pill. It edits the checkout it lives in, so it is not in the portal's releases and has
 none of its own.
 
 What a release involves, step by step, is in [apps.toml and releases](../portal.md#appstoml-and-releases).
@@ -42,12 +42,16 @@ the settings.
 
 A release of the suite is made from the tool's first tab, the release tab, with one action, **Start new release**.
 It releases what changed since the last release: each app that ships something new, the portal, and core when it
-changed. The numbered tabs after it are the release by hand, one tag at a time, for the odd single release.
+changed. Everything a release writes (the versions, the CHANGELOG entries, the pins and the portal's version) is
+written by that one action, so there is nothing to apply, pin or bump by hand.
 
 The tab **Contents** lists what the release holds: each app that ships something new since its last release, the
-portal, and core when it changed since its last version. The version offered first follows the CHANGELOG entries,
-as on tab 1; type another to override it. The portal's version says **auto**: it is worked out when the release is
-written, at least what the app releases need, and can be typed too.
+portal, and core when it changed since its last version. A part whose only changes since its last tag are its
+version and its "Release x.y.z." entry (or Retract's "Withdrawn:" entry) ships nothing new and is not in it. The
+version offered first follows the CHANGELOG entries since the last tag (`Breaking.` major, `Added.` minor,
+`Fixed.` patch, see [semantic versioning](architecture.md#versions-changelogs-and-releases)); type another to
+override it. The portal's version says **auto**: it is worked out when the release is written, at least what the
+app releases need, and can be typed too.
 
 The release tab holds the release's steps, numbered, in the order you do them, each with its pill. The step to do
 now has an orange ▶ and its pill lit; a step done has a green ✓, one that failed a red !, and the line beside each
@@ -61,7 +65,7 @@ explanation.
 2. **Commit your changes:** the message field holds *see changelog*; keep it or type what the changes do, then
    **Commit**. It stages every change and new file and commits them after the version and manifest checks. When
    `apps.toml` changed since the last portal release (an app added, removed or withdrawn, a pin moved), that check
-   needs a portal bump: the step asks first, with the version tab 2 would suggest (the portal's CHANGELOG entries
+   needs a portal bump: the step asks first, with the version the release would suggest (the portal's CHANGELOG entries
    count: a Breaking entry makes it major), or the least the check accepts, whichever is higher, and writes it with
    its CHANGELOG entry on a yes, then commits. A no leaves the commit where it is.
 3. **Push them** (**Push**): what GitHub has that this checkout lacks, such as the last release's `Pin ...`
@@ -117,78 +121,22 @@ By hand, without the tool, the same run starts on the newest pushed commit with:
 gh workflow run release.yml --ref main -f commit="$(git rev-parse origin/main)"
 ```
 
-A run started again skips what is already published. A tag pushed by hand (**git tag** on tabs 1 and 2 below,
+A run started again skips what is already published. A tag pushed by hand (`tools/tag-release.sh`, below,
 `bc250-<app>-v<x.y.z>` or `bc250-portal-v<x.y.z>`) still releases that one app or portal, published at once. The
-portal tag
-Publish makes starts `release.yml` too, as any pushed tag does; that run sees the release is published already and
-ends at once.
+portal tag Publish makes starts `release.yml` too, as any pushed tag does; that run sees the release is published
+already and ends at once.
 
 ## The window
 
-The tabs **1. Release apps**, **2. Pin and release Portal** and **3. Retract app** are the release by hand, a tag at a
-time: an app's version applied and tagged, its release pinned, the portal bumped and tagged, each tag pushed with
-**git tag**. They stay for a single release on its own (one app re-released, a withdrawal); a release of what
-changed is the release tab above.
+The tabs are **Nexus release** (the steps above), **Contents** (what the release holds), **Retract app** (a
+withdrawal, [below](#withdrawing-a-release)) and **Commands**.
 
-- **1. Release apps:** the **Needs release** column marks in orange every app that ships something new since its last
-  tag: a changed file in its folder (tests and `requirements-dev.txt` do not count), in the core it bundles, or in
-  its wiki chapter, committed or not. Hover it for the files. Tab 2 says the same for the portal. Those apps are
-  ticked when the window opens; untick what waits (**Tick what needs a release** ticks them all again) and enter the
-  versions. The version offered first follows
-  [semantic versioning](architecture.md#versions-changelogs-and-releases) from the CHANGELOG entries since the last
-  tag (`Breaking.` major, `Added.` minor, `Fixed.` patch); its tooltip says why. A version that was never tagged
-  (the first release) can be released as it is. **Apply** writes `VERSION`, every copy `tools/check_versions.py`
-  checks and a `Release x.y.z.` CHANGELOG entry with your notes, which become the release notes on GitHub. The
-  release notes of an app that bundles the core also name the core version. When `apps.toml` pins a tag of that app
-  that was never released, the pin moves to the new version. When `apps.toml` changed since the last portal release,
-  for that or another reason (an app added or removed), CI wants a portal bump in the same push: Apply makes it too
-  (the lowest portal version CI accepts, with a CHANGELOG entry that lists the changed pins) and says so; the portal
-  release itself stays tab 2. It runs `tools/check_manifest.py`. Then commit and push with **Commit your changes**
-  and **Push them** on the release tab (on Linux the push runs `tools/ci-local.sh` first and pushes only when CI's
-  jobs pass), and **git tag** on this tab pushes the app tags (steps 1 and 2 of
-  [the release steps](../portal.md#appstoml-and-releases)). **Apply** is the pill in the header beside **Refresh**
-  (*New app releases*); from another tab it opens tab 1. Once applied, it is grayed out: what it wrote is on top of
-  each CHANGELOG, and an app left unticked then is not ticked again. It works again when another app is to be
-  released, or when you tick one.
-- **2. Pin and release Portal:** the app releases to pin show here from tab 1's Apply on, with where each one stands
-  on GitHub (*not tagged yet* until its tag is pushed). **Pin** is grayed out until every ticked one is built; then it
-  reads each release's `SHA256SUMS` and pins its tag and checksum in `apps.toml` (step 3 of the release steps). The
-  window shows the lowest portal version CI accepts against the last portal release (its tag; the last push,
-  `origin/main`, while there is none), and offers the higher of that and what semantic versioning gives since the
-  last portal tag (its CHANGELOG entries, and the apps added, removed or moved in `apps.toml`); **Bump** writes it,
-  with a CHANGELOG entry that lists the pinned app releases, and runs `tools/check_manifest.py` (step 4). Then
-  commit, test on a BC-250 ([before its tag](../portal.md#testing-a-portal-release-before-its-tag)), and only then
-  push and tag the portal (step 5: **git tag** beside Bump). The window lists these commands in that order in
-  **Commands**. While tab 1's releases are not tagged yet, Bump portal lists tab 1's commands with the bump in them
-  instead (amending the release commit when it is already made and not pushed), and the portal release follows once
-  the apps are pinned. Applying or bumping the same release again replaces its newest "Release x.y.z." entry, so it
-  is written once, unless that entry is already pushed (it is in the last push, `origin/main`): a pushed entry is
-  history, so the new one goes on top of it. Bump pressed again with nothing new (the portal at that version, its
-  entry on top) changes nothing and says so in a popup: the next steps are commit, test, push and tag.
-- **3. Retract app:** withdraws a release (see [Withdrawing a release](#withdrawing-a-release)).
-- **Test on this board** holds the tests of a release on a BC-250. **Test app updates** and **Test Portal
-  release** run the two [board tests](../portal.md#testing-a-portal-release-before-its-tag) in a terminal, with
-  `tools/check-release.sh`: the portal from the checkout before the push, and the published portal release after
-  GitHub has built it. **Test withdrawal** does the first on a board with a withdrawn app installed. The tests run
-  on Linux (the board); a button grayed out says so. What is no release step is in the [Dashboard](dashboard.md):
-  the suite's apps and wiki from the checkout ([Test local apps](dashboard.md#test-local-apps)), the installer
-  tests, the portal's video tour and [Close issues](dashboard.md#close-issues).
-- What a step writes (Apply, Pin, Bump portal, Retract, a test on this board) shows in **Commands**, under a line
-  that names the step, with the output of the commands: one output tab. A step that writes its log opens Commands;
-  open the step again to go on. The steps' logs go into the day's command log too (below).
-- **git tag** on tabs 1 and 2 runs `tools/tag-release.sh` (below) with the tags of that step: on tab 2 the
-  portal's release, on tab 1 the app releases that have no tag yet. It works once what is staged is committed and
-  HEAD is pushed, and never while a command runs; it asks first, with the tags it sends and the command. When the
-  GitHub token on the machine is a `gh` login or a classic token, which reach every repository of your account, it
-  says so: a fine-grained token for this repository only is safer. Committing and pushing are the release tab's
-  steps, also for a release by tags: **Commit your changes** stages every change and new file, sets the exec bits CI
-  checks (`tools/fix-modes.sh`), runs `tools/check_versions.py` and `tools/check_manifest.py`, and commits only when
-  they pass. **Push them** brings in what GitHub has first and, on Linux, runs `tools/ci-local.sh` and pushes only
-  when CI's jobs pass. A commit that must join the last one (Bump portal before tab 1's push:
-  `git commit --amend`) is among the commands the step offers in **Commands**.
+- What a step writes (the release, Retract, Test withdrawal) shows in **Commands**, under a line that names the
+  step, with the output of the commands: one output tab. A step that writes its log opens Commands; open the step
+  again to go on. The steps' logs go into the day's command log too (below).
 - **The command line** in **Commands** runs a command in the checkout, so you need no separate terminal for the
   commands the steps show. Type it and press Enter; its output appears above the line as it runs. **Commands**
-  lists the commands the last step showed (Apply, Bump portal or Retract), one per line: pick one to put it on
+  lists the commands the last step showed (Retract's), one per line: pick one to put it on
   the line, then check it and press Enter. Up and Down bring back earlier commands, also from earlier sessions.
   **Stop** or Ctrl+C interrupts a command, along with anything it started in the background; `clear` or **Clear**
   empties the output.
@@ -202,14 +150,11 @@ changed is the release tab above.
   `~/.cache/nexus-release-tool/commands/commands-<YYYY-MM-DD>.log` (on Windows under your user folder,
   `.cache\nexus-release-tool\commands`), so what a step said can be read again afterwards, or sent along when one
   went wrong.
-- **Applying a release again** (after a check stopped its commit) leaves one release entry in the CHANGELOG: the
-  new "Release x.y.z." takes the place of the same release's entry on top, with the notes of the second Apply.
 
 **GitHub** in the header shows whether GitHub built your last push: every workflow run (CI, Release, Wiki) on its
 commit, tags included. It reads the newest 30 runs of the repository; when they all belong to your commit (a
 release of many apps starts many runs), it reads the rest of that commit's runs too, so the CI runs under them
-count; a release tab 2 waits for whose run is older than those gets its own look, so Pin never waits for a release
-that is out already. It reads **building** while one runs, then **passed** or **failed**; hover for each run, click
+count. It reads **building** while one runs, then **passed** or **failed**; hover for each run, click
 to open the run that failed (or still runs) on GitHub. A run GitHub canceled because a later run of the same
 workflow on the same commit took its place is no failure: hover says **replaced by a later run**. It looks every 30
 seconds while a build runs, every 10 seconds after a push until GitHub has started its runs (a few seconds after
@@ -241,16 +186,6 @@ cache tokens, and each model; click to open [Claude's usage page](https://claude
 your plan's limits. Other computers and claude.ai are not counted. Without Claude Code the pill is not shown. It
 looks every 5 minutes, and **Refresh** looks at once.
 
-The releases tab 2 waits for are followed from the same runs, those of the release workflow (**Release**). The
-**GitHub** column of the pin table says where each release to pin stands: *no run seen* (is the tag pushed?),
-*building…*, *ready* or *failed*; **Pin** waits for a release that is still building, or says that its workflow
-failed, instead of failing on a checksum that is not there yet. When the release of an app to pin is ready, a
-desktop notification says so (*ready to pin*), also when the run started and ended between two looks, or before the
-window opened; each release is told once. Under the portal version, a line says where the portal's own release
-stands: *not tagged yet* after Bump portal and the commit (nothing reaches the users until
-`tools/tag-release.sh bc250-portal-v<x.y.z>` is run, after the test on a board), then *building*, *released* (Test
-release installs it) or *failed*; its notification says *ready* when GitHub built it.
-
 The notifications are the desktop's own: on Linux through `notify-send`, on Windows from the Nexus Release Tool
 icon in the notification area, which appears with the first notification and goes when the window closes. A click
 on the notification or the icon brings the window to the front. On Windows they name Nexus Release Tool as their
@@ -265,7 +200,7 @@ version: the tag was made before the version bump was committed, and `release.ym
 version (the bump is not committed yet), while that folder has uncommitted changes, while HEAD is not pushed to
 `origin/main`, or when CI did not pass on HEAD: it asks GitHub (`tools/ci_state.py`) and waits while CI still runs,
 up to an hour. A portal tag also waits for the app releases it pins: each one tagged on GitHub and pinned with its
-sha256 (tab 2), as the portal's release needs them. A plain `git tag` tags whatever HEAD is at that moment, also
+sha256 (the release's *Pin ...* commit, or `tools/pin_app.py`), as the portal's release needs them. A plain `git tag` tags whatever HEAD is at that moment, also
 the commit from before the bump or one CI failed. `release.yml` asks the same before it builds anything: a tag on a
 commit CI did not pass gives no release. It then builds and publishes the release without an approval on GitHub
 (see [GitHub settings](github-settings.md#environments)).
@@ -277,16 +212,18 @@ commit CI did not pass gives no release. It then builds and publishes the releas
 A release that must not be used any more, because of a privacy, security or any other problem, is withdrawn.
 The release stays on GitHub, so its history is kept, but nothing installs it any more:
 
-1. In Nexus Release Tool, tab **3. Retract app**: choose the app's pinned release, write why, and press
+1. In Nexus Release Tool, tab **Retract app**: choose the app's pinned release, write why, and press
    **Retract**. This adds `withdrawn = "<reason>"` to its entry in `portal/apps.toml` and a CHANGELOG entry to the
    app. **Take back** removes it again.
-2. **Test withdrawal** (tab **Test on this board**) with the app installed, on a BC-250. It installs the portal
-   from the checkout and starts it (`check-release.sh local`): the portal must say the app is not available any
-   more, remove it, and then show **App not available** on its tile.
+2. **Test withdrawal** on the same tab with the app installed, on a BC-250. It installs the portal from the
+   checkout and starts it (`check-release.sh local`): the portal must say the app is not available any more,
+   remove it, and then show **App not available** on its tile.
 3. Mark the release on GitHub with the command the tab shows: `gh release edit <tag> --prerelease --title
    "Withdrawn: <tag>" --notes "..."`. A pre-release is skipped by every update check, so no app offers it.
-4. Release the portal (tab **2**, at least a minor version): its CHANGELOG entry names the withdrawal. A portal
-   that updates to it removes the app; the portal update button says so beforehand ("withdraws ...").
+4. Release the portal on the release tab, from **Commit your changes**: the commit asks for the portal bump the
+   withdrawal needs (at least a minor version), and **Start new release** releases the portal. The withdrawn app
+   is not released again. The portal's CHANGELOG entry names the withdrawal. A portal that updates to it removes
+   the app; the portal update button says so beforehand ("withdraws ...").
 
 Board Test, which is always installed, cannot be withdrawn.
 

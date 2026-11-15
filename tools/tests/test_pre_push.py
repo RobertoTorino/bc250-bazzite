@@ -77,7 +77,7 @@ def test_a_portal_bump_missing_stops_the_push(repo):
     head = git(repo, "rev-parse", "HEAD")
     result = hook(repo, [f"refs/heads/main {head} refs/heads/main {head}"], FAIL_CHECK_MANIFEST="1")
     assert result.returncode == 1
-    assert "Bump portal" in result.stderr and "not pushed" in result.stderr
+    assert "bump portal/VERSION" in result.stderr and "not pushed" in result.stderr
     assert "--no-verify" not in result.stderr                   # never offered (owner, 30-10-2026: CI failed after it)
 
 

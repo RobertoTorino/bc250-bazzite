@@ -410,8 +410,8 @@ Releasing one app by hand and pinning it in the portal:
 
 ### The release front end
 
-**Nexus Release Tool**, the suite's release front end, makes these file edits for you and runs the board tests
-below. How to start and use it: [Releases](development/releases.md).
+**Nexus Release Tool**, the suite's release front end, makes the whole release with **Start new release** and runs
+its device test below. How to start and use it: [Releases](development/releases.md).
 
 ### Testing a portal release before its tag
 
@@ -434,7 +434,7 @@ checksum, installs it and starts it, as a user's board will once it is published
 For a release by hand, before the portal tag:
 
 1. Bump the portal (step 4) and commit. Pushing is not needed for this test.
-2. Click **Test app updates** on the release front end's **Test on this board** tab, or run `tools/check-release.sh local`. It installs the portal
+2. Run `tools/check-release.sh local`. It installs the portal
    from the checkout (`./install.sh` in the repository root: this portal version, with its new pins in
    `apps.toml`) and starts it with the pinned releases instead of the checkout:
 
@@ -456,8 +456,7 @@ it on the board.
 
 ### Testing a portal release after its tag
 
-Once GitHub's release workflow has built the portal release, click **Test Portal release** (tab **Test on this
-board**), or run:
+Once GitHub's release workflow has built the portal release, run:
 
 ```bash
 tools/check-release.sh release              # the release of portal/VERSION
@@ -467,7 +466,7 @@ tools/check-release.sh release bc250-portal-v0.9.2
 It downloads the release tarball and its `SHA256SUMS` from GitHub into `~/.cache/bc250-release-check/`, checks
 the checksum, installs it and starts it. The board then runs the official release, as a user's board does: check
 that the portal starts, that its version is the new one, and that the apps install. To go back to the checkout,
-run `./install.sh` in the repository root (or Test app updates). A portal from the checkout shows an orange
+run `./install.sh` in the repository root. A portal from the checkout shows an orange
 banner at the top, "Local build"; the published release has none.
 
 ### Withdrawing a release

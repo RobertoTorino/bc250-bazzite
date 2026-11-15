@@ -1,3 +1,19 @@
+Changelog: 15-11-2026 05:52:56
+
+Fixed. A part whose only changes since its last tag are its version, its version copies and a "Release x.y.z."
+entry (or Retract's "Withdrawn:" entry) needs no release any more: Start new release left it out. A portal bump
+with nothing else in it was released as a second portal of the same apps, waiting for a device test of its own, and
+a withdrawn app was released again with its withdrawal (owner, 15-11-2026).
+
+Changelog: 15-11-2026 05:52:56
+
+Breaking. The release by hand is gone (owner, 15-11-2026): the tabs 1. Release apps (with the header's Apply),
+2. Pin and release Portal (Pin, Bump portal, Fetch tags), their git tag buttons and the tab Test on this board.
+Their Bump wrote a portal release while the release tab's draft waited for its device test, which then went out
+as a second release. The release tab's Start new release writes everything a release needs, and its Device test
+tests the draft. Test withdrawal is on the tab Retract app now (no longer numbered), whose last step is a release
+from the release tab. tools/tag-release.sh still tags a single release from a terminal.
+
 Changelog: 15-11-2026 03:58:53
 
 Fixed. Names BC-250 Board Test, BC-250 Webcam, BC-250 Controller, BC-250 Turing Screen, BC-250 Wi-Fi Adapter, BC-250

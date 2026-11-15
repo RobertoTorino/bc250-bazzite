@@ -1,3 +1,8 @@
+Changelog: 15-11-2026 05:52:56
+
+Fixed. tools/pre-push.sh's message for a missing portal bump names Nexus Release Tool's Commit your changes, which
+offers the bump, instead of its Bump portal, which is gone; DESIGN.md names the tool's main actions as they are now.
+
 Changelog: 15-11-2026 03:58:53
 
 Breaking. Eight apps are new apps (owner, 15-11-2026): BC-250 Webcam, BC-250 Controller, BC-250 Turing Screen,
