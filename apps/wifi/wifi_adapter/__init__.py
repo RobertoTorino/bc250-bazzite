@@ -5,7 +5,7 @@ changes only when you install the driver."""
 
 APP_NAME = "BC-250 Wi-Fi Adapter"
 APP_ID = "bc250-wifi-adapter"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from pathlib import Path
 
