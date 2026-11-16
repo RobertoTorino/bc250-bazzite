@@ -14,13 +14,13 @@ from pathlib import Path
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFontDatabase
-from PyQt6.QtWidgets import (QComboBox, QGridLayout, QLabel, QMainWindow, QMessageBox, QPlainTextEdit, QPushButton,
+from PyQt6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout, QLabel, QMainWindow, QMessageBox, QPlainTextEdit,
                              QVBoxLayout, QWidget)
 
 from bc250_core import window_title
 from bc250_core.platform import launch_in_terminal, show_in_folder
 from bc250_core.theme import GREEN, GREY, ORANGE
-from bc250_core.widgets import AppHeader, InfoButton, MetricBox, StatusText, hint_label
+from bc250_core.widgets import ActionPill, AppHeader, InfoButton, MetricBox, StatusText, hint_label
 
 from . import LOGO_PATH, __version__, runner, state, system
 from .catalog import BY_KEY, Helper
@@ -44,7 +44,7 @@ class HelperWindow(QMainWindow):
         self.header.add_state(self.state)
         self.info = InfoButton(info + (BOARD if helper.changes_board else ""))
         self.header.add_state(self.info)
-        self.refresh_button = QPushButton("Refresh")
+        self.refresh_button = ActionPill("Refresh", "Click to refresh")
         self.refresh_button.setToolTip("Read again")
         self.refresh_button.clicked.connect(self.refresh)
         self.header.add_action(self.refresh_button)
@@ -84,7 +84,7 @@ class ExtrasWindow(HelperWindow):
         self.resize(900, 560)
         self.found_box = MetricBox("Tools found")
         self.header.add_second(self.found_box)
-        self.all_button = QPushButton("Install all")
+        self.all_button = ActionPill("Install all", "Every missing tool")
         self.all_button.setToolTip("Every group but the development extras, in a terminal (--all)")
         self.all_button.clicked.connect(lambda: self.install("--all"))
         self.header.add_second(self.all_button)
@@ -100,7 +100,7 @@ class ExtrasWindow(HelperWindow):
             title = QLabel(f"<b>{group.name}</b>")
             title.setToolTip(group.what)
             self.grid.addWidget(title, row, 0, 1, 3)
-            button = QPushButton("Install…")
+            button = ActionPill("Install…", "This group")
             button.setToolTip(f"{group.what} ({group.option})")
             button.clicked.connect(lambda _=False, o=group.option: self.install(o))
             self.grid.addWidget(button, row, 3)
@@ -182,25 +182,30 @@ class MangoHudWindow(HelperWindow):
         self.file_box = MetricBox("File")
         self.log_box = MetricBox("FPS log")
         self.logs_box = MetricBox("Log files")
-        self.log_button = QPushButton("FPS log")
+        self.log_button = ActionPill("FPS log", "Set in the text")
         self.log_button.setToolTip("Set the three lines of the FPS log in the text; Save writes them")
         self.log_button.clicked.connect(self.add_logging)
-        self.save_button = QPushButton("Save")
+        self.save_button = ActionPill("Save", "Your edits")
         self.save_button.clicked.connect(self.save)
-        self.revert_button = QPushButton("Revert")
+        self.revert_button = ActionPill("Revert", "Read the file again")
         self.revert_button.setToolTip("Read the file again; your edits go")
         self.revert_button.clicked.connect(self.refresh)
-        self.folder_button = QPushButton("Log folder")
+        self.folder_button = ActionPill("Log folder", "Click to open")
         self.folder_button.setToolTip(f"Open {self.folder}")
         self.folder_button.clicked.connect(lambda: show_in_folder(self.folder))
-        self.clean_button = QPushButton("Delete old logs")
+        self.clean_button = ActionPill("Delete old logs", f"Older than {OLD_LOG_DAYS} days")
         self.clean_button.setToolTip(f"Remove the log files older than {OLD_LOG_DAYS} days")
         self.clean_button.clicked.connect(self.delete_old_logs)
         for widget in (self.file_box, self.log_box, self.logs_box):
             self.header.add_second(widget)
         self.header.add_second(QWidget(), 1)
-        for widget in (self.log_button, self.folder_button, self.clean_button, self.revert_button, self.save_button):
+        for widget in (self.revert_button, self.save_button):
             self.header.add_second(widget)
+        logs = QHBoxLayout()                    # the FPS log's actions on their own row, so no pill is squeezed
+        for widget in (self.log_button, self.folder_button, self.clean_button):
+            logs.addWidget(widget)
+        logs.addStretch(1)
+        self.page.addLayout(logs)
         self.editor = QPlainTextEdit()
         self.editor.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
         self.editor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
@@ -292,9 +297,9 @@ class SwitchWindow(HelperWindow):
         for box in self.boxes.values():
             self.header.add_second(box)
         self.header.add_second(QWidget(), 1)
-        self.on_button = QPushButton("Turn on")
+        self.on_button = ActionPill("Turn on", "Click to apply")
         self.on_button.clicked.connect(self.turn_on)
-        self.off_button = QPushButton("Turn off")
+        self.off_button = ActionPill("Turn off", "Click to undo")
         self.off_button.clicked.connect(self.turn_off)
         self.header.add_second(self.on_button)
         self.header.add_second(self.off_button)
