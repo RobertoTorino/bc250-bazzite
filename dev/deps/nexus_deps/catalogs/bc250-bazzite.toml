@@ -147,6 +147,10 @@ launchers = ["~/.local/bin/bc250-bluetooth-pairing"]
 name = "BC-250 Helpers"
 launchers = ["~/.local/bin/bc250-helpers"]
 
+[app.password]
+name = "BC-250 Password Generator"
+launchers = ["~/.local/bin/bc250-password"]
+
 [[tool]]
 name = "flashrom"
 rpm = "flashrom"
@@ -1230,6 +1234,10 @@ specifier = ">=6.11,<7"
 
 [[dependency.source]]
 owner = "helpers"
+specifier = ">=6.11,<7"
+
+[[dependency.source]]
+owner = "password"
 specifier = ">=6.11,<7"
 
 [[dependency]]

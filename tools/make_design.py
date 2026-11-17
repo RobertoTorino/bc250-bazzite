@@ -249,7 +249,7 @@ FAMILIES = [
         ("#a00000", "family", "Active red under the pointer."),
         ("#e57373", "tint", "Red text on a dark surface: the check app's findings, log, in-game checks, history and "
                             "scores; the error labels of ACPI, CU Unlock and Cores Unlock; SFTP Tools' password "
-                            "requirements not met."),
+                            "advice not followed."),
         ("#e8505b", "brand", "PlayStation's circle: BC-250 Controller's circle button, DatStation's circle symbol."),
         ("#ff2020", "hardware", "The light bar's red; `#ff0000` the color wheel's."),
     ]),
@@ -265,7 +265,7 @@ FAMILIES = [
     ("Green", [
         ("#2e7d32", "family", "Ok: passed, valid, unlocked, a pressed controller button; a right answer."),
         ("#81c784", "tint", "Green text on a dark surface: the check app's log success, in-game ok, a better result "
-                            "in its history and full scores; SFTP Tools' password requirements met."),
+                            "in its history and full scores; SFTP Tools' password advice followed."),
         ("#3dbf9c", "brand", "PlayStation's triangle: BC-250 Controller's triangle button, DatStation's triangle symbol."),
         ("#10d040", "hardware", "The light bar's green; `#00ff00` the color wheel's."),
     ]),
@@ -424,8 +424,8 @@ OTHER_TEXT = [
     ("#b8b8c8", "System Overlay: the names of the values."),
     ("#dddddd", "PS Remote Play's stream view."),
     ("#ffb74d", "SFTP: the password warning."),
-    ("#e57373", "SFTP: password requirements not met."),
-    ("#81c784", "SFTP: password requirements met."),
+    ("#e57373", "SFTP: password advice not followed."),
+    ("#81c784", "SFTP: password advice followed."),
     ("#ffffff", "BIOS Reader: tabs, crumbs, the legend and the selection."),
     ("#0b2a8a", "BIOS Reader: the screen's text."),
     ("#10205a", "BIOS Reader: subtitles."),

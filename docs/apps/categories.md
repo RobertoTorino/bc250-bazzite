@@ -27,7 +27,7 @@ The categories are also the [portal's](../portal.md) categories: an app's tile i
 | ![](../assets/categories/sustainable.webp){ .app-icon } | **Sustainable** | The board itself: test it, tune it, unlock it, cool it, and keep it running well for a long time. Most of these apps change how the board runs. |
 | ![](../assets/categories/graphics.webp){ .app-icon } | **Graphics** | Graphics features for games: upscaling, async compute and mesh shaders on the board's GPU. |
 | ![](../assets/categories/gaming.webp){ .app-icon } | **Gaming** | Playing: emulators, Remote Play with your console, and PlayStation trivia. |
-| ![](../assets/categories/utilities.webp){ .app-icon } | **Utilities** | Handy tools around the board: an overlay, a USB stats screen, the PS5 HD Camera as a webcam, the DualSense's firmware, the BIOS settings, Wi-Fi, the TV over HDMI-CEC and file transfer. |
+| ![](../assets/categories/utilities.webp){ .app-icon } | **Utilities** | Handy tools around the board: an overlay, a USB stats screen, the PS5 HD Camera as a webcam, the DualSense's firmware, the BIOS settings, Wi-Fi, the TV over HDMI-CEC, file transfer and a password generator. |
 
 ## Apps by category
 
@@ -66,3 +66,4 @@ Every app with its icon and its category.
 | ![](../assets/apps/ssd.webp){ .app-icon } [BC-250 SSD Check](ssd.md) | Utilities |
 | ![](../assets/apps/btpair.webp){ .app-icon } [BC-250 Bluetooth Pairing](btpair.md) | Utilities |
 | ![](../assets/apps/helpers.webp){ .app-icon } [BC-250 Helpers](helpers.md) | Utilities |
+| ![](../assets/apps/password.webp){ .app-icon } [BC-250 Password Generator](password.md) | Utilities |

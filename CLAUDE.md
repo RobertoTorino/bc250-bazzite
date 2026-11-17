@@ -228,7 +228,7 @@ so.
 ## Style
 
 Code reads like the code around it: the same comment density, naming and idiom. Docs are plain, short sentences,
-written for the person using the tool. **American English** (owner, 26-10-2026) in everything written: color, gray,
+written for the person using the tool, as [`.claude/writing.md`](.claude/writing.md) describes; `tools/text_check.py` lists what is wrong. **American English** (owner, 26-10-2026) in everything written: color, gray,
 center, canceled, license, catalog, labeled; identifiers, settings keys, file names and recorded data keep the
 spelling they have. **Pictures are WebP wherever WebP is accepted** (owner, 26-10-2026): a picture on a page or in an
 app's window is a `.webp` copy of its source; a PNG stays only where WebP is not accepted or expected (a favicon, the

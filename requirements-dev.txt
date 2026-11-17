@@ -23,6 +23,7 @@
 -r apps/mesh/requirements-dev.txt
 -r apps/oc/requirements-dev.txt
 -r apps/overlay/requirements-dev.txt
+-r apps/password/requirements-dev.txt
 -r apps/pcsx2/requirements-dev.txt
 -r apps/ppsspp/requirements-dev.txt
 -r apps/rpcs3/requirements-dev.txt

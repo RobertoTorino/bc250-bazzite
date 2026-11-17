@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, and what it checks (its docstring's first sentence, else its name). The times are the folder's pytest run in the last local CI run (`tools/ci-local.sh`), without the container and package setup each job has first.
 
-3067 test functions (3523 cases counting the parametrized ones, as far as they are listed in the code) in 40 test folders, and 41 installer tests.
+3090 test functions (3551 cases counting the parametrized ones, as far as they are listed in the code) in 41 test folders, and 42 installer tests.
 
 ## Summary
 
@@ -26,10 +26,11 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/mesh](#appsmesh) | 5 | 47 | 3.2 s |
 | [apps/oc](#appsoc) | 2 | 14 | 0.4 s |
 | [apps/overlay](#appsoverlay) | 1 | 10 | 0.3 s |
+| [apps/password](#appspassword) | 2 | 22 | 0.5 s |
 | [apps/pcsx2](#appspcsx2) | 14 | 137 | 28.9 s |
 | [apps/ppsspp](#appsppsspp) | 10 | 80 | 6.0 s |
 | [apps/rpcs3](#appsrpcs3) | 10 | 90 | 8.0 s |
-| [apps/sftp](#appssftp) | 11 | 83 | 1.6 s |
+| [apps/sftp](#appssftp) | 11 | 84 | 1.6 s |
 | [apps/shadps4](#appsshadps4) | 16 | 138 | 11.7 s |
 | [apps/ssd](#appsssd) | 4 | 49 | 1.1 s |
 | [apps/turing](#appsturing) | 9 | 75 | 1.6 s |
@@ -82,6 +83,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `nrt.sh` | Exercise dev/nrt/install.sh (and tools/nrt.sh, which forwards to it). |
 | `oc.sh` | Exercise apps/oc/install.sh. |
 | `overlay.sh` | Exercise apps/overlay/install.sh. |
+| `password.sh` | Exercise apps/password/install.sh. |
 | `pcsx2.sh` | Exercise apps/pcsx2/install.sh. |
 | `portal.sh` | Exercise portal/install.sh. |
 | `ppsspp.sh` | Exercise apps/ppsspp/install.sh. |
@@ -1261,6 +1263,35 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_overlay.py` | `test_menu_choices_are_remembered` |  | Menu choices are remembered. |
 | `test_overlay.py` | `test_position_is_remembered` |  | Position is remembered. |
 
+## apps/password
+
+22 tests in 2 files, 0.5 s in a local pytest run.
+
+| File | Test | Cases | What it checks |
+|---|---|---|---|
+| `test_generator.py` | `test_the_rules_are_eight_or_fifteen_characters_of_printable_ascii_without_the_space` |  | The rules are eight or fifteen characters of printable ascii without the space. |
+| `test_generator.py` | `test_every_password_has_a_capital_a_small_letter_a_number_and_a_special_character` | 2 | Every password has a capital a small letter a number and a special character. |
+| `test_generator.py` | `test_meets_rules_refuses_what_lacks_a_kind_a_length_or_a_character` |  | Meets rules refuses what lacks a kind a length or a character. |
+| `test_generator.py` | `test_a_password_has_no_other_length` |  | A password has no other length. |
+| `test_generator.py` | `test_the_characters_come_from_secrets` |  | The characters come from secrets. |
+| `test_generator.py` | `test_every_kind_turns_up_in_every_position` |  | Every kind turns up in every position. |
+| `test_generator.py` | `test_a_generator_never_gives_the_same_password_twice` |  | A generator never gives the same password twice. |
+| `test_generator.py` | `test_a_generator_remembers_digests_not_passwords` |  | A generator remembers digests not passwords. |
+| `test_main_window.py` | `test_version_is_the_single_source` |  | Version is the single source. |
+| `test_main_window.py` | `test_icons_are_beside_the_package` |  | Icons are beside the package. |
+| `test_main_window.py` | `test_window_opens_with_the_suites_header_and_a_password` |  | Window opens with the suites header and a password. |
+| `test_main_window.py` | `test_the_password_is_shown_as_plain_text` |  | A password with angle brackets is shown as it is, not read as markup. |
+| `test_main_window.py` | `test_each_pill_makes_a_new_password_of_its_length` | 2 | Each pill makes a new password of its length. |
+| `test_main_window.py` | `test_the_window_names_the_standards_with_both_lengths` |  | The window names the standards with both lengths. |
+| `test_main_window.py` | `test_a_long_password_fits_the_window` |  | A long password fits the window. |
+| `test_main_window.py` | `test_copy_puts_the_password_on_the_clipboard_as_a_secret` |  | Copy puts the password on the clipboard as a secret. |
+| `test_main_window.py` | `test_the_clipboard_is_cleared_when_the_time_is_over` |  | The clipboard is cleared when the time is over. |
+| `test_main_window.py` | `test_a_new_password_takes_the_old_one_off_the_clipboard` |  | A new password takes the old one off the clipboard. |
+| `test_main_window.py` | `test_what_you_copied_elsewhere_stays_on_the_clipboard` |  | What you copied elsewhere stays on the clipboard. |
+| `test_main_window.py` | `test_closing_ends_the_password` |  | Closing ends the password. |
+| `test_main_window.py` | `test_nothing_is_written` |  | The folder the settings would go to stays empty. |
+| `test_main_window.py` | `test_the_package_opens_no_file_and_keeps_no_setting` |  | The package opens no file and keeps no setting. |
+
 ## apps/pcsx2
 
 137 tests in 14 files, 28.9 s in the last local CI run.
@@ -1591,7 +1622,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/sftp
 
-83 tests in 11 files, 1.6 s in the last local CI run.
+84 tests in 11 files, 1.6 s in the last local CI run.
 
 | File | Test | Cases | What it checks |
 |---|---|---|---|
@@ -1649,6 +1680,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_existing_targets_ask_once_when_the_answer_holds_for_the_rest` |  | Existing targets ask once when the answer holds for the rest. |
 | `test_main_window.py` | `test_connect_is_a_pill_in_the_header` |  | Connect sits beside the states as a pill (owner, 26-10-2026). |
 | `test_main_window.py` | `test_the_password_rules_always_show_at_the_right` |  | In the SFTP Client the rules sit at the right of the form from the start, in muted text, and turn into what is missing (red) or a check (green) as a password is typed. |
+| `test_main_window.py` | `test_an_unsafe_password_is_advice_and_the_app_connects` | 4 | The password rules are advice: an unsafe password without a key gets one warning, and both tabs connect. |
 | `test_profiles.py` | `test_profile_store_persists_connection_details_without_credentials` |  | Profile store persists connection details without credentials. |
 | `test_profiles.py` | `test_saving_a_profile_replaces_the_existing_profile` |  | Saving a profile replaces the existing profile. |
 | `test_profiles.py` | `test_profile_store_deletes_selected_profile` |  | Profile store deletes selected profile. |

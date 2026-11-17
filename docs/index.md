@@ -71,8 +71,9 @@ beside the system Mesa.
 [BC-250 CEC Manager](apps/cec.md) turns the TV on and off with the board, [SFTP Tools](apps/sftp.md) moves files
 between computers, [Webcam](apps/webcam.md) makes the PS5 HD Camera a webcam,
 [Controller](apps/controller.md) updates the DualSense's firmware,
-[Bluetooth Pairing](apps/btpair.md) pairs your Bluetooth keyboard, mouse and controllers at every boot, and
-[SSD Check](apps/ssd.md) checks a drive's health and speed.
+[Bluetooth Pairing](apps/btpair.md) pairs your Bluetooth keyboard, mouse and controllers at every boot,
+[SSD Check](apps/ssd.md) checks a drive's health and speed, and
+[Password Generator](apps/password.md) makes a random password and keeps it nowhere.
 </div>
 </div>
 

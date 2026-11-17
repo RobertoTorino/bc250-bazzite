@@ -66,6 +66,7 @@ controller Steam Input owns sends what its desktop layout says, by default Escap
 | ![](../assets/apps/ssd.webp){ .app-icon } [BC-250 SSD Check](ssd.md) | The health, power cycles and power-on hours of the board's SSDs. |
 | ![](../assets/apps/btpair.webp){ .app-icon } [BC-250 Bluetooth Pairing](btpair.md) | Pair your Bluetooth keyboard, mouse and controllers at boot, with no USB keyboard or mouse needed. |
 | ![](../assets/apps/helpers.webp){ .app-icon } [BC-250 Helpers](helpers.md) | Small helpers for one job each: Board Test's extras, MangoHud's config, GPU metrics, the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed. |
+| ![](../assets/apps/password.webp){ .app-icon } [BC-250 Password Generator](password.md) | Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere. |
 
 The tools for working on the suite run from a checkout of the repository and are not in the portal:
 [Nexus Dashboard](../development/dashboard.md) opens them all (Nexus Release Tool, Nexus

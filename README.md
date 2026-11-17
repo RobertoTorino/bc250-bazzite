@@ -78,6 +78,7 @@ By category, as the portal lists them.
 - <img src="portal/images/apps/ssd.webp" width="20" height="20" alt=""/> **[BC-250 SSD Check](apps/ssd)**: The health, power cycles and power-on hours of the board's SSDs.
 - <img src="portal/images/apps/btpair.webp" width="20" height="20" alt=""/> **[BC-250 Bluetooth Pairing](apps/btpair)**: Pair your Bluetooth keyboard, mouse and controllers at boot, with no USB keyboard or mouse needed.
 - <img src="portal/images/apps/helpers.webp" width="20" height="20" alt=""/> **[BC-250 Helpers](apps/helpers)**: Small helpers for one job each: Board Test's extras, MangoHud's config, GPU metrics, the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed.
+- <img src="portal/images/apps/password.webp" width="20" height="20" alt=""/> **[BC-250 Password Generator](apps/password)**: Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere.
 
 The tools for working on the suite run from a checkout of the repository and are not in the portal.
 **[Nexus Dashboard](dev/dash)** opens them all: Nexus Release Tool, Nexus Installer Tests,

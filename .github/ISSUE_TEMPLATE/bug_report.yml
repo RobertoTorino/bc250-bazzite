@@ -40,6 +40,7 @@ body:
         - ssd
         - btpair
         - helpers
+        - password
     validations:
       required: true
   - type: textarea

@@ -631,3 +631,16 @@ reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or the
 argument this helper added: it removes it with rpm-ostree kargs, and the mitigations are back from the next boot.
 Both need a reboot, which the helper advises and never does.
 """
+
+[apps.password]
+name = "BC-250 Password Generator"
+summary = "Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere."
+tag = "bc250-password-v0.1.0"
+sha256 = ""
+required = false
+changes_board = false
+category = "utilities"
+install = ["bash install.sh"]
+uninstall = ["bash install.sh --uninstall"]
+detect = ["~/.local/bin/bc250-password"]
+launch = [["Open", "~/.local/bin/bc250-password"]]

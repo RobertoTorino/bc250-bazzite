@@ -62,7 +62,7 @@ Every tint of each hue in the BC250 Bazzite Suite, and why it is there. *The fam
 | ![#b71c1c](design/colors/block-b71c1c.svg) | `#b71c1c` | the family | A red button pressed or under the pointer (the bisect apps, Clean up logs). |
 | ![#8b0000](design/colors/block-8b0000.svg) | `#8b0000` | the family | Active red: the GPU Governor's active button (a toggled-on state, not an error). |
 | ![#a00000](design/colors/block-a00000.svg) | `#a00000` | the family | Active red under the pointer. |
-| ![#e57373](design/colors/block-e57373.svg) | `#e57373` | text tint | Red text on a dark surface: the check app's findings, log, in-game checks, history and scores; the error labels of ACPI, CU Unlock and Cores Unlock; SFTP Tools' password requirements not met. |
+| ![#e57373](design/colors/block-e57373.svg) | `#e57373` | text tint | Red text on a dark surface: the check app's findings, log, in-game checks, history and scores; the error labels of ACPI, CU Unlock and Cores Unlock; SFTP Tools' password advice not followed. |
 | ![#e8505b](design/colors/block-e8505b.svg) | `#e8505b` | brand or icon | PlayStation's circle: BC-250 Controller's circle button, DatStation's circle symbol. |
 | ![#ff2020](design/colors/block-ff2020.svg) | `#ff2020` | hardware | The light bar's red; `#ff0000` the color wheel's. |
 
@@ -82,7 +82,7 @@ Every tint of each hue in the BC250 Bazzite Suite, and why it is there. *The fam
 | Color | Hex | Kind | Where and why |
 | --- | --- | --- | --- |
 | ![#2e7d32](design/colors/block-2e7d32.svg) | `#2e7d32` | the family | Ok: passed, valid, unlocked, a pressed controller button; a right answer. |
-| ![#81c784](design/colors/block-81c784.svg) | `#81c784` | text tint | Green text on a dark surface: the check app's log success, in-game ok, a better result in its history and full scores; SFTP Tools' password requirements met. |
+| ![#81c784](design/colors/block-81c784.svg) | `#81c784` | text tint | Green text on a dark surface: the check app's log success, in-game ok, a better result in its history and full scores; SFTP Tools' password advice followed. |
 | ![#3dbf9c](design/colors/block-3dbf9c.svg) | `#3dbf9c` | brand or icon | PlayStation's triangle: BC-250 Controller's triangle button, DatStation's triangle symbol. |
 | ![#10d040](design/colors/block-10d040.svg) | `#10d040` | hardware | The light bar's green; `#00ff00` the color wheel's. |
 
@@ -565,11 +565,11 @@ Text colors:
 
   ![Sample text in #ffb74d](design/colors/text-ffb74d.svg)
 
-- `#e57373` SFTP: password requirements not met.
+- `#e57373` SFTP: password advice not followed.
 
   ![Sample text in #e57373](design/colors/text-e57373.svg)
 
-- `#81c784` SFTP: password requirements met.
+- `#81c784` SFTP: password advice followed.
 
   ![Sample text in #81c784](design/colors/text-81c784.svg)
 

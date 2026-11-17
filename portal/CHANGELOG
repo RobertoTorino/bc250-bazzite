@@ -1,3 +1,11 @@
+Changelog: 17-11-2026 12:54:35
+
+Release 22.3.0. Pins bc250-password-v0.1.0.
+
+Changelog: 17-11-2026 12:04:47
+
+Added. BC-250 Password Generator is in the portal's list (portal/apps.toml), in Utilities.
+
 Changelog: 16-11-2026 02:35:16
 
 Release 22.2.0.
