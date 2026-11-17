@@ -39,7 +39,7 @@ body:
         - xenia
         - ssd
         - btpair
-        - quickfix
+        - helpers
         - password
     validations:
       required: true

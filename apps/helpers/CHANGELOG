@@ -1,0 +1,40 @@
+Changelog: 17-11-2026 20:10:33
+
+Fixed. Test Extras: Refresh stands beside Install all, and each group's heading is its pill, the group's name
+with Install under it (Installed when everything in the group is there, Included for With Bazzite). All the
+window's pills are the same width.
+
+Changelog: 16-11-2026 01:42:25
+
+Release 0.2.0.
+
+Changelog: 16-11-2026 00:48:58
+
+Fixed. Every action in the helpers is the suite's pill (core's ActionPill), as in the other apps, instead of a small
+button: the list's helpers, Refresh, Install all and each group's Install, Turn on and Turn off, MangoHud Config's
+actions. MangoHud Config has its FPS log actions on a row of their own, so no pill is squeezed.
+
+Changelog: 15-11-2026 23:41:16
+
+Release 0.1.0.
+
+Changelog: 15-11-2026 19:43:21
+
+Added. Two helpers for the kernel's arguments: IOMMU Off (amd_iommu=off, Board Test's test 23) and CPU Mitigations
+Off (mitigations=off, test 24). Turn on adds the argument with rpm-ostree kargs after the password (pkexec) and
+notes in /var/lib/bc250-helpers that the helper added it; Turn off removes only an argument the helper added. The
+window shows the argument on the running kernel's command line and on the next boot's, who added it and, for the
+IOMMU, its groups; after a change it says to restart the board (systemctl reboot) and never does. IOMMU Off is not
+offered when the BIOS has the IOMMU off already.
+
+Changelog: 15-11-2026 14:33:23
+
+Added. BC-250 Helpers, small windows for one job each that come with the suite: Test Extras (the optional tools
+Board Test's tests use, which are there and which tests use them, installed per group with Board Test's own
+install-requirements.sh), MangoHud Config (opens or makes ~/.config/MangoHud/MangoHud.conf to edit and save, sets
+the FPS log Board Test reads and makes its folder, deletes logs older than 30 days), Fix GPU Metrics (fix-metrics
+and the method in the GPU governor's config.toml, after a dated backup, and a restart of a running governor),
+Sensors Module (forces the nct6683 driver for the board's SuperIO chip at boot, offered only when neither nct6683
+nor nct6687 serves it), Game Memory Map (vm.max_map_count in /etc/sysctl.d) and Persistent Journal
+(/var/log/journal). The four that change the board ask for the password with pkexec, turn on only what is off and
+turn off only what they turned on. bc250-helpers opens the list of helpers, bc250-helpers <key> one helper.

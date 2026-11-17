@@ -52,7 +52,7 @@ What `install.sh` does:
   (`./install.sh --no-desktop-shortcut` skips the Desktop icon).
 
 **Optional tools.** The app runs without extras; a test whose tool is missing says so. These are the tools the
-tests use when they are there; the suite's [Test Extras](quickfix.md#test-extras) quickfix shows which ones are there and
+tests use when they are there; the suite's [Test Extras](helpers.md#test-extras) helper shows which ones are there and
 installs them:
 
 | Tool | Used by | Group |
@@ -341,7 +341,7 @@ log_interval=500
 Create the folder, and make sure MangoHud is active for the game (for example the Steam launch option
 `mangohud %command%`). A log file is written per game session; delete old ones now and then. Without logging,
 the game's name and its CPU and GPU share are still shown. The suite's
-[MangoHud Config](quickfix.md#mangohud-config) quickfix sets the three lines and makes the folder for you.
+[MangoHud Config](helpers.md#mangohud-config) helper sets the three lines and makes the folder for you.
 
 The **Game details** launch line does not work with the **Flatpak** version of Steam: the game would not start.
 Use the Steam that comes with Bazzite. The **Checks for the last session** always describe the newest session;
@@ -530,8 +530,8 @@ explanation are grouped per program, with the command to read them.
 
 | #  | Test                      | Checks                                                                          |
 |----|---------------------------|---------------------------------------------------------------------------------|
-| 23 | IOMMU Disabled            | Counts IOMMU groups; IOMMU is broken on the BC-250 and must be off — via BIOS or the `amd_iommu=off` kernel arg ([IOMMU Off](quickfix.md#iommu-off) quickfix). |
-| 24 | CPU Mitigations           | Passes when `mitigations=off` is set (worth roughly +18 FPS on this board); the [CPU Mitigations Off](quickfix.md#cpu-mitigations-off) quickfix sets it. |
+| 23 | IOMMU Disabled            | Counts IOMMU groups; IOMMU is broken on the BC-250 and must be off — via BIOS or the `amd_iommu=off` kernel arg ([IOMMU Off](helpers.md#iommu-off) helper). |
+| 24 | CPU Mitigations           | Passes when `mitigations=off` is set (worth roughly +18 FPS on this board); the [CPU Mitigations Off](helpers.md#cpu-mitigations-off) helper sets it. |
 | 25 | CPU Core and Thread Count | Reports cores/threads — 6C/12T stock, 8C/16T after the unlock.                  |
 | 26 | CPU Power Management      | Checks cpufreq scaling and C-states; both need the BC-250 ACPI fix.             |
 | 46 | CPU Voltage               | CPU/SoC voltage rails from hwmon (amdgpu `vddgfx`/`vddnb`) plus the voltage each core requests (current P-state VID via MSR, one line per core). |
@@ -653,7 +653,7 @@ the same DMA buffer because nothing is left running to refill it. That rules out
 crash and points at the kernel or the SoC itself.
 
 Enable crash capture first, because a freeze this abrupt never reaches the disk (the suite's
-[Persistent Journal](quickfix.md#persistent-journal) quickfix makes the journal folder):
+[Persistent Journal](helpers.md#persistent-journal) helper makes the journal folder):
 
 ```bash
 sudo mkdir -p /var/log/journal && sudo systemd-tmpfiles --create --prefix /var/log/journal
@@ -697,7 +697,7 @@ GPU load then shows as **0%** or as an impossible **655%** (the raw `0xFFFF` in 
 enabled it also writes that load into a patched copy of `gpu_metrics` and bind-mounts it over the
 sysfs file, so the Steam performance overlay, MangoHud and radeontop show a real GPU %.
 
-The suite's [Fix GPU Metrics](quickfix.md#fix-gpu-metrics) quickfix turns it on and off, with a backup of
+The suite's [Fix GPU Metrics](helpers.md#fix-gpu-metrics) helper turns it on and off, with a backup of
 the settings file. By hand, enable it in `/etc/cyan-skillfish-governor-smu/config.toml`:
 
 ```toml
@@ -879,7 +879,7 @@ The IOMMU is broken on the BC-250 and leaving it active creates an unstable syst
 that BIOS for this. The kernel can be told to never initialize the AMD IOMMU (AMD-Vi) via a
 boot parameter, which is the standard BC-250 community workaround.
 
-The suite's [IOMMU Off](quickfix.md#iommu-off) quickfix adds it for you, and removes it again. By hand, on Bazzite
+The suite's [IOMMU Off](helpers.md#iommu-off) helper adds it for you, and removes it again. By hand, on Bazzite
 (ostree-based):
 
 ```bash

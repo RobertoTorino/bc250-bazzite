@@ -1,13 +1,3 @@
-Changelog: 17-11-2026 19:52:50
-
-Release 22.4.0. Pins bc250-quickfix-v0.1.0.
-
-Changelog: 17-11-2026 19:46:42
-
-Added. BC-250 Quickfix takes the place of BC-250 Helpers (owner, 17-11-2026): a new app with the key quickfix, always
-installed with the portal as BC-250 Helpers was. An app made of small windows lists them as
-[[apps.<key>.quickfixes]] tables in apps.toml (it was helpers), and the portal shows a tile per quickfix.
-
 Changelog: 17-11-2026 13:17:50
 
 Release 22.3.0. Pins bc250-sftp-v3.2.0.

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The quickfixes' windows, offscreen, on folders of their own: what each shows, what its buttons offer (what is on
+"""The helpers' windows, offscreen, on folders of their own: what each shows, what its buttons offer (what is on
 already cannot be turned on again) and what it asks system.py to do as root."""
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 from PyQt6.QtWidgets import QMessageBox
 
-from quickfix import runner, state, system, windows
+from helpers import runner, state, system, windows
 
 from test_state import put
 
@@ -131,7 +131,7 @@ def test_game_memory_map(qapp, root, asked):
     put(root, "proc/sys/vm/max_map_count", f"{system.MAPCOUNT}\n")
     window.refresh()
     assert window.boxes["Set by"].value.text() == "The system" and not window.on_button.isEnabled()
-    assert not window.off_button.isEnabled()                            # the system's: not the quickfix's to undo
+    assert not window.off_button.isEnabled()                            # the system's: not the helper's to undo
 
 
 def test_persistent_journal_asks_before_it_removes(qapp, root, asked, monkeypatch):
@@ -139,7 +139,7 @@ def test_persistent_journal_asks_before_it_removes(qapp, root, asked, monkeypatc
     assert window.boxes["Journal"].value.text() == "In memory" and window.on_button.isEnabled()
     put(root, f"var/{system.JOURNAL_DIR}/{system.JOURNAL_MARK}")
     window.refresh()
-    assert window.boxes["Made by"].value.text() == "This quickfix" and window.off_button.isEnabled()
+    assert window.boxes["Made by"].value.text() == "This helper" and window.off_button.isEnabled()
     monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.No)
     window.off_button.click()
     assert change(asked) == []
@@ -173,7 +173,7 @@ def test_iommu_off_from_the_next_boot(qapp, root, asked):
     window.refresh()
     assert window.state.text() == "Reboot to apply" and "systemctl reboot" in window.note.text()
     assert not window.on_button.isEnabled() and window.off_button.isEnabled()
-    assert window.boxes["Added by"].value.text() == "This quickfix"
+    assert window.boxes["Added by"].value.text() == "This helper"
     window.off_button.click()
     assert change(asked)[-1] == ["iommu", "off"]
 
@@ -206,8 +206,8 @@ def test_every_window_says_what_it_does(qapp, root, tmp_path):
     for key, make in windows.WINDOWS.items():
         extra = {"next_kargs": Kargs()} if key in system.KARGS else {}
         window = make(root=root, home=tmp_path / "home", **extra)
-        assert window.windowTitle() == window.quickfix.name and window.info.text_
-        assert ("Changes the board" in window.info.text_) == window.quickfix.changes_board, key
+        assert window.windowTitle() == window.helper.name and window.info.text_
+        assert ("Changes the board" in window.info.text_) == window.helper.changes_board, key
         window.close()
 
 

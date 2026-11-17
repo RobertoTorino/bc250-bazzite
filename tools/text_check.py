@@ -233,7 +233,7 @@ def python_passages(text: str):
 
 
 def toml_passages(text: str):
-    """(line, passage) for the portal's texts in apps.toml: each app's and quickfix's name, summary and board_change."""
+    """(line, passage) for the portal's texts in apps.toml: each app's and helper's name, summary and board_change."""
     data = tomllib.loads(text)
     lines = text.splitlines()
 
@@ -242,7 +242,7 @@ def toml_passages(text: str):
         return next((n for n, line in enumerate(lines, 1) if first and first in line), 0)
 
     for app in data.get("apps", {}).values():
-        for entry in [app, *app.get("quickfixes", [])]:
+        for entry in [app, *app.get("helpers", [])]:
             for key in ("name", "summary", "board_change"):
                 value = entry.get(key)
                 if isinstance(value, str) and value.strip():

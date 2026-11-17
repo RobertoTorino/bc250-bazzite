@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The quickfixes as the portal lists them (portal/apps.toml) and as the app has them, and Test Extras' groups as Board
+"""The helpers as the portal lists them (portal/apps.toml) and as the app has them, and Test Extras' groups as Board
 Test's installer has them, stay the same."""
 
 from __future__ import annotations
@@ -8,21 +8,20 @@ import re
 import tomllib
 from pathlib import Path
 
-from quickfix import ROOT, state
-from quickfix.catalog import QUICKFIXES
-from quickfix.windows import WINDOWS
+from helpers import ROOT, state
+from helpers.catalog import HELPERS
+from helpers.windows import WINDOWS
 
 SUITE = ROOT.parents[1]
 
 
-def test_the_portal_lists_every_quickfix():
-    app = tomllib.loads((SUITE / "portal" / "apps.toml").read_text(encoding="utf-8"))["apps"]["quickfix"]
-    listed = [(h["key"], h["name"], h["summary"], h.get("changes_board", False), h["launch"])
-              for h in app["quickfixes"]]
-    assert listed == [(h.key, h.name, h.summary, h.changes_board, f"~/.local/bin/bc250-quickfix {h.key}")
-                      for h in QUICKFIXES]
+def test_the_portal_lists_every_helper():
+    app = tomllib.loads((SUITE / "portal" / "apps.toml").read_text(encoding="utf-8"))["apps"]["helpers"]
+    listed = [(h["key"], h["name"], h["summary"], h.get("changes_board", False), h["launch"]) for h in app["helpers"]]
+    assert listed == [(h.key, h.name, h.summary, h.changes_board, f"~/.local/bin/bc250-helpers {h.key}")
+                      for h in HELPERS]
     assert app["required"] is True and not app.get("changes_board", False)
-    assert list(WINDOWS) == [h.key for h in QUICKFIXES]
+    assert list(WINDOWS) == [h.key for h in HELPERS]
 
 
 def test_the_groups_are_board_tests_installers():

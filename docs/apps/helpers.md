@@ -1,19 +1,19 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![BC-250 Quickfix](../assets/quickfix/bc250-quickfix.webp){ .app-logo }
+![BC-250 Helpers](../assets/helpers/bc250-helpers.webp){ .app-logo }
 
-# BC-250 Quickfix
+# BC-250 Helpers
 
 Small windows for one job each, which come with the suite: the portal installs them with itself, with Board Test,
-and keeps them. In the portal's **Utilities** tab each quickfix is a tile of its own; the app's menu entry,
-**BC-250 Quickfix**, lists them all in one window.
+and keeps them. In the portal's **Utilities** tab each helper is a tile of its own; the app's menu entry,
+**BC-250 Helpers**, lists them all in one window.
 
-Every quickfix's window has the suite's header: the quickfix's name with the version, its state, and **Refresh**. The
-small round **i** beside the state says what the quickfix contains and does. The quickfixes that change the board say so
+Every helper's window has the suite's header: the helper's name with the version, its state, and **Refresh**. The
+small round **i** beside the state says what the helper contains and does. The helpers that change the board say so
 on their tile; the portal asks before it opens one. Each of those asks for your password (pkexec) for every change,
 turns on only what is off, and turns off only what it turned on itself.
 
-| Quickfix | What it does | Changes the board |
+| Helper | What it does | Changes the board |
 |--------|--------------|-------------------|
 | [Test Extras](#test-extras) | The optional tools Board Test's tests use: which are there, and their installer. | No |
 | [MangoHud Config](#mangohud-config) | Open or create MangoHud's config, edit and save it; turn on the FPS log Board Test reads. | No |
@@ -79,7 +79,7 @@ whether the patched copy is mounted. Pick the method and **Turn on** (or **Apply
   very many open files.
 - `kernel` only works on a patched kernel that reports the load.
 
-The quickfix makes the same dated backup as [BC-250 GPU Manager](gpu.md) (`config.toml.bak-YYYYMMDD-HHMMSS`), whose
+The helper makes the same dated backup as [BC-250 GPU Manager](gpu.md) (`config.toml.bak-YYYYMMDD-HHMMSS`), whose
 Backups page lists it. A governor that is stopped stays stopped: the patched copy is mounted when it runs. Check it
 with `mount | grep gpu_metrics`. On some kernels the patching misbehaves: if the overlay or the governor acts up,
 **Turn off** again. A kernel that reports the load itself does not need it.
@@ -87,7 +87,7 @@ with `mount | grep gpu_metrics`. On some kernels the patching misbehaves: if the
 ## Sensors Module
 
 !!! warning "Changes the board"
-    Turn on writes one line, options nct6683 force=true, to /etc/modprobe.d/bc250-quickfix-nct6683.conf and loads the
+    Turn on writes one line, options nct6683 force=true, to /etc/modprobe.d/bc250-helpers-nct6683.conf and loads the
     nct6683 driver, which reads the board's SuperIO chip: its temperatures and fan speeds. The file stays across
     reboots and power offs, so the driver loads at every boot. Nothing is written to the BIOS, the firmware or the
     chip. Turn off removes the file; the driver stays loaded until the next boot.
@@ -96,19 +96,19 @@ The board's SuperIO chip, a Nuvoton NCT6686D, reports its temperatures and fan s
 lm_sensors' `sensors`). Some images load the nct6687 driver for it by themselves; the kernel's own nct6683 driver
 loads only when it is forced. The boxes show which driver is loaded, whether nct6683 is forced at boot, and the
 chip's sensors as it reports them. **Turn on** is offered only when no driver serves the chip. A modprobe file of
-your own that forces nct6683 already counts too; **Turn off** removes only the quickfix's file.
+your own that forces nct6683 already counts too; **Turn off** removes only the helper's file.
 
 ## Game Memory Map
 
 !!! warning "Changes the board"
-    Turn on writes vm.max_map_count = 2147483642 to /etc/sysctl.d/90-bc250-quickfix-max-map-count.conf and sets it
+    Turn on writes vm.max_map_count = 2147483642 to /etc/sysctl.d/90-bc250-helpers-max-map-count.conf and sets it
     now: the number of memory areas one program may map. The file stays across reboots and power offs. Nothing is
     written to the BIOS, the firmware or the kernel's arguments. Turn off removes the file and reads the system's
     settings again, so the value the other settings files give, else the kernel's own, is back.
 
 `vm.max_map_count` is the number of memory areas one program may map. Some games, and Proton, need far more than
 the kernel's default and crash without them; SteamOS and Bazzite set 2147483642. The boxes show the value now and
-what set it: the quickfix, or the system (another file in `/etc/sysctl.d` or the image's own). **Turn on** is offered
+what set it: the helper, or the system (another file in `/etc/sysctl.d` or the image's own). **Turn on** is offered
 only when the value is lower. Board Test's test 37 reports it.
 
 ## Persistent Journal
@@ -117,7 +117,7 @@ only when the value is lower. Board Test's test 37 reports it.
     Turn on makes the folder /var/log/journal, with systemd-tmpfiles, and moves the journal there: journald then
     keeps the system's logs on the disk, within its own size limits, instead of in memory only. The folder stays
     across reboots and power offs. Nothing is written to the BIOS or the firmware. Turn off works only on a folder
-    this quickfix made: it moves the journal back to memory and removes the folder, with the logs in it.
+    this helper made: it moves the journal back to memory and removes the folder, with the logs in it.
 
 Without `/var/log/journal`, journald keeps the system journal in memory only, and the logs of a boot that crashed or
 froze are gone after it: Board Test's test 34 cannot read the previous boot's logs. The boxes show where the journal
@@ -128,10 +128,10 @@ as it removes the logs of every earlier boot.
 
 !!! warning "Changes the board"
     Turn on adds the kernel argument amd_iommu=off with rpm-ostree kargs, which makes a new deployment with it, and
-    notes in /var/lib/bc250-quickfix/iommu.karg that the quickfix added it; from the next boot the kernel leaves the AMD
+    notes in /var/lib/bc250-helpers/iommu.karg that the helper added it; from the next boot the kernel leaves the AMD
     IOMMU unused. The argument stays across reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or
-    the firmware. Turn off works only on an argument this quickfix added: it removes it with rpm-ostree kargs, and the
-    kernel uses the IOMMU again from the next boot. Both need a reboot, which the quickfix advises and never does.
+    the firmware. Turn off works only on an argument this helper added: it removes it with rpm-ostree kargs, and the
+    kernel uses the IOMMU again from the next boot. Both need a reboot, which the helper advises and never does.
 
 The board's AMD IOMMU (AMD-Vi) is broken on the BC-250, and a system that uses it is unstable. The modded BIOS can
 switch it off; without it, the kernel argument `amd_iommu=off` keeps the kernel from using it, which is the same from
@@ -142,17 +142,17 @@ The boxes show the IOMMU now (on when there are IOMMU groups), whether `amd_iomm
 command line and on the next boot's (`rpm-ostree kargs`), and who added it. **Turn on** is offered when the next boot
 lacks the argument and the BIOS does not have the IOMMU off already. After **Turn on** or **Turn off** the window
 says **Reboot to apply**: restart the board with `systemctl reboot`. An `amd_iommu=off` you added yourself counts
-too; **Turn off** removes only the one the quickfix added.
+too; **Turn off** removes only the one the helper added.
 
 ## CPU Mitigations Off
 
 !!! warning "Changes the board"
     Turn on adds the kernel argument mitigations=off with rpm-ostree kargs, which makes a new deployment with it, and
-    notes in /var/lib/bc250-quickfix/mitigations.karg that the quickfix added it; from the next boot the kernel no longer
+    notes in /var/lib/bc250-helpers/mitigations.karg that the helper added it; from the next boot the kernel no longer
     guards against the CPU's speculative execution flaws (Spectre, Meltdown and the like). The argument stays across
     reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or the firmware. Turn off works only on an
-    argument this quickfix added: it removes it with rpm-ostree kargs, and the mitigations are back from the next boot.
-    Both need a reboot, which the quickfix advises and never does.
+    argument this helper added: it removes it with rpm-ostree kargs, and the mitigations are back from the next boot.
+    Both need a reboot, which the helper advises and never does.
 
 The kernel guards against the CPU's speculative execution flaws (Spectre, Meltdown and the like), and that costs
 speed: roughly 18 FPS in games on this board. The kernel argument `mitigations=off` turns those guards off. Without
@@ -162,38 +162,34 @@ do not trust. Board Test's test 24 reports it.
 The boxes show whether `mitigations=off` is on the running kernel's command line and on the next boot's
 (`rpm-ostree kargs`), and who added it. **Turn on** is offered when the next boot lacks it; after a change the window
 says **Reboot to apply** (`systemctl reboot`). A `mitigations=off` you or the image set counts too; **Turn off**
-removes only the one the quickfix added.
+removes only the one the helper added.
 
 ## Install
 
-The portal installs the quickfixes with itself, and its uninstall removes them; the portal lists no Uninstall for them.
+The portal installs the helpers with itself, and its uninstall removes them; the portal lists no Uninstall for them.
 From a checkout of the repository:
 
 ```bash
-apps/quickfix/install.sh                         # the app, its launcher, a menu entry and a Desktop icon
-apps/quickfix/install.sh --no-desktop-shortcut   # without the Desktop icon
-apps/quickfix/install.sh --uninstall             # remove it; --purge removes its settings too
+apps/helpers/install.sh                         # the app, its launcher, a menu entry and a Desktop icon
+apps/helpers/install.sh --no-desktop-shortcut   # without the Desktop icon
+apps/helpers/install.sh --uninstall             # remove it; --purge removes its settings too
 ```
 
-The launcher is `~/.local/bin/bc250-quickfix`: without an argument it opens the list, with a quickfix's key the
-quickfix's own window (`bc250-quickfix extras`, `mangohud`, `metrics`, `sensors`, `mapcount`, `journal`, `iommu`,
+The launcher is `~/.local/bin/bc250-helpers`: without an argument it opens the list, with a helper's key the
+helper's own window (`bc250-helpers extras`, `mangohud`, `metrics`, `sensors`, `mapcount`, `journal`, `iommu`,
 `mitigations`). The app runs on the suite's shared Python environment.
 
 ## Files
 
 - `~/.config/MangoHud/MangoHud.conf` and `~/mangohud-logs/`: MangoHud's own settings file and its log folder.
 - `/etc/cyan-skillfish-governor-smu/config.toml` and its `config.toml.bak-*` backups: the governor's settings file.
-- `/etc/modprobe.d/bc250-quickfix-nct6683.conf`, `/etc/sysctl.d/90-bc250-quickfix-max-map-count.conf` and
-  `/var/log/journal/.bc250-quickfix`: what Sensors Module, Game Memory Map and Persistent Journal turned on, while it
+- `/etc/modprobe.d/bc250-helpers-nct6683.conf`, `/etc/sysctl.d/90-bc250-helpers-max-map-count.conf` and
+  `/var/log/journal/.bc250-helpers`: what Sensors Module, Game Memory Map and Persistent Journal turned on, while it
   is on.
-- `/var/lib/bc250-quickfix/iommu.karg` and `mitigations.karg`: the notes that IOMMU Off and CPU Mitigations Off added
+- `/var/lib/bc250-helpers/iommu.karg` and `mitigations.karg`: the notes that IOMMU Off and CPU Mitigations Off added
   their kernel argument, while it is on.
 
-Uninstalling the app leaves all of them as they are: turn a quickfix off first to undo it.
-
-BC-250 Quickfix takes the place of BC-250 Helpers. Its installer removes BC-250 Helpers and takes over its settings, and
-what BC-250 Helpers turned on (the same files, with `bc250-helpers` in their names) shows as turned on by its
-quickfix, whose **Turn off** removes it.
+Uninstalling the app leaves all of them as they are: turn a helper off first to undo it.
 
 ## License
 

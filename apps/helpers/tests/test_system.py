@@ -8,7 +8,7 @@ import tomllib
 
 import pytest
 
-from quickfix import system
+from helpers import system
 
 CONFIG = """# us
 [timing.intervals]
@@ -105,7 +105,7 @@ def test_kernel_argument_on_and_off_only_its_own(tmp_path, ran, monkeypatch, cap
     arg, mark = system.KARGS[key], system.karg_mark(tmp_path, key)
     args = ["rhgb", "quiet"]
     monkeypatch.setattr(system, "next_kargs", lambda: args)
-    assert system.main([key, "off"], var=tmp_path) == 1 and ran == []          # not added by the quickfix
+    assert system.main([key, "off"], var=tmp_path) == 1 and ran == []          # not added by the helper
     assert system.main([key, "on"], var=tmp_path) == 0
     assert ran == [["rpm-ostree", "kargs", f"--append={arg}"]] and mark.read_text() == f"{arg}\n"
     assert "systemctl reboot" in capsys.readouterr().out
@@ -141,18 +141,3 @@ def test_next_kargs_reads_rpm_ostree(monkeypatch):
         raise FileNotFoundError("rpm-ostree")
     monkeypatch.setattr(subprocess, "run", missing)
     assert system.next_kargs() is None
-
-
-def test_what_the_earlier_app_turned_on_is_turned_off(tmp_path, ran):
-    """BC-250 Helpers wrote the same files under its own name: this app knows them as its own and removes them."""
-    conf = system.earlier(tmp_path / system.MAPCOUNT_CONF)
-    assert conf.name == "90-bc250-helpers-max-map-count.conf"
-    conf.parent.mkdir(parents=True)
-    conf.write_text("vm.max_map_count = 1\n")
-    assert system.made(tmp_path / system.MAPCOUNT_CONF)
-    system.main(["mapcount", "off"], etc=tmp_path)
-    assert not conf.exists()
-    folder = tmp_path / system.JOURNAL_DIR
-    folder.mkdir(parents=True)
-    (folder / ".bc250-helpers").write_text("")
-    assert system.main(["journal", "off"], var=tmp_path) == 0 and not folder.exists()

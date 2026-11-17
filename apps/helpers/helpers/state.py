@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""What the quickfixes read, as your own user: the files, the kernel's own reports and rpm-ostree's kernel arguments.
+"""What the helpers read, as your own user: the files, the kernel's own reports and rpm-ostree's kernel arguments.
 Every reader takes its roots (/etc, /proc, /sys, /var, the home folder) so the tests give it a folder of their
 own."""
 
@@ -122,7 +122,7 @@ def with_logging(text: str, folder: Path) -> str:
     if want:
         if lines and lines[-1].strip():
             lines.append("")
-        lines.append("# FPS log, read by BC-250 Board Test (written by BC-250 Quickfix)")
+        lines.append("# FPS log, read by BC-250 Board Test (written by BC-250 Helpers)")
         lines += [f"{key}={value}" for key, value in want.items()]
     return "\n".join(lines) + "\n"
 
@@ -191,12 +191,12 @@ class Sensors:
 
 def sensors(root: Path = ROOT) -> Sensors:
     driver = next((d for d in DRIVERS if (root / "sys" / "module" / d).is_dir()), "")
-    ours = system.made(root / "etc" / system.SENSORS_CONF)
+    ours = (root / "etc" / system.SENSORS_CONF).is_file()
     elsewhere = ""
     folder = root / "etc" / "modprobe.d"
     if folder.is_dir():
         for conf in sorted(folder.glob("*.conf")):
-            if conf.name in (Path(system.SENSORS_CONF).name, system.earlier(Path(system.SENSORS_CONF)).name):
+            if conf.name == Path(system.SENSORS_CONF).name:
                 continue
             try:
                 text = conf.read_text(encoding="utf-8", errors="replace")
@@ -230,19 +230,19 @@ def mapcount(root: Path = ROOT) -> MapCount:
         value = int((root / "proc" / "sys" / "vm" / "max_map_count").read_text(encoding="utf-8").strip())
     except (OSError, ValueError):
         value = 0
-    return MapCount(value, system.made(root / "etc" / system.MAPCOUNT_CONF))
+    return MapCount(value, (root / "etc" / system.MAPCOUNT_CONF).is_file())
 
 
 # ------------------------------------------------------------------------------------------ Persistent Journal
 @dataclass(frozen=True)
 class Journal:
     persistent: bool            # /var/log/journal is there: journald keeps the journal on the disk
-    ours: bool                  # the quickfix made it
+    ours: bool                  # the helper made it
 
 
 def journal(root: Path = ROOT) -> Journal:
     folder = root / "var" / system.JOURNAL_DIR
-    return Journal(folder.is_dir(), system.made(folder / system.JOURNAL_MARK))
+    return Journal(folder.is_dir(), (folder / system.JOURNAL_MARK).is_file())
 
 
 # ------------------------------------------------------------------------------- IOMMU Off, CPU Mitigations Off
@@ -251,7 +251,7 @@ class Karg:
     arg: str                    # the kernel argument: amd_iommu=off, mitigations=off
     now: bool                   # on the running kernel's command line (/proc/cmdline)
     next: bool | None           # on the next boot's (rpm-ostree kargs); None when rpm-ostree cannot tell
-    ours: bool                  # the quickfix added it (its note in /var/lib/bc250-quickfix)
+    ours: bool                  # the helper added it (its note in /var/lib/bc250-helpers)
     iommu_groups: int | None    # the IOMMU groups now (0: the IOMMU is off); None without /sys/kernel/iommu_groups
 
     @property
@@ -273,4 +273,4 @@ def karg(key: str, root: Path = ROOT, next_kargs: Callable[[], list[str] | None]
     except OSError:
         groups = None
     return Karg(arg, now, None if following is None else arg in following,
-                system.made(system.karg_mark(root / "var", key)), groups)
+                system.karg_mark(root / "var", key).is_file(), groups)

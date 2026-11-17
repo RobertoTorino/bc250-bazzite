@@ -19,7 +19,7 @@
 -r apps/datstation/requirements-dev.txt
 -r apps/fan/requirements-dev.txt
 -r apps/gpu/requirements-dev.txt
--r apps/quickfix/requirements-dev.txt
+-r apps/helpers/requirements-dev.txt
 -r apps/mesh/requirements-dev.txt
 -r apps/oc/requirements-dev.txt
 -r apps/overlay/requirements-dev.txt

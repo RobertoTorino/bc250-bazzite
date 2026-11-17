@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""What the quickfixes read, from folders that stand in for /etc, /proc, /sys and /var: the BC-250 with the nct6687
+"""What the helpers read, from folders that stand in for /etc, /proc, /sys and /var: the BC-250 with the nct6687
 driver (the owner's board) and with the forced nct6683, Bazzite's own max_map_count and journal, and a system that
 has neither."""
 
@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from quickfix import state, system
+from helpers import state, system
 
 
 def put(root: Path, path: str, text: str = "") -> Path:

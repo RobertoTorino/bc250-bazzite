@@ -174,10 +174,10 @@ category = "utilities"
 icons = ["apps/btpair/images/bc250-bluetooth-pairing"]
 tile = "portal/images/apps/btpair.webp"
 
-[quickfix]
+[helpers]
 category = "utilities"
-icons = ["apps/quickfix/images/bc250-quickfix"]
-tile = "portal/images/apps/quickfix.webp"
+icons = ["apps/helpers/images/bc250-helpers"]
+tile = "portal/images/apps/helpers.webp"
 
 [password]
 category = "utilities"

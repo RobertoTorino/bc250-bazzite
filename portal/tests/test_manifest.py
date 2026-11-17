@@ -28,24 +28,24 @@ detect = ["~/.local/bin/bt"]
 """
 
 
-QUICKFIXES = MINIMAL + """
-[apps.quickfix]
-name = "BC-250 Quickfix"
+HELPERS = MINIMAL + """
+[apps.helpers]
+name = "BC-250 Helpers"
 summary = "s"
-tag = "bc250-quickfix-v0.1.0"
+tag = "bc250-helpers-v0.1.0"
 required = true
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
 detect = ["~/.local/bin/h"]
 launch = [["Open", "~/.local/bin/h"]]
 
-[[apps.quickfix.quickfixes]]
+[[apps.helpers.helpers]]
 key = "one"
 name = "One"
 summary = "the first"
 launch = "~/.local/bin/h one"
 
-[[apps.quickfix.quickfixes]]
+[[apps.helpers.helpers]]
 key = "two"
 name = "Two"
 summary = "the second"
@@ -59,35 +59,35 @@ It stays.
 
 
 def test_required_apps_first_check_before_the_others():
-    assert [e.key for e in parse(QUICKFIXES)] == ["check", "quickfix", "compute"]
-    moved = QUICKFIXES.replace("[apps.check]", "[apps.other]\nname = \"o\"\nsummary = \"s\"\n"
+    assert [e.key for e in parse(HELPERS)] == ["check", "helpers", "compute"]
+    moved = HELPERS.replace("[apps.check]", "[apps.other]\nname = \"o\"\nsummary = \"s\"\n"
                             "tag = \"bc250-other-v1.0.0\"\ninstall = [\"a\"]\nuninstall = [\"b\"]\n"
                             "detect = [\"c\"]\n\n[apps.check]")
-    assert [e.key for e in parse(moved)][:2] == ["check", "quickfix"]
+    assert [e.key for e in parse(moved)][:2] == ["check", "helpers"]
 
 
-def test_an_app_of_quickfixes_has_a_tile_per_quickfix():
-    quickfixes = parse(QUICKFIXES)[1]
-    one, two = quickfixes.tiles()
-    assert (one.tile, two.tile) == ("quickfix/one", "quickfix/two")
-    # A quickfix's tile is its app for installing and the records (key, tag, detect), the quickfix for the rest.
-    assert one.key == two.key == "quickfix" and one.tag == quickfixes.tag and one.detect == quickfixes.detect
+def test_an_app_of_helpers_has_a_tile_per_helper():
+    helpers = parse(HELPERS)[1]
+    one, two = helpers.tiles()
+    assert (one.tile, two.tile) == ("helpers/one", "helpers/two")
+    # A helper's tile is its app for installing and the records (key, tag, detect), the helper for the rest.
+    assert one.key == two.key == "helpers" and one.tag == helpers.tag and one.detect == helpers.detect
     assert (one.name, one.short, one.summary, one.launch) == ("One", "One", "the first", (("Open", "~/.local/bin/h one"),))
     assert not one.changes_board and two.changes_board and two.board_change == "Writes a file. It stays."
-    assert one.release_name == "BC-250 Quickfix" and one.quickfixes == ()
-    compute = parse(QUICKFIXES)[2]
+    assert one.release_name == "BC-250 Helpers" and one.helpers == ()
+    compute = parse(HELPERS)[2]
     assert compute.tiles() == (compute,) and compute.tile == "compute" and compute.release_name == "CU"
 
 
 @pytest.mark.parametrize("change, message", [
-    (('key = "two"', 'key = "one"'), "two quickfixes have the same key"),
+    (('key = "two"', 'key = "one"'), "two helpers have the same key"),
     (('key = "two"', 'key = "Two"'), "is not lowercase"),
     (('launch = "~/.local/bin/h two"', 'launch = ""'), "non-empty launch"),
     (('name = "Two"\n', ''), "non-empty name"),
 ])
-def test_rejects_a_bad_quickfix(change, message):
+def test_rejects_a_bad_helper(change, message):
     with pytest.raises(ManifestError, match=message):
-        parse(QUICKFIXES.replace(*change))
+        parse(HELPERS.replace(*change))
 
 
 def test_required_first_then_file_order():
@@ -175,8 +175,8 @@ def test_bad_sha_and_toml():
 def test_shipped_manifest_lists_every_app_with_bazzite_test_first():
     entries = load(MANIFEST)
     assert entries[0].key == "check" and entries[0].required
-    # Board Test and the quickfixes come with the portal (owner, 15-11-2026); every other app is optional.
-    assert [e.key for e in entries if e.required] == ["check", "quickfix"]
+    # Board Test and the helpers come with the portal (owner, 15-11-2026); every other app is optional.
+    assert [e.key for e in entries if e.required] == ["check", "helpers"]
     apps = {p.name for p in (SUITE / "apps").iterdir() if p.is_dir() and not (p / ".standalone").is_file()}
     assert {e.key for e in entries} == apps
 
