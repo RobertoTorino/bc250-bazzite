@@ -1,3 +1,9 @@
+Changelog: 17-11-2026 13:03:14
+
+Fixed. The badge check (tools/tests/test_readme_badges.py) leaves out the READMEs of the text tool's pinned Vale
+styles (tools/text_check/styles/): they are their makers' license texts, kept as they came, and failed the check for
+having no SPDX line and no badges.
+
 Changelog: 17-11-2026 12:20:40
 
 Fixed. tools/make_design.py names SFTP Tools' red and green text as DESIGN.md does: password advice not followed
