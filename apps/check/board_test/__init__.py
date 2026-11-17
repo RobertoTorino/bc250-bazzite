@@ -3,7 +3,7 @@
 
 APP_NAME = "BC-250 Board Test"
 APP_ID = "bc250-board-test"
-__version__ = "3.1.0"
+__version__ = "3.1.1"
 
 from pathlib import Path
 
