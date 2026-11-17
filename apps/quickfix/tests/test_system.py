@@ -8,7 +8,7 @@ import tomllib
 
 import pytest
 
-from helpers import system
+from quickfix import system
 
 CONFIG = """# us
 [timing.intervals]
@@ -105,7 +105,7 @@ def test_kernel_argument_on_and_off_only_its_own(tmp_path, ran, monkeypatch, cap
     arg, mark = system.KARGS[key], system.karg_mark(tmp_path, key)
     args = ["rhgb", "quiet"]
     monkeypatch.setattr(system, "next_kargs", lambda: args)
-    assert system.main([key, "off"], var=tmp_path) == 1 and ran == []          # not added by the helper
+    assert system.main([key, "off"], var=tmp_path) == 1 and ran == []          # not added by the quickfix
     assert system.main([key, "on"], var=tmp_path) == 0
     assert ran == [["rpm-ostree", "kargs", f"--append={arg}"]] and mark.read_text() == f"{arg}\n"
     assert "systemctl reboot" in capsys.readouterr().out

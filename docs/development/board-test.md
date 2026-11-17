@@ -424,7 +424,7 @@ rpm-ostree install stress-ng glmark2
 systemctl reboot
 ```
 
-Or use the optional helper, which installs everything below in one go — it layers the RPM packages
+Or use the optional script, which installs everything below in one go — it layers the RPM packages
 (`stress-ng`, `lm_sensors`, `vkmark`, `nvme-cli`, `fio`) and downloads `vkpeak`, `memtest_vulkan` and
 the Ookla `speedtest` CLI into `~/.local/bin` (interactive: each group is asked for separately):
 

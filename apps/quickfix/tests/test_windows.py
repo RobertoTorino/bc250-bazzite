@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The helpers' windows, offscreen, on folders of their own: what each shows, what its buttons offer (what is on
+"""The quickfixes' windows, offscreen, on folders of their own: what each shows, what its buttons offer (what is on
 already cannot be turned on again) and what it asks system.py to do as root."""
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 from PyQt6.QtWidgets import QMessageBox
 
-from helpers import runner, state, system, windows
+from quickfix import runner, state, system, windows
 
 from test_state import put
 
@@ -36,7 +36,7 @@ def change(asked) -> list[list[str]]:
     return [argv[1:] for argv in asked.calls]
 
 
-def test_test_extras_lists_and_installs(qapp, tmp_path, monkeypatch):
+def test_quickfix_lists_and_installs(qapp, tmp_path, monkeypatch):
     script = put(tmp_path, f"opt/{state.INSTALLER}", "#!/bin/sh\n")
     home = tmp_path / "home"
     tool = put(home, ".local/bin/vkpeak", "#!/bin/sh\n")
@@ -44,7 +44,7 @@ def test_test_extras_lists_and_installs(qapp, tmp_path, monkeypatch):
     monkeypatch.setenv("PATH", "")
     monkeypatch.setattr(state, "BREW_BIN", tmp_path / "brew")
     launched = []
-    window = windows.ExtrasWindow(launch=launched.append, board_test=tmp_path / "opt", home=home)
+    window = windows.ToolsWindow(launch=launched.append, board_test=tmp_path / "opt", home=home)
     assert window.found_box.value.text() == f"1/{sum(len(g.tools) for g in state.GROUPS) + len(state.BUILT_IN)}"
     assert window.rows["vkpeak"].toolTip() == str(tool)
     assert window.buttons["--bins"].isEnabled()                         # memtest_vulkan is still missing
@@ -57,7 +57,7 @@ def test_test_extras_lists_and_installs(qapp, tmp_path, monkeypatch):
     window.all_button.click()
     assert launched == [f"{script} --speedtest", f"{script} --all"]
     monkeypatch.setattr(state, "installer", lambda board_test=None, checkout=None: None)
-    missing = windows.ExtrasWindow(launch=launched.append, board_test=tmp_path / "none", home=home)
+    missing = windows.ToolsWindow(launch=launched.append, board_test=tmp_path / "none", home=home)
     assert missing.state.text() == "Board Test not found" and not missing.all_button.isEnabled()
 
 
@@ -131,7 +131,7 @@ def test_game_memory_map(qapp, root, asked):
     put(root, "proc/sys/vm/max_map_count", f"{system.MAPCOUNT}\n")
     window.refresh()
     assert window.boxes["Set by"].value.text() == "The system" and not window.on_button.isEnabled()
-    assert not window.off_button.isEnabled()                            # the system's: not the helper's to undo
+    assert not window.off_button.isEnabled()                            # the system's: not the quickfix's to undo
 
 
 def test_persistent_journal_asks_before_it_removes(qapp, root, asked, monkeypatch):
@@ -139,7 +139,7 @@ def test_persistent_journal_asks_before_it_removes(qapp, root, asked, monkeypatc
     assert window.boxes["Journal"].value.text() == "In memory" and window.on_button.isEnabled()
     put(root, f"var/{system.JOURNAL_DIR}/{system.JOURNAL_MARK}")
     window.refresh()
-    assert window.boxes["Made by"].value.text() == "This helper" and window.off_button.isEnabled()
+    assert window.boxes["Made by"].value.text() == "This quickfix" and window.off_button.isEnabled()
     monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.No)
     window.off_button.click()
     assert change(asked) == []
@@ -173,7 +173,7 @@ def test_iommu_off_from_the_next_boot(qapp, root, asked):
     window.refresh()
     assert window.state.text() == "Reboot to apply" and "systemctl reboot" in window.note.text()
     assert not window.on_button.isEnabled() and window.off_button.isEnabled()
-    assert window.boxes["Added by"].value.text() == "This helper"
+    assert window.boxes["Added by"].value.text() == "This quickfix"
     window.off_button.click()
     assert change(asked)[-1] == ["iommu", "off"]
 
@@ -206,8 +206,8 @@ def test_every_window_says_what_it_does(qapp, root, tmp_path):
     for key, make in windows.WINDOWS.items():
         extra = {"next_kargs": Kargs()} if key in system.KARGS else {}
         window = make(root=root, home=tmp_path / "home", **extra)
-        assert window.windowTitle() == window.helper.name and window.info.text_
-        assert ("Changes the board" in window.info.text_) == window.helper.changes_board, key
+        assert window.windowTitle() == window.quickfix.name and window.info.text_
+        assert ("Changes the board" in window.info.text_) == window.quickfix.changes_board, key
         window.close()
 
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# End to end from release tarballs: build the check, helpers, governor and portal releases with build_release.py,
-# install the portal from its tarball (which installs the bundled check and helpers release builds), and let the
+# End to end from release tarballs: build the check, quickfix, governor and portal releases with build_release.py,
+# install the portal from its tarball (which installs the bundled check and quickfix release builds), and let the
 # portal's release code fetch and verify the governor release the way it would from GitHub. Last, the suite's check-release.sh
 # installs that portal tarball as if downloaded from GitHub, and the portal from the checkout copy.
-# It works on a copy of the checkout in which apps.toml pins check, helpers and governor to these local builds: the
+# It works on a copy of the checkout in which apps.toml pins check, quickfix and governor to these local builds: the
 # checksums pinned in the repository are those of the real releases, which a local build never matches.
 # Runs with the shims from shims.sh (CI).
 set -u
@@ -17,7 +17,7 @@ fail=0
 check() { if eval "$2"; then echo "  ok   $1"; else echo "  FAIL $1"; fail=1; fi; }
 D=$XDG_DATA_HOME
 ver() { tr -d '[:space:]' < "$SUITE/$1/VERSION"; }
-BT="bc250-check-v$(ver apps/check)"; HB="bc250-helpers-v$(ver apps/helpers)"; GOV="bc250-gpu-v$(ver apps/gpu)"
+BT="bc250-check-v$(ver apps/check)"; HB="bc250-quickfix-v$(ver apps/quickfix)"; GOV="bc250-gpu-v$(ver apps/gpu)"
 PORTAL="bc250-portal-v$(ver portal)"
 export SOURCE_DATE_EPOCH=1790000000
 
@@ -46,8 +46,8 @@ check "exit 0" "[ $rc -eq 0 ]"
 check "check is a release build" "[ -f $T/opt/bc250-board-test/board_test/_build_info.py ]"
 check "its engine hash matches" "grep -q \"\$(sha256sum < $T/opt/bc250-board-test/test-board.sh | cut -d' ' -f1)\" $T/opt/bc250-board-test/board_test/_build_info.py"
 check "no 'not a release build' note" "! grep -q 'not a release build' $T/install.log"
-check "records have the bundled tags" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $D/bc250-bazzite-suite/state/installed.json && grep -q \"\\\"helpers\\\": \\\"$HB\\\"\" $D/bc250-bazzite-suite/state/installed.json"
-check "helpers from its release" "[ -x $HOME/.local/bin/bc250-helpers ] && [ -f $D/bc250-helpers/app/bc250_core/__init__.py ]"
+check "records have the bundled tags" "grep -q \"\\\"check\\\": \\\"$BT\\\"\" $D/bc250-bazzite-suite/state/installed.json && grep -q \"\\\"quickfix\\\": \\\"$HB\\\"\" $D/bc250-bazzite-suite/state/installed.json"
+check "quickfix from its release" "[ -x $HOME/.local/bin/bc250-quickfix ] && [ -f $D/bc250-quickfix/app/bc250_core/__init__.py ]"
 check "portal from the release" "[ -f $D/bc250-bazzite-suite/portal/bc250_core/__init__.py ] && [ ! -d $D/bc250-bazzite-suite/portal/bundled ]"
 
 echo "== 3. the installed portal fetches and verifies the governor release"

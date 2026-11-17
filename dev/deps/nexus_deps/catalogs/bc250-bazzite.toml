@@ -143,9 +143,9 @@ launchers = ["~/.local/bin/bc250-ssd-check"]
 name = "BC-250 Bluetooth Pairing"
 launchers = ["~/.local/bin/bc250-bluetooth-pairing"]
 
-[app.helpers]
-name = "BC-250 Helpers"
-launchers = ["~/.local/bin/bc250-helpers"]
+[app.quickfix]
+name = "BC-250 Quickfix"
+launchers = ["~/.local/bin/bc250-quickfix"]
 
 [app.password]
 name = "BC-250 Password Generator"
@@ -243,9 +243,9 @@ need = "required"
 usage = "Password prompt for installing, changing and removing the search after boot and the battery service."
 
 [[tool.source]]
-owner = "helpers"
+owner = "quickfix"
 need = "required"
-usage = "Password prompt for every change of the helpers that change the board: GPU metrics, the sensors driver, the memory map, the journal and the kernel arguments (IOMMU, CPU mitigations)."
+usage = "Password prompt for every change of the quickfixes that change the board: GPU metrics, the sensors driver, the memory map, the journal and the kernel arguments (IOMMU, CPU mitigations)."
 
 [[tool]]
 name = "umr"
@@ -1233,7 +1233,7 @@ owner = "btpair"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]
-owner = "helpers"
+owner = "quickfix"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]

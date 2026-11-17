@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""What the helpers read, as your own user: the files, the kernel's own reports and rpm-ostree's kernel arguments.
+"""What the quickfixes read, as your own user: the files, the kernel's own reports and rpm-ostree's kernel arguments.
 Every reader takes its roots (/etc, /proc, /sys, /var, the home folder) so the tests give it a folder of their
 own."""
 
@@ -17,7 +17,7 @@ from . import system
 ROOT = Path("/")
 
 
-# ------------------------------------------------------------------------------------------------- Test Extras
+# ------------------------------------------------------------------------------------------------- Quickfix
 @dataclass(frozen=True)
 class Tool:
     command: str                # what the tests look for on PATH
@@ -33,7 +33,7 @@ class Group:
     tools: tuple[Tool, ...]
 
 
-# The groups of Board Test's development/tools/install-requirements.sh, in its order (tests/test_extras.py reads the
+# The groups of Board Test's development/tools/install-requirements.sh, in its order (tests/test_catalog.py reads the
 # script and keeps the two the same).
 GROUPS: tuple[Group, ...] = (
     Group("--rpms", "RPM packages", "Layered with rpm-ostree: active after a reboot.", (
@@ -122,7 +122,7 @@ def with_logging(text: str, folder: Path) -> str:
     if want:
         if lines and lines[-1].strip():
             lines.append("")
-        lines.append("# FPS log, read by BC-250 Board Test (written by BC-250 Helpers)")
+        lines.append("# FPS log, read by BC-250 Board Test (written by BC-250 Quickfix)")
         lines += [f"{key}={value}" for key, value in want.items()]
     return "\n".join(lines) + "\n"
 
@@ -237,7 +237,7 @@ def mapcount(root: Path = ROOT) -> MapCount:
 @dataclass(frozen=True)
 class Journal:
     persistent: bool            # /var/log/journal is there: journald keeps the journal on the disk
-    ours: bool                  # the helper made it
+    ours: bool                  # the quickfix made it
 
 
 def journal(root: Path = ROOT) -> Journal:
@@ -251,7 +251,7 @@ class Karg:
     arg: str                    # the kernel argument: amd_iommu=off, mitigations=off
     now: bool                   # on the running kernel's command line (/proc/cmdline)
     next: bool | None           # on the next boot's (rpm-ostree kargs); None when rpm-ostree cannot tell
-    ours: bool                  # the helper added it (its note in /var/lib/bc250-helpers)
+    ours: bool                  # the quickfix added it (its note in /var/lib/bc250-quickfix)
     iommu_groups: int | None    # the IOMMU groups now (0: the IOMMU is off); None without /sys/kernel/iommu_groups
 
     @property

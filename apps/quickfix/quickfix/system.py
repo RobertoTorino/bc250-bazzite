@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The system part of the helpers: what runs as root. The app runs this file through pkexec with the system python3
+"""The system part of the quickfixes: what runs as root. The app runs this file through pkexec with the system python3
 in isolated mode (-I), one change per call, and it needs only the standard library:
 
     system.py metrics on [--method M] | off     fix-metrics in the governor's config.toml, then restart a running
@@ -12,7 +12,7 @@ in isolated mode (-I), one change per call, and it needs only the standard libra
 
 Each change touches only its own file (or, for metrics, the two lines of the governor's [gpu-usage] table, after a
 dated backup of config.toml beside it, the same as BC-250 GPU Manager's; for a kernel argument, that argument and a
-note in /var/lib/bc250-helpers that the helper added it) and is undone by its "off". The reading side is in the app
+note in /var/lib/bc250-quickfix that the quickfix added it) and is undone by its "off". The reading side is in the app
 (state.py): it needs no password."""
 
 from __future__ import annotations
@@ -30,19 +30,19 @@ SYSTEM_PYTHON = "/usr/bin/python3"
 GOVERNOR_CONFIG = "cyan-skillfish-governor-smu/config.toml"        # in /etc
 GOVERNOR_UNIT = "cyan-skillfish-governor-smu.service"
 METHODS = ("busy-flag", "process", "kernel")
-SENSORS_CONF = "modprobe.d/bc250-helpers-nct6683.conf"            # in /etc
+SENSORS_CONF = "modprobe.d/bc250-quickfix-nct6683.conf"            # in /etc
 SENSORS_LINE = "options nct6683 force=true"
-MAPCOUNT_CONF = "sysctl.d/90-bc250-helpers-max-map-count.conf"    # in /etc
+MAPCOUNT_CONF = "sysctl.d/90-bc250-quickfix-max-map-count.conf"    # in /etc
 MAPCOUNT = 2147483642                                             # what SteamOS and Bazzite set
 JOURNAL_DIR = "log/journal"                                       # in /var
-JOURNAL_MARK = ".bc250-helpers"                                   # in it: the helper made the folder
-KARGS = {"iommu": "amd_iommu=off", "mitigations": "mitigations=off"}  # the kernel arguments the helpers add
-KARGS_DIR = "lib/bc250-helpers"                                   # in /var, shared by every deployment: <key>.karg
+JOURNAL_MARK = ".bc250-quickfix"                                   # in it: the quickfix made the folder
+KARGS = {"iommu": "amd_iommu=off", "mitigations": "mitigations=off"}  # the kernel arguments the quickfixes add
+KARGS_DIR = "lib/bc250-quickfix"                                   # in /var, shared by every deployment: <key>.karg
 REBOOT = "Restart the board to apply it: systemctl reboot"
 
 
 def karg_mark(var: Path, key: str) -> Path:
-    """The note that the helper added its kernel argument: it turns off only what it turned on."""
+    """The note that the quickfix added its kernel argument: it turns off only what it turned on."""
     return var / KARGS_DIR / f"{key}.karg"
 
 
@@ -126,7 +126,7 @@ def metrics(etc: Path, on: bool, method: str | None) -> int:
 def sensors(etc: Path, on: bool) -> int:
     conf = etc / SENSORS_CONF
     if on:
-        write(conf, f"# Written by BC-250 Helpers (Sensors Module): the board's SuperIO chip, for its sensors.\n"
+        write(conf, f"# Written by BC-250 Quickfix (Sensors Module): the board's SuperIO chip, for its sensors.\n"
                     f"{SENSORS_LINE}\n")
         return run(["modprobe", "nct6683", "force=true"])
     conf.unlink(missing_ok=True)
@@ -137,7 +137,7 @@ def sensors(etc: Path, on: bool) -> int:
 def mapcount(etc: Path, on: bool) -> int:
     conf = etc / MAPCOUNT_CONF
     if on:
-        write(conf, f"# Written by BC-250 Helpers (Game Memory Map): the memory areas a game may map.\n"
+        write(conf, f"# Written by BC-250 Quickfix (Game Memory Map): the memory areas a game may map.\n"
                     f"vm.max_map_count = {MAPCOUNT}\n")
         return run(["sysctl", "-w", f"vm.max_map_count={MAPCOUNT}"])
     conf.unlink(missing_ok=True)
@@ -149,11 +149,11 @@ def journal(var: Path, on: bool) -> int:
     folder = var / JOURNAL_DIR
     if on:
         folder.mkdir(parents=True, exist_ok=True)
-        (folder / JOURNAL_MARK).write_text("Made by BC-250 Helpers (Persistent Journal).\n", encoding="utf-8")
+        (folder / JOURNAL_MARK).write_text("Made by BC-250 Quickfix (Persistent Journal).\n", encoding="utf-8")
         code = run(["systemd-tmpfiles", "--create", "--prefix", str(folder)])
         return code or run(["journalctl", "--flush"])
     if not (folder / JOURNAL_MARK).is_file():
-        print(f"{folder} was not made by BC-250 Helpers: it stays.")
+        print(f"{folder} was not made by BC-250 Quickfix: it stays.")
         return 1
     run(["journalctl", "--relinquish-var"])
     shutil.rmtree(folder)
@@ -162,8 +162,8 @@ def journal(var: Path, on: bool) -> int:
 
 
 def kargs(var: Path, key: str, on: bool) -> int:
-    """Adds or removes the helper's kernel argument with rpm-ostree kargs: a new deployment, active after a reboot.
-    Turn on only adds what is not there yet; turn off only removes what the helper added (its note)."""
+    """Adds or removes the quickfix's kernel argument with rpm-ostree kargs: a new deployment, active after a reboot.
+    Turn on only adds what is not there yet; turn off only removes what the quickfix added (its note)."""
     arg, mark = KARGS[key], karg_mark(var, key)
     current = next_kargs()
     if current is None:
@@ -182,7 +182,7 @@ def kargs(var: Path, key: str, on: bool) -> int:
         print(f"Added {arg}. {REBOOT}.")
         return 0
     if not mark.is_file():
-        print(f"{arg} was not added by BC-250 Helpers: it stays.")
+        print(f"{arg} was not added by BC-250 Quickfix: it stays.")
         return 1
     code = run(["rpm-ostree", "kargs", f"--delete-if-present={arg}"]) if arg in current else 0
     if code:
@@ -193,7 +193,7 @@ def kargs(var: Path, key: str, on: bool) -> int:
 
 
 def main(argv: list[str] | None = None, etc: Path = Path("/etc"), var: Path = Path("/var")) -> int:
-    parser = argparse.ArgumentParser(prog="system.py", description="BC-250 Helpers, the part that runs as root")
+    parser = argparse.ArgumentParser(prog="system.py", description="BC-250 Quickfix, the part that runs as root")
     parser.add_argument("change", choices=("metrics", "sensors", "mapcount", "journal", *KARGS))
     parser.add_argument("state", choices=("on", "off"))
     parser.add_argument("--method", choices=METHODS)

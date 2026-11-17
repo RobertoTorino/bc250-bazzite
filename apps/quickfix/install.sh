@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs BC-250 Helpers as a desktop app, from a clone or the extracted release tarball:
+# Installs BC-250 Quickfix as a desktop app, from a clone or the extracted release tarball:
 #
 #   ./install.sh                         # install or update
 #   ./install.sh --no-desktop-shortcut   # app menu entry only, no icon on the Desktop
@@ -8,15 +8,15 @@
 #   ./install.sh --uninstall --purge     # also remove its settings
 #
 # Run it as your own user; it needs no root.
-#  * ~/.local/share/bc250-helpers/app: the app, with the bc250_core it was tested with (bundled in the release; taken from
+#  * ~/.local/share/bc250-quickfix/app: the app, with the bc250_core it was tested with (bundled in the release; taken from
 #    the suite checkout when run from there).
 #  * ~/.local/share/bc250-bazzite-suite/venv, the BC250 Bazzite Suite's shared venv with PyQt6 (the wheels bundle Qt; nothing is
 #    layered). It is removed with the last suite app that uses it.
-#  * ~/.local/bin/bc250-helpers to start it from a terminal, plus an app menu entry and a Desktop icon.
+#  * ~/.local/bin/bc250-quickfix to start it from a terminal, plus an app menu entry and a Desktop icon.
 set -euo pipefail
 
-APP_ID="bc250-helpers"
-APP_NAME="BC-250 Helpers"
+APP_ID="bc250-quickfix"
+APP_NAME="BC-250 Quickfix"
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 APP_DIR="$DATA_DIR/$APP_ID/app"
@@ -29,7 +29,7 @@ DESKTOP_DIR=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
 DESKTOP_ICON="$DESKTOP_DIR/$APP_ID.desktop"
 
 SRC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-# bc250_core: bundled next to helpers in a release; in the suite checkout it lives in core/ at the root.
+# bc250_core: bundled next to quickfix in a release; in the suite checkout it lives in core/ at the root.
 if [ -d "$SRC/bc250_core" ]; then CORE_SRC="$SRC/bc250_core"; else CORE_SRC="$SRC/../../core/bc250_core"; fi
 
 info() { printf '\033[1;35m==>\033[0m %s\n' "$1"; }
@@ -94,7 +94,7 @@ fi
 
 # --- Checks ------------------------------------------------------------------------------------
 [ "$(uname -s)" = Linux ] || die "This app runs on Linux (Bazzite) only."
-for f in requirements.txt VERSION helpers/__main__.py "images/$APP_ID.webp" "images/$APP_ID-128.png"; do
+for f in requirements.txt VERSION quickfix/__main__.py "images/$APP_ID.webp" "images/$APP_ID-128.png"; do
     [ -f "$SRC/$f" ] || die "$f is missing: run install.sh from a clone or the extracted release folder."
 done
 [ -f "$CORE_SRC/__init__.py" ] || die "bc250_core is missing: run install.sh from a clone or the extracted release folder."
@@ -140,9 +140,9 @@ mkdir -p "$(dirname "$LAUNCHER")"
 cat >"$LAUNCHER" <<LAUNCH
 #!/usr/bin/env bash
 # $APP_NAME launcher, written by install.sh. Starts from the app folder, so python -m never picks up a
-# helpers folder from the current directory, and imports the bc250_core bundled there.
+# quickfix folder from the current directory, and imports the bc250_core bundled there.
 cd "$APP_DIR" || { echo "$APP_NAME is not installed in $APP_DIR; run install.sh again." >&2; exit 1; }
-exec "$VENV/bin/python" -m helpers "\$@"
+exec "$VENV/bin/python" -m quickfix "\$@"
 LAUNCH
 chmod 755 "$LAUNCHER"
 
@@ -150,13 +150,13 @@ DESKTOP_FILE_CONTENT="[Desktop Entry]
 Type=Application
 Version=1.0
 Name=$APP_NAME
-GenericName=BC-250 Helpers
-Comment=Small helpers for one job each: the Board Test's extras, MangoHud's config, GPU metrics, sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed.
+GenericName=BC-250 Quickfix
+Comment=Small quickfixes for one job each: Board Test's optional tools, MangoHud's config, GPU metrics, sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed.
 Exec=$LAUNCHER
 Icon=$APP_DIR/images/$APP_ID-128.png
 Terminal=false
 Categories=Utility;
-Keywords=BC-250;Bazzite;helpers;
+Keywords=BC-250;Bazzite;quickfixes;
 StartupNotify=true
 StartupWMClass=$APP_ID"
 

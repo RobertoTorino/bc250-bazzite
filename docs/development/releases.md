@@ -137,8 +137,11 @@ withdrawal, [below](#withdrawing-a-release)), **Remove suite** and **Commands**.
   password. Settings, history and results stay; `tools/check-release.sh remove --purge` removes them too.
 - **Device test** and the other tests of `tools/check-release.sh` clean up after themselves: on a board without the
   suite, what the test installs is marked as a test's and removed again when the portal closes (the portal, Board
-  Test and the apps installed during the test). A board that had the suite installed keeps it, and `--keep` keeps
-  what a test installed.
+  Test and the apps installed during the test). On a board that had the suite installed, the test saves the portal,
+  Board Test and Quickfix first and puts them back when the tested portal closes, with the saved portal's own
+  installer (Board Test asks for the sudo password); the apps installed during the test are removed, and an app
+  updated during the test stays updated. `--keep` keeps what a test installed, and
+  `tools/check-release.sh restore` puts the saved install back by hand, after a test that was cut short.
 - What a step writes (the release, Retract, Test withdrawal, Remove suite) shows in **Commands**, under a line that
   names the step, with the output of the commands: one output tab. A step that writes its log opens Commands; open the step
   again to go on. The steps' logs go into the day's command log too (below).
@@ -229,7 +232,7 @@ The release stays on GitHub, so its history is kept, but nothing installs it any
    is not released again. The portal's CHANGELOG entry names the withdrawal. A portal that updates to it removes
    the app; the portal update button says so beforehand ("withdraws ...").
 
-Board Test and Helpers, which are always installed, cannot be withdrawn.
+Board Test and Quickfix, which are always installed, cannot be withdrawn.
 
 ## Checking a release
 
