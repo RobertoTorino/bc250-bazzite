@@ -279,7 +279,7 @@ def test_a_run_that_finishes_is_told_about(repo, tmp_path):
 
 
 def test_git_button_commands():
-    assert rp.add_command() == "git add -A && tools/fix-modes.sh && git status --short"
+    assert rp.add_command() == "python3 tools/all_tests.py && git add -A && tools/fix-modes.sh && git status --short"
     assert rp.commit_command("Release alpha-v0.2.0", "origin/main") == (
         "python3 tools/check_versions.py && python3 tools/check_manifest.py --base origin/main && "
         "git commit -m 'Release alpha-v0.2.0'")                       # the checks first, the commit only after

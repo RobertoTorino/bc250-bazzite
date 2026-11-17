@@ -61,6 +61,14 @@ def config_file(tmp_path: Path) -> Path:
     return path
 
 
+@pytest.fixture(autouse=True)
+def no_radeontop(monkeypatch):
+    """The machine's own radeontop is never run: on a board that has it and no gpu_busy_percent (the BC-250), every
+    reading of the telemetry started it for a second, which was most of this folder's time."""
+    from gpu_governor.backends.cyan_skillfish import CyanSkillfishBackend
+    monkeypatch.setattr(CyanSkillfishBackend, "_radeontop_load", staticmethod(lambda: None))
+
+
 @pytest.fixture
 def backend(config_file: Path):
     from gpu_governor.backends.cyan_skillfish import CyanSkillfishBackend

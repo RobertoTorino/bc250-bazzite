@@ -1,3 +1,26 @@
+Changelog: 17-11-2026 20:57:26
+
+Added. ALL-TESTS.md is written from the tests (tools/all_tests.py) and kept in step with them: a test of tools
+fails in CI when a test was added, renamed or removed without it, and Nexus Release Tool's Commit writes it before
+it adds the changes. --run runs every test folder for each test's cases and time; without it they stay as they
+were. The wiki shows the list under Development, as All tests.
+
+Changelog: 17-11-2026 20:49:32
+
+Fixed. CI runs the jobs of what a push changed, here (tools/ci-local.sh) and on GitHub (owner, 17-11-2026: the
+release took too long). A change to one app ran all 47 jobs: about two minutes here before every push, and on
+GitHub one of the 41 test jobs stalled in its checkout twice in one day and held the release for six and nine
+minutes. The plan job of ci.yml (tools/ci_matrix.py plan) now names the test folders, the installer tests and the
+jobs of the files that differ from the commit before the push: an app's own tests and installer tests, tools'
+tests always, the folders whose tests read apps.toml when it changed, the native job for apps/consoles, the wiki
+unless only Python changed. Every job still runs when core, a workflow or the CI tools change, every Monday, and
+with Run workflow. The installer tests run side by side, shellcheck a few scripts at a time, the test jobs fetch
+the commit without its history (tools keeps the tags), and a checkout that stalls fails after three minutes.
+tools/ci_local.py runs the plan job against origin/main and skips the jobs it leaves out, as GitHub does. Two test
+folders no longer read the machine they run on: GPU Manager's tests started the board's radeontop for a second per
+reading (48 s, now 5 s) and the portal's window tests scanned every process in /proc (51 s, now 28 s).
+ALL-TESTS.md lists every test again, with the time of each.
+
 Changelog: 17-11-2026 13:03:14
 
 Fixed. The badge check (tools/tests/test_readme_badges.py) leaves out the READMEs of the text tool's pinned Vale

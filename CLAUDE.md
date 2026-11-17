@@ -155,7 +155,8 @@ The repository is the suite, and the tools know only this one (`tools/suites.py`
   its time, `checkout_stamp()`).
 - `tools/`: the release and check tools (`build_release.py`, `stage_app.py`, `check_versions.py`,
   `check_manifest.py`, `pin_app.py`, `suite_release.py`, `publish_release.sh`, `tag-release.sh`, `release_commit.py`,
-  `ci_state.py`, `ci_matrix.py`, `check-release.sh`: the board checks of a portal release), CI on this machine
+  `ci_state.py`, `ci_matrix.py`, `check-release.sh`: the board checks of a portal release), `all_tests.py`
+  (`ALL-TESTS.md`, the list of every test, written from the tests; CI compares them), CI on this machine
   (`ci-local.sh`, `ci_local.py`, `ci-local/`, `ci-qt-libs.sh`), `suites.py`, `sync_icons.py`, `new_app.py`,
   `check_upstream.py`, `fix-modes.sh`, `nrt.sh`, the tours
   (`portal_tour.py`, `app_tour.py`, `tour_frames.py`, `record-tour.sh`, `record-app-tour.sh`, their music in

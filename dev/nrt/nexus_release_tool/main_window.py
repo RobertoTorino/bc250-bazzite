@@ -273,14 +273,14 @@ def desktop_notify(summary: str, body: str) -> bool:
     return ok
 
 
-BUILD_BUSY_MS = 30_000                  # how often to look while a build runs
+BUILD_BUSY_MS = 15_000                  # how often to look while a build runs (30 s until 17-11-2026)
 BUILD_IDLE_MS = 300_000                 # and otherwise (unchanged answers do not count against GitHub's limit)
 BUILD_SOON_MS = 10_000                  # while a pushed HEAD has no run yet: GitHub starts its CI seconds after a push
 BUILD_LOOK = {"running": (BLUE, "Building"), "passed": (GREEN, "Passed"), "failed": (RED, "Failed"),
               "": (GREY, "No builds")}
 
 class BuildIndicator(Pill):
-    """Whether GitHub built the newest push: CI, Release and Manual on its commit. Looks every 30 s while a build
+    """Whether GitHub built the newest push: CI, Release and Manual on its commit. Looks every 15 s while a build
     runs, every 10 s while the pushed HEAD has no run yet, and every 5 minutes otherwise; a run seen running that
     finishes gives a desktop notification. A click opens the run that failed (or still runs), else the Actions page. When GitHub's hourly limit is used up
     it says until when and waits till then. Requests carry the token of a gh login when there is one

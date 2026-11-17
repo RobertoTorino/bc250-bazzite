@@ -106,6 +106,7 @@ nav:
       - Architecture and consistency: development/architecture.md
       - Dashboard: development/dashboard.md
       - Releases: development/releases.md
+      - All tests: development/all-tests.md
       - GitHub settings: development/github-settings.md
       - Board Test script: development/board-test.md
       - Board Test internals: development/board-test-internals.md

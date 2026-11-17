@@ -162,7 +162,7 @@ commit, tags included. It reads the newest 30 runs of the repository; when they 
 release of many apps starts many runs), it reads the rest of that commit's runs too, so the CI runs under them
 count. It reads **building** while one runs, then **passed** or **failed**; right after a push, until GitHub has started the runs of that commit, it reads **building** too and the line under the pills says that it waits for GitHub, as the runs GitHub lists then are the commit's before; hover for each run, click
 to open the run that failed (or still runs) on GitHub. A run GitHub canceled because a later run of the same
-workflow on the same commit took its place is no failure: hover says **replaced by a later run**. It looks every 30
+workflow on the same commit took its place is no failure: hover says **replaced by a later run**. It looks every 15
 seconds while a build runs, every 10 seconds after a push until GitHub has started its runs (a few seconds after
 the push), and every 5 minutes otherwise, and **Refresh** looks at once: its pill reads *Refreshing…* while it reads
 the checkout and GitHub's runs (a second or two), then *Refreshed* with the time. When a run it saw running
