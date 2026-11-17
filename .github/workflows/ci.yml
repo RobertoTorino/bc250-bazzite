@@ -127,6 +127,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: "apps/consoles/requirements-dev.txt"
 
       - name: nasm and the libva headers
         run: sudo apt-get update -q && sudo apt-get install -y -q nasm libva-dev
@@ -141,6 +143,17 @@ jobs:
       - name: FFmpeg
         if: steps.ffmpeg.outputs.cache-hit != 'true'
         run: ffmpeg/build.sh
+
+      # The crates and what was built of them, until Cargo.lock changes: cargo test, clippy and the module's build
+      # then compile the app's own code only.
+      - name: cargo cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            apps/consoles/native/target
+          key: cargo-${{ runner.os }}-${{ hashFiles('apps/consoles/native/Cargo.lock') }}
 
       - name: cargo test
         run: cargo test --locked --features decoder

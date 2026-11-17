@@ -42,7 +42,7 @@ from bc250_core.updates import UpdateChecker
 from bc250_core.nexus import header as nexus_header
 from bc250_core.widgets import MetricBox, Pill, accent_button, same_width
 
-from . import APP_NAME, LOGO_PATH, CHECKOUT
+from . import APP_NAME, CHECKOUT, HEADER_NAME, LOGO_PATH
 from . import flow
 from . import plan as rp
 from .command_line import CommandLine
@@ -702,7 +702,9 @@ class ReleaseWindow(QMainWindow):
         self.setWindowTitle(APP_NAME)
         self.resize(1100, 760)
         self.setStyleSheet(SELECTION_STYLESHEET + CHECK_STYLESHEET)
-        header = nexus_header(LOGO_PATH, APP_NAME, root)        # never released: the commit says which code runs
+        # Never released: the commit says which code runs. The name says which suite (owner, 17-11-2026: the two
+        # suites' windows looked the same).
+        header = nexus_header(LOGO_PATH, HEADER_NAME, root)
         # The header's pills, all as wide as the widest (owner, 20-10-2026).
         self.refresh_pill = Pill("Refresh", "Click to refresh", "Read the checkout and its tags again, for changes "
                                  "made in a terminal; what you entered stays")

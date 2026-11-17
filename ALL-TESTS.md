@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3097 test functions (3676 cases counting the parametrized ones) in 41 test folders, and 42 installer tests.
+3099 test functions (3678 cases counting the parametrized ones) in 41 test folders, and 42 installer tests.
 
 ## Summary
 
@@ -48,8 +48,8 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/nrt](#devnrt) | 4 | 123 | 24.8 s |
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [portal](#portal) | 16 | 206 | 29.0 s |
-| [tools](#tools) | 36 | 221 | 11.1 s |
-| **All** | | **3097** | **184 s** |
+| [tools](#tools) | 36 | 223 | 11.1 s |
+| **All** | | **3099** | **184 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -3260,7 +3260,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## tools
 
-221 tests in 36 files, 11.1 s in a local run.
+223 tests in 36 files, 11.1 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3453,6 +3453,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_suite_release.py` | `test_pin_refuses_a_tag_the_manifest_does_not_pin` |  |  | Pin refuses a tag the manifest does not pin. |
 | `test_suite_release.py` | `test_the_checksum_comes_from_the_releases_own_sha256sums` |  |  | The checksum comes from the releases own sha256sums. |
 | `test_suite_release.py` | `test_pin_on_the_command_line` |  |  | Pin on the command line. |
+| `test_suite_release.py` | `test_the_published_releases_come_from_one_listing` |  |  | One gh release list for the plan, not a gh release view per pinned app; a draft is not out. |
+| `test_suite_release.py` | `test_without_a_whole_listing_the_tags_are_asked_one_by_one` |  |  | GitHub does not answer, answers something else, or the listing is full (a release could be missing from it, and would be built again): no set, so the plan asks tag by tag. |
 | `test_suites.py` | `test_the_system_and_the_prefix` |  |  | The system and the prefix. |
 | `test_suites.py` | `test_a_tag_names_its_app_and_version` |  |  | A tag names its app and version. |
 | `test_suites.py` | `test_the_command_line` |  | 0.1 s | This repository is the suite. |

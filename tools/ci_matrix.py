@@ -13,8 +13,8 @@ tools/tests/test_layout.py checks the folders against this list.
 plan is what CI runs for the files that differ from COMMIT (owner, 17-11-2026: a change to one app ran all 47 jobs,
 here and on GitHub, and one stalled job held the release): the test folders with a changed file, tools always (its
 tests hold the repository's rules), and the folders whose tests read a shared file that changed (portal/apps.toml,
-icons/categories.toml); the installer tests that name a changed app, folder or tool; the native job when
-apps/consoles changed; the wiki unless only Python code changed. Without --base, when the commit is not known here,
+icons/categories.toml); the installer tests that name a changed app, folder or tool; the native job when the
+app with the native core changed; the wiki unless only Python code changed. Without --base, when the commit is not known here,
 or when something every job stands on changed (core, the workflows, this tool, the local CI, the development
 requirements), it is everything: full=true."""
 
@@ -51,7 +51,7 @@ EVERYTHING = ("core/", ".github/workflows/", "tools/ci_matrix.py", "tools/ci_loc
               "tools/ci-local/", "tools/ci-qt-libs.sh", "requirements-dev.txt", "tools/installer-tests/shims.sh")
 ALWAYS = "tools"                        # its tests hold the repository's rules: the layout, the manifest, the wiki
 SHARED = ("portal/apps.toml", "icons/categories.toml")      # read by the tests of other folders, by their file name
-NATIVE = "apps/consoles/"               # PS Remote Play's native core and the tests that use it
+NATIVE = "apps/*/native/Cargo.toml"     # an app with a native core (Remote Play): the native job is its own
 INSTALLER_TESTS = "tools/installer-tests"
 NOT_TESTS = {"shims.sh"}
 LAST = "release.sh"                     # the release tarballs end to end: the longest, named last
@@ -73,6 +73,11 @@ def installer_tests(root: Path = ROOT) -> list[str]:
     """Every installer test, by file name, the release tarballs last."""
     names = sorted(p.name for p in (root / INSTALLER_TESTS).glob("*.sh") if p.name not in NOT_TESTS)
     return [n for n in names if n != LAST] + [n for n in names if n == LAST]
+
+
+def native_apps(root: Path = ROOT) -> list[str]:
+    """The folders of the apps with a native core, as a path's start: ["apps/consoles/"]."""
+    return [cargo.parent.parent.relative_to(root).as_posix() + "/" for cargo in sorted(root.glob(NATIVE))]
 
 
 def unit_of(path: str) -> str:
@@ -111,7 +116,7 @@ def plan(changed: list[str] | None, root: Path = ROOT) -> dict[str, object]:
         if f"{INSTALLER_TESTS}/{name}" in changed or every_app or named or tool:
             picked.append(name)
     return {"dirs": [d for d in dirs if d in chosen], "installers": " ".join(picked),
-            "native": any(path.startswith(NATIVE) for path in changed),
+            "native": any(path.startswith(app) for path in changed for app in native_apps(root)),
             "docs": any(not _PYTHON_ONLY.match(path) for path in changed), "full": False}
 
 

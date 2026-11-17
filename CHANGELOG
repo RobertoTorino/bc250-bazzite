@@ -1,3 +1,34 @@
+Changelog: 17-11-2026 21:54:36
+
+Fixed. The release workflow has three jobs where it had five (owner, 17-11-2026): the check that CI passed is
+part of the plan job, and the pin commit is made in the portal job, which then builds the portal from it. Every
+job waits for a runner of its own, and one of those waits alone took twenty seconds of a release. What is
+released, pinned and published, and when a run stops, is as before.
+
+Changelog: 17-11-2026 21:39:19
+
+Fixed. The release workflow's plan step (tools/suite_release.py plan) asks GitHub for the published releases in
+one listing, not once per pinned app: that step took forty of the release's hundred and twenty seconds. When the
+listing fails or is full, it asks tag by tag as before.
+
+Changelog: 17-11-2026 21:35:50
+
+Fixed. SFTP Tools' test of the error dot counted the log's handlers, and a window an earlier test left behind
+took its own away in the middle of it: the test failed, and the run then crashed, whenever pytest wrote a report
+(--junitxml, as tools/all_tests.py --run does). It follows the window's own handler now. The windows a test of SFTP
+Tools opens are closed and deleted when it ends: left to Python's garbage collector, windows of earlier tests were
+taken apart during a later test, which is what crashed the run.
+
+Changelog: 17-11-2026 21:28:02
+
+Fixed. CI's native job keeps the Rust crates and their build, and pip's downloads, between runs (actions/cache
+until Cargo.lock changes): it is the longest job of a full run, and compiled every crate each time.
+
+Changelog: 17-11-2026 21:24:17
+
+Fixed. The CI plan (tools/ci_matrix.py) reads the app of the native job from the folders (the app with
+native/Cargo.toml), not by its name, so the tool is the same in both suites.
+
 Changelog: 17-11-2026 20:57:26
 
 Added. ALL-TESTS.md is written from the tests (tools/all_tests.py) and kept in step with them: a test of tools

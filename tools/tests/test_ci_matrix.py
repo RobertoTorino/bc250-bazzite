@@ -61,6 +61,8 @@ def changed_suite(tmp_path: Path) -> Path:
     for name in ("core", "dev/dash"):
         (folder / name / "tests").mkdir(parents=True)
     (folder / "dev" / "dash" / "tests" / "test_local.py").write_text('MANIFEST = "apps.toml"\n', encoding="utf-8")
+    (folder / "apps" / "consoles" / "native").mkdir()
+    (folder / "apps" / "consoles" / "native" / "Cargo.toml").write_text("", encoding="utf-8")
     tests = folder / "tools" / "installer-tests"
     tests.mkdir()
     for name, text in {"gpu.sh": "bash apps/gpu/install.sh", "fan.sh": "bash apps/fan/install.sh",

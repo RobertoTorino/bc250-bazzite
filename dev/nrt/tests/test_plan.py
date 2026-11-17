@@ -837,7 +837,8 @@ def test_title_names_the_checkouts_commit_and_date(window, repo):
     head = subprocess.run(["git", "log", "-1", "--format=%h %ct"], cwd=repo, capture_output=True, text=True).stdout.split()
     when = rp.amsterdam_now(datetime.datetime.fromtimestamp(int(head[1]), datetime.timezone.utc))
     stamp = f"{head[0]} · {when:%d-%m-%Y %H:%M}"
-    title = next(label.text() for label in window.findChildren(QLabel) if label.text().startswith("Nexus Release Tool"))
+    title = next(label.text() for label in window.findChildren(QLabel)
+                 if label.text().startswith("Nexus Release Tool for BC-250"))
     assert f">{stamp}</span>" in title and ">v" not in title
 
 
