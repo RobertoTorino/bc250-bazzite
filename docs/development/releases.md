@@ -229,7 +229,7 @@ The release stays on GitHub, so its history is kept, but nothing installs it any
    is not released again. The portal's CHANGELOG entry names the withdrawal. A portal that updates to it removes
    the app; the portal update button says so beforehand ("withdraws ...").
 
-Board Test and Helpers, which are always installed, cannot be withdrawn.
+Board Test and Quickfix, which are always installed, cannot be withdrawn.
 
 ## Checking a release
 

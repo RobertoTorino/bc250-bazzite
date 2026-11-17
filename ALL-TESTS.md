@@ -22,13 +22,13 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/datstation](#appsdatstation) | 7 | 39 | 3.1 s |
 | [apps/fan](#appsfan) | 2 | 38 | 0.7 s |
 | [apps/gpu](#appsgpu) | 11 | 56 | 5.1 s |
-| [apps/helpers](#appshelpers) | 5 | 38 | 0.6 s |
 | [apps/mesh](#appsmesh) | 5 | 47 | 3.2 s |
 | [apps/oc](#appsoc) | 2 | 14 | 0.4 s |
 | [apps/overlay](#appsoverlay) | 1 | 10 | 0.3 s |
 | [apps/password](#appspassword) | 2 | 22 | 0.5 s |
 | [apps/pcsx2](#appspcsx2) | 14 | 137 | 28.9 s |
 | [apps/ppsspp](#appsppsspp) | 10 | 80 | 6.0 s |
+| [apps/quickfix](#appsquickfix) | 5 | 38 | 0.6 s |
 | [apps/rpcs3](#appsrpcs3) | 10 | 90 | 8.0 s |
 | [apps/sftp](#appssftp) | 11 | 84 | 1.6 s |
 | [apps/shadps4](#appsshadps4) | 16 | 138 | 11.7 s |
@@ -76,7 +76,6 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `deps.sh` | Exercise dev/deps/install.sh, Nexus Deps' installer. |
 | `fan.sh` | Exercise apps/fan/install.sh. |
 | `gpu.sh` | Exercise apps/gpu/install.sh. |
-| `helpers.sh` | Exercise apps/helpers/install.sh. |
 | `itests.sh` | Exercise dev/itests/install.sh, Nexus Installer Tests's installer. |
 | `mesh.sh` | Exercise apps/mesh/install.sh. |
 | `not-installed.sh` | Every app's installer and the portal's, with --uninstall and with --uninstall --purge, on a computer where nothing of them is installed. |
@@ -87,6 +86,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `pcsx2.sh` | Exercise apps/pcsx2/install.sh. |
 | `portal.sh` | Exercise portal/install.sh. |
 | `ppsspp.sh` | Exercise apps/ppsspp/install.sh. |
+| `quickfix.sh` | Exercise apps/quickfix/install.sh. |
 | `release-check.sh` | tools/check-release.sh. |
 | `release.sh` | End to end from release tarballs. |
 | `rpcs3.sh` | Exercise apps/rpcs3/install.sh. |
@@ -1126,51 +1126,6 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_widgets.py` | `test_tooltip_filter_is_removed_when_the_app_quits` |  | Tooltip filter is removed when the app quits. |
 | `test_widgets.py` | `test_tooltip_border_is_the_outline` |  | Framed in the theme's outline, silver, not the accent (owner, 07-11-2026). |
 
-## apps/helpers
-
-38 tests in 5 files, 0.6 s in the last local CI run.
-
-| File | Test | Cases | What it checks |
-|---|---|---|---|
-| `test_catalog.py` | `test_the_portal_lists_every_helper` |  | The portal lists every helper. |
-| `test_catalog.py` | `test_the_groups_are_board_tests_installers` |  | The groups are board tests installers. |
-| `test_main_window.py` | `test_version_is_the_single_source` |  | Version is the single source. |
-| `test_main_window.py` | `test_icons_are_beside_the_package` |  | Icons are beside the package. |
-| `test_main_window.py` | `test_window_lists_every_helper_and_opens_one` |  | Window lists every helper and opens one. |
-| `test_state.py` | `test_mangohud_logging_lines` |  | Mangohud logging lines. |
-| `test_state.py` | `test_log_files` |  | Log files. |
-| `test_state.py` | `test_metrics` |  | Metrics. |
-| `test_state.py` | `test_sensors_with_either_driver` |  | Sensors with either driver. |
-| `test_state.py` | `test_mapcount_and_journal` |  | Mapcount and journal. |
-| `test_state.py` | `test_kernel_arguments` |  | Kernel arguments. |
-| `test_state.py` | `test_find_tool_where_the_tests_look` |  | Find tool where the tests look. |
-| `test_state.py` | `test_board_tests_installer` |  | Board tests installer. |
-| `test_system.py` | `test_fix_metrics_changes_only_its_two_lines` |  | Fix metrics changes only its two lines. |
-| `test_system.py` | `test_fix_metrics_adds_what_is_missing` |  | Fix metrics adds what is missing. |
-| `test_system.py` | `test_metrics_backs_up_and_restarts_a_running_governor` |  | Metrics backs up and restarts a running governor. |
-| `test_system.py` | `test_metrics_without_the_governor` |  | Metrics without the governor. |
-| `test_system.py` | `test_sensors_on_and_off` |  | Sensors on and off. |
-| `test_system.py` | `test_mapcount_on_and_off` |  | Mapcount on and off. |
-| `test_system.py` | `test_journal_on_and_off_only_its_own` |  | Journal on and off only its own. |
-| `test_system.py` | `test_the_command_and_its_answer` |  | The command and its answer. |
-| `test_system.py` | `test_kernel_argument_on_and_off_only_its_own` | 2 | Kernel argument on and off only its own. |
-| `test_system.py` | `test_kernel_argument_set_by_hand_stays` |  | Kernel argument set by hand stays. |
-| `test_system.py` | `test_kernel_argument_failures` |  | Kernel argument failures. |
-| `test_system.py` | `test_next_kargs_reads_rpm_ostree` |  | Next kargs reads rpm ostree. |
-| `test_windows.py` | `test_test_extras_lists_and_installs` |  | Test extras lists and installs. |
-| `test_windows.py` | `test_mangohud_config_made_and_logging_set` |  | Mangohud config made and logging set. |
-| `test_windows.py` | `test_mangohud_deletes_only_old_logs` |  | Mangohud deletes only old logs. |
-| `test_windows.py` | `test_fix_gpu_metrics` |  | Fix gpu metrics. |
-| `test_windows.py` | `test_sensors_module_counts_either_driver` |  | Sensors module counts either driver. |
-| `test_windows.py` | `test_game_memory_map` |  | Game memory map. |
-| `test_windows.py` | `test_persistent_journal_asks_before_it_removes` |  | Persistent journal asks before it removes. |
-| `test_windows.py` | `test_iommu_off_from_the_next_boot` |  | Iommu off from the next boot. |
-| `test_windows.py` | `test_iommu_off_in_the_bios_needs_nothing` |  | Iommu off in the bios needs nothing. |
-| `test_windows.py` | `test_cpu_mitigations_set_by_hand_stay` |  | Cpu mitigations set by hand stay. |
-| `test_windows.py` | `test_a_canceled_password_says_so` |  | A canceled password says so. |
-| `test_windows.py` | `test_every_window_says_what_it_does` |  | Every window says what it does. |
-| `test_windows.py` | `test_the_system_part_runs_from_the_app` |  | The system part runs from the app. |
-
 ## apps/mesh
 
 47 tests in 5 files, 3.2 s in the last local CI run.
@@ -1522,6 +1477,51 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_userdata.py` | `test_the_byte_order_mark_ppsspp_writes_is_kept` |  | PPSSPP writes the file with a UTF-8 byte order mark. |
 | `test_userdata.py` | `test_ini_lines` |  | Ini lines. |
 | `test_userdata.py` | `test_ppsspp_running_sees_the_appimages_process` |  | Ppsspp running sees the appimages process. |
+
+## apps/quickfix
+
+38 tests in 5 files, 0.6 s in the last local CI run.
+
+| File | Test | Cases | What it checks |
+|---|---|---|---|
+| `test_catalog.py` | `test_the_portal_lists_every_quickfix` |  | The portal lists every quickfix. |
+| `test_catalog.py` | `test_the_groups_are_board_tests_installers` |  | The groups are board tests installers. |
+| `test_main_window.py` | `test_version_is_the_single_source` |  | Version is the single source. |
+| `test_main_window.py` | `test_icons_are_beside_the_package` |  | Icons are beside the package. |
+| `test_main_window.py` | `test_window_lists_every_quickfix_and_opens_one` |  | Window lists every quickfix and opens one. |
+| `test_state.py` | `test_mangohud_logging_lines` |  | Mangohud logging lines. |
+| `test_state.py` | `test_log_files` |  | Log files. |
+| `test_state.py` | `test_metrics` |  | Metrics. |
+| `test_state.py` | `test_sensors_with_either_driver` |  | Sensors with either driver. |
+| `test_state.py` | `test_mapcount_and_journal` |  | Mapcount and journal. |
+| `test_state.py` | `test_kernel_arguments` |  | Kernel arguments. |
+| `test_state.py` | `test_find_tool_where_the_tests_look` |  | Find tool where the tests look. |
+| `test_state.py` | `test_board_tests_installer` |  | Board tests installer. |
+| `test_system.py` | `test_fix_metrics_changes_only_its_two_lines` |  | Fix metrics changes only its two lines. |
+| `test_system.py` | `test_fix_metrics_adds_what_is_missing` |  | Fix metrics adds what is missing. |
+| `test_system.py` | `test_metrics_backs_up_and_restarts_a_running_governor` |  | Metrics backs up and restarts a running governor. |
+| `test_system.py` | `test_metrics_without_the_governor` |  | Metrics without the governor. |
+| `test_system.py` | `test_sensors_on_and_off` |  | Sensors on and off. |
+| `test_system.py` | `test_mapcount_on_and_off` |  | Mapcount on and off. |
+| `test_system.py` | `test_journal_on_and_off_only_its_own` |  | Journal on and off only its own. |
+| `test_system.py` | `test_the_command_and_its_answer` |  | The command and its answer. |
+| `test_system.py` | `test_kernel_argument_on_and_off_only_its_own` | 2 | Kernel argument on and off only its own. |
+| `test_system.py` | `test_kernel_argument_set_by_hand_stays` |  | Kernel argument set by hand stays. |
+| `test_system.py` | `test_kernel_argument_failures` |  | Kernel argument failures. |
+| `test_system.py` | `test_next_kargs_reads_rpm_ostree` |  | Next kargs reads rpm ostree. |
+| `test_windows.py` | `test_test_extras_lists_and_installs` |  | Test extras lists and installs. |
+| `test_windows.py` | `test_mangohud_config_made_and_logging_set` |  | Mangohud config made and logging set. |
+| `test_windows.py` | `test_mangohud_deletes_only_old_logs` |  | Mangohud deletes only old logs. |
+| `test_windows.py` | `test_fix_gpu_metrics` |  | Fix gpu metrics. |
+| `test_windows.py` | `test_sensors_module_counts_either_driver` |  | Sensors module counts either driver. |
+| `test_windows.py` | `test_game_memory_map` |  | Game memory map. |
+| `test_windows.py` | `test_persistent_journal_asks_before_it_removes` |  | Persistent journal asks before it removes. |
+| `test_windows.py` | `test_iommu_off_from_the_next_boot` |  | Iommu off from the next boot. |
+| `test_windows.py` | `test_iommu_off_in_the_bios_needs_nothing` |  | Iommu off in the bios needs nothing. |
+| `test_windows.py` | `test_cpu_mitigations_set_by_hand_stay` |  | Cpu mitigations set by hand stay. |
+| `test_windows.py` | `test_a_canceled_password_says_so` |  | A canceled password says so. |
+| `test_windows.py` | `test_every_window_says_what_it_does` |  | Every window says what it does. |
+| `test_windows.py` | `test_the_system_part_runs_from_the_app` |  | The system part runs from the app. |
 
 ## apps/rpcs3
 
@@ -3108,8 +3108,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_keyboard.py` | `test_a_desktop_set_to_any_input_is_left_alone` |  | A desktop set to any input is left alone. |
 | `test_keyboard.py` | `test_no_keyboard_chosen_or_no_kwin_says_what_to_do` |  | No keyboard chosen or no kwin says what to do. |
 | `test_manifest.py` | `test_required_apps_first_check_before_the_others` |  | Required apps first check before the others. |
-| `test_manifest.py` | `test_an_app_of_helpers_has_a_tile_per_helper` |  | An app of helpers has a tile per helper. |
-| `test_manifest.py` | `test_rejects_a_bad_helper` | 4 | Rejects a bad helper. |
+| `test_manifest.py` | `test_an_app_of_quickfixes_has_a_tile_per_quickfix` |  | An app of quickfixes has a tile per quickfix. |
+| `test_manifest.py` | `test_rejects_a_bad_quickfix` | 4 | Rejects a bad quickfix. |
 | `test_manifest.py` | `test_required_first_then_file_order` |  | Required first then file order. |
 | `test_manifest.py` | `test_rejects` | 7 | Rejects. |
 | `test_manifest.py` | `test_a_withdrawn_release` |  | A withdrawn release. |
@@ -3184,8 +3184,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_wiki_picture.py` | `test_the_default_picture_is_the_one_the_wiki_shows` |  | The default picture is the one the wiki shows. |
 | `test_window.py` | `test_bazzite_test_first_without_uninstall` |  | Bazzite test first without uninstall. |
 | `test_window.py` | `test_every_app_has_its_icon` |  | Every app has its icon. |
-| `test_window.py` | `test_the_helpers_are_tiles_of_their_own` |  | BC-250 Helpers. |
-| `test_window.py` | `test_a_helpers_tile_installs_its_app` |  | Reinstall on a helper's tile reinstalls BC-250 Helpers. |
+| `test_window.py` | `test_the_quickfixes_are_tiles_of_their_own` |  | BC-250 Quickfix. |
+| `test_window.py` | `test_a_quickfixes_tile_installs_its_app` |  | Reinstall on a quickfix's tile reinstalls BC-250 Quickfix. |
 | `test_window.py` | `test_open_menu_shows_each_window_icon` |  | Open menu shows each window icon. |
 | `test_window.py` | `test_an_app_without_an_icon_file_still_has_a_tile` |  | An app without an icon file still has a tile. |
 | `test_window.py` | `test_short_names_drop_the_suite_prefix` |  | Short names drop the suite prefix. |

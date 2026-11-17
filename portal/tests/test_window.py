@@ -80,49 +80,49 @@ def test_every_app_has_its_icon(qapp, home, settings_dir, tmp_path, launched):
     entries = load(MANIFEST)
     w = mw.MainWindow(entries, FakeSources(tmp_path / "work"), Records(tmp_path / "installed.json"))
     for key, state in w.states.items():
-        assert (mw.APP_ICONS / f"{state.entry.key}.webp").is_file(), key       # a helper's tile: its app's icon
+        assert (mw.APP_ICONS / f"{state.entry.key}.webp").is_file(), key       # a quickfix's tile: its app's icon
         assert state.has_icon, key
         assert not w.big.tiles[key].pixmap.isNull(), key
     w.close()
 
 
-def test_the_helpers_are_tiles_of_their_own(window, home, launched, monkeypatch):
-    """BC-250 Helpers: a tile per helper in Utilities, none of its own (owner, 15-11-2026); each opens its helper,
-    and the board warning names the helper that changes the board."""
-    helpers = entry_of(window, "helpers")
-    tiles = [key for key in window.big.tiles if key.startswith("helpers")]
-    assert tiles == [f"helpers/{h.key}" for h in helpers.helpers] and "helpers" not in window.big.tiles
+def test_the_quickfixes_are_tiles_of_their_own(window, home, launched, monkeypatch):
+    """BC-250 Quickfix: a tile per quickfix in Utilities, none of its own (owner, 15-11-2026); each opens its quickfix,
+    and the board warning names the quickfix that changes the board."""
+    quickfixes = entry_of(window, "quickfix")
+    tiles = [key for key in window.big.tiles if key.startswith("quickfix")]
+    assert tiles == [f"quickfix/{h.key}" for h in quickfixes.quickfixes] and "quickfix" not in window.big.tiles
     assert {window.big.entries[key].category for key in tiles} == {"utilities"}
-    extras, metrics = window.states["helpers/extras"], window.states["helpers/metrics"]
+    extras, metrics = window.states["quickfix/extras"], window.states["quickfix/metrics"]
     assert extras.title == "Test Extras" and "Changes the board" not in extras.tooltip
     assert "Changes the board" in metrics.tooltip and "config.toml" in metrics.tooltip
-    (home / ".local" / "bin" / "bc250-helpers").write_text("#!/bin/sh\n")
-    window.records.set("helpers", helpers.tag)
+    (home / ".local" / "bin" / "bc250-quickfix").write_text("#!/bin/sh\n")
+    window.records.set("quickfix", quickfixes.tag)
     window.refresh()
     assert extras.status == metrics.status == "Installed" and extras.opens
-    assert menu_texts(window, "helpers") == ["Open", "Reinstall"]           # comes with the portal: no Uninstall
+    assert menu_texts(window, "quickfix") == ["Open", "Reinstall"]           # comes with the portal: no Uninstall
     opened, asked = [], []
     monkeypatch.setattr(window, "open_app", lambda entry, command: opened.append((entry.name, command)))
-    window.big.tiles["helpers/extras"].click()
-    assert opened == [("Test Extras", "~/.local/bin/bc250-helpers extras")]
+    window.big.tiles["quickfix/extras"].click()
+    assert opened == [("Test Extras", "~/.local/bin/bc250-quickfix extras")]
     monkeypatch.undo()
     monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: (asked.append(a[2]), CANCEL)[1])
     monkeypatch.setattr(mw.subprocess, "Popen", lambda *a, **k: pytest.fail("canceled: nothing starts"))
-    window.big.tiles["helpers/metrics"].click()
+    window.big.tiles["quickfix/metrics"].click()
     assert asked and "Fix GPU Metrics changes how your BC-250 runs" in asked[0]
 
 
-def test_a_helpers_tile_installs_its_app(window, launched, monkeypatch, home):
-    """Reinstall on a helper's tile reinstalls BC-250 Helpers: one install, recorded under the app's key."""
-    (home / ".local" / "bin" / "bc250-helpers").write_text("#!/bin/sh\n")
+def test_a_quickfixes_tile_installs_its_app(window, launched, monkeypatch, home):
+    """Reinstall on a quickfix's tile reinstalls BC-250 Quickfix: one install, recorded under the app's key."""
+    (home / ".local" / "bin" / "bc250-quickfix").write_text("#!/bin/sh\n")
     window.refresh()
-    tile = window.big.entries["helpers/journal"]
-    assert window.states["helpers/journal"].reinstall                   # installed, but not by this portal
+    tile = window.big.entries["quickfix/journal"]
+    assert window.states["quickfix/journal"].reinstall                   # installed, but not by this portal
     monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: pytest.fail("installing changes nothing"))
     assert window.update_action(tile)
     assert wait_for(lambda: launched)
-    assert window.pending.entry is entry_of(window, "helpers")
-    assert {window.states[k].status for k in window.states if k.startswith("helpers/")} == {"Installing…"}
+    assert window.pending.entry is entry_of(window, "quickfix")
+    assert {window.states[k].status for k in window.states if k.startswith("quickfix/")} == {"Installing…"}
 
 
 def test_open_menu_shows_each_window_icon(window):

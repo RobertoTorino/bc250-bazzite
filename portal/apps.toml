@@ -13,7 +13,7 @@
 #   tag             the pinned release: bc250-<name>-v<x.y.z>; asset <tag>.tar.gz with SHA256SUMS on the suite release
 #   sha256          of <tag>.tar.gz; filled in when the tag is released (empty: checked against SHA256SUMS only)
 #   required        installed with the portal, bundled in its release and never uninstalled on its own: check
-#                   (always the first tile) and helpers (owner, 15-11-2026)
+#                   (always the first tile) and quickfixes (owner, 15-11-2026)
 #   changes_board   true: the portal warns before installing or opening it
 #   board_change    with changes_board: what the app touches on the board, what stays after a reboot or a power
 #                   off, what it never touches and how it is undone, in a few plain sentences (no Markdown). The
@@ -26,9 +26,9 @@
 #   uninstall       idem, for removal
 #   detect          paths whose existence means "installed" (any of them)
 #   launch          [[label, command]] to open the app; none for apps that are not programs
-#   helpers         optional [[apps.<name>.helpers]] tables, for an app made of small helpers: key, name, summary,
+#   quickfixes      optional [[apps.<name>.quickfixes]] tables, for an app made of small quickfixes: key, name, summary,
 #                   launch (one command) and changes_board/board_change as above. The portal shows a tile per
-#                   helper in the app's category and none for the app; installing and updating stay the app's
+#                   quickfix in the app's category and none for the app; installing and updating stay the app's
 #
 # Only released apps are listed: the tools that run from the checkout (the Nexus apps in dev/) are
 # started there (owner, 27-10-2026: no Development tab).
@@ -525,36 +525,36 @@ uninstall = ["bash install.sh --uninstall"]
 detect = ["~/.local/bin/bc250-bluetooth-pairing"]
 launch = [["Open", "~/.local/bin/bc250-bluetooth-pairing"]]
 
-[apps.helpers]
-name = "BC-250 Helpers"
-summary = "Small helpers for one job each: Board Test's extras, MangoHud's config, GPU metrics, the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
-tag = "bc250-helpers-v0.2.0"
-sha256 = "665ceb5f7b7ad8de8d3f2d46b1cd9970a6a76c0c99e964beb3627b9a1dd5764d"
+[apps.quickfix]
+name = "BC-250 Quickfix"
+summary = "Small quickfixes for one job each: Board Test's extras, MangoHud's config, GPU metrics, the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
+tag = "bc250-quickfix-v0.1.0"
+sha256 = ""
 required = true
 changes_board = false
 category = "utilities"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-helpers"]
-launch = [["Open", "~/.local/bin/bc250-helpers"]]
+detect = ["~/.local/bin/bc250-quickfix"]
+launch = [["Open", "~/.local/bin/bc250-quickfix"]]
 
-[[apps.helpers.helpers]]
+[[apps.quickfix.quickfixes]]
 key = "extras"
 name = "Test Extras"
 summary = "The optional tools Board Test's tests use: which are there, and their installer."
-launch = "~/.local/bin/bc250-helpers extras"
+launch = "~/.local/bin/bc250-quickfix extras"
 
-[[apps.helpers.helpers]]
+[[apps.quickfix.quickfixes]]
 key = "mangohud"
 name = "MangoHud Config"
 summary = "Open or create MangoHud's config, edit and save it; turn on the FPS log Board Test reads."
-launch = "~/.local/bin/bc250-helpers mangohud"
+launch = "~/.local/bin/bc250-quickfix mangohud"
 
-[[apps.helpers.helpers]]
+[[apps.quickfix.quickfixes]]
 key = "metrics"
 name = "Fix GPU Metrics"
 summary = "Let the GPU governor write the real GPU load into gpu_metrics, for the overlays."
-launch = "~/.local/bin/bc250-helpers metrics"
+launch = "~/.local/bin/bc250-quickfix metrics"
 changes_board = true
 board_change = """
 Turn on sets fix-metrics and the load method in the [gpu-usage] table of the GPU governor's settings file,
@@ -564,72 +564,72 @@ across reboots and power offs. Nothing is written to the BIOS, the firmware or t
 fix-metrics back to false and restarts the governor; any earlier settings file is in its backups.
 """
 
-[[apps.helpers.helpers]]
+[[apps.quickfix.quickfixes]]
 key = "sensors"
 name = "Sensors Module"
 summary = "Load a driver for the board's SuperIO chip at every boot, for its temperatures and fans."
-launch = "~/.local/bin/bc250-helpers sensors"
+launch = "~/.local/bin/bc250-quickfix sensors"
 changes_board = true
 board_change = """
-Turn on writes one line, options nct6683 force=true, to /etc/modprobe.d/bc250-helpers-nct6683.conf and loads the
+Turn on writes one line, options nct6683 force=true, to /etc/modprobe.d/bc250-quickfix-nct6683.conf and loads the
 nct6683 driver, which reads the board's SuperIO chip: its temperatures and fan speeds. The file stays across reboots
 and power offs, so the driver loads at every boot. Nothing is written to the BIOS, the firmware or the chip. Turn off
 removes the file; the driver stays loaded until the next boot.
 """
 
-[[apps.helpers.helpers]]
+[[apps.quickfix.quickfixes]]
 key = "mapcount"
 name = "Game Memory Map"
 summary = "Raise vm.max_map_count, the number of memory areas a game may map."
-launch = "~/.local/bin/bc250-helpers mapcount"
+launch = "~/.local/bin/bc250-quickfix mapcount"
 changes_board = true
 board_change = """
-Turn on writes vm.max_map_count = 2147483642 to /etc/sysctl.d/90-bc250-helpers-max-map-count.conf and sets it now:
+Turn on writes vm.max_map_count = 2147483642 to /etc/sysctl.d/90-bc250-quickfix-max-map-count.conf and sets it now:
 the number of memory areas one program may map. The file stays across reboots and power offs. Nothing is written to
 the BIOS, the firmware or the kernel's arguments. Turn off removes the file and reads the system's settings again,
 so the value the other settings files give, else the kernel's own, is back.
 """
 
-[[apps.helpers.helpers]]
+[[apps.quickfix.quickfixes]]
 key = "journal"
 name = "Persistent Journal"
 summary = "Keep the system journal on the disk, so the logs of a boot that crashed can be read after it."
-launch = "~/.local/bin/bc250-helpers journal"
+launch = "~/.local/bin/bc250-quickfix journal"
 changes_board = true
 board_change = """
 Turn on makes the folder /var/log/journal, with systemd-tmpfiles, and moves the journal there: journald then keeps
 the system's logs on the disk, within its own size limits, instead of in memory only. The folder stays across reboots
-and power offs. Nothing is written to the BIOS or the firmware. Turn off works only on a folder this helper made: it
+and power offs. Nothing is written to the BIOS or the firmware. Turn off works only on a folder this quickfix made: it
 moves the journal back to memory and removes the folder, with the logs in it.
 """
 
-[[apps.helpers.helpers]]
+[[apps.quickfix.quickfixes]]
 key = "iommu"
 name = "IOMMU Off"
 summary = "Keep the kernel from using the board's IOMMU, which is broken on the BC-250 (amd_iommu=off)."
-launch = "~/.local/bin/bc250-helpers iommu"
+launch = "~/.local/bin/bc250-quickfix iommu"
 changes_board = true
 board_change = """
 Turn on adds the kernel argument amd_iommu=off with rpm-ostree kargs, which makes a new deployment with it, and
-notes in /var/lib/bc250-helpers/iommu.karg that the helper added it; from the next boot the kernel leaves the AMD
+notes in /var/lib/bc250-quickfix/iommu.karg that the quickfix added it; from the next boot the kernel leaves the AMD
 IOMMU unused. The argument stays across reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or
-the firmware. Turn off works only on an argument this helper added: it removes it with rpm-ostree kargs, and the
-kernel uses the IOMMU again from the next boot. Both need a reboot, which the helper advises and never does.
+the firmware. Turn off works only on an argument this quickfix added: it removes it with rpm-ostree kargs, and the
+kernel uses the IOMMU again from the next boot. Both need a reboot, which the quickfix advises and never does.
 """
 
-[[apps.helpers.helpers]]
+[[apps.quickfix.quickfixes]]
 key = "mitigations"
 name = "CPU Mitigations Off"
 summary = "Turn off the kernel's CPU mitigations, which cost speed in games (mitigations=off)."
-launch = "~/.local/bin/bc250-helpers mitigations"
+launch = "~/.local/bin/bc250-quickfix mitigations"
 changes_board = true
 board_change = """
 Turn on adds the kernel argument mitigations=off with rpm-ostree kargs, which makes a new deployment with it, and
-notes in /var/lib/bc250-helpers/mitigations.karg that the helper added it; from the next boot the kernel no longer
+notes in /var/lib/bc250-quickfix/mitigations.karg that the quickfix added it; from the next boot the kernel no longer
 guards against the CPU's speculative execution flaws (Spectre, Meltdown and the like). The argument stays across
 reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or the firmware. Turn off works only on an
-argument this helper added: it removes it with rpm-ostree kargs, and the mitigations are back from the next boot.
-Both need a reboot, which the helper advises and never does.
+argument this quickfix added: it removes it with rpm-ostree kargs, and the mitigations are back from the next boot.
+Both need a reboot, which the quickfix advises and never does.
 """
 
 [apps.password]

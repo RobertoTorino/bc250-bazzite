@@ -28,7 +28,7 @@ const CHECK = { type: 'object', properties: {
 // The files of a unit, its tests and its CHANGELOG.
 const unit = (name) => {
   if (name === 'apps-toml') return {
-    files: 'portal/apps.toml (each app\'s and helper\'s name, summary and board_change) and the "!!! warning \\"Changes the board\\"" box in each docs/apps/<key>.md, which must stay word for word the same as its board_change',
+    files: 'portal/apps.toml (each app\'s and quickfix\'s name, summary and board_change) and the "!!! warning \\"Changes the board\\"" box in each docs/apps/<key>.md, which must stay word for word the same as its board_change',
     paths: 'portal/apps.toml docs/apps', tests: `cd ${REPO} && python3 tools/check_manifest.py --base origin/main && (cd portal && QT_QPA_PLATFORM=offscreen ${REPO}/.venv-linux/bin/python -m pytest -q tests)`,
     changelog: 'portal/CHANGELOG (one entry for the summaries and texts), and the CHANGELOG of each app whose board_change changed' }
   if (name === 'portal') return { files: 'docs/portal.md, portal/README.md and the text in portal/ (its .py files and install.sh), but NOT portal/apps.toml',

@@ -1,38 +1,43 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Exercise apps/helpers/install.sh: install from the checkout (core bundled, shared venv, no sudo), a staged release
+# Exercise apps/quickfix/install.sh: install from the checkout (core bundled, shared venv, no sudo), a staged release
 # replacing it, uninstall with and without other venv users, --purge, and the refusal to run as root.
 # Runs with the shims from shims.sh.
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the tools (stage_app.py) and core/
-T=/tmp/bc250-helpers-test
+T=/tmp/bc250-quickfix-test
 # shellcheck source=tools/installer-tests/shims.sh
 source "$(dirname "${BASH_SOURCE[0]}")/shims.sh" "$T"; set +e
 fail=0
 check() { if eval "$2"; then echo "  ok   $1"; else echo "  FAIL $1"; fail=1; fi; }
 D=$XDG_DATA_HOME
-APP=bc250-helpers
+APP=bc250-quickfix
 A=$D/$APP/app
 printf '#!/bin/sh\necho "sudo called: $*" >&2\nexit 1\n' > "$T/shims/sudo"     # nothing here needs root
 
 echo "== 1. install from the suite checkout"
-bash "$SUITE/apps/helpers/install.sh" > "$T/log1" 2>&1; rc=$?
+OLD=bc250-helpers                    # BC-250 Helpers, which this app takes the place of
+mkdir -p "$D/$OLD/app" "$HOME/.local/bin" "$D/applications" "$XDG_CONFIG_HOME/$OLD"
+touch "$HOME/.local/bin/$OLD" "$D/applications/$OLD.desktop" "$XDG_CONFIG_HOME/$OLD/$OLD.ini"
+bash "$SUITE/apps/quickfix/install.sh" > "$T/log1" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "no sudo used" "! grep -q 'sudo called' $T/log1 && [ -z \"\$(ls -A $T/opt)\" ]"
-check "app copied" "[ -f $A/helpers/main_window.py ] && [ -f $A/images/$APP.webp ] && [ -f $A/images/$APP-128.png ]"
+check "the earlier app removed" "[ ! -e $D/$OLD ] && [ ! -e $HOME/.local/bin/$OLD ] && [ ! -e $D/applications/$OLD.desktop ]"
+check "its settings taken over" "[ -f $XDG_CONFIG_HOME/$APP/$APP.ini ] && [ ! -e $XDG_CONFIG_HOME/$OLD ]"
+check "app copied" "[ -f $A/quickfix/main_window.py ] && [ -f $A/images/$APP.webp ] && [ -f $A/images/$APP-128.png ]"
 check "core bundled from checkout" "[ -f $A/bc250_core/theme.py ] && [ -f $A/bc250_core/widgets.py ]"
 check "no tests or caches copied" "[ ! -d $A/tests ] && ! find $A -name __pycache__ | grep -q ."
 check "shared venv" "[ -x $D/bc250-bazzite-suite/venv/bin/python ]"
 check "venv user marker" "[ -f $D/bc250-bazzite-suite/venv-users/$APP ]"
-check "launcher uses shared venv" "grep -qF 'bc250-bazzite-suite/venv/bin/python\" -m helpers' $HOME/.local/bin/$APP"
+check "launcher uses shared venv" "grep -qF 'bc250-bazzite-suite/venv/bin/python\" -m quickfix' $HOME/.local/bin/$APP"
 check "launcher cds into the app" "grep -qF 'cd \"$A\"' $HOME/.local/bin/$APP"
 check "menu entry" "grep -qx 'Exec=$HOME/.local/bin/$APP' $D/applications/$APP.desktop"
 check "desktop icon, executable" "[ -x $HOME/Desktop/$APP.desktop ]"
 check "core imports from the app copy" "(cd $A && /usr/bin/python3 -c 'import importlib.util as u, sys; s=u.find_spec(\"bc250_core\"); sys.exit(0 if s and s.origin.startswith(\"$A\") else 1)')"
 
 echo "== 2. install a staged release (core bundled in the tarball) without the Desktop icon"
-rm -rf "$T/stage"; /usr/bin/python3 "$NEXUS/tools/stage_app.py" helpers "$T/stage" > /dev/null
+rm -rf "$T/stage"; /usr/bin/python3 "$NEXUS/tools/stage_app.py" quickfix "$T/stage" > /dev/null
 echo "# release marker" >> "$T/stage/bc250_core/__init__.py"
 bash "$T/stage/install.sh" --no-desktop-shortcut > "$T/log2" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"

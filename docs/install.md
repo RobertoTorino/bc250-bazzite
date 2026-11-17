@@ -32,7 +32,7 @@ from the clone, so keep it where it is. `./install.sh --uninstall` removes it ag
 installed app.
 
 To uninstall the portal, run `~/.local/share/bc250-bazzite-suite/portal/install.sh --uninstall`. It removes the
-portal, Board Test and Helpers, and first asks about each other app that is installed.
+portal, Board Test and Quickfix, and first asks about each other app that is installed.
 
 What each app does: [The apps](apps/index.md).
 

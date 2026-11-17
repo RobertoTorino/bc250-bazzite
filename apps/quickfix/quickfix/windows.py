@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The helpers' windows. Each is the suite's window: the icon at 96 px, the helper's name with the version, its
+"""The quickfixes' windows. Each is the suite's window: the icon at 96 px, the quickfix's name with the version, its
 state, the info symbol with what it contains and does, and Refresh; its status boxes and controls on the second row.
-The ones that change the board are switches (SwitchWindow): Turn on when it is off, Turn off when the helper turned
+The ones that change the board are switches (SwitchWindow): Turn on when it is off, Turn off when the quickfix turned
 it on, one password each (pkexec, system.py); what is on already cannot be turned on again. The two kernel
 arguments (KargWindow) apply from the next boot, which the window advises."""
 
@@ -20,29 +20,30 @@ from PyQt6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout, QLabel, QMainW
 from bc250_core import window_title
 from bc250_core.platform import launch_in_terminal, show_in_folder
 from bc250_core.theme import GREEN, GREY, ORANGE
-from bc250_core.widgets import ActionPill, AppHeader, InfoButton, MetricBox, StatusText, hint_label
+from bc250_core.widgets import (ActionPill, AppHeader, InfoButton, MetricBox, StatusText, hint_label,
+                                same_width)
 
 from . import LOGO_PATH, __version__, runner, state, system
-from .catalog import BY_KEY, Helper
+from .catalog import BY_KEY, Quickfix
 
 RootRunner = Callable[[list[str]], runner.Result]
 BOARD = ("<br><br><b>Changes the board.</b> It asks for your password once (pkexec). It never touches the BIOS or "
          "the firmware, and Turn off undoes it.")
 
 
-class HelperWindow(QMainWindow):
-    """One helper's window: the header, then the page the helper fills (self.page)."""
+class QuickfixWindow(QMainWindow):
+    """One quickfix's window: the header, then the page the quickfix fills (self.page)."""
 
-    def __init__(self, helper: Helper, info: str, run_root: RootRunner = runner.run_root,
+    def __init__(self, quickfix: Quickfix, info: str, run_root: RootRunner = runner.run_root,
                  root: Path = state.ROOT, home: Path | None = None) -> None:
         super().__init__()
-        self.helper, self.run_root, self.root, self.home = helper, run_root, root, home or Path.home()
-        self.setWindowTitle(helper.name)
+        self.quickfix, self.run_root, self.root, self.home = quickfix, run_root, root, home or Path.home()
+        self.setWindowTitle(quickfix.name)
         self.resize(820, 420)
-        self.header = AppHeader(LOGO_PATH, helper.name, __version__)
+        self.header = AppHeader(LOGO_PATH, quickfix.name, __version__)
         self.state = StatusText()
         self.header.add_state(self.state)
-        self.info = InfoButton(info + (BOARD if helper.changes_board else ""))
+        self.info = InfoButton(info + (BOARD if quickfix.changes_board else ""))
         self.header.add_state(self.info)
         self.refresh_button = ActionPill("Refresh", "Click to refresh")
         self.refresh_button.setToolTip("Read again")
@@ -69,14 +70,15 @@ class HelperWindow(QMainWindow):
 # ------------------------------------------------------------------------------------------------- Test Extras
 EXTRAS_INFO = ("<b>Test Extras</b> shows the optional tools BC-250 Board Test's tests use, whether each one is "
                "there, and which tests use it. Board Test runs without them: a test whose tool is missing says so."
-               "<br><br><b>Install…</b> runs Board Test's own installer, <code>install-requirements.sh</code>, "
-               "for one group in a terminal: it asks for your password where it layers packages and skips what is "
-               "there already. <b>Install all</b> installs every group but the development extras.<br><br>"
+               "<br><br>A group's pill (<b>Install</b>) runs Board Test's own installer, "
+               "<code>install-requirements.sh</code>, for that group in a terminal: it asks for your password "
+               "where it layers packages and skips what is there already. <b>Install all</b> installs every group "
+               "but the development extras.<br><br>"
                "Layered RPM packages are active after a reboot (<code>systemctl reboot</code>). glmark2, "
                "vulkan-tools and smartmontools come with Bazzite.")
 
 
-class ExtrasWindow(HelperWindow):
+class ExtrasWindow(QuickfixWindow):
     def __init__(self, launch: Callable[[str], None] = launch_in_terminal, board_test: Path = state.BOARD_TEST,
                  **kwargs) -> None:
         super().__init__(BY_KEY["extras"], EXTRAS_INFO, **kwargs)
@@ -88,32 +90,33 @@ class ExtrasWindow(HelperWindow):
         self.all_button.setToolTip("Every group but the development extras, in a terminal (--all)")
         self.all_button.clicked.connect(lambda: self.install("--all"))
         self.header.add_second(self.all_button)
+        self.header.title_row.removeWidget(self.refresh_button)         # here beside Install all, not top right
+        self.header.add_second(self.refresh_button)
         self.header.add_second(QWidget(), 1)
         self.grid = QGridLayout()
         self.grid.setColumnStretch(2, 1)
         self.page.addLayout(self.grid)
         self.page.addStretch(1)
         self.rows: dict[str, QLabel] = {}
-        self.buttons: dict[str, QPushButton] = {}
+        self.buttons: dict[str, ActionPill] = {}
         row = 0
         for group in state.GROUPS:
-            title = QLabel(f"<b>{group.name}</b>")
-            title.setToolTip(group.what)
-            self.grid.addWidget(title, row, 0, 1, 3)
-            button = ActionPill("Install…", "This group")
-            button.setToolTip(f"{group.what} ({group.option})")
+            # The group's heading is its Install pill (owner, 17-11-2026): the name, and what a click does under it.
+            button = ActionPill(group.name, "Install")
             button.clicked.connect(lambda _=False, o=group.option: self.install(o))
-            self.grid.addWidget(button, row, 3)
+            self.grid.addWidget(button, row, 0, 1, 3, Qt.AlignmentFlag.AlignLeft)
             self.buttons[group.option] = button
             row += 1
             for tool in group.tools:
                 row = self._tool_row(tool, row)
-        title = QLabel("<b>With Bazzite</b>")
-        title.setToolTip("Already on Bazzite: nothing to install.")
-        self.grid.addWidget(title, row, 0, 1, 4)
+        self.built_in = ActionPill("With Bazzite", "Included")
+        self.built_in.setToolTip("Already on Bazzite: nothing to install.")
+        self.built_in.setEnabled(False)
+        self.grid.addWidget(self.built_in, row, 0, 1, 3, Qt.AlignmentFlag.AlignLeft)
         row += 1
         for tool in state.BUILT_IN:
             row = self._tool_row(tool, row)
+        same_width([self.found_box, self.all_button, self.refresh_button, *self.buttons.values(), self.built_in])
         self.refresh()
 
     def _tool_row(self, tool: state.Tool, row: int) -> int:
@@ -122,7 +125,7 @@ class ExtrasWindow(HelperWindow):
         self.grid.addWidget(mark, row, 0)
         self.grid.addWidget(QLabel(tool.package), row, 1)
         self.grid.addWidget(hint_label(f"Tests {tool.used_by}" if tool.used_by[0].isdigit() else tool.used_by),
-                            row, 2, 1, 2)
+                            row, 2)
         return row + 1
 
     def refresh(self) -> None:
@@ -141,9 +144,12 @@ class ExtrasWindow(HelperWindow):
         for button in (*self.buttons.values(), self.all_button):
             button.setEnabled(script is not None)
         for group in state.GROUPS:
-            if all(state.find_tool(t.command, self.home) for t in group.tools):
-                self.buttons[group.option].setEnabled(False)
-                self.buttons[group.option].setToolTip("Everything in this group is there.")
+            button = self.buttons[group.option]
+            complete = all(state.find_tool(t.command, self.home) for t in group.tools)
+            button.caption.setText("Installed" if complete else "Install")
+            button.setToolTip("Everything in this group is there." if complete else f"{group.what} ({group.option})")
+            if complete:
+                button.setEnabled(False)
         if script is None:
             self.state.set_status("Board Test not found", "warn",
                                   f"Its installer is not in {self.board_test}: install Board Test from the portal.")
@@ -173,7 +179,7 @@ MANGOHUD_INFO = ("<b>MangoHud Config</b> opens MangoHud's own settings file, <co
 OLD_LOG_DAYS = 30
 
 
-class MangoHudWindow(HelperWindow):
+class MangoHudWindow(QuickfixWindow):
     def __init__(self, **kwargs) -> None:
         super().__init__(BY_KEY["mangohud"], MANGOHUD_INFO, **kwargs)
         self.resize(900, 640)
@@ -285,14 +291,14 @@ class MangoHudWindow(HelperWindow):
 
 
 # -------------------------------------------------------------------------------------------------- the switches
-class SwitchWindow(HelperWindow):
-    """A helper that turns one thing on or off: its status boxes, Turn on and Turn off. A subclass reads its state
+class SwitchWindow(QuickfixWindow):
+    """A quickfix that turns one thing on or off: its status boxes, Turn on and Turn off. A subclass reads its state
     in read() and returns what the window shows."""
 
     CHANGE = ""                         # system.py's change: metrics, sensors, mapcount, journal, iommu, mitigations
 
-    def __init__(self, helper: Helper, info: str, boxes: tuple[str, ...], **kwargs) -> None:
-        super().__init__(helper, info, **kwargs)
+    def __init__(self, quickfix: Quickfix, info: str, boxes: tuple[str, ...], **kwargs) -> None:
+        super().__init__(quickfix, info, **kwargs)
         self.boxes = {caption: MetricBox(caption) for caption in boxes}
         for box in self.boxes.values():
             self.header.add_second(box)
@@ -431,7 +437,7 @@ class MapCountWindow(SwitchWindow):
         high = m.value >= system.MAPCOUNT
         self.show_box("vm.max_map_count", f"{m.value:,}" if m.value else "—",
                       f"{system.MAPCOUNT:,} or more is what games need", high if m.value else None)
-        self.show_box("Set by", "This helper" if m.ours else "The system" if high else "—",
+        self.show_box("Set by", "This quickfix" if m.ours else "The system" if high else "—",
                       f"/etc/{system.MAPCOUNT_CONF}" if m.ours else "Another sysctl.d file, or the image's own"
                       if high else "The kernel's default", True if high else None)
         self.on_button.setEnabled(not high)
@@ -443,7 +449,7 @@ JOURNAL_INFO = ("<b>Persistent Journal</b> keeps the system journal on the disk,
                 "Without that folder journald keeps it in memory only, and the logs of a boot that crashed or froze "
                 "are gone after it: BC-250 Board Test's test 34 cannot read the previous boot's.<br><br>Turn on makes "
                 "the folder (<code>systemd-tmpfiles --create</code>) and moves the journal there "
-                "(<code>journalctl --flush</code>). Turn off works only on a folder this helper made: it moves the "
+                "(<code>journalctl --flush</code>). Turn off works only on a folder this quickfix made: it moves the "
                 "journal back to memory and removes the folder, with the logs in it. journald keeps the folder's size "
                 "within its own limits.")
 
@@ -458,7 +464,7 @@ class JournalWindow(SwitchWindow):
     def refresh(self) -> None:
         j = state.journal(self.root)
         self.show_box("Journal", "On disk" if j.persistent else "In memory", "/var/log/journal", j.persistent)
-        self.show_box("Made by", "This helper" if j.ours else "The system" if j.persistent else "—",
+        self.show_box("Made by", "This quickfix" if j.ours else "The system" if j.persistent else "—",
                       "The folder was there already" if j.persistent and not j.ours else "", True if j.persistent
                       else None)
         self.on_button.setEnabled(not j.persistent)
@@ -477,10 +483,10 @@ class KargWindow(SwitchWindow):
 
     BOXES = ("Now", "Next boot", "Added by")
 
-    def __init__(self, helper: Helper, info: str, next_kargs: Callable[[], list[str] | None] = system.next_kargs,
+    def __init__(self, quickfix: Quickfix, info: str, next_kargs: Callable[[], list[str] | None] = system.next_kargs,
                  **kwargs) -> None:
         self.next_kargs = next_kargs
-        super().__init__(helper, info, self.BOXES, **kwargs)
+        super().__init__(quickfix, info, self.BOXES, **kwargs)
 
     def read(self) -> state.Karg:
         return state.karg(self.CHANGE, self.root, self.next_kargs)
@@ -502,9 +508,9 @@ class KargWindow(SwitchWindow):
         else:
             self.show_box("Next boot", "Set" if k.next else "Not set",
                           f"rpm-ostree kargs {'has' if k.next else 'lacks'} {k.arg}", k.next or None)
-        self.show_box("Added by", "This helper" if k.ours else "The system" if k.now or k.next else "—",
+        self.show_box("Added by", "This quickfix" if k.ours else "The system" if k.now or k.next else "—",
                       f"/var/{system.KARGS_DIR}/{self.CHANGE}.karg" if k.ours else
-                      "Set by hand, or by the image: Turn off removes only what this helper added"
+                      "Set by hand, or by the image: Turn off removes only what this quickfix added"
                       if k.now or k.next else "", True if k.ours or k.now or k.next else None)
         otherwise = self.applied_otherwise(k)
         self.on_button.setEnabled(k.next is False and not otherwise)
@@ -526,8 +532,8 @@ IOMMU_INFO = ("<b>IOMMU Off</b> keeps the kernel from using the board's AMD IOMM
               "BC-250 and makes the system unstable. The modded BIOS can switch it off; without it, the kernel "
               f"argument <code>{system.KARGS['iommu']}</code> does the same from Linux's side.<br><br>Turn on adds "
               "it with <code>rpm-ostree kargs</code>, which makes a new deployment, and notes in "
-              f"<code>/var/{system.KARGS_DIR}</code> that the helper added it; Turn off removes only an argument the "
-              "helper added. Either applies from the next boot: restart the board (<code>systemctl reboot</code>). "
+              f"<code>/var/{system.KARGS_DIR}</code> that the quickfix added it; Turn off removes only an argument the "
+              "quickfix added. Either applies from the next boot: restart the board (<code>systemctl reboot</code>). "
               "With the IOMMU off there are no IOMMU groups, which is what BC-250 Board Test's test 23 checks; "
               "passing a PCI device to a virtual machine (VFIO) is then not possible. Turn on is not offered when "
               "the BIOS has the IOMMU off already.")
@@ -537,8 +543,8 @@ MITIGATIONS_INFO = ("<b>CPU Mitigations Off</b> turns off the kernel's protectio
                     "board. Without them a program could, in principle, read memory of other programs: keep them on "
                     "where the board runs code you do not trust.<br><br>Turn on adds the argument with "
                     "<code>rpm-ostree kargs</code>, which makes a new deployment, and notes in "
-                    f"<code>/var/{system.KARGS_DIR}</code> that the helper added it; Turn off removes only an "
-                    "argument the helper added. Either applies from the next boot: restart the board "
+                    f"<code>/var/{system.KARGS_DIR}</code> that the quickfix added it; Turn off removes only an "
+                    "argument the quickfix added. Either applies from the next boot: restart the board "
                     "(<code>systemctl reboot</code>). BC-250 Board Test's test 24 reports it.")
 
 
@@ -568,7 +574,7 @@ class MitigationsWindow(KargWindow):
         self.refresh()
 
 
-WINDOWS: dict[str, Callable[..., HelperWindow]] = {
+WINDOWS: dict[str, Callable[..., QuickfixWindow]] = {
     "extras": ExtrasWindow, "mangohud": MangoHudWindow, "metrics": MetricsWindow, "sensors": SensorsWindow,
     "mapcount": MapCountWindow, "journal": JournalWindow, "iommu": IommuWindow, "mitigations": MitigationsWindow,
 }

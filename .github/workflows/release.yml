@@ -20,7 +20,7 @@ name: Release
 #
 # The assets are <tag>.tar.gz, SHA256SUMS and the notes, all built by tools/build_release.py, so a local build has
 # the same content (the suite's wiki, "Checking a release"). A portal release bundles the releases of the required
-# apps (Board Test, check, and BC-250 Helpers, helpers) that portal/apps.toml pins (each downloaded from its own release
+# apps (Board Test, check, and BC-250 Quickfix, quickfix) that portal/apps.toml pins (each downloaded from its own release
 # and checked against the pin) and requires every pinned tag to exist. GitHub's "Latest" is the newest portal (publish_release.sh, and Publish for a draft), so
 # the releases page and the app releases' notes lead there.
 #
@@ -260,7 +260,7 @@ jobs:
 
       - name: The bundled required apps
         run: |
-          # Board Test and BC-250 Helpers: each release in a folder of its own, its SHA256SUMS beside it.
+          # Board Test and BC-250 Quickfix: each release in a folder of its own, its SHA256SUMS beside it.
           for required in $(python -c 'import tomllib; apps = tomllib.load(open("portal/apps.toml", "rb"))["apps"]; print(" ".join(a["tag"] for a in apps.values() if a.get("required")))'); do
             mkdir -p "bundle/$required"
             gh release download "$required" --pattern "$required.tar.gz" --pattern SHA256SUMS --dir "bundle/$required"

@@ -1,0 +1,9 @@
+Changelog: 17-11-2026 19:46:42
+
+Added. BC-250 Quickfix, a new app (owner, 17-11-2026) that takes the place of BC-250 Helpers: the same small windows for
+one job each, now called quickfixes, under a name, key (quickfix), command (bc250-quickfix) and release tags
+(bc250-quickfix-v…) of its own. The files it writes for a change carry its name; what BC-250 Helpers turned on is
+recognised and turned off by its quickfix. Its installer removes BC-250 Helpers and takes over its settings.
+In Test Extras, Refresh stands beside Install all and each group's heading is its pill: the group's name with
+Install under it (Installed when everything in the group is there, Included for With Bazzite), all pills the same
+width.
