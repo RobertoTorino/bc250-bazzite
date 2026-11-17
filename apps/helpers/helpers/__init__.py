@@ -4,7 +4,7 @@ the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigatio
 
 APP_NAME = "BC-250 Helpers"
 APP_ID = "bc250-helpers"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from pathlib import Path
 
