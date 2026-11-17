@@ -331,7 +331,7 @@ name = "BC-250 SFTP Tools"
 short = "SFTP Tools"
 summary = "Move files between computers over SFTP, and manage the SSH server of a Bazzite host."
 tag = "bc250-sftp-v3.2.0"
-sha256 = ""
+sha256 = "77697f25f28d0e577b26529d7a4e8e002fcc92ffe04cc573d538d07933d84a27"
 required = false
 changes_board = false
 category = "utilities"
@@ -636,7 +636,7 @@ Both need a reboot, which the helper advises and never does.
 name = "BC-250 Password Generator"
 summary = "Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere."
 tag = "bc250-password-v0.1.0"
-sha256 = ""
+sha256 = "396bbb7bb9f326b0c26cda4b60b35dadf7e88748644b1fc8cd3b67293e51f332"
 required = false
 changes_board = false
 category = "utilities"
