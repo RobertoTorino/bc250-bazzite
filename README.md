@@ -82,7 +82,7 @@ By category, as the portal lists them.
 
 The tools for working on the suite run from a checkout of the repository and are not in the portal.
 **[Nexus Dashboard](dev/dash)** opens them all: Nexus Release Tool, Nexus Installer Tests,
-Nexus Demo Recorder, Nexus Sound Lab, the video tours and the icons.
+Nexus Demo Recorder, Nexus Sound Lab, Text to Speech, Nexus Remix Studio, the video tours and the icons.
 
 How to install and use them: **[the wiki](https://robertotorino.github.io/bc250-bazzite/)**.
 

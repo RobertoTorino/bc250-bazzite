@@ -1657,10 +1657,40 @@ echo
 fi  # TEST 27
 if want 28; then
 log_result "[TEST 28] Suspend Targets Test"
-log_result "Resume from s2idle is broken on BC-250, suspend targets should be masked"
-for tgt in sleep.target suspend.target hibernate.target hybrid-sleep.target; do
-    check_masked "$tgt" "s2idle resume is broken on BC-250"
-done
+log_result "Which sleep the board offers, whether systemd may use it, and the suspends since boot"
+SLEEP_STATES=$(cat /sys/power/state 2>/dev/null)
+MEM_SLEEP=$(cat /sys/power/mem_sleep 2>/dev/null)
+log_result "INFO: /sys/power/state: ${SLEEP_STATES:-none}; mem_sleep: ${MEM_SLEEP:-none}"
+SUSPEND_UNIT=$(systemctl is-enabled suspend.target 2>/dev/null)
+if grep -qw freeze <<<"$SLEEP_STATES"; then
+    log_result "INFO: The kernel supports suspend-to-idle (s2idle). suspend.target: ${SUSPEND_UNIT:-unknown}."
+    if grep -qw deep <<<"$MEM_SLEEP"; then
+        log_result "INFO: The firmware also offers a deep sleep (S3)."
+    else
+        # Measured on a board with BIOS P5.00 (18-11-2026): about the same draw asleep as awake, the fan kept running
+        log_result "NOTE: Suspend-to-idle is the only sleep here. The screen goes to no signal, but the board stays powered: the fan keeps running and it draws about as much power as awake."
+        log_result "INFO: Only the power button wakes it."
+    fi
+    if [ "$SUSPEND_UNIT" = masked ]; then
+        log_result "NOTE: Suspend is masked in systemd: sleep from the menu or a power button does nothing."
+    fi
+    LAST_FAIL=$(cat /sys/power/suspend_stats/last_failed_dev 2>/dev/null)
+    SUSPEND_FAILS=$(cat /sys/power/suspend_stats/fail 2>/dev/null)
+    log_result "INFO: Suspends since boot: $(cat /sys/power/suspend_stats/success 2>/dev/null || echo ?) good, ${SUSPEND_FAILS:-?} failed${LAST_FAIL:+ (last failed device: $LAST_FAIL)}"
+    if [ "${SUSPEND_FAILS:-0}" -gt 0 ] 2>/dev/null; then
+        log_result "WARNING: A suspend failed since boot. See: journalctl -k -b -g 'PM: '"
+        WARN_FOUND=true
+    fi
+else
+    log_result "INFO: This kernel cannot suspend (no 'freeze' in /sys/power/state)."
+    if [ "$SUSPEND_UNIT" != masked ]; then
+        log_result "WARNING: suspend.target is not masked although the kernel cannot suspend: a sleep request fails."
+        log_result "HINT: sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target"
+        WARN_FOUND=true
+    else
+        log_result "SUCCESS: Suspend is masked, matching the kernel."
+    fi
+fi
 echo
 
 fi  # TEST 28

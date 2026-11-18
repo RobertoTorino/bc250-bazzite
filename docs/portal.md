@@ -141,7 +141,8 @@ nothing in the portal. There are two ways to get every button:
 The tools for working on the suite are not in the portal: they are in `dev/` of the repository, run from a
 checkout and have no release. [Nexus Dashboard](development/dashboard.md) opens them all:
 Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), Nexus Demo Recorder, Nexus Sound Lab
-(short sound effects for the windows), the video tours and the icons. Start it from the checkout, or give it a menu entry with its `install.sh`.
+(short sound effects for the windows), Text to Speech (a text spoken aloud), Nexus Remix Studio (a voice mixed with a
+synthesized background), the video tours and the icons. Start it from the checkout, or give it a menu entry with its `install.sh`.
 
 - `apps/` may also contain standalone tools (with a `.standalone` marker) that do not appear in `apps.toml`
   and that the portal does not install or open.

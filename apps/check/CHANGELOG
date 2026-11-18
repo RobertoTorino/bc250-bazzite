@@ -1,3 +1,13 @@
+Changelog: 18-11-2026 19:03:02
+
+Fixed. Test 28, Suspend Targets, no longer says that resume from sleep is broken and no longer asks for the sleep
+targets to be masked (owner, 18-11-2026, after two sleeps on a board with BIOS P5.00 and kernel 7.3.4, which both
+came back). It now reports what is there: the sleep states the kernel offers, whether systemd may use them, and the
+good and failed suspends since boot. Where suspend-to-idle is the only sleep, it says what that means on this board:
+the screen goes to no signal, the board stays powered with its fan running and draws about as much as awake, and the
+power button wakes it. A failed suspend since boot is a warning. Unmasked sleep targets are no warning anymore. The
+test's line in the app and in the wiki say the same.
+
 Changelog: 18-11-2026 12:26:55
 
 Release 3.2.0.

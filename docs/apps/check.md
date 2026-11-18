@@ -542,7 +542,7 @@ explanation are grouped per program, with the command to read them.
 |----|-------------------------------|-------------------------------------------------------------------------------|
 | 22 | Hardware Sensors              | nct6683/nct6687 SuperIO, GPU and CPU temperatures, fan RPM sanity.            |
 | 27 | Handheld Daemon               | Confirms `hhd.service` is masked; it causes constant micro-stuttering.        |
-| 28 | Suspend Targets               | Confirms sleep/suspend/hibernate targets are masked; s2idle resume is broken. |
+| 28 | Suspend Targets               | Which sleep the board offers, whether systemd may use it, and the suspends since boot. |
 | 40 | Power Delivery and Throttling | GPU power cap and draw, governor frequency ceiling, throttle messages.        |
 
 ### Crash forensics
@@ -684,7 +684,7 @@ journalctl -b -1 -n 50                   # last entries before the previous boot
 sudo cat /sys/fs/pstore/dmesg-*          # firmware-captured panic, if any
 coredumpctl list --since "-14 days"      # crashed applications
 watch -n1 cat /sys/class/drm/card0/device/pp_dpm_sclk    # live GPU clock
-sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target   # turn sleep off
 ```
 
 ## Fix: GPU load shows 0% in the Steam overlay / MangoHud

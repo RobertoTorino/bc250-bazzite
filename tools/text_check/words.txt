@@ -215,3 +215,7 @@ Nuvoton
 poweroff
 Mapcount
 Futureproof
+Kokoro
+kokoro-onnx
+onnxruntime
+uv

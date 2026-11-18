@@ -113,7 +113,8 @@ CATEGORIES: list[Category] = [
     Category("stability", "Stability and thermals", [
         TestDef("22", "Hardware Sensors", "nct6683/nct6687 SuperIO, GPU and CPU temperatures, fan RPM sanity."),
         TestDef("27", "Handheld Daemon", "Confirms hhd.service is masked; it causes constant micro-stuttering."),
-        TestDef("28", "Suspend Targets", "Confirms sleep/suspend/hibernate targets are masked; s2idle resume is broken."),
+        TestDef("28", "Suspend Targets",
+                "Which sleep the board offers (suspend-to-idle), whether systemd may use it, and the suspends since boot."),
         TestDef("40", "Power Delivery and Throttling",
                 "GPU power cap and draw, governor frequency ceiling, throttle messages."),
     ]),
