@@ -1,3 +1,7 @@
+Changelog: 18-11-2026 12:26:55
+
+Release 23.1.0. Pins bc250-check-v3.2.0, bc250-quickfix-v0.2.0, bc250-upscaler-v4.2.0, bc250-overlay-v3.2.0, bc250-bios-v3.2.0, bc250-ace-v3.2.0, bc250-mesh-v3.2.0, bc250-vram-v3.2.0, bc250-fan-v3.2.0, bc250-wifi-v1.2.0, bc250-cec-v3.2.0, bc250-sftp-v3.3.0, bc250-turing-v1.2.0, bc250-webcam-v1.2.0, bc250-controller-v1.2.0, bc250-rpcs3-v6.2.0, bc250-consoles-v4.2.0, bc250-clb-v3.2.0, bc250-shadps4-v6.2.0, bc250-datstation-v5.2.0, bc250-ppsspp-v4.2.0, bc250-pcsx2-v6.2.0, bc250-vita3k-v4.2.0, bc250-xenia-v4.2.0, bc250-ssd-v2.2.0, bc250-btpair-v1.2.0, bc250-password-v0.2.0.
+
 Changelog: 18-11-2026 00:33:00
 
 Added. A GitHub symbol in the header's row, after YouTube (owner, 18-11-2026): a cat in a disc that opens

@@ -4,7 +4,7 @@ the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigatio
 
 APP_NAME = "BC-250 Quickfix"
 APP_ID = "bc250-quickfix"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from pathlib import Path
 
