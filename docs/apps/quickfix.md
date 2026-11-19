@@ -93,8 +93,8 @@ with `mount | grep gpu_metrics`. On some kernels the patching misbehaves: if the
     chip. Turn off removes the file; the driver stays loaded until the next boot.
 
 The board's SuperIO chip, a Nuvoton NCT6686D, reports its temperatures and fan speeds (Board Test's test 22,
-lm_sensors' `sensors`). Some images load the nct6687 driver for it by themselves; the kernel's own nct6683 driver
-loads only when it is forced. The boxes show which driver is loaded, whether nct6683 is forced at boot, and the
+lm_sensors' `sensors`). Bazzite loads the nct6687 driver for it by itself since image 45.20261117, so there the
+quickfix is not needed. Other images may not load it. The kernel's own nct6683 driver loads only when it is forced. The boxes show which driver is loaded, whether nct6683 is forced at boot, and the
 chip's sensors as it reports them. **Turn on** is offered only when no driver serves the chip. A modprobe file of
 your own that forces nct6683 already counts too; **Turn off** removes only the quickfix's file.
 

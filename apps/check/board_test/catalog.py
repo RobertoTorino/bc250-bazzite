@@ -98,7 +98,8 @@ CATEGORIES: list[Category] = [
         TestDef("52", "HDMI-CEC Services",
                 "Whether the services behind the TV control run: Valve's CEC daemon (cecd), BC-250 CEC Manager's "
                 "background and boot services when installed, and Bazzite's dGPU CEC services when enabled."),
-        TestDef("29", "Display Session", "Identifies the display manager, session type and compositor."),
+        TestDef("29", "Display Session, DisplayPort and HDMI",
+                "Identifies the display manager, session type and compositor, and the connector status."),
     ]),
     Category("cpu", "CPU and firmware", [
         TestDef("23", "IOMMU Disabled",

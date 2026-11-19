@@ -386,7 +386,8 @@ class MetricsWindow(SwitchWindow):
 
 SENSORS_INFO = ("<b>Sensors Module</b> makes sure a driver serves the board's SuperIO chip, a Nuvoton NCT6686D, which "
                 "gives the board's temperatures and fan speeds (BC-250 Board Test's test 22, lm_sensors' "
-                "<code>sensors</code>). Some images load the nct6687 driver for it by themselves; the kernel's own "
+                "<code>sensors</code>). Bazzite loads the nct6687 driver for it by itself since image 45.20261117. "
+                "Other images may not load it. The kernel's own "
                 "nct6683 driver only loads when it is forced.<br><br>Turn on writes "
                 f"<code>{system.SENSORS_LINE}</code> to <code>/etc/{system.SENSORS_CONF}</code>, so nct6683 loads at "
                 "every boot, and loads it now; it is offered only when no driver serves the chip. Turn off removes "

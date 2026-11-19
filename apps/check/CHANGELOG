@@ -1,3 +1,9 @@
+Changelog: 19-11-2026 11:02:34
+
+Fixed. Test 29 is called Display Session, DisplayPort and HDMI (owner, 19-11-2026), the same name as in the
+PS5's Board Test; it was Display Session. Its description names the connector status it already shows. The
+wiki's tables have the new name.
+
 Changelog: 19-11-2026 09:14:46
 
 Release 4.0.0.

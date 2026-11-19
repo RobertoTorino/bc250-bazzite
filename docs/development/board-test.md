@@ -190,7 +190,7 @@ its findings as `LEVEL: text` lines, which the script logs; a `WARNING` line cou
 | 19 | GPU Frequency Scaling | Reads `pp_dpm_sclk` / `pp_dpm_mclk` to confirm the clock actually moves.   |
 | 20 | Vulkan / Mesa         | Confirms RADV reports GFX1013 and not the llvmpipe software fallback.      |
 | 21 | Compute Unit Count    | Active CUs from the live GPU registers (needs admin rights and umr), else the kernel value (24 stock, up to 40 unlocked); explains why kernel and RADV keep reporting the probe-time value. |
-| 29 | Display Session       | Identifies the display manager, session type and compositor.               |
+| 29 | Display Session, DisplayPort and HDMI | Identifies the display manager, session type and compositor, and the connector status. |
 | 47 | Vulkan Futureproof Matrix | Vulkan API level and the feature set modern games need: ray tracing, mesh shaders, VRS, pipeline libraries and the VRAM carveout vs today's 8 GiB recommendation. |
 | 50 | Video Decode and Encode (VCN) | `vainfo` codec matrix: H.264/HEVC/VP9/AV1 decode and encode. |
 | 51 | HDMI-CEC | The CEC adapter of the DisplayPort output, whether the TV answers a poll, and Bazzite's CEC mode. |

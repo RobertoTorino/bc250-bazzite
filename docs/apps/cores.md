@@ -386,7 +386,8 @@ After the unlock, `pp_dpm_sclk` and `hwmon` `freq1_input` report nonsense GPU cl
 This is cosmetic — the SMU's own clock getters stay correct — and this script ignores GPU clocks.
 Diagnostics that read those files (e.g. tests 19/40 of
 [Board Test](check.md)) will
-flag it; that's expected while the unlock is active.
+flag it; that's expected while the unlock is active. The GPU governor's `fix-freq` option puts the real clock back
+(see [GPU Manager](gpu.md)).
 
 ## Credits
 

@@ -1,3 +1,13 @@
+Changelog: 19-11-2026 10:45:45
+
+Fixed. The wiki's Cores Bisect chapter says, under Known side effect, that the GPU governor's fix-freq option
+puts the real GPU clock back after the unlock.
+
+Changelog: 19-11-2026 10:42:18
+
+Fixed. The wiki's BC-250 Quickfix chapter says, under Sensors Module, that Bazzite loads the nct6687 driver
+by itself since image 45.20261117, so there the quickfix is not needed.
+
 Changelog: 19-11-2026 10:05:34
 
 Fixed. The wiki's Home page, under Get started, said the portal installs only BC-250 Board Test with it. It
