@@ -103,3 +103,29 @@ def test_only_reads():
     assert [argv[:2] for argv in run.calls] == [["rpm-ostree", "status"], ["systemctl", "show"],
                                                 ["systemctl", "show"]]
 
+
+
+OS_RELEASE = 'NAME="Bazzite"\nVERSION="43.20261117.0 (Kinoite)"\nVERSION_ID=43\n'
+
+
+def test_a_flattened_image_reads_os_release_and_never_runs_rpm_ostree(tmp_path, atomic):
+    """A PS5 image (19-11-2026): no /run/ostree-booted, rpm-ostree refuses; the version is os-release's."""
+    atomic.unlink()
+    release = tmp_path / "os-release"
+    release.write_text(OS_RELEASE, encoding="utf-8")
+    run = fake_run(status(RUNNING), timer=datetime.datetime.now().strftime("Thu %Y-%m-%d %H:%M:%S CET"))
+    state = bazzite.read_flattened(run, which, release, kernel=lambda: "7.3.1")
+    assert state.flattened and state.running.version == "43.20261117.0" and state.kernel == "7.3.1"
+    assert not state.update_waiting and state.updater_last is not None
+    kind, text = bazzite.describe(state)
+    assert kind == "ok" and "flattened (no ostree), with kernel 7.3.1" in text and "dnf" in text
+    assert "waits for a reboot" not in text and "updates the image" not in text
+    assert bazzite.reminder(state, NOW) == ""
+    assert all(argv[0] != "rpm-ostree" for argv in run.calls)
+    assert bazzite.read_state(run, which).flattened                    # read_state takes this path by itself
+
+
+def test_os_release_versions():
+    assert bazzite.parse_os_release(OS_RELEASE) == "43.20261117.0"
+    assert bazzite.parse_os_release("VERSION_ID=43\n") == "43"
+    assert bazzite.parse_os_release("") == ""
