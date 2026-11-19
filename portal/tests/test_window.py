@@ -73,7 +73,8 @@ def test_bazzite_test_first_without_uninstall(window):
     assert "Uninstall" not in menu_texts(window, "check")
     assert "Uninstall" in menu_texts(window, "gpu")
     assert "Open" in menu_texts(window, "acpi")
-    assert menu_texts(window, "compute")[:2] == ["Bisect", "Unlock"]                  # two windows
+    assert menu_texts(window, "cores")[:2] == ["Bisect", "Unlock"]                    # two windows
+    assert menu_texts(window, "compute")[0] == "Open"                                   # CU Tools: one window
 
 
 def test_every_app_has_its_icon(qapp, home, settings_dir, tmp_path, launched):
@@ -126,7 +127,7 @@ def test_a_quickfixes_tile_installs_its_app(window, launched, monkeypatch, home)
 
 
 def test_open_menu_shows_each_window_icon(window):
-    for key in ("compute", "cores"):
+    for key in ("cores",):
         actions = window.tile_menu(entry_of(window, key)).actions()[:2]
         assert [a.text() for a in actions] == ["Bisect", "Unlock"]
         assert all(not a.icon().isNull() for a in actions), key

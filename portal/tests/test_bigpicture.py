@@ -670,10 +670,10 @@ def test_a_tile_that_is_not_installed_offers_to_install_it(made, monkeypatch):
 def test_an_app_with_several_ways_to_open_offers_a_menu(made, monkeypatch):
     window, _ = made()
     start(window)
-    window.states["compute"].show_state(True, "local")
+    window.states["cores"].show_state(True, "local")       # Cores Bisect has two windows (CU Tools has one now)
     shown = []
     monkeypatch.setattr(mw.QMenu, "exec", lambda self, *a: shown.append([a.text() for a in self.actions()]))
-    window.big.tiles["compute"].click()
+    window.big.tiles["cores"].click()
     assert shown == [["Bisect", "Unlock"]]
 
 
@@ -694,8 +694,8 @@ def test_the_tile_menu_holds_every_action(made, monkeypatch, home):
     assert menu.actions()[2].toolTip().startswith("Update BC-250 GPU Manager v")
     check = window.entries[0]                                  # check goes with the portal: no Uninstall
     assert [a.text() for a in window.tile_menu(check).actions() if not a.isSeparator()] == ["Open", "Install"]
-    compute = next(e for e in window.entries if e.key == "compute")
-    assert [a.text() for a in window.tile_menu(compute).actions()][:2] == ["Bisect", "Unlock"]
+    cores = next(e for e in window.entries if e.key == "cores")
+    assert [a.text() for a in window.tile_menu(cores).actions()][:2] == ["Bisect", "Unlock"]
     shown = []
     monkeypatch.setattr(mw.QMenu, "exec", lambda self, *a: shown.append([a.text() for a in self.actions()]))
     window.big.tiles["gpu"].setFocus()

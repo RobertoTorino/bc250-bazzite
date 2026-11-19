@@ -951,7 +951,7 @@ which does its own unlock and also makes it **persistent**:
 3. **Undo:** `sudo ./bc250-cores-unlock.sh --uninstall`, then a full power off: stock 6C/12T returns.
 
 **For the extra CUs without flashing:**
-[BC-250 CU Bisect](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/compute) (a suite app) unlocks CUs at runtime
+[BC-250 CU Tools](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/compute) (a suite app) unlocks CUs at runtime
 by writing the GPU's WGP mask registers with `umr`, and keeps a validated unlock across reboots:
 
 1. **Test first:** `bc250-cu-bisect.sh` tests every locked WGP (2 CUs) on its own over several rounds and

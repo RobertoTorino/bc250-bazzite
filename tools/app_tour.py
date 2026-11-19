@@ -13,7 +13,7 @@ package for compute and cores; -2160p or -1440p before .mp4 for another size). -
 4K upload far sharper than a 1080p one (about four times the time).
 
 APP is the app's key in portal/apps.toml (fan, cec, ...) or its folder under apps/. An app with two programs
-(compute, cores) needs --package to say which one (cu_bisect, cu_unlock, ...).
+(cores) needs --package to say which one (cores_bisect, cores_unlock).
 
 The app starts as it does on a board, through its own __main__, in a temporary home folder (no settings of yours)
 and offscreen; the tour takes over where the app would wait for the user. pkexec, sudo and run0 refuse (and are

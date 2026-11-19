@@ -22,7 +22,7 @@ controller Steam Input owns sends what its desktop layout says, by default Escap
 |---|---|
 | ![](../assets/apps/check.webp){ .app-icon } [BC-250 Board Test](check.md) | Read-only diagnostics, stress test and benchmarks. Always installed. |
 | ![](../assets/apps/gpu.webp){ .app-icon } [BC-250 GPU Manager](gpu.md) | Manage the cyan-skillfish GPU governor: tuning, safe points, profiles, backups. **Changes the board.** |
-| ![](../assets/apps/compute.webp){ .app-icon } [BC-250 CU Bisect](compute.md) | Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock. **Changes the board.** |
+| ![](../assets/apps/compute.webp){ .app-icon } [BC-250 CU Tools](compute.md) | Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock. **Changes the board.** |
 | ![](../assets/apps/cores.webp){ .app-icon } [BC-250 Cores Bisect](cores.md) | Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock. **Changes the board.** |
 | ![](../assets/apps/oc.webp){ .app-icon } [BC-250 GPU OC Bisect](oc.md) | Find your board's safe GPU overclock and undervolt, one step at a time. **Changes the board.** |
 | ![](../assets/apps/acpi.webp){ .app-icon } [BC-250 Persistent ACPI](acpi.md) | CPU C-states and frequency scaling through a persistent ACPI override (GRUB early initrd). **Changes the board.** |

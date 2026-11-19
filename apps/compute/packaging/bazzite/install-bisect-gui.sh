@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Self-install for Bazzite (and any other immutable/rpm-ostree-based desktop): sets up
-# cu_bisect in a private venv under ~/.local, with a launcher, .desktop entry and icon.
-# Nothing here touches rpm-ostree or needs root - the GUI itself only assembles a command line and
-# starts bc250-cu-bisect.sh in a terminal, same as running it by hand (see the manual).
+# cu_bisect, the one window for the bisect and the unlock, in a private venv under ~/.local, with a
+# launcher, .desktop entry and icon. Nothing here touches rpm-ostree or needs root - the window starts
+# bc250-cu-bisect.sh in a terminal, and only its Install/Uninstall run bc250-cu-unlock.sh through sudo.
+# The separate unlock window of before (bc250-unlock-cu-gui) is removed: this window has it now.
 #
 # Usage: run from inside a clone of this repo:
 #   bash packaging/bazzite/install-bisect-gui.sh                         # menu entry and Desktop icon
@@ -27,7 +28,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-for f in cu_bisect/__main__.py bc250-cu-bisect.sh \
+for f in cu_bisect/__main__.py bc250-cu-bisect.sh bc250-cu-unlock.sh \
          images/bc250-cu-bisect.webp images/bc250-cu-bisect-128.png requirements.txt; do
   if [ ! -e "$REPO_ROOT/$f" ]; then
     echo "error: $f not found under $REPO_ROOT - run this from a clone of bc250-cu-bisect" >&2
@@ -53,8 +54,8 @@ rsync -a --delete \
   "$REPO_ROOT/cu_bisect/" "$APP_SRC/cu_bisect/" \
   2>/dev/null || cp -R "$REPO_ROOT/cu_bisect" "$APP_SRC/"
 rm -rf "$APP_SRC/cu_bisect/__pycache__" "$APP_SRC/bc250_bisect_gui"   # and the package before its rename
-cp "$REPO_ROOT/bc250-cu-bisect.sh" "$APP_SRC/bc250-cu-bisect.sh"
-chmod +x "$APP_SRC/bc250-cu-bisect.sh"
+cp "$REPO_ROOT/bc250-cu-bisect.sh" "$REPO_ROOT/bc250-cu-unlock.sh" "$APP_SRC/"
+chmod +x "$APP_SRC/bc250-cu-bisect.sh" "$APP_SRC/bc250-cu-unlock.sh"
 cp "$REPO_ROOT/requirements.txt" "$APP_SRC/requirements.txt"
 mkdir -p "$APP_SRC/images"
 cp "$REPO_ROOT/images/bc250-cu-bisect.webp" "$REPO_ROOT/images/bc250-cu-bisect-128.png" "$APP_SRC/images/"
@@ -80,9 +81,10 @@ cat > "$LAUNCHER" <<EOF
 #!/usr/bin/env bash
 # Launched from a menu/launcher there is no terminal to see a crash on, so stdout/stderr always go
 # to a log file too - check it first if the app ever fails to start (e.g. a bouncing launcher icon
-# that never shows a window). cd into the app dir first, same as bc250-unlock-cu-gui's launcher.
+# that never shows a window). cd into the app dir first.
 LOG="$APP_DIR/launch.log"
-cd "$APP_SRC" && exec "$VENV_DIR/bin/python" -m cu_bisect --script "$APP_SRC/bc250-cu-bisect.sh" "\$@" >"\$LOG" 2>&1
+cd "$APP_SRC" && exec "$VENV_DIR/bin/python" -m cu_bisect --script "$APP_SRC/bc250-cu-bisect.sh" \
+  --unlock-script "$APP_SRC/bc250-cu-unlock.sh" "\$@" >"\$LOG" 2>&1
 EOF
 chmod +x "$LAUNCHER"
 
@@ -104,6 +106,12 @@ else
   rm -f "$DESKTOP_ICON"
 fi
 
+# The separate unlock window of before: this window has it now.
+if [ -e "$BIN_HOME/bc250-unlock-cu-gui" ] || [ -e "$DATA_HOME/bc250-unlock-cu-gui" ]; then
+  echo "==> Removing the separate unlock window of before (this window has it now)"
+  bash "$SCRIPT_DIR/uninstall-gui.sh" >/dev/null
+fi
+
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$DATA_HOME/applications" >/dev/null 2>&1 || true
 command -v gtk-update-icon-cache >/dev/null 2>&1 && gtk-update-icon-cache -f -t "$DATA_HOME/icons/hicolor" >/dev/null 2>&1 || true
 command -v kbuildsycoca6 >/dev/null 2>&1 && kbuildsycoca6 --noincremental >/dev/null 2>&1 || true
@@ -111,7 +119,7 @@ command -v kbuildsycoca5 >/dev/null 2>&1 && kbuildsycoca5 --noincremental >/dev/
 
 cat <<EOF
 
-Done. BC-250 CU Bisect launcher is installed for your user account only:
+Done. BC-250 CU Tools is installed for your user account only:
   - app + venv: $APP_DIR
   - launcher:   $LAUNCHER
   - menu entry: $DESKTOP_FILE

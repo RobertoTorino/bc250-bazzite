@@ -11,12 +11,19 @@ from dataclasses import dataclass
 
 MASK_RE = re.compile(r"^0x[0-9a-fA-F]{1,2}(,0x[0-9a-fA-F]{1,2}){3}$")
 
-# label -> masks (None = "auto-detect", i.e. don't pass --baseline at all)
+# label -> masks (None = "auto-detect", i.e. don't pass --baseline at all). Short labels, so the field stays narrow
+# (owner, 19-11-2026); what each one is, with its masks, is in BASELINE_TIPS, the choice's tooltip.
 BASELINE_PRESETS: dict[str, str | None] = {
-    "Auto-detect (this boot's clean masks)": None,
-    "Stock - 24 CUs (0x07,0x07,0x07,0x07)": "0x07,0x07,0x07,0x07",
-    "Fully unlocked - 40 CUs (0x1f,0x1f,0x1f,0x1f)": "0x1f,0x1f,0x1f,0x1f",
+    "Auto-detect": None,
+    "Stock, 24 CUs": "0x07,0x07,0x07,0x07",
+    "Unlocked, 40 CUs": "0x1f,0x1f,0x1f,0x1f",
     "Custom...": "",
+}
+BASELINE_TIPS: dict[str, str] = {
+    "Auto-detect": "This boot's own clean masks, the stock driver state: no --baseline is passed. The safest choice.",
+    "Stock, 24 CUs": "0x07,0x07,0x07,0x07: 3 WGPs on every row, as the board comes.",
+    "Unlocked, 40 CUs": "0x1f,0x1f,0x1f,0x1f: all 5 WGPs on every row.",
+    "Custom...": "Any other 4-row mask, typed in the field beside it, as --baseline takes it.",
 }
 
 

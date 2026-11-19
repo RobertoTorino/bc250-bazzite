@@ -62,7 +62,7 @@ Every tint of each hue in the BC250 Bazzite Suite, and why it is there. *The fam
 | ![#b71c1c](design/colors/block-b71c1c.svg) | `#b71c1c` | the family | A red button pressed or under the pointer (the bisect apps, Clean up logs). |
 | ![#8b0000](design/colors/block-8b0000.svg) | `#8b0000` | the family | Active red: the GPU Governor's active button (a toggled-on state, not an error). |
 | ![#a00000](design/colors/block-a00000.svg) | `#a00000` | the family | Active red under the pointer. |
-| ![#e57373](design/colors/block-e57373.svg) | `#e57373` | text tint | Red text on a dark surface: the check app's findings, log, in-game checks, history and scores; the error labels of ACPI, CU Unlock and Cores Unlock; SFTP Tools' password advice not followed. |
+| ![#e57373](design/colors/block-e57373.svg) | `#e57373` | text tint | Red text on a dark surface: the check app's findings, log, in-game checks, history and scores; the error labels of ACPI, CU Tools and Cores Unlock; SFTP Tools' password advice not followed. |
 | ![#e8505b](design/colors/block-e8505b.svg) | `#e8505b` | brand or icon | PlayStation's circle: BC-250 Controller's circle button, DatStation's circle symbol. |
 | ![#ff2020](design/colors/block-ff2020.svg) | `#ff2020` | hardware | The light bar's red; `#ff0000` the color wheel's. |
 
@@ -485,7 +485,7 @@ Text colors:
 
   ![Sample text in #333333](design/colors/text-333333.svg)
 
-- `#e57373` Error findings; a worse result in the history; a low score; the log's errors; error labels (also in ACPI, CU Unlock and Cores Unlock); the in-game error.
+- `#e57373` Error findings; a worse result in the history; a low score; the log's errors; error labels (also in ACPI, CU Tools and Cores Unlock); the in-game error.
 
   ![Sample text in #e57373](design/colors/text-e57373.svg)
 
@@ -545,7 +545,7 @@ Background colors:
 
 Text colors:
 
-- `#888888` Busy and hint labels in italics (ACPI, CU Bisect, CU Unlock, Cores Bisect, Cores Unlock).
+- `#888888` Busy and hint labels in italics (ACPI, Cores Bisect, Cores Unlock).
 
   ![Sample text in #888888](design/colors/text-888888.svg)
 

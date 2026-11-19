@@ -1,17 +1,17 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![BC-250 CU Bisect](../assets/compute/bc250-cu-bisect.webp){ .app-logo }
+![BC-250 CU Tools](../assets/compute/bc250-cu-bisect.webp){ .app-logo }
 
-# BC-250 CU Bisect
+# BC-250 CU Tools
 
 !!! warning "Changes the board"
     The app writes the GPU's shader array and WGP mask registers with umr, as root, while the driver runs: that
     is the CU unlock. The registers are volatile: any reboot puts the stock 24 CUs back, and nothing is burned
-    into the chip. The unlock stays across reboots and power offs only through the root service that CU Unlock
+    into the chip. The unlock stays across reboots and power offs only through the root service that CU Tools
     installs, bc250-cu-unlock.service with the masks in /etc/bc250-cu-bisect, which writes the registers again
     early at every boot. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments.
-    Uninstall in CU Unlock disables the service and removes its files; the unlock lasts until the next reboot,
-    and the board is then stock. CU Bisect reboots the board between its rounds, by itself with the unattended
+    Uninstall in CU Tools disables the service and removes its files; the unlock lasts until the next reboot,
+    and the board is then stock. CU Tools reboots the board between its rounds, by itself with the unattended
     option, after a question otherwise.
 
 Tells **bad CUs** apart from an **unstable CU unlock** on the AMD BC-250 (Cyan Skillfish, gfx1013).
@@ -120,10 +120,9 @@ sudo ./bc250-cu-unlock.sh --uninstall  # stock 24 CUs again from the next boot
 Do this if the system starts misbehaving later: a WGP that passed the tests can still turn out unstable
 under a different game or a hotter room.
 
-> **Prefer clicking over typing?** There are two optional GUIs that do exactly the same thing:
-> [BC Bisect GUI](#bc-bisect-gui-initial-setup-launcher) for steps 2–4 and
-> [BC Unlock GUI](#bc-unlock-gui) for steps 5–7. The Unlock GUI shows a green **ACCEPTED** banner only
-> once your results actually justify the mask, and grays out **Install** otherwise.
+> **Prefer clicking over typing?** [The window](#the-window) does exactly the same thing: its top half starts
+> steps 2–4, its bottom half does steps 5–7. It shows **Accepted** only once your results actually justify the
+> mask, and grays out **Install** otherwise.
 
 ## How it works
 
@@ -153,7 +152,7 @@ that WGP is unlocked (2 CUs). Reading the stock row above left to right gives `0
 unlocked, WGP3-4 locked). A fully-unlocked row (all 5 WGPs, `11111`) is `0x1f`. The 4 rows are always
 written together as `SE0.SH0,SE0.SH1,SE1.SH0,SE1.SH1`, so the stock baseline above is `0x07,0x07,0x07,0x07`
 (24 CUs) and a fully unlocked board would be `0x1f,0x1f,0x1f,0x1f` (40 CUs) - this is exactly the format
-`--baseline` takes and `--status`/the GUI print back.
+`--baseline` takes and `--status`/the window print back.
 
 That's the default layout: 3 of the 5 WGPs per shader array ship unlocked (24 CUs), the other 2 per array
 (8 WGPs, 16 CUs) are fused off at the factory and are what this script tests one by one. The script shows
@@ -174,7 +173,7 @@ verdict (GOOD/FAILS EVERY TIME/RANDOM) — see [Results](#results).
 > (The per-row mask doesn't have to be `0x0f`/`0x1f` exactly — if WGP3 is bad on a row but WGP4 is good,
 > `0x17` is also 4 WGPs. What matters is that all 4 rows unlock the *same count*.)
 >
-> `bc250-cu-unlock.sh` and the Unlock GUI **refuse** anything else: an uneven mask like
+> `bc250-cu-unlock.sh` and the window **refuse** anything else: an uneven mask like
 > `0x1f,0x1f,0x07,0x07` (5/5/3/3) is rejected with an error instead of installed.
 
 The test plan:
@@ -437,7 +436,7 @@ Only install a mask that:
 
 > **Worked example: why an uneven mask gets rejected.** Say your bisect found one bad WGP,
 > `SE1.SH0.WGP4`, and everything else good. The "everything that passed" combination would be
-> `0x1f,0x1f,0x0f,0x1f` — 38 CUs, `5/5/4/5` WGPs per row — and both the script and the GUI refuse it.
+> `0x1f,0x1f,0x0f,0x1f` — 38 CUs, `5/5/4/5` WGPs per row — and both the script and the window refuse it.
 > This isn't a bug: since the GPU front-end splits work across the 4 shader arrays in lockstep, actual
 > performance is capped by whichever row has the fewest active WGPs, so the spare WGP on the other 3 rows
 > just sits unused. `38` CUs (`5/5/4/5`) performs the same as `32` CUs (`4/4/4/4`): no real-world speedup,
@@ -447,7 +446,7 @@ Only install a mask that:
 > ```
 > ./bc250-cu-bisect.sh --reset && ./bc250-cu-bisect.sh --baseline 0x0f,0x0f,0x0f,0x0f --control-only --rounds 1
 > ```
-> That retest passes evenly on all 4 rows, so the GUI banner turns green — 32 real, usable CUs over
+> That retest passes evenly on all 4 rows, so the window shows **Accepted** — 32 real, usable CUs over
 > stock 24.
 
 Config and the systemd unit:
@@ -485,25 +484,61 @@ conditions later, boot, run `sudo ./bc250-cu-unlock.sh --uninstall`, and reboot 
 > When in doubt, trust `--status`'s "Live masks now" (or test #21) over anything else — it's the only
 > one reading the hardware directly, at the moment you ask.
 
-### BC Bisect GUI (initial setup launcher)
+### The window
 ![bc-cu-bisect-gui.webp](../assets/compute/bc-cu-bisect-gui.webp)
 
-`cu_bisect` is an optional PyQt6 launcher for `bc250-cu-bisect.sh` itself - a menu-driven
-"initial setup" screen for noob-friendly first runs. It doesn't run the bisect in-process: pick the
-load time, rounds, a baseline variant, `--control-only`/`--same-boot`/`--no-watch`, and whether to run
-`--auto` (unattended), then click **Start CU Bisect**. The window closes and hands off to a terminal
-running the exact same command line you'd have typed by hand - no hidden behavior, nothing the script
-itself doesn't already do.
+`cu_bisect` is an optional PyQt6 window for both scripts, on one page. Its top half sets up a run of
+`bc250-cu-bisect.sh` and starts it; its bottom half installs a tested unlock with `bc250-cu-unlock.sh`. It doesn't
+run the bisect itself: **Start** hands off to a terminal running the exact command line you'd have typed by hand,
+and the window closes.
 
-Baseline is a simple preset picker rather than a free-form field by default: **Auto-detect** (this
-boot's own clean masks, the safe default - no `--baseline` is passed), **Stock 24 CUs**
-(`0x07,0x07,0x07,0x07`), **Fully unlocked 40 CUs** (`0x1f,0x1f,0x1f,0x1f`), or **Custom...** for any
-other 4-mask value (validated live, same format `--baseline` takes).
+**Starting a run.** The pills under the title:
 
-Checking **Unattended** also offers to install the `--auto` resume-after-reboot systemd `--user` unit
-for you (writing `~/.config/systemd/user/bc250-cu-bisect-auto.service` and running
-`systemctl --user enable`; the run itself starts in the terminal, and the unit takes over after the first
-reboot) - the same steps as the "Running truly unattended" checklist above, just automated. **Show status** runs `--status` in a terminal without starting anything.
+* **Help**: what the window does, then the script's own `--help` as a page: what the script does, the control and
+  WGP steps, and every option in a table.
+* **Start**: shows a summary of the options and, after Yes, starts the run in a terminal.
+* **Show status**: runs `--status` in a terminal: the results so far and the report. It starts nothing.
+* **Reset**: runs `--reset` after a question: every saved result and log in `~/.local/share/bc250-cu-bisect` is
+  deleted, and the script asks once more in the terminal.
+
+Under them, on one line: **Load per attempt** (`-t`), **Rounds per item** (`-r`) and **Baseline**. Baseline is a
+preset: **Auto-detect** (this boot's own clean masks, the safe default: no `--baseline` is passed), **Stock, 24
+CUs** (`0x07,0x07,0x07,0x07`), **Unlocked, 40 CUs** (`0x1f,0x1f,0x1f,0x1f`), or **Custom...** for any other
+4-mask value, checked as you type. Hover a choice in the list to see its masks.
+
+The switches are pills that say **On** or **Off**; a click turns one over:
+
+* **Control only** (`--control-only`), **Same boot** (`--same-boot`) and **No watch** (`--no-watch`).
+* **Unattended** (`--auto`) turns on **Auto resume** with it. Auto resume writes and enables
+  `~/.config/systemd/user/bc250-cu-bisect-auto.service`, which starts the run again after every reboot and login:
+  the same steps as the "Running truly unattended" checklist above. It can only be on with Unattended.
+
+**Installing the unlock.** The window doesn't take your word for it: it reads `bc250-cu-bisect.sh`'s own recorded
+results and only enables **Install** once they show the combined mask was retested as its own baseline (no locked
+WGPs left in that run), every round of that retest passed, and the 4 rows are even. The row for it:
+
+* **Accepted** or **Not accepted**: the verdict on the bisect results. Its tooltip says why, e.g. "still has 2
+  WGP(s) under individual test" or "did not pass every round".
+* **Install**: applies the accepted mask now and keeps it on every boot, through the same systemd service as
+  `bc250-cu-unlock.sh --install`. It is off until the results accept a mask.
+* **Uninstall**: disables the service; the board is back to the stock 24 CUs from the next reboot.
+* **Refresh**: shows the installed masks, the service's state and the live masks (`--status`, no root needed).
+* **Re-check**: reads the bisect results again, for example after another retest, and writes the verdict and its
+  reasons in the log.
+
+**Uninstall** and **Refresh** don't depend on the verdict: you can always disable the service. Install and
+Uninstall run `bc250-cu-unlock.sh` through `sudo` (a masked password prompt, passed to `sudo -S` only, never
+stored).
+
+Under the row are the four shader-array rows (SE0.SH0 to SE1.SH1) with their five WGPs each. A WGP that is on is
+green: the accepted mask, or the one you preview. **Preview a mask** shows any 4-row mask on the rows without
+writing anything, and says how many CUs it gives and whether it can be installed (only 24, 32 or 40 CUs, the same
+number of WGPs on every row). The **i** beside it explains how a mask is written.
+
+**Show logs** opens what `bc250-cu-unlock.sh` prints, and **Hide logs** closes it again. When Install or Uninstall
+fails, a red **!** with **Check logs** appears beside the button; it goes away when you open the log.
+
+Hover a field, its label or a pill to see what it does. The window remembers its size and position between runs.
 
 Run it straight from a clone (any distro):
 
@@ -512,62 +547,31 @@ cd bc250-bazzite/apps/compute
 python3 -m venv _python && _python/bin/pip install -r requirements.txt && _python/bin/python -m cu_bisect
 ```
 
-On Bazzite, `install.sh` installs both windows (this one and the unlock GUI below) for your user: each gets a
-private venv under `~/.local`, a launcher, an app-menu entry, an icon and a Desktop icon. No `rpm-ostree` layering,
-nothing outside your home directory. Run it as your own user, not with sudo:
+On Bazzite, `install.sh` installs it for your user: a private venv under `~/.local`, a launcher, an app-menu entry,
+an icon and a Desktop icon. No `rpm-ostree` layering, nothing outside your home directory. It also removes the
+separate unlock window of earlier versions. Run it as your own user, not with sudo:
 
 ```bash
-./install.sh                         # both windows
-./install.sh --bisect-only           # only the bisect window (--unlock-only: only the unlock window)
-./install.sh --no-desktop-shortcut   # app-menu entries only, no Desktop icons
+./install.sh                         # install or update
+./install.sh --no-desktop-shortcut   # app-menu entry only, no Desktop icon
 bc250-bisect-gui                     # or launch it from the app menu
-./install.sh --uninstall             # removes the apps again (not any results or settings)
+./install.sh --uninstall             # removes the app again (not any results, settings or the unlock itself)
 ./install.sh --uninstall --purge     # also removes the results, settings, logs and autostart entries
 ```
 
-`install.sh` runs `packaging/bazzite/install-bisect-gui.sh` and `install-gui.sh`, which also work on their own.
+`install.sh` runs `packaging/bazzite/install-bisect-gui.sh`, which also works on its own.
 
 A terminal emulator is required to actually see/run the bisect (konsole, gnome-terminal, ptyxis,
 xfce4-terminal, foot, alacritty, kitty, x-terminal-emulator or xterm - `$TERMINAL` is tried first);
-the GUI shows an error if none is found.
-
-### BC Unlock GUI
-![bc-cu-unlock.webp](../assets/compute/bc-cu-unlock.webp)
-
-`cu_unlock` is an optional PyQt6 front-end for `bc250-cu-unlock.sh`. It doesn't take your word for
-it: it reads `bc250-cu-bisect.sh`'s own recorded results and only enables **Install** once they actually
-show the combined mask was retested as its own baseline (no locked WGPs left in that run), every round
-of that retest passed, and the 4 rows are even. It shows what's missing when they're not — e.g. "still
-has 2 WGP(s) under individual test" or "did not pass every round" — and lets you re-check after you've
-addressed that. The CU grid lights up green once a mask is accepted. **Uninstall** and **Refresh status**
-don't depend on the gate; you can always disable the service. Like the command-line
-`bc250-cu-unlock.sh --install` it wraps, clicking **Install** makes the unlock persistent: it's reapplied
-on every boot by the same systemd service, without the GUI (or anything else) needing to run again.
-
-Run it straight from a clone (any distro):
-
-```bash
-cd bc250-bazzite/apps/compute
-python3 -m venv _python && _python/bin/pip install -r requirements.txt && _python/bin/python -m cu_unlock
-```
-
-On Bazzite, `./install.sh` (above) installs it together with the bisect window; `./install.sh --unlock-only`
-installs only this one. `./install.sh --uninstall` removes the app again, not the unlock itself. Launch it from
-the app menu or with `bc250-unlock-cu-gui`.
-
-Install/Uninstall run `bc250-cu-unlock.sh` through `sudo` (masked password prompt, passed to `sudo -S`
-only, never stored); nothing is installed with `rpm-ostree` for the GUI itself, a venv is enough.
-
-An **About** button shows the app version and repository link, and the window remembers its size and position
-between runs.
+the window shows an error if none is found.
 
 ## Releases
 
 Releases are tagged `bc250-compute-v<x.y.z>` in the suite repository and published on its
 [releases](https://github.com/RobertoTorino/bc250-bazzite/releases) page as `bc250-compute-v<x.y.z>.tar.gz`
-with a `SHA256SUMS` file. The tarball holds the whole toolset (`bc250-cu-bisect.sh`, `bc250-cu-unlock.sh`, both
-GUIs, `packaging/`, images and docs). Download and extract it on the board instead of cloning the repository if you
-just want to run the scripts or the GUIs; the portal installs it for you too.
+with a `SHA256SUMS` file. The tarball holds the whole toolset (`bc250-cu-bisect.sh`, `bc250-cu-unlock.sh`, the
+window, `packaging/`, images and docs). Download and extract it on the board instead of cloning the repository if you
+just want to run the scripts or the window; the portal installs it for you too.
 
 ## Related
 

@@ -293,7 +293,7 @@ Each module of a package has one job, so the logic can be tested without a windo
 
 `install.sh` sits in the app folder. It runs as your own user and refuses to run with sudo; it uses sudo or pkexec
 only for the steps that need root. Every installer takes these options, and `--help` shows them (an app may add
-its own, such as `--bisect-only` and `--unlock-only` for the bisect apps with two windows):
+its own, such as `--bisect-only` and `--unlock-only` for Cores Bisect, which has two windows):
 
 ```
 ./install.sh                         install or update

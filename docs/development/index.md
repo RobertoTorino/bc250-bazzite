@@ -180,7 +180,7 @@ that fades out over the last two seconds (`tools/sounds/the_quiet_engine.mp3`, m
 
 ```bash
 tools/record-app-tour.sh fan                          # ~/Videos/bc250-fan-tour-v<version>.mp4
-tools/record-app-tour.sh compute --package cu_unlock  # compute and cores have two programs
+tools/record-app-tour.sh cores --package cores_unlock  # cores has two programs
 tools/record-app-tour.sh cec cec.mp4 --seconds 30     # another file, another length
 tools/record-app-tour.sh fan --no-music               # without sound; --music FILE for another track
 tools/record-app-tour.sh fan --size 2160p             # at 4K for YouTube: ...-tour-v<version>-2160p.mp4

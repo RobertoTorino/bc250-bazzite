@@ -27,7 +27,7 @@ def body(path: Path) -> str:
 
 def test_copies_exist():
     packages = {p.parent.name for p in COPIES}
-    assert {"upscaler", "cu_bisect", "cu_unlock", "cores_bisect",
+    assert {"upscaler", "cu_bisect", "cores_bisect",
             "cores_unlock", "oc_bisect", "locked_acpi"} <= packages
     assert {p.parent.name for p in UPSTREAM_COPIES} >= {"upscaler"}
     assert {p.parent.name for p in THEME_COPIES} == {p.parent.name for p in COPIES}

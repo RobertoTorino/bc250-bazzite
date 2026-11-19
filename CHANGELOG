@@ -1,3 +1,11 @@
+Changelog: 20-11-2026 00:14:41
+
+Fixed. A test that hangs ends after 2 minutes, in test.sh and in CI's pytest steps (pytest's faulthandler_timeout with faulthandler_exit_on_timeout): it prints where it is stuck and fails, instead of running on without a word (one waited 15 minutes for a dialog). tools/tests/test_hang_limit.py keeps every pytest run limited.
+
+Changelog: 19-11-2026 23:53:26
+
+Fixed. BC-250 CU Bisect is BC-250 CU Tools, one window for the bisect and the unlock: the wiki, the README, the app list, the portal chapter, DESIGN.md and the tour notes say so, and icons/categories.toml no longer lists the Unlock window's icon.
+
 Changelog: 19-11-2026 10:45:45
 
 Fixed. The wiki's Cores Bisect chapter says, under Known side effect, that the GPU governor's fix-freq option

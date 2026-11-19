@@ -1,3 +1,11 @@
+Changelog: 20-11-2026 00:17:42
+
+Release 24.1.0.
+
+Changelog: 19-11-2026 23:53:26
+
+Added. The CU Tools tile (BC-250 CU Bisect before) opens its one window at once; it no longer asks for Bisect or Unlock, and the Unlock window's own icon is gone.
+
 Changelog: 19-11-2026 12:49:42
 
 Release 24.0.1. Pins bc250-check-v4.0.1, bc250-quickfix-v1.0.1, bc250-cores-v0.5.3.

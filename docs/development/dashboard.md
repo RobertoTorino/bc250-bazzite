@@ -106,7 +106,7 @@ in its name (1440p is the step between). A recording runs in the background; its
 - **Portal video tour** records the portal's tour, about two minutes: `bc250-portal-tour-v<portal version>.mp4`.
   Tick **Also write the copy on the wiki's Portal Tour page** to write `docs/videos/portal-tour.mp4` and its poster
   in the checkout too, for you to review and commit.
-- **Apps video tour** lists every app of the suite, each of the two programs of CU Bisect and Cores Bisect apart.
+- **Apps video tour** lists every app of the suite, each of the two programs of Cores Bisect apart.
   Tick the apps (**All**, **None**), set the **Length** (40 seconds by default) and choose **Record**: each tour
   takes a few seconds, `bc250-<app>-tour-v<version>.mp4`. Double-click an app to play its video. What an app reads
   from the board is real, so watch a video before you publish it.

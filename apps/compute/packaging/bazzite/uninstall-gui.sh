@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# Removes everything packaging/bazzite/install-gui.sh set up for the current user. Does not touch
-# /etc/bc250-cu-bisect or the systemd unit - run "bc250-unlock-cu-gui" (Uninstall button) or
-# "sudo ./bc250-cu-unlock.sh --uninstall" first if you also want the unlock itself removed.
+# Removes the separate unlock window of before (BC-250 CU Unlock, bc250-unlock-cu-gui) for the current user:
+# CU Tools' one window has the unlock now, and install-bisect-gui.sh runs this on an update. Does not touch
+# /etc/bc250-cu-bisect or the systemd unit - use Uninstall in CU Tools, or "sudo ./bc250-cu-unlock.sh
+# --uninstall", if you also want the unlock itself removed.
 set -euo pipefail
 
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"

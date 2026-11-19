@@ -1,3 +1,11 @@
+Changelog: 19-11-2026 23:53:26
+
+Breaking. CU Bisect and CU Unlock are one app, BC-250 CU Tools, in one window on one page: the bisect's pills, numbers and switches, then the verdict with Install, Uninstall, Refresh and Re-check, the WGP rows and Preview a mask. The log of bc250-cu-unlock.sh is behind a Show logs / Hide logs button, hidden at the start; when Install or Uninstall fails, a red ! with Check logs shows beside it instead of a message box. The separate unlock window, its launcher bc250-unlock-cu-gui, its menu entry and its icon are gone: an update removes them (uninstall-gui.sh). install.sh no longer takes --bisect-only or --unlock-only, and packaging/bazzite/install-gui.sh is gone. The launcher bc250-bisect-gui, the scripts and the unlock service stay as they were.
+
+Changelog: 19-11-2026 23:17:20
+
+Added. CU Bisect's window is laid out anew. Under the title are four pills: Help, Start, Show status and Reset; the About pill is gone. Help shows the script's own --help as a styled page, with How it works and the options in a table, instead of the raw text. Load per attempt, Rounds per item and Baseline are on one line; Baseline's choices have short names (Auto-detect, Stock, 24 CUs, Unlocked, 40 CUs, Custom...) with their masks in the tooltip, so the field stays narrow, and the switches are on/off pills: Control only, Same boot, Unattended, Auto resume and No watch. Auto resume turns on and off with Unattended. The tooltips of the fields, their labels and the pills hold the explanations, without info symbols, and what the window does is the first paragraph of Help; and the window opens 900 wide, as the suite's other apps. CU Unlock's window too: under the title are Accepted or Not accepted (its reasons in the tooltip) and the pills Install, Uninstall, Refresh and Re-check; the About button is gone. The four shader-array rows are large and share the window's width, Preview a mask has an i that explains how a mask is written, and the log is under it. Re-check writes the verdict and its reasons in the log. Both windows open at least 900 wide, wider when their pills need it. The wiki's BC Bisect GUI and BC Unlock GUI sections and their pictures show them.
+
 Changelog: 15-11-2026 04:52:06
 
 Release 0.5.2.

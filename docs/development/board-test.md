@@ -601,7 +601,7 @@ script (test 26 reports whether the ACPI tables came from the initrd override or
   flag that.
 
 **For the extra CUs without flashing:**
-[BC-250 CU Bisect](../apps/compute.md) (a suite app) unlocks CUs at runtime
+[BC-250 CU Tools](../apps/compute.md) (a suite app) unlocks CUs at runtime
 by writing the GPU's WGP mask registers with `umr`, and keeps a validated unlock across reboots:
 
 1. **Test first:** `bc250-cu-bisect.sh` tests every locked WGP (2 CUs) on its own over several rounds and

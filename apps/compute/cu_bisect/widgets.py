@@ -1,77 +1,42 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""About and Help dialogs for the launcher GUI, and the header's status box and pill (copies of core's MetricBox and
-Pill: this app is not on core)."""
+"""The Help dialog, the masked sudo password prompt (returned once, never stored), the status box and pill (copies of
+core's MetricBox and Pill: this app is not on core), the on/off pills of the run's switches and the info symbol (a
+copy of core's InfoButton)."""
 
 from __future__ import annotations
 
 import subprocess
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFontDatabase, QPixmap
+from PyQt6.QtCore import QPoint, Qt, pyqtSignal
 from PyQt6.QtWidgets import (
-    QDialog, QDialogButtonBox, QFrame, QHBoxLayout, QLabel, QSizePolicy, QTextEdit, QVBoxLayout, QWidget,
+    QDialog, QDialogButtonBox, QFrame, QLabel, QLineEdit, QSizePolicy, QTextBrowser, QToolButton, QVBoxLayout,
+    QWidget,
 )
 
-from . import APP_NAME, LOGO_PATH, REPO_URL, __version__, window_title
-from .theme import ACCENT, BLUE, OUTLINE, header_font, muted, surface_style
-
-
-class AboutDialog(QDialog):
-    def __init__(self, parent: QWidget | None = None):
-        super().__init__(parent)
-        self.setWindowTitle(window_title("about"))
-        self.setModal(True)
-        layout = QVBoxLayout(self)
-
-        top = QHBoxLayout()
-        if LOGO_PATH.is_file():
-            icon = QLabel()
-            icon.setPixmap(QPixmap(str(LOGO_PATH)).scaled(
-                64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-            top.addWidget(icon)
-        names = QVBoxLayout()
-        name_label = QLabel(f"<b>{APP_NAME}</b>")
-        name_label.setStyleSheet("font-size:16px;")
-        names.addWidget(name_label)
-        names.addWidget(QLabel("Version {0}".format(__version__)))
-        top.addLayout(names)
-        top.addStretch(1)
-        layout.addLayout(top)
-
-        desc = QLabel(("A PyQt6 launcher for bc250-cu-bisect.sh: pick your options and start a run, which then "
-                       "continues in a terminal exactly as if typed by hand."))
-        desc.setWordWrap(True)
-        layout.addWidget(desc)
-
-        link = QLabel(f'<a href="{REPO_URL}">{REPO_URL}</a>')
-        link.setOpenExternalLinks(True)
-        link.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
-        layout.addWidget(link)
-
-        layout.addWidget(QLabel("License: GNU GPLv3."))
-
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
-        buttons.accepted.connect(self.accept)
-        layout.addWidget(buttons)
+from . import window_title
+from .help_page import WINDOW, help_html, page_style
+from .theme import ACCENT, BLUE, GREY, OUTLINE, header_font, muted, surface_style
 
 
 class HelpDialog(QDialog):
-    """Shows bc250-cu-bisect.sh's own ``--help`` text (the single source of truth for what the
-    options do), so the GUI's help never drifts out of sync with the script."""
+    """bc250-cu-bisect.sh's own ``--help`` (the single source of what the options do, so the help never drifts
+    from the script) as a styled page (help_page.py): a title, what the window does, How it works, the options in a
+    table, the link."""
 
     def __init__(self, script: str, parent: QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle(window_title("help"))
         self.setModal(True)
-        self.resize(720, 560)
+        self.resize(820, 640)
         layout = QVBoxLayout(self)
 
-        text = QTextEdit()
-        text.setReadOnly(True)
-        text.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
-        text.setPlainText(self._help_text(script))
-        layout.addWidget(text)
+        self.page = QTextBrowser()
+        self.page.setOpenExternalLinks(True)
+        self.page.document().setDefaultStyleSheet(page_style(ACCENT, muted(), GREY))
+        self.page.document().setDocumentMargin(14)
+        self.page.setHtml(help_html(self._help_text(script), WINDOW))
+        layout.addWidget(self.page)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         buttons.accepted.connect(self.accept)
@@ -91,6 +56,44 @@ class HelpDialog(QDialog):
             "Run it from a terminal instead:\n"
             f"  bash {script} --help"
         )
+
+
+class SudoDialog(QDialog):
+    def __init__(self, message: str = "", parent: QWidget | None = None):
+        super().__init__(parent)
+        self.setWindowTitle(window_title("administrator password"))
+        self.setModal(True)
+        layout = QVBoxLayout(self)
+        text = QLabel(("Writing GPU registers and installing the systemd service need root, so this runs "
+                       "bc250-cu-unlock.sh through sudo.\nYour password is passed to sudo only and is never stored."))
+        text.setWordWrap(True)
+        layout.addWidget(text)
+        if message:
+            err = QLabel(message)
+            err.setStyleSheet("color:#e57373; font-weight:600;")
+            err.setWordWrap(True)
+            layout.addWidget(err)
+        self.edit = QLineEdit()
+        self.edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.edit.setPlaceholderText("sudo password")
+        layout.addWidget(self.edit)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        self._ok_btn = buttons.button(QDialogButtonBox.StandardButton.Ok)
+        self._ok_btn.setEnabled(False)
+        self.edit.textChanged.connect(lambda text: self._ok_btn.setEnabled(bool(text)))
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+        self.edit.setFocus()
+
+    @classmethod
+    def ask(cls, parent: QWidget | None, message: str = "") -> str | None:
+        dlg = cls(message, parent)
+        ok = dlg.exec() == QDialog.DialogCode.Accepted
+        password = dlg.edit.text()
+        dlg.edit.clear()
+        dlg.deleteLater()
+        return password if ok else None
 
 
 class MetricBox(QFrame):
@@ -178,3 +181,76 @@ def _even(boxes: list[MetricBox]) -> None:
     for box in boxes:
         box.setMinimumWidth(width)
 
+
+
+class TogglePill(Pill):
+    """A switch of the run as a pill (owner, 19-11-2026: the switches are pills, not check boxes): its name in large
+    type, On or Off under it, the accent edge while it is on. A click, Enter or Space turns it over while it is
+    enabled. It stands in for a QCheckBox: isChecked(), setChecked() and toggled."""
+
+    toggled = pyqtSignal(bool)
+
+    def __init__(self, name: str, tooltip: str = "", checked: bool = False):
+        super().__init__(name, "Off", tooltip, GREY)
+        self.checked = False
+        self.clicked.connect(self._flip)
+        self.setChecked(checked)
+
+    def isChecked(self) -> bool:  # noqa: N802 (as QCheckBox's)
+        return self.checked
+
+    def setChecked(self, checked: bool) -> None:  # noqa: N802 (as QCheckBox's)
+        changed = checked != self.checked
+        self.checked = checked
+        self.caption.setText("On" if checked else "Off")
+        self.set_colour(ACCENT if checked else GREY)
+        if changed:
+            self.toggled.emit(checked)
+
+    def _flip(self) -> None:
+        if self.isEnabled():
+            self.setChecked(not self.checked)
+
+
+class InfoButton(QToolButton):
+    """A small round "i" that opens an explanation below it on a click, where a line of text would take the room
+    (owner, 01-11-2026); its tooltip says what it explains. A copy of core's InfoButton: this app is not on core.
+    The text is rich text with its links clickable; a click outside it or Escape closes it."""
+
+    SIZE = 22
+    MAX_WIDTH = 380
+
+    def __init__(self, text: str, tooltip: str = "What this does", parent: QWidget | None = None):
+        super().__init__(parent)
+        self.text_ = text
+        self.popup: QWidget | None = None
+        self.setText("i")
+        self.setToolTip(tooltip)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFixedSize(self.SIZE, self.SIZE)
+        self.setStyleSheet(
+            f"QToolButton {{ border:1px solid {ACCENT}; border-radius:{self.SIZE // 2}px; color:{ACCENT}; "
+            "background:transparent; font-weight:800; font-family:Georgia, serif; font-style:italic; padding:0; }"
+            f"QToolButton:hover, QToolButton:focus {{ background:{ACCENT}; color:white; }}")
+        self.clicked.connect(self.show_text)
+
+    def show_text(self) -> None:
+        if self.popup is not None:
+            self.popup.close()
+        # Wayland maps a popup relative to a parent surface, so it is a child of the button's window.
+        self.popup = QWidget(self.window(), Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.popup.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        box = QVBoxLayout(self.popup)
+        box.setContentsMargins(0, 0, 0, 0)
+        label = QLabel(self.text_)
+        label.setWordWrap(True)
+        label.setOpenExternalLinks(True)
+        label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        label.setStyleSheet(
+            f"QLabel {{ background:palette(window); color:palette(window-text); border:1px solid {ACCENT}; "
+            "border-radius:6px; padding:8px 10px; }")
+        label.setFixedWidth(min(self.MAX_WIDTH, max(label.sizeHint().width(), 200)))
+        box.addWidget(label)
+        self.popup.adjustSize()
+        self.popup.move(self.mapToGlobal(QPoint(-12, self.height() + 4)))
+        self.popup.show()

@@ -36,8 +36,8 @@ name = "BC-250 Upscaler Manager"
 launchers = ["~/.local/bin/bc250-upscaler"]
 
 [app.compute]
-name = "BC-250 CU Bisect"
-launchers = ["~/.local/bin/bc250-bisect-gui", "~/.local/bin/bc250-unlock-cu-gui"]
+name = "BC-250 CU Tools"
+launchers = ["~/.local/bin/bc250-bisect-gui"]
 
 [app.cores]
 name = "BC-250 Cores Bisect"

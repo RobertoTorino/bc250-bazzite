@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from cu_unlock.gate import check, cu_count, even_level
+from cu_bisect.gate import check, cu_count, even_level
 
 FULL = "0x1f,0x1f,0x1f,0x1f"
 PASSED = [(1, "control", "PASS"), (2, "control", "PASS"), (3, "control", "PASS")]

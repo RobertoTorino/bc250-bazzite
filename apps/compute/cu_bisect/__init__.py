@@ -4,7 +4,7 @@
 bisect run. It only assembles the command line and starts it in a terminal; the actual bisecting
 still happens in bc250-cu-bisect.sh itself, exactly as if typed by hand."""
 
-APP_NAME = "BC-250 CU Bisect"
+APP_NAME = "BC-250 CU Tools"
 APP_ID = "bc250-cu-bisect-gui"
 __version__ = "0.5.2"
 

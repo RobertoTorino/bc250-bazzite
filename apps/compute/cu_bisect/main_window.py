@@ -1,9 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Single window: a menu-driven "initial setup" screen for bc250-cu-bisect.sh. Pick the options,
-hit Start, and the GUI hands off to a terminal running the real script and gets out of the way. The header is
-the suite's (owner, 26-10-2026): the icon, the title with the version, and under it Help and About as pills, as the
-core apps' header has its actions; what the window does is a muted note below."""
+"""The one window of CU Tools (owner, 19-11-2026: CU Bisect and CU Unlock are one app, CU Tools, on one page). Its top half
+starts bc250-cu-bisect.sh: pick the options, hit Start, and the GUI hands off to a terminal running the real script.
+Its bottom half is the unlock (unlock_panel.py): the verdict on the results, Install and Uninstall of a tested mask,
+the WGP rows and the log of bc250-cu-unlock.sh.
+
+The layout (owner, 19-11-2026): the suite's header, the icon spanning the title with the version and a row of
+pills: Help (the script's --help as a styled page), Start, Show status and Reset. Under it one line with
+the run's numbers (load per attempt, rounds per item, the baseline), then the run's switches as on/off pills:
+Control only, Same boot, Unattended, Auto resume and No watch. What a control does is in its tooltip, and what the
+window does is the first paragraph of Help (owner, 19-11-2026: no info symbols here); the window carries no long
+text."""
 
 from __future__ import annotations
 
@@ -12,43 +19,42 @@ import shlex
 from PyQt6.QtCore import QByteArray, QSettings, Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (
-    QCheckBox, QComboBox, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit, QMessageBox,
-    QPushButton, QSpinBox, QVBoxLayout, QWidget,
+    QComboBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QSpinBox, QVBoxLayout, QWidget,
 )
 
 from . import APP_NAME, LOGO_PATH, __version__
-from .options import BASELINE_PRESETS, MASK_RE, BisectOptions
+from .options import BASELINE_PRESETS, BASELINE_TIPS, MASK_RE, BisectOptions
 from .terminal import launch_in_terminal
-from .theme import header_font, muted
-from .widgets import AboutDialog, HelpDialog, Pill, same_width
+from .theme import ACCENT, RED, header_font, muted
+from .unlock_panel import UnlockPanel
+from .widgets import HelpDialog, Pill, TogglePill, same_width
 
 _CUSTOM_LABEL = "Custom..."
-
+WIDTH = 900                             # as the suite's other apps (shadPS4 Manager): never narrower
 
 class MainWindow(QWidget):
-    def __init__(self, script: str, parent: QWidget | None = None):
+    def __init__(self, script: str, unlock_script: str, parent: QWidget | None = None):
         super().__init__(parent)
         self.script = script
         self.setWindowTitle(f"{APP_NAME} {__version__}")
 
         root = QVBoxLayout(self)
+        root.setSpacing(12)
         root.addLayout(self._build_header())
-        note = QLabel(("Choose how you want to run bc250-cu-bisect.sh, then click Start. This window closes "
-                      "and the real run continues in a terminal, exactly like running the script by hand."))
-        note.setWordWrap(True)
-        note.setStyleSheet(f"color:{muted()};")
-        root.addWidget(note)
-        root.addWidget(self._build_options_frame())
-        root.addLayout(self._build_buttons())
+        root.addLayout(self._build_numbers())
+        root.addLayout(self._build_switches())
+        root.addSpacing(6)
+        self.unlock = UnlockPanel(unlock_script, self)
+        root.addWidget(self.unlock, 1)
 
-        self.hint_label = QLabel()
-        self.hint_label.setWordWrap(True)
-        self.hint_label.setStyleSheet("color:#888; font-style:italic;")
-        root.addWidget(self.hint_label)
-        root.addStretch(1)
-
+        # 900 wide, or wider when the pills need it ("Not accepted" the widest verdict): never cut off
+        verdict = self.unlock.gate_box.value.text(), self.unlock.gate_box.toolTip()
+        self.unlock.gate_box.set_value("Not accepted", verdict[1])
+        self.setMinimumWidth(max(WIDTH, self.minimumSizeHint().width()))
+        self.unlock.gate_box.set_value(*verdict)
         self._restore_geometry()
         self._on_baseline_changed(self.baseline_combo.currentText())
+        self.unlock.start()
 
     # ------------------------------------------------------------------ UI
     def _build_header(self) -> QHBoxLayout:
@@ -58,6 +64,7 @@ class MainWindow(QWidget):
             logo = QLabel()
             logo.setPixmap(QPixmap(str(LOGO_PATH)).scaled(
                 96, 96, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+            logo.setAlignment(Qt.AlignmentFlag.AlignTop)
             header.addWidget(logo)
         header_right = QVBoxLayout()
         header_right.setSpacing(6)
@@ -67,120 +74,97 @@ class MainWindow(QWidget):
         title_row.addWidget(title)
         title_row.addStretch(1)
         header_right.addLayout(title_row)
-        # Help and About are pills under the title (owner, 26-10-2026), as the core apps' header has its actions.
+        # The window's actions as pills under the title (owner, 19-11-2026): Help, Start, Show status, Reset.
+        self.help_pill = Pill("Help", "How it works", "The script's help, as a page: what it does and every option.")
+        self.help_pill.clicked.connect(lambda: HelpDialog(self.script, self).exec())
+        self.start_pill = Pill("Start", "Run in a terminal", "Starts bc250-cu-bisect.sh with these options in a "
+                               "terminal, after a summary; this window closes.", ACCENT)
+        self.start_pill.clicked.connect(self._on_start)
+        self.status_pill = Pill("Show status", "Results so far", "Shows the results so far and writes the report "
+                                "(--status), in a terminal. Starts nothing.")
+        self.status_pill.clicked.connect(self._on_status)
+        self.reset_pill = Pill("Reset", "Delete results", "Deletes every saved result and log in "
+                               "~/.local/share/bc250-cu-bisect (--reset), after a question; the next run starts "
+                               "from scratch.", RED)
+        self.reset_pill.clicked.connect(self._on_reset)
         pills = QHBoxLayout()
         pills.setSpacing(8)
-        self.help_pill = Pill("Help", "The script's options", "Shows the help of bc250-cu-bisect.sh.")
-        self.help_pill.clicked.connect(lambda: HelpDialog(self.script, self).exec())
-        self.about_pill = Pill("About", "Version and license", "The version, the license and the repository.")
-        self.about_pill.clicked.connect(lambda: AboutDialog(self).exec())
-        for pill in (self.help_pill, self.about_pill):
+        actions = [self.help_pill, self.start_pill, self.status_pill, self.reset_pill]
+        for pill in actions:
             pills.addWidget(pill)
-        same_width([self.help_pill, self.about_pill])
+        same_width(actions)
         pills.addStretch(1)
         header_right.addLayout(pills)
         header.addLayout(header_right, 1)
         return header
 
-    def _build_options_frame(self) -> QFrame:
-        frame = QFrame()
-        frame.setFrameShape(QFrame.Shape.StyledPanel)
-        grid = QGridLayout(frame)
-        row = 0
-
-        grid.addWidget(QLabel("Load per attempt (seconds):"), row, 0)
+    def _build_numbers(self) -> QHBoxLayout:
+        """Load per attempt, Rounds per item and Baseline on one line; each label has its field's tooltip."""
+        row = QHBoxLayout()
+        row.setSpacing(8)
         self.time_spin = QSpinBox()
         self.time_spin.setRange(60, 36000)
         self.time_spin.setSingleStep(30)
         self.time_spin.setValue(180)
-        self.time_spin.setToolTip("GPU load per attempt (-t). Minimum 60s, default 180s.")
-        grid.addWidget(self.time_spin, row, 1)
-        row += 1
-
-        grid.addWidget(QLabel("Rounds per item:"), row, 0)
+        self.time_spin.setSuffix(" s")
+        self.time_spin.setToolTip("How long the GPU is loaded in each attempt (-t): at least 60 s, 180 s by default.")
         self.rounds_spin = QSpinBox()
         self.rounds_spin.setRange(2, 9)
         self.rounds_spin.setValue(3)
-        self.rounds_spin.setToolTip(("Attempts per item (-r), interleaved so heat/time-of-day don't favor one item. "
-                                     "Minimum 2 (control-only runs may use 1)."))
-        grid.addWidget(self.rounds_spin, row, 1)
-        row += 1
-
-        grid.addWidget(QLabel("Baseline:"), row, 0)
+        self.rounds_spin.setToolTip("Attempts per item (-r), interleaved so heat and the time of day favor none. "
+                                    "At least 2; 1 with Control only.")
         self.baseline_combo = QComboBox()
-        self.baseline_combo.addItems(list(BASELINE_PRESETS.keys()))
-        self.baseline_combo.setToolTip(
-            "The masks every attempt starts from (--baseline). Auto-detect uses this boot's own "
-            "clean masks - the safest default.")
+        for index, label in enumerate(BASELINE_PRESETS):
+            self.baseline_combo.addItem(label)
+            self.baseline_combo.setItemData(index, BASELINE_TIPS[label], Qt.ItemDataRole.ToolTipRole)
+        self.baseline_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.baseline_combo.setToolTip("The masks every attempt starts from (--baseline). Auto-detect: this boot's "
+                                       "own clean masks, the safest choice. Stock: 0x07,0x07,0x07,0x07 (24 CUs). "
+                                       "Unlocked: 0x1f,0x1f,0x1f,0x1f (40 CUs). Custom: any other mask.")
         self.baseline_combo.currentTextChanged.connect(self._on_baseline_changed)
-        grid.addWidget(self.baseline_combo, row, 1)
         self.baseline_custom = QLineEdit()
         self.baseline_custom.setPlaceholderText("0x0f,0x0f,0x0f,0x0f")
+        self.baseline_custom.setToolTip("Four masks, one per shader array, as --baseline takes them.")
         self.baseline_custom.textChanged.connect(self._validate_custom_baseline)
-        grid.addWidget(self.baseline_custom, row, 2)
-        row += 1
+        for caption, field in (("Load per attempt", self.time_spin), ("Rounds per item", self.rounds_spin),
+                               ("Baseline", self.baseline_combo)):
+            label = QLabel(caption)
+            label.setStyleSheet("font-weight:600;")
+            label.setBuddy(field)
+            label.setToolTip(field.toolTip())
+            row.addWidget(label)
+            row.addWidget(field)
+            row.addSpacing(10)
+        self.baseline_custom.setMinimumWidth(180)                  # a whole mask: 0x0f,0x0f,0x0f,0x0f
+        row.addWidget(self.baseline_custom)
+        row.addStretch(1)
+        return row
 
-        self.control_only_check = QCheckBox("Control only (re-validate, skip per-WGP bisect)")
-        self.control_only_check.setToolTip(
-            "--control-only: only run the control item. For re-validating a combined mask you "
-            "already bisected, without re-testing already-known-bad WGPs. Allows a single round.")
-        self.control_only_check.toggled.connect(self._on_control_only_toggled)
-        grid.addWidget(self.control_only_check, row, 0, 1, 3)
-        row += 1
-
-        self.same_boot_check = QCheckBox("Same boot (don't reboot between attempts)")
-        self.same_boot_check.setToolTip(
-            "--same-boot: faster, but every attempt then inherits the previous one's state.")
-        grid.addWidget(self.same_boot_check, row, 0, 1, 3)
-        row += 1
-
-        self.auto_check = QCheckBox("Unattended (no prompts, auto-reboot, resumes after login)")
-        self.auto_check.setToolTip(
-            "--auto: don't ask anything, reboot on its own, and keep going after every login until "
-            "every item is done. Needs passwordless sudo for umr/journalctl - see the manual.")
-        self.auto_check.toggled.connect(self._on_auto_toggled)
-        grid.addWidget(self.auto_check, row, 0, 1, 3)
-        row += 1
-
-        self.autostart_check = QCheckBox("Also install the auto-resume login service (recommended with Unattended)")
-        self.autostart_check.setToolTip(
-            "Writes and enables ~/.config/systemd/user/bc250-cu-bisect-auto.service, so the run "
-            "relaunches itself after every reboot/login, same as the manual's --auto checklist.")
-        self.autostart_check.setEnabled(False)
-        grid.addWidget(self.autostart_check, row, 0, 1, 3)
-        row += 1
-
-        self.no_watch_check = QCheckBox("Disable live register watch (--no-watch)")
-        self.no_watch_check.setToolTip("Don't read the registers back during the load.")
-        grid.addWidget(self.no_watch_check, row, 0, 1, 3)
-        row += 1
-
-        grid.setColumnStretch(2, 1)
-        return frame
-
-    def _build_buttons(self) -> QHBoxLayout:
-        buttons = QHBoxLayout()
-        self.reset_btn = QPushButton("Reset")
-        self.reset_btn.setToolTip(("--reset: permanently deletes all saved results and logs in "
-                                   "~/.local/share/bc250-cu-bisect, so the next run starts from scratch."))
-        self.reset_btn.setStyleSheet(
-            "QPushButton { background:#c62828; color:white; font-weight:600; "
-            "padding:6px 14px; border-radius:4px; }"
-            "QPushButton:hover { background:#b71c1c; }"
-        )
-        self.reset_btn.clicked.connect(self._on_reset)
-        buttons.addWidget(self.reset_btn)
-        self.status_btn = QPushButton("Show status (--status)")
-        self.status_btn.setToolTip("Show the results so far and write the report, then exit.")
-        self.status_btn.clicked.connect(self._on_status)
-        buttons.addWidget(self.status_btn)
-        buttons.addStretch(1)
-        self.start_btn = QPushButton("Start CU Bisect")
-        self.start_btn.setDefault(True)
-        self.start_btn.setStyleSheet("font-weight:700; padding:6px 18px;")
-        self.start_btn.clicked.connect(self._on_start)
-        buttons.addWidget(self.start_btn)
-        return buttons
+    def _build_switches(self) -> QHBoxLayout:
+        """The run's switches as on/off pills; each one's tooltip says what it does."""
+        row = QHBoxLayout()
+        row.setSpacing(8)
+        self.control_only_pill = TogglePill("Control only", "--control-only: only the control item, to re-check a "
+                                            "combined mask you already bisected. Allows a single round.")
+        self.control_only_pill.toggled.connect(self._on_control_only_toggled)
+        self.same_boot_pill = TogglePill("Same boot", "--same-boot: no reboot between attempts. Faster, but every "
+                                         "attempt inherits the one before.")
+        self.auto_pill = TogglePill("Unattended", "--auto: no questions, reboots by itself and goes on after every "
+                                    "login until every item is done. Needs passwordless sudo for umr and the "
+                                    "kernel log.")
+        self.auto_pill.toggled.connect(self._on_auto_toggled)
+        self.autostart_pill = TogglePill("Auto resume", "Installs and enables "
+                                         "~/.config/systemd/user/bc250-cu-bisect-auto.service, which starts the run "
+                                         "again after every reboot and login. Only with Unattended.")
+        self.autostart_pill.setEnabled(False)
+        self.no_watch_pill = TogglePill("No watch", "--no-watch: the registers are not read back during the load.")
+        switches = [self.control_only_pill, self.same_boot_pill, self.auto_pill, self.autostart_pill,
+                    self.no_watch_pill]
+        for pill in switches:
+            row.addWidget(pill)
+        same_width(switches)
+        row.addStretch(1)
+        return row
 
     # --------------------------------------------------------------- window
     def _restore_geometry(self) -> None:
@@ -188,7 +172,7 @@ class MainWindow(QWidget):
         geometry = settings.value("main_window/geometry")
         if isinstance(geometry, QByteArray) and self.restoreGeometry(geometry):
             return
-        self.resize(560, 420)
+        self.resize(self.minimumWidth(), self.sizeHint().height())
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
         QSettings().setValue("main_window/geometry", self.saveGeometry())
@@ -208,9 +192,8 @@ class MainWindow(QWidget):
         self.baseline_custom.setStyleSheet("" if ok else "border:1px solid #c62828;")
 
     def _on_auto_toggled(self, checked: bool) -> None:
-        self.autostart_check.setEnabled(checked)
-        if checked:
-            self.autostart_check.setChecked(True)
+        self.autostart_pill.setEnabled(checked)
+        self.autostart_pill.setChecked(checked)
 
     def _on_control_only_toggled(self, checked: bool) -> None:
         # Rounds must be >=2 normally; a single confirmation round is only allowed for
@@ -228,10 +211,10 @@ class MainWindow(QWidget):
             time_secs=self.time_spin.value(),
             rounds=self.rounds_spin.value(),
             baseline=self._resolved_baseline(),
-            control_only=self.control_only_check.isChecked(),
-            same_boot=self.same_boot_check.isChecked(),
-            unattended=self.auto_check.isChecked(),
-            no_watch=self.no_watch_check.isChecked(),
+            control_only=self.control_only_pill.isChecked(),
+            same_boot=self.same_boot_pill.isChecked(),
+            unattended=self.auto_pill.isChecked(),
+            no_watch=self.no_watch_pill.isChecked(),
         )
 
     def _on_status(self) -> None:
@@ -274,7 +257,7 @@ class MainWindow(QWidget):
         if QMessageBox.question(self, APP_NAME, summary) != QMessageBox.StandardButton.Yes:
             return
 
-        if opts.unattended and self.autostart_check.isChecked():
+        if opts.unattended and self.autostart_pill.isChecked():
             from . import service
             try:
                 service.install(self.script, opts.time_secs, opts.rounds)

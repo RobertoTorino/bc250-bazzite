@@ -48,7 +48,7 @@ def unlock_script(tmp_path) -> Path:
 @pytest.fixture
 def state(tmp_path, monkeypatch):
     """Writes the bisect script's state (umr-config, umr-runs.tsv, umr-pending) where the gate reads it."""
-    from cu_unlock import gate
+    from cu_bisect import gate
     folder = tmp_path / "state"
     folder.mkdir()
     for name, value in (("STATE_DIR", folder), ("CONFIG", folder / "umr-config"), ("RUNS", folder / "umr-runs.tsv"),

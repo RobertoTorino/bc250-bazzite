@@ -34,11 +34,6 @@ category = "sustainable"
 icons = ["apps/compute/images/bc250-cu-bisect"]
 tile = "portal/images/apps/compute.webp"
 
-[cu-unlock]
-category = "sustainable"
-icons = ["apps/compute/images/bc250-cu-bisect-unlock"]
-tile = "portal/images/apps/cu-unlock.webp"
-
 [cores]
 category = "sustainable"
 icons = ["apps/cores/images/bc250-cores-bisect"]
