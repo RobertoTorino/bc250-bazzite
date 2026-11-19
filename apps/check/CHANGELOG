@@ -1,3 +1,7 @@
+Changelog: 19-11-2026 09:14:46
+
+Release 4.0.0.
+
 Changelog: 19-11-2026 04:48:47
 
 Breaking. Test 53 (Wi-Fi Adapter) no longer checks BC-250 Wi-Fi Adapter's service, built modules and loaded

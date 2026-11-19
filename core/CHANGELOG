@@ -1,3 +1,7 @@
+Changelog: 19-11-2026 09:14:46
+
+Version 6.0.0.
+
 Changelog: 19-11-2026 04:48:47
 
 Breaking. wifi.report() no longer takes in_wifi_app, and the report no longer sends an AIC8800D80 stick to BC-250
