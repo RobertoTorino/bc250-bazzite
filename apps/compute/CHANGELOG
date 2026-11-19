@@ -1,3 +1,7 @@
+Changelog: 20-11-2026 00:46:29
+
+Fixed. Hide logs gives the log's room back: the window is as tall as before the log was shown. It kept the log's height, and the four WGP rows spread over it. The rows also stay together when the window is made taller by hand.
+
 Changelog: 20-11-2026 00:27:04
 
 Release 1.0.0.

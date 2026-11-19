@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""PyQt6 front-end for bc250-cores-bisect.sh: a menu-driven launcher for the initial setup/start of
-a core bisect run. It only assembles the command line and starts it in a terminal; the actual
-bisecting still happens in bc250-cores-bisect.sh itself, exactly as if typed by hand."""
+"""BC-250 CPU Tools, one window for the core bisect and the core unlock (owner, 20-11-2026: Cores Bisect and Cores
+Unlock are one app, as CU Tools). The bisect part only assembles the command line of bc250-cores-bisect.sh and starts it
+in a terminal, exactly as if typed by hand; the unlock part reads the bisect's results and runs bc250-cores-unlock.sh."""
 
 from pathlib import Path
 
-APP_NAME = "BC-250 Cores Bisect"
+APP_NAME = "BC-250 CPU Tools"
 APP_ID = "bc250-cores-bisect-gui"
 ROOT = Path(__file__).resolve().parent.parent
 LOGO_PATH = ROOT / "images" / "bc250-cores-bisect.webp"

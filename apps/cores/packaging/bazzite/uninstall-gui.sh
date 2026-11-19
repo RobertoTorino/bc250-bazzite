@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# Removes everything packaging/bazzite/install-gui.sh set up for the current user. Does not touch
-# the unlock service - use the GUI's Uninstall button or "sudo ./bc250-cores-unlock.sh --uninstall"
-# first if you also want the persistent unlock removed.
+# Removes the separate unlock window of before (BC-250 Cores Unlock, bc250-cores-unlock-gui) for the current user:
+# CPU Tools' one window has the unlock now, and install-bisect-gui.sh runs this on an update. Does not touch the
+# unlock service - use Uninstall in CPU Tools, or "sudo ./bc250-cores-unlock.sh --uninstall", if you also want the
+# unlock itself removed.
 set -euo pipefail
 
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"

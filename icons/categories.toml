@@ -39,11 +39,6 @@ category = "sustainable"
 icons = ["apps/cores/images/bc250-cores-bisect"]
 tile = "portal/images/apps/cores.webp"
 
-[cores-unlock]
-category = "sustainable"
-icons = ["apps/cores/images/bc250-cores-unlock"]
-tile = "portal/images/apps/cores-unlock.webp"
-
 [oc]
 category = "sustainable"
 icons = ["apps/oc/images/bc250-gpu-oc-bisect"]

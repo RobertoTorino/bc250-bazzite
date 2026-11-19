@@ -41,6 +41,7 @@ class CuMapWidget(QWidget):
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)   # the rows never spread
         self._grid = QGridLayout(self)
         self._grid.setContentsMargins(0, 0, 0, 0)
         self._grid.setHorizontalSpacing(8)
@@ -121,6 +122,7 @@ class UnlockPanel(QWidget):
         self.output.setPlaceholderText("Output of bc250-cu-unlock.sh appears here.")
         self.output.hide()
         root.addWidget(self.output, stretch=1)
+        root.addStretch(0)                      # with the log hidden, room to spare goes under the button, not the rows
 
         self._refresh_gate()
 
@@ -135,7 +137,12 @@ class UnlockPanel(QWidget):
         self.logs_button.setText("Hide logs" if shown else "Show logs")
         window = self.window()
         if not shown and window is not None:
-            window.adjustSize()                 # the window gives back the room of the log
+            # The window gives back the room of the log, at its width. The layouts take the hidden log out first:
+            # resized before that, the window kept the log's height and the rows above spread over it.
+            for widget in (self, window):
+                if widget.layout() is not None:
+                    widget.layout().activate()
+            window.resize(window.width(), window.sizeHint().height())
 
     def _build_actions(self) -> QHBoxLayout:
         """The verdict, then Install, Uninstall, Refresh and Re-check (owner, 19-11-2026)."""

@@ -1,20 +1,19 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![BC-250 Cores Bisect](../assets/cores/bc250-cores-bisect.webp){ .app-logo }
+![BC-250 CPU Tools](../assets/cores/bc250-cores-bisect.webp){ .app-logo }
 
-# BC-250 Cores Bisect
+# BC-250 CPU Tools
 
 !!! warning "Changes the board"
     The app sends the SoC's SMU one mailbox message over PCI configuration space with setpci, which sets the
     core presence mask to 0xFF in the SMU's own memory; the governor's service is stopped around the message, as
     it shares the mailbox, and started again. The mask takes effect on the next warm reboot, survives warm
     reboots, and a full power off reverts it to the stock 6 cores. The 8 cores stay across power offs only
-    through the root service that Cores Unlock installs, bc250-cores-unlock.service, which sends the message
+    through the root service that CPU Tools installs, bc250-cores-unlock.service, which sends the message
     again after a cold boot and warm-reboots once, with a guard against reboot loops. Nothing is written to the
-    BIOS, the firmware, the CMOS or the kernel's arguments. Uninstall in Cores Unlock disables the service and
-    removes its files; the cores stay on until the next full power off, and the board is then stock. Cores
-    Bisect reboots the board between its rounds, by itself with the unattended option, after a question
-    otherwise.
+    BIOS, the firmware, the CMOS or the kernel's arguments. Uninstall in CPU Tools disables the service and
+    removes its files; the cores stay on until the next full power off, and the board is then stock. CPU Tools
+    reboots the board between its rounds, by itself with the unattended option, after a question otherwise.
 
 Tells **bad CPU cores** apart from an **unstable core unlock** on the AMD BC-250 (Cyan Skillfish),
 *before* you trust or persist the 8C/16T unlock.
@@ -286,99 +285,102 @@ A BIOS-mod route exists for true permanence
 ([RescueMei/BC250-DXEv3-BIOSMOD](https://github.com/RescueMei/BC250-DXEv3-BIOSMOD)) but is out of
 scope here: this project stays software-only and reversible.
 
-## GUI
+## The window
 
-![BC-250 Cores Unlock](../assets/cores/bc250-cores-unlock.webp){ width="96" }
+![The window of BC-250 CPU Tools](../assets/cores/bc-cores-bisect-gui.webp)
 
-Two separate PyQt6 front-ends ship with the project: a **setup GUI** that
-starts a bisect run, and an **unlock GUI** for the persistence step afterwards. Both are optional —
-everything they do can be typed by hand.
+`cores_bisect` is an optional PyQt6 window for both scripts, on one page. Its top half sets up a run of
+`bc250-cores-bisect.sh` and starts it; its bottom half keeps a tested unlock with `bc250-cores-unlock.sh`. It doesn't
+run the bisect itself: **Start** hands off to a terminal running the exact command line you'd have typed by hand,
+and the window closes. Everything it does can also be typed by hand.
 
-**Recommended: `install.sh`** (from a clone or the extracted release tarball). It installs both
-GUIs at once: a root-owned copy of the toolset in `/opt/bc250-cores-bisect-v<version>` (with
-`/opt/bc250-cores-bisect` pointing at it), a private PyQt6 venv in
-`~/.local/share/bc250-cores-bisect-app/venv`, both launchers in `~/.local/bin`, app menu entries
-and Desktop icons. Run it as your own user — only the copy to `/opt` asks for the sudo password.
+**Starting a run.** The pills under the title:
+
+* **Help**: what the window does, then the script's own `--help` as a page: what the script does, the control,
+  post-control and core items, and every option in a table.
+* **Start**: shows a summary of the options and, after Yes, starts the run in a terminal.
+* **Show status**: runs `--status` in a terminal: the results so far and the report. It starts nothing.
+* **Reset**: runs `--reset` after a question: every saved result and log in `~/.local/share/bc250-cores-bisect` is
+  deleted, and the script asks once more in the terminal.
+
+Under them, on one line: **Load per attempt** (`-t`), **Rounds per item** (`-r`) and **Load tool** (`--load`:
+stress-ng, mprime or both; hover a choice to see what it does, and see
+[Longer burn-in](#longer-burn-in-mprime--rasdaemon)). Beside them is a rough estimate of the whole run, which
+follows the options; its tooltip says how it is reckoned.
+
+The switches are pills that say **On** or **Off**; a click turns one over:
+
+* **Rasdaemon** (`--rasdaemon`) and **Same boot** (`--same-boot`).
+* **Unattended** (`--auto`) turns on **Auto resume** with it. Auto resume writes and enables
+  `~/.config/systemd/user/bc250-cores-bisect-auto.service`, which starts the run again after every reboot and
+  login: the same steps as the [`--auto` checklist](#running-truly-unattended---auto-checklist). The script removes
+  it again once every item is done. It can only be on with Unattended.
+
+**Keeping the unlock.** The window reads the results that `bc250-cores-bisect.sh` left in
+`~/.local/share/bc250-cores-bisect` and only enables **Install** once they accept the unlock. The row for it:
+
+* **Accepted** or **Not accepted**: the verdict on the bisect results. Accepted only when the bisect phase is
+  finished, no attempt is still in progress, control and post-control are clean, and every new core and the
+  combined item passed **every** round. Its tooltip says why, e.g. a failing core or random failures; notes (the
+  control ran fewer rounds, the load changed during the run) are shown there too but don't block.
+* **Install**: enables the root service of `bc250-cores-unlock.sh --install`, which keeps the 8 cores at every
+  boot. It is off until the results accept the unlock.
+* **Uninstall**: removes the service; the cores stay on until the next full power off, then the board is back to
+  the stock 6C/12T.
+* **Refresh**: shows the threads, the service's and the guard's state (`--status`, no root needed; the mask too
+  when sudo needs no password).
+* **Root status**: the same status as root, asking for the sudo password when needed, so it always shows the
+  core presence mask.
+* **Re-check**: reads the bisect results again, for example after more rounds finished, and writes the verdict and
+  its reasons in the log.
+
+Uninstall, Refresh, Root status and Re-check don't depend on the verdict. Install, Uninstall and Root status run
+`bc250-cores-unlock.sh` through `sudo` (a masked password prompt, passed to `sudo -S` only, never stored), and only
+ask for the password when sudo needs one.
+
+Under the row are the 8 physical cores in the order of the script's map: the 6 stock cores, then the 2 the unlock
+adds, each marked `ok` (passed every round), `xx` (fails every time), `??` (random) or `..` (not tested yet). The
+**i** beside them explains the marks.
+
+**Show logs** opens what `bc250-cores-unlock.sh` prints, and **Hide logs** closes it again. When an action fails, a
+red **!** with **Check logs** appears beside the button; it goes away when you open the log.
+
+Hover a field, its label or a pill to see what it does. The window remembers its size and position between runs.
+
+**Installing it: `install.sh`** (from a clone or the extracted release tarball): a root-owned copy of the toolset in
+`/opt/bc250-cores-bisect-v<version>` (with `/opt/bc250-cores-bisect` pointing at it), a private PyQt6 venv in
+`~/.local/share/bc250-cores-bisect-app/venv`, the launcher `~/.local/bin/bc250-cores-bisect-gui`, an app menu entry
+and a Desktop icon. It also removes the separate unlock window of earlier versions. Run it as your own user; only
+the copy to `/opt` asks for the sudo password.
 
 ```bash
-./install.sh                         # install or update both GUIs
-./install.sh --bisect-only           # or --unlock-only
-./install.sh --no-desktop-shortcut   # app menu entries only
-./install.sh --uninstall             # remove the apps; keeps results, settings and logs
+./install.sh                         # install or update
+./install.sh --no-desktop-shortcut   # app menu entry only, no Desktop icon
+bc250-cores-bisect-gui               # or launch it from the app menu
+./install.sh --uninstall             # remove the app; keeps results, settings and logs (and the unlock itself)
 ./install.sh --uninstall --purge     # also remove results, settings, logs and the autostart unit
 ```
 
-Your bisect results stay in `~/.local/share/bc250-cores-bisect`; the installer never touches that
-folder unless you pass `--purge`. Installing also clears out any older per-user install made by the
-`packaging/bazzite/` scripts below, so you don't end up with two menu entries per GUI.
+Your bisect results stay in `~/.local/share/bc250-cores-bisect`; the installer never touches that folder unless
+you pass `--purge`.
 
-### Setup GUI (`cores_bisect`)
-
-A one-screen "initial setup" for `bc250-cores-bisect.sh`: pick the load time, the rounds per item,
-the load tool and the two run-mode switches (`--same-boot`, `--auto`), then click
-**Start Cores Bisect**. The
-window closes and the real run continues in a terminal, exactly as if you had typed the command —
-the GUI only assembles the command line, so the script stays the single source of truth.
-
-- An estimate of the total runtime updates as you change the options.
-- **Load tool** picks between stress-ng, mprime and both; **Also count hardware errors with
-  rasdaemon** adds `--rasdaemon`. See [Longer burn-in](#longer-burn-in-mprime--rasdaemon).
-- **Unattended** can also install and enable the auto-resume login service for you
-  (`~/.config/systemd/user/bc250-cores-bisect-auto.service`), the same thing the
-  [`--auto` checklist](#running-truly-unattended---auto-checklist) describes. The script removes it
-  again once every item is done.
-- **Show status** (`--status`) and **Reset** (`--reset`) run in a terminal too, so the script can
-  still ask for its own confirmation.
-- **Help** shows the script's own `--help`, so it can never drift out of sync.
-
-Per-user alternative, one GUI only (no `/opt`, nothing root-owned):
+Per-user alternative, no `/opt` and nothing root-owned:
 
 ```bash
-bash packaging/bazzite/install-bisect-gui.sh     # venv + launcher + menu entry "BC-250 Cores Bisect"
-bash packaging/bazzite/uninstall-bisect-gui.sh   # removes all of that again (keeps your results)
+bash packaging/bazzite/install-bisect-gui.sh     # venv + launcher + menu entry "BC-250 CPU Tools"
+bash packaging/bazzite/uninstall-bisect-gui.sh   # removes all of that again (keeps your results and the unlock)
 ```
-
-Installed per user under `~/.local/share/bc250-cores-bisect-gui`, launcher
-`~/.local/bin/bc250-cores-bisect-gui`.
-
-### Unlock GUI (`cores_unlock`)
-
-`cores_unlock` is a small PyQt6 front-end for the **persistence** step.
-It doesn't run the bisect — that stays a terminal job, because it reboots and runs for hours — but
-it reads the results that `bc250-cores-bisect.sh` left in `~/.local/share/bc250-cores-bisect` and
-puts `--install` behind a verdict gate:
-
-- **ACCEPTED** only when the bisect phase is finished, no attempt is still in progress, control and
-  post-control are clean, and every new core and the combined item passed **every** round. Notes
-  (e.g. control ran fewer rounds, or loads changed mid-run) are shown but don't block.
-- **NOT ACCEPTED YET** otherwise, with the reason (unfinished, failing core, random failures, …).
-  Install stays disabled; Uninstall, Refresh status, Status with sudo and Re-check always work.
-- A core map shows the 6 stock cores and the 2 unlocked ones (`ok` / `xx` fails / `??` random /
-  `..` not tested).
-
-Install/Uninstall run `bc250-cores-unlock.sh` via sudo; you're only asked for a password when sudo
-actually needs one. Refresh status runs unprivileged (the mask is shown if sudo needs no password);
-Status with sudo runs the same status as root, asking for the password if needed, so the mask is always shown.
-
-**Bazzite (or any desktop, no root or rpm-ostree needed):** per-user alternative to `install.sh`,
-this GUI only:
-
-```bash
-bash packaging/bazzite/install-gui.sh     # venv + launcher + menu entry "BC-250 Cores Unlock"
-bash packaging/bazzite/uninstall-gui.sh   # removes all of that again (not the unlock service)
-```
-
-It installs per user under `~/.local/share/bc250-cores-unlock-gui`, with the launcher
-`~/.local/bin/bc250-cores-unlock-gui`. The names don't clash with each other or with the
-bc250-cu-bisect GUIs, so they can all be installed side by side.
 
 **From a venv (development):**
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m cores_bisect  # --script PATH to use another bc250-cores-bisect.sh
-.venv/bin/python -m cores_unlock         # --script PATH to use another bc250-cores-unlock.sh
+.venv/bin/python -m cores_bisect   # --script PATH and --unlock-script PATH to use other scripts
 ```
+
+A terminal emulator is required to actually see/run the bisect (konsole, gnome-terminal, ptyxis, xfce4-terminal,
+foot, alacritty, kitty, x-terminal-emulator or xterm - `$TERMINAL` is tried first); the window shows an error if
+none is found.
 
 ## Known side effect
 

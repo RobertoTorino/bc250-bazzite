@@ -73,7 +73,7 @@ def test_bazzite_test_first_without_uninstall(window):
     assert "Uninstall" not in menu_texts(window, "check")
     assert "Uninstall" in menu_texts(window, "gpu")
     assert "Open" in menu_texts(window, "acpi")
-    assert menu_texts(window, "cores")[:2] == ["Bisect", "Unlock"]                    # two windows
+    assert menu_texts(window, "cores")[0] == "Open"                                     # CPU Tools: one window
     assert menu_texts(window, "compute")[0] == "Open"                                   # CU Tools: one window
 
 
@@ -126,12 +126,18 @@ def test_a_quickfixes_tile_installs_its_app(window, launched, monkeypatch, home)
     assert {window.states[k].status for k in window.states if k.startswith("quickfix/")} == {"Installing…"}
 
 
-def test_open_menu_shows_each_window_icon(window):
-    for key in ("cores",):
-        actions = window.tile_menu(entry_of(window, key)).actions()[:2]
+def test_open_menu_shows_each_window_icon(qapp, home, settings_dir, tmp_path, launched, monkeypatch):
+    """An app opened two ways lists both, each with an icon: its own from LAUNCH_ICON_FILES, else the app's."""
+    entries = [replace(e, launch=(("Bisect", "~/.local/bin/a"), ("Unlock", "~/.local/bin/b"))) if e.key == "cores"
+               else e for e in load(MANIFEST)]
+    monkeypatch.setattr(mw, "LAUNCH_ICON_FILES", {("cores", "Unlock"): "cores"})
+    w = mw.MainWindow(entries, FakeSources(tmp_path / "work"), Records(tmp_path / "installed.json"))
+    try:
+        actions = w.tile_menu(entry_of(w, "cores")).actions()[:2]
         assert [a.text() for a in actions] == ["Bisect", "Unlock"]
-        assert all(not a.icon().isNull() for a in actions), key
-        assert (mw.APP_ICONS / f"{mw.LAUNCH_ICON_FILES[(key, 'Unlock')]}.webp").is_file()
+        assert all(not a.icon().isNull() for a in actions)
+    finally:
+        w.close()
 
 
 def test_an_app_without_an_icon_file_still_has_a_tile(qapp, home, settings_dir, tmp_path, launched, monkeypatch):

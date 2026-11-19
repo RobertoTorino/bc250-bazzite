@@ -48,9 +48,9 @@ patched RADV of ace, the DirectMesh RADV of mesh, the VRAM split of vram, and th
 
 ## Rules for this suite alone
 
-- **Reboots, the exceptions to "Advice, not reboots"** (owner, 15-10-2026): the bisects of CU Tools and Cores
-  Bisect, whose rounds each need a fresh boot (they ask, or reboot by themselves with `--auto`), and Cores Unlock's
-  boot service, which reboots warm once after a cold boot so the cores come up. A second exception (owner, 16-10-2026): the thermal
+- **Reboots, the exceptions to "Advice, not reboots"** (owner, 15-10-2026): the bisects of CU Tools and CPU
+  Tools, whose rounds each need a fresh boot (they ask, or reboot by themselves with `--auto`), and CPU Tools' core
+  unlock boot service, which reboots warm once after a cold boot so the cores come up. A second exception (owner, 16-10-2026): the thermal
   guard shuts the board down cleanly at a critical temperature, to protect the hardware; the limits are the owner's.
 - **The baseline** was tested extensively on two boards.
 - **chiaki-ng is named only where licensing needs it:** PS Remote Play's LICENSE, the License sections of its README

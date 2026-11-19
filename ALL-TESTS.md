@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3242 test functions (3817 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3252 test functions (3827 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -15,10 +15,10 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/cec](#appscec) | 8 | 98 | 1.6 s |
 | [apps/check](#appscheck) | 3 | 28 | 2.5 s |
 | [apps/clb](#appsclb) | 12 | 87 | 2.9 s |
-| [apps/compute](#appscompute) | 5 | 30 | 0.4 s |
+| [apps/compute](#appscompute) | 5 | 31 | 0.4 s |
 | [apps/consoles](#appsconsoles) | 24 | 235 | 10.1 s |
 | [apps/controller](#appscontroller) | 13 | 164 | 6.3 s |
-| [apps/cores](#appscores) | 3 | 20 | 0.3 s |
+| [apps/cores](#appscores) | 4 | 29 | 0.3 s |
 | [apps/datstation](#appsdatstation) | 7 | 39 | 2.5 s |
 | [apps/fan](#appsfan) | 2 | 38 | 0.5 s |
 | [apps/gpu](#appsgpu) | 11 | 56 | 5.8 s |
@@ -50,7 +50,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 16 | 207 | 29.0 s |
 | [tools](#tools) | 37 | 222 | 11.1 s |
-| **All** | | **3242** | **182 s** |
+| **All** | | **3252** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -505,7 +505,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/compute
 
-30 tests in 5 files, 0.4 s in a local run.
+31 tests in 5 files, 0.4 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -529,6 +529,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_the_numbers_on_one_line_and_the_switches_as_pills` |  |  | The numbers on one line and the switches as pills. |
 | `test_main_window.py` | `test_one_page_with_the_unlock_under_the_bisect` |  |  | One window, one page (owner, 19-11-2026): the bisect's pills, numbers and switches, then the verdict and Install, Uninstall, Refresh and Re-check, the WGP rows, the preview with its i, and the log behind a Show logs / Hide logs button, hidden at the start. |
 | `test_main_window.py` | `test_a_failed_install_shows_a_red_mark_not_a_message` |  |  | A red ! |
+| `test_main_window.py` | `test_hiding_the_log_gives_its_room_back` |  |  | Show logs, then Hide logs: the window is as tall as before and the WGP rows stay together (owner, 20-11-2026: the rows spread over the log's room); a window made taller by hand keeps them together too. |
 | `test_options.py` | `test_defaults_are_the_scripts_own` |  |  | Defaults are the scripts own. |
 | `test_options.py` | `test_every_switch_reaches_the_command_line` |  |  | Every switch reaches the command line. |
 | `test_options.py` | `test_command_is_quoted_for_bash` |  |  | Command is quoted for bash. |
@@ -955,7 +956,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/cores
 
-20 tests in 3 files, 0.3 s in a local run.
+29 tests in 4 files, 0.3 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -966,13 +967,22 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_gate.py` | `test_a_failing_core_rejects_the_whole_unlock` |  |  | A failing core rejects the whole unlock. |
 | `test_gate.py` | `test_aborted_attempts_do_not_count` |  |  | Aborted attempts do not count. |
 | `test_gate.py` | `test_notes_do_not_block` |  |  | Notes do not block. |
-| `test_main_window.py` | `test_bisect_window_has_the_suite_header` |  | 0.1 s | Bisect window has the suite header. |
+| `test_help_page.py` | `test_the_scripts_help_becomes_a_page` |  |  | The scripts help becomes a page. |
+| `test_help_page.py` | `test_a_sentence_above_a_list_of_terms_is_its_paragraph` |  |  | 'For a longer, harsher burn-in ...' then --load and --rasdaemon: a paragraph and a table, not one run-on line. |
+| `test_help_page.py` | `test_what_the_window_does_is_the_first_paragraph` |  |  | What the window does is the first paragraph. |
+| `test_help_page.py` | `test_text_is_escaped_and_an_empty_help_says_so` |  |  | Text is escaped and an empty help says so. |
+| `test_main_window.py` | `test_the_window_has_the_suite_header` |  |  | The window has the suite header. |
 | `test_main_window.py` | `test_start_with_the_defaults` |  |  | Start with the defaults. |
 | `test_main_window.py` | `test_start_with_mprime_and_rasdaemon` |  |  | Start with mprime and rasdaemon. |
 | `test_main_window.py` | `test_unattended_installs_the_resume_unit` |  |  | Unattended installs the resume unit. |
-| `test_main_window.py` | `test_unlock_window_without_results` |  |  | Unlock window without results. |
-| `test_main_window.py` | `test_unlock_window_accepts_a_finished_bisect` |  |  | Unlock window accepts a finished bisect. |
-| `test_main_window.py` | `test_help_and_about_are_pills_under_the_title` |  |  | Help and About are pills under the title (owner, 26-10-2026), of one width; a click opens the dialog. |
+| `test_main_window.py` | `test_the_estimate_is_short_and_follows_the_options` |  |  | The estimate is short and follows the options. |
+| `test_main_window.py` | `test_help_opens_the_scripts_help` |  |  | Help is a pill under the title; a click opens the page. |
+| `test_main_window.py` | `test_the_header_has_four_pills_in_order` |  |  | Help, Start, Show status and Reset under the title, of one width; no About (owner, 20-11-2026). |
+| `test_main_window.py` | `test_the_numbers_on_one_line_and_the_switches_as_pills` |  |  | The numbers on one line and the switches as pills. |
+| `test_main_window.py` | `test_unlock_part_without_results` |  |  | Unlock part without results. |
+| `test_main_window.py` | `test_one_page_with_the_unlock_under_the_bisect` |  |  | One window, one page (owner, 20-11-2026, as CU Tools): the bisect's pills, numbers and switches, then the verdict and Install, Uninstall, Refresh, Root status and Re-check, the 8 cores with their i, and the log behind a Show logs / Hide logs button, hidden at the start. |
+| `test_main_window.py` | `test_a_failed_install_shows_a_red_mark_not_a_message` |  |  | A red ! |
+| `test_main_window.py` | `test_hiding_the_log_gives_its_room_back` |  |  | Show logs, then Hide logs: the window is as tall as before and the cores stay where they were (owner, 20-11-2026: CU Tools' rows spread over the log's room); a window made taller by hand keeps them in place too. |
 | `test_options_and_service.py` | `test_defaults_are_the_scripts_own` |  |  | Defaults are the scripts own. |
 | `test_options_and_service.py` | `test_every_switch_reaches_the_command_line` |  |  | Every switch reaches the command line. |
 | `test_options_and_service.py` | `test_validation` | 4 |  | Validation. |
@@ -3337,7 +3347,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_every_app_has_its_icon` |  | 0.2 s | Every app has its icon. |
 | `test_window.py` | `test_the_quickfixes_are_tiles_of_their_own` |  |  | BC-250 Quickfix: a tile per quickfix in Utilities, none of its own (owner, 15-11-2026); each opens its quickfix, and the board warning names the quickfix that changes the board. |
 | `test_window.py` | `test_a_quickfixes_tile_installs_its_app` |  |  | Reinstall on a quickfix's tile reinstalls BC-250 Quickfix: one install, recorded under the app's key. |
-| `test_window.py` | `test_open_menu_shows_each_window_icon` |  | 0.2 s | Open menu shows each window icon. |
+| `test_window.py` | `test_open_menu_shows_each_window_icon` |  | 0.2 s | An app opened two ways lists both, each with an icon: its own from LAUNCH_ICON_FILES, else the app's. |
 | `test_window.py` | `test_an_app_without_an_icon_file_still_has_a_tile` |  | 0.2 s | An app without an icon file still has a tile. |
 | `test_window.py` | `test_short_names_drop_the_suite_prefix` |  | 0.2 s | Short names drop the suite prefix. |
 | `test_window.py` | `test_a_tile_opens_only_an_installed_program` |  | 0.2 s | A tile opens only an installed program. |

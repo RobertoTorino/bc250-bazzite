@@ -1,3 +1,11 @@
+Changelog: 20-11-2026 00:48:18
+
+Release 25.1.0.
+
+Changelog: 20-11-2026 00:43:46
+
+Added. The CPU Tools tile (BC-250 Cores Bisect before) opens its one window at once; it no longer asks for Bisect or Unlock, and the Unlock window's own icon is gone. An app with more than one way to open still gets the menu.
+
 Changelog: 20-11-2026 00:27:04
 
 Release 25.0.0. Pins bc250-check-v4.0.2, bc250-compute-v1.0.0.

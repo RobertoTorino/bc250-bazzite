@@ -106,7 +106,7 @@ detect = ["~/.local/bin/bc250-bisect-gui"]
 launch = [["Open", "~/.local/bin/bc250-bisect-gui"]]
 
 [apps.cores]
-name = "BC-250 Cores Bisect"
+name = "BC-250 CPU Tools"
 summary = "Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock."
 tag = "bc250-cores-v0.5.3"
 sha256 = "f1fcc0d135e820a0ed684bf66e60588b250281afc9789815e61d068d6e03eb63"
@@ -117,17 +117,17 @@ The app sends the SoC's SMU one mailbox message over PCI configuration space wit
 presence mask to 0xFF in the SMU's own memory; the governor's service is stopped around the message, as it
 shares the mailbox, and started again. The mask takes effect on the next warm reboot, survives warm reboots, and
 a full power off reverts it to the stock 6 cores. The 8 cores stay across power offs only through the root
-service that Cores Unlock installs, bc250-cores-unlock.service, which sends the message again after a cold boot
+service that CPU Tools installs, bc250-cores-unlock.service, which sends the message again after a cold boot
 and warm-reboots once, with a guard against reboot loops. Nothing is written to the BIOS, the firmware, the CMOS
-or the kernel's arguments. Uninstall in Cores Unlock disables the service and removes its files; the cores stay
-on until the next full power off, and the board is then stock. Cores Bisect reboots the board between its
+or the kernel's arguments. Uninstall in CPU Tools disables the service and removes its files; the cores stay
+on until the next full power off, and the board is then stock. CPU Tools reboots the board between its
 rounds, by itself with the unattended option, after a question otherwise.
 """
 category = "sustainable"
 install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-cores-bisect-gui", "~/.local/bin/bc250-cores-unlock-gui"]
-launch = [["Bisect", "~/.local/bin/bc250-cores-bisect-gui"], ["Unlock", "~/.local/bin/bc250-cores-unlock-gui"]]
+detect = ["~/.local/bin/bc250-cores-bisect-gui"]
+launch = [["Open", "~/.local/bin/bc250-cores-bisect-gui"]]
 
 [apps.oc]
 name = "BC-250 GPU OC Bisect"

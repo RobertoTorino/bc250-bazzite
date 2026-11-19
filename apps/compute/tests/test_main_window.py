@@ -230,3 +230,27 @@ def test_a_failed_install_shows_a_red_mark_not_a_message(qapp, unlock_script, st
         assert unlock.failed_label.isHidden() and not unlock.output.isHidden()
     finally:
         window.close()
+
+
+def test_hiding_the_log_gives_its_room_back(qapp, unlock_script, state):
+    """Show logs, then Hide logs: the window is as tall as before and the WGP rows stay together (owner, 20-11-2026:
+    the rows spread over the log's room); a window made taller by hand keeps them together too."""
+    state()
+    window = bisect_window.MainWindow(SCRIPT, str(unlock_script))
+    unlock = window.unlock
+    try:
+        window.show()
+        assert _wait_for(lambda: not unlock.runner.busy)
+        rows = lambda: [unlock.cu_map._cells[r][0].y() for r in range(4)]  # noqa: E731
+        height, before = window.height(), rows()
+        unlock.logs_button.click()
+        qapp.processEvents()
+        assert window.height() > height
+        unlock.logs_button.click()
+        qapp.processEvents()
+        assert window.height() == height and rows() == before
+        window.resize(window.width(), height + 300)
+        qapp.processEvents()
+        assert rows() == before and unlock.cu_map.height() == unlock.cu_map.sizeHint().height()
+    finally:
+        window.close()

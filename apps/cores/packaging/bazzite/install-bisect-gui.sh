@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Self-install for Bazzite (and any other immutable/rpm-ostree-based desktop): sets up
-# cores_bisect in a private venv under ~/.local, with a launcher, .desktop entry and
-# icon. Nothing here touches rpm-ostree or needs root - the GUI itself only assembles a command
-# line and starts bc250-cores-bisect.sh in a terminal, same as running it by hand (see the manual).
-#
-# Names are distinct from the unlock GUI (bc250-cores-unlock-gui), so both can be installed.
+# cores_bisect, the one window for the core bisect and the core unlock (BC-250 CPU Tools), in a private venv
+# under ~/.local, with a launcher, .desktop entry and icon. Nothing here touches rpm-ostree or needs root - the
+# window starts bc250-cores-bisect.sh in a terminal, and only its Install, Uninstall and Root status run
+# bc250-cores-unlock.sh through sudo. The separate unlock window of before (bc250-cores-unlock-gui) is removed.
 #
 # Usage: run from inside a clone (or release archive) of this repo:
 #   bash packaging/bazzite/install-bisect-gui.sh
@@ -15,7 +14,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-for f in cores_bisect/__main__.py bc250-cores-bisect.sh \
+for f in cores_bisect/__main__.py bc250-cores-bisect.sh bc250-cores-unlock.sh \
          images/bc250-cores-bisect.webp images/bc250-cores-bisect-128.png requirements.txt VERSION; do
   if [ ! -e "$REPO_ROOT/$f" ]; then
     echo "error: $f not found under $REPO_ROOT - run this from a clone of bc250-cores-bisect" >&2
@@ -38,8 +37,8 @@ rm -rf "$APP_SRC"
 mkdir -p "$APP_SRC/images"
 cp -R "$REPO_ROOT/cores_bisect" "$APP_SRC/"
 rm -rf "$APP_SRC/cores_bisect/__pycache__"
-cp "$REPO_ROOT/bc250-cores-bisect.sh" "$APP_SRC/bc250-cores-bisect.sh"
-chmod +x "$APP_SRC/bc250-cores-bisect.sh"
+cp "$REPO_ROOT/bc250-cores-bisect.sh" "$REPO_ROOT/bc250-cores-unlock.sh" "$APP_SRC/"
+chmod +x "$APP_SRC/bc250-cores-bisect.sh" "$APP_SRC/bc250-cores-unlock.sh"
 cp "$REPO_ROOT/requirements.txt" "$REPO_ROOT/VERSION" "$APP_SRC/"
 cp "$REPO_ROOT/images/bc250-cores-bisect.webp" "$REPO_ROOT/images/bc250-cores-bisect-128.png" "$APP_SRC/images/"
 
@@ -65,7 +64,8 @@ cat > "$LAUNCHER" <<EOF
 # file too - check it first if the app ever fails to start (e.g. a bouncing launcher icon that
 # never shows a window).
 LOG="$APP_DIR/launch.log"
-cd "$APP_SRC" && exec "$VENV_DIR/bin/python" -m cores_bisect --script "$APP_SRC/bc250-cores-bisect.sh" "\$@" >"\$LOG" 2>&1
+cd "$APP_SRC" && exec "$VENV_DIR/bin/python" -m cores_bisect --script "$APP_SRC/bc250-cores-bisect.sh" \
+  --unlock-script "$APP_SRC/bc250-cores-unlock.sh" "\$@" >"\$LOG" 2>&1
 EOF
 chmod +x "$LAUNCHER"
 
@@ -79,6 +79,12 @@ rm -f "$DATA_HOME/icons/hicolor/512x512/apps/bc250-cores-bisect.png"   # the 512
 sed -e "s#^Exec=.*#Exec=$LAUNCHER#" -e "s#^Icon=.*#Icon=$ICON_FILE#" \
   "$REPO_ROOT/packaging/common/bc250-cores-bisect.desktop" > "$DESKTOP_FILE"
 
+# The separate unlock window of before: this window has it now.
+if [ -e "$BIN_HOME/bc250-cores-unlock-gui" ] || [ -e "$DATA_HOME/bc250-cores-unlock-gui" ]; then
+  echo "==> Removing the separate unlock window of before (this window has it now)"
+  bash "$SCRIPT_DIR/uninstall-gui.sh" >/dev/null
+fi
+
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$DATA_HOME/applications" >/dev/null 2>&1 || true
 command -v gtk-update-icon-cache >/dev/null 2>&1 && gtk-update-icon-cache -f -t "$DATA_HOME/icons/hicolor" >/dev/null 2>&1 || true
 command -v kbuildsycoca6 >/dev/null 2>&1 && kbuildsycoca6 --noincremental >/dev/null 2>&1 || true
@@ -86,7 +92,7 @@ command -v kbuildsycoca5 >/dev/null 2>&1 && kbuildsycoca5 --noincremental >/dev/
 
 cat <<EOF
 
-Done. BC-250 Cores Bisect setup GUI is installed for your user account only:
+Done. BC-250 CPU Tools is installed for your user account only:
   - app + venv: $APP_DIR
   - launcher:   $LAUNCHER
   - menu entry: $DESKTOP_FILE

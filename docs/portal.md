@@ -40,8 +40,7 @@ mouse:
   the app is not installed. Hover over the tile to see what the app does, its state and the release this portal
   pins.
 - **The name**, without the suite's "BC-250" prefix.
-- **Press the tile** (click it, Enter, or A on the controller) to open the app; an app with two windows (Cores
-  Bisect) asks which one. Pressing a tile that is not installed offers to install it. An app that is open
+- **Press the tile** (click it, Enter, or A on the controller) to open the app; an app with more than one window asks which one. Pressing a tile that is not installed offers to install it. An app that is open
   already, also one behind the portal or minimized, comes to the front instead, without the board warning again;
   that needs KDE's desktop (KWin), which Bazzite's desktop is.
 - **Update** (a right click, or Y on the controller): installs the tile's update or reinstall at once; an app
@@ -340,7 +339,7 @@ removes.
 | App | Still active on the board after its uninstall | Undo it with |
 |---|---|---|
 | CU Tools | A persisted CU unlock: `bc250-cu-unlock.service` at every boot | **Uninstall** in CU Tools, or `sudo /usr/local/sbin/bc250-cu-unlock.sh --uninstall`; stock CUs after the next reboot |
-| Cores Bisect / Unlock | A persisted core unlock: its boot service | **Uninstall** in the Unlock app, or `sudo /usr/local/sbin/bc250-cores-unlock.sh --uninstall`; stock cores after the next full power off |
+| CPU Tools | A persisted core unlock: its boot service | **Uninstall** in CPU Tools, or `sudo /usr/local/sbin/bc250-cores-unlock.sh --uninstall`; stock cores after the next full power off |
 | GPU OC Bisect | The installed overclock in the governor's `config.toml` | **Uninstall** in the app, or `bc250-gpu-oc-bisect.sh --uninstall`: restores the backup |
 | Persistent ACPI | The ACPI override (`/boot/acpi_override.cpio` and its GRUB line) | **Uninstall** in the app, or `sudo ./bc250-acpi-override.sh --uninstall`; then reboot |
 | ACE Queues | An installed patched driver | **Remove** in the app |

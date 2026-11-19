@@ -67,7 +67,7 @@ nav:
       - Covers from SteamGridDB: apps/covers.md
       - Sustainable:
           - BC-250 Board Test: apps/check.md
-          - BC-250 Cores Bisect: apps/cores.md
+          - BC-250 CPU Tools: apps/cores.md
           - BC-250 CU Tools: apps/compute.md
           - BC-250 Fan Control: apps/fan.md
           - BC-250 GPU Manager: apps/gpu.md

@@ -248,7 +248,7 @@ FAMILIES = [
         ("#8b0000", "family", "Active red: the GPU Governor's active button (a toggled-on state, not an error)."),
         ("#a00000", "family", "Active red under the pointer."),
         ("#e57373", "tint", "Red text on a dark surface: the check app's findings, log, in-game checks, history and "
-                            "scores; the error labels of ACPI, CU Tools and Cores Unlock; SFTP Tools' password "
+                            "scores; the error labels of ACPI, CU Tools and CPU Tools; SFTP Tools' password "
                             "advice not followed."),
         ("#e8505b", "brand", "PlayStation's circle: BC-250 Controller's circle button, DatStation's circle symbol."),
         ("#ff2020", "hardware", "The light bar's red; `#ff0000` the color wheel's."),
@@ -387,7 +387,7 @@ CHECK_TEXT = [
     ("#222222", "Text on the system score boxes."),
     ("#333333", "Labels on the graph's bars."),
     ("#e57373", "Error findings; a worse result in the history; a low score; the log's errors; error labels (also in "
-                "ACPI, CU Tools and Cores Unlock); the in-game error."),
+                "ACPI, CU Tools and CPU Tools); the in-game error."),
     ("#ffb74d", "Warning findings; a middle score; the log's warnings; the in-game warning."),
     ("#64b5f6", "Info and hint findings."),
     ("#81c784", "A better result in the history; the log's success; a full score; the in-game ok."),
@@ -419,7 +419,7 @@ CHECK_BLOCKS = [
 ]
 
 OTHER_TEXT = [
-    ("#888888", "Busy and hint labels in italics (ACPI, Cores Bisect, Cores Unlock)."),
+    ("#888888", "Busy and hint labels in italics (ACPI, CPU Tools)."),
     ("#ef6c00", "An incomplete ACPI override; a CU mask that needs checking."),
     ("#b8b8c8", "System Overlay: the names of the values."),
     ("#dddddd", "PS Remote Play's stream view."),

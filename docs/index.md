@@ -43,7 +43,7 @@ frequency scaling.
 <div class="home-card" markdown>
 #### :material-lock-open-variant: Unlocks
 
-[CU Tools](apps/compute.md) and [Cores Bisect](apps/cores.md) tell bad CUs and cores apart from an
+[CU Tools](apps/compute.md) and [CPU Tools](apps/cores.md) tell bad CUs and cores apart from an
 unstable unlock, and [Memory Manager](apps/vram.md) sets the VRAM split.
 </div>
 <div class="home-card" markdown>

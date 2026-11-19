@@ -2,8 +2,8 @@
 
 [Desktop Entry]
 Type=Application
-Name=BC-250 Cores Bisect
-Comment=Set up and start a BC-250 CPU core bisect run
+Name=BC-250 CPU Tools
+Comment=Find bad CPU cores with bc250-cores-bisect.sh, then keep a tested 8C/16T core unlock
 Exec=bc250-cores-bisect-gui
 Icon=bc250-cores-bisect
 Terminal=false

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Entry point: python -m cores_bisect [--script PATH]"""
+"""Entry point: python -m cores_bisect [--script PATH] [--unlock-script PATH]"""
 
 from __future__ import annotations
 
@@ -17,11 +17,13 @@ from . import exit_keys, instance
 from .theme import HOVER_STYLESHEET, apply_theme
 
 DEFAULT_SCRIPT = ROOT / "bc250-cores-bisect.sh"
+DEFAULT_UNLOCK_SCRIPT = ROOT / "bc250-cores-unlock.sh"
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="cores_bisect", description=f"{APP_NAME} {__version__}")
     parser.add_argument("--script", default=str(DEFAULT_SCRIPT), help="path to bc250-cores-bisect.sh")
+    parser.add_argument("--unlock-script", default=str(DEFAULT_UNLOCK_SCRIPT), help="path to bc250-cores-unlock.sh")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args, qt_args = parser.parse_known_args()
 
@@ -38,14 +40,16 @@ def main() -> int:
         app.setWindowIcon(QIcon(str(WINDOW_ICON_PATH)))
 
     script = Path(args.script).resolve()
-    if not script.is_file():
-        QMessageBox.critical(None, APP_NAME, f"bc250-cores-bisect.sh not found:\n{script}")
-        return 1
+    unlock_script = Path(args.unlock_script).resolve()
+    for path in (script, unlock_script):
+        if not path.is_file():
+            QMessageBox.critical(None, APP_NAME, f"{path.name} not found:\n{path}")
+            return 1
 
     # One instance: a second launch brings the running window to the front and exits.
     if instance.already_running(APP_ID):
         return 0
-    window = MainWindow(str(script))
+    window = MainWindow(str(script), str(unlock_script))
     window.show()
     server = instance.serve(APP_ID, window)  # noqa: F841 (kept alive while the app runs)
     return app.exec()

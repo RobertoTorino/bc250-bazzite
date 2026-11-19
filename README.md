@@ -41,7 +41,7 @@ By category, as the portal lists them.
 - <img src="portal/images/apps/check.webp" width="20" height="20" alt=""/> **[BC-250 Board Test](apps/check)**: Read-only diagnostics, stress test and benchmarks. Always installed.
 - <img src="portal/images/apps/gpu.webp" width="20" height="20" alt=""/> **[BC-250 GPU Manager](apps/gpu)**: Manage the cyan-skillfish GPU governor: tuning, safe points, profiles, backups.
 - <img src="portal/images/apps/compute.webp" width="20" height="20" alt=""/> **[BC-250 CU Tools](apps/compute)**: Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock.
-- <img src="portal/images/apps/cores.webp" width="20" height="20" alt=""/> **[BC-250 Cores Bisect](apps/cores)**: Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock.
+- <img src="portal/images/apps/cores.webp" width="20" height="20" alt=""/> **[BC-250 CPU Tools](apps/cores)**: Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock.
 - <img src="portal/images/apps/oc.webp" width="20" height="20" alt=""/> **[BC-250 GPU OC Bisect](apps/oc)**: Find your board's safe GPU overclock and undervolt, one step at a time.
 - <img src="portal/images/apps/acpi.webp" width="20" height="20" alt=""/> **[BC-250 Persistent ACPI](apps/acpi)**: CPU C-states and frequency scaling through a persistent ACPI override (GRUB early initrd).
 - <img src="portal/images/apps/vram.webp" width="20" height="20" alt=""/> **[BC-250 Memory Manager](apps/vram)**: The VRAM split in CMOS, with the GTT, TTM limit and swap layout that go with it.

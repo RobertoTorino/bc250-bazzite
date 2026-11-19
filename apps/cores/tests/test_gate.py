@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from cores_unlock.gate import check, verdict
+from cores_bisect.gate import check, verdict
 from conftest import all_passed
 
 

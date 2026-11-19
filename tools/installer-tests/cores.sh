@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Exercise apps/cores/install.sh: install from the checkout (root-owned versioned /opt copy, one venv, two
-# launchers), --bisect-only and --no-desktop-shortcut, a staged release replacing it, the refusal to run as root,
-# and uninstall with and without --purge. Runs with the shims from shims.sh (CI).
+# Exercise apps/cores/install.sh: install from the checkout (root-owned versioned /opt copy, one venv, one
+# launcher: CPU Tools' one window), the separate unlock window of before removed, --no-desktop-shortcut, a staged
+# release replacing it, the refusal to run as root, and uninstall with and without --purge. Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 NEXUS=$SUITE                        # the repository: the Nexus tools (stage_app.py) and core/
@@ -16,7 +16,7 @@ V=$(tr -d '[:space:]' < "$SUITE/apps/cores/VERSION")
 APP=bc250-cores-bisect
 L=$T/opt/$APP
 
-echo "== 1. install both GUIs from the suite checkout"
+echo "== 1. install the app from the suite checkout"
 bash "$SUITE/apps/cores/install.sh" > "$T/log1" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "versioned /opt copy" "[ -f $T/opt/$APP-v$V/bc250-cores-bisect.sh ]"
@@ -26,19 +26,20 @@ check "no staging folder left" "! ls -d $T/opt/.$APP-* >/dev/null 2>&1"
 check "no caches copied" "! find $L/ -name __pycache__ | grep -q ."
 check "own venv" "[ -x $D/$APP-app/venv/bin/python ]"
 check "bisect launcher" "grep -qF 'exec \"$D/$APP-app/venv/bin/python\" -m cores_bisect' $HOME/.local/bin/bc250-cores-bisect-gui"
-check "unlock launcher" "grep -qF 'exec \"$D/$APP-app/venv/bin/python\" -m cores_unlock' $HOME/.local/bin/bc250-cores-unlock-gui"
-check "launchers cd into the /opt link" "grep -q \"cd \\\"$L\\\"\" $HOME/.local/bin/bc250-cores-bisect-gui && grep -q \"cd \\\"$L\\\"\" $HOME/.local/bin/bc250-cores-unlock-gui"
-check "menu entries" "grep -qx 'Exec=$HOME/.local/bin/bc250-cores-bisect-gui' $D/applications/bc250-cores-bisect-gui.desktop && grep -qx 'Exec=$HOME/.local/bin/bc250-cores-unlock-gui' $D/applications/bc250-cores-unlock.desktop"
-check "icons from /opt" "grep -qx 'Icon=$L/images/bc250-cores-unlock-128.png' $D/applications/bc250-cores-unlock.desktop && [ -f $L/images/$APP.webp ] && [ -f $L/images/$APP-128.png ]"
-check "desktop icons, executable" "[ -x $HOME/Desktop/bc250-cores-bisect-gui.desktop ] && [ -x $HOME/Desktop/bc250-cores-unlock.desktop ]"
+check "launcher cds into the /opt link" "grep -q \"cd \\\"$L\\\"\" $HOME/.local/bin/bc250-cores-bisect-gui"
+check "menu entry" "grep -qx 'Exec=$HOME/.local/bin/bc250-cores-bisect-gui' $D/applications/bc250-cores-bisect-gui.desktop && grep -qx 'Name=BC-250 CPU Tools' $D/applications/bc250-cores-bisect-gui.desktop"
+check "icon from /opt" "grep -qx 'Icon=$L/images/$APP-128.png' $D/applications/bc250-cores-bisect-gui.desktop && [ -f $L/images/$APP.webp ]"
+check "desktop icon, executable" "[ -x $HOME/Desktop/bc250-cores-bisect-gui.desktop ]"
+check "no unlock window" "[ ! -e $HOME/.local/bin/bc250-cores-unlock-gui ] && [ ! -e $D/applications/bc250-cores-unlock.desktop ] && [ ! -e $L/cores_unlock ]"
 
-echo "== 2. bisect GUI only, without the Desktop icon"
-bash "$SUITE/apps/cores/install.sh" --bisect-only --no-desktop-shortcut > "$T/log2" 2>&1; rc=$?
+echo "== 2. an update removes the separate unlock window of before; without the Desktop icon"
+touch "$HOME/.local/bin/bc250-cores-unlock-gui" "$D/applications/bc250-cores-unlock.desktop" "$HOME/Desktop/bc250-cores-unlock.desktop"
+bash "$SUITE/apps/cores/install.sh" --no-desktop-shortcut > "$T/log2" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "unlock launcher and entries removed" "[ ! -e $HOME/.local/bin/bc250-cores-unlock-gui ] && [ ! -e $D/applications/bc250-cores-unlock.desktop ] && [ ! -e $HOME/Desktop/bc250-cores-unlock.desktop ]"
-check "bisect kept, Desktop icon removed" "[ -x $HOME/.local/bin/bc250-cores-bisect-gui ] && [ ! -e $HOME/Desktop/bc250-cores-bisect-gui.desktop ]"
-bash "$SUITE/apps/cores/install.sh" --bisect-only --unlock-only > "$T/log2b" 2>&1; rc=$?
-check "--bisect-only with --unlock-only refused" "[ $rc -ne 0 ] && grep -q 'cannot be combined' $T/log2b"
+check "launcher kept, Desktop icon removed" "[ -x $HOME/.local/bin/bc250-cores-bisect-gui ] && [ ! -e $HOME/Desktop/bc250-cores-bisect-gui.desktop ]"
+bash "$SUITE/apps/cores/install.sh" --bisect-only > "$T/log2b" 2>&1; rc=$?
+check "--bisect-only is gone" "[ $rc -ne 0 ] && grep -q 'Unknown option' $T/log2b"
 
 echo "== 3. install a staged release with a new version"
 rm -rf "$T/stage"; /usr/bin/python3 "$NEXUS/tools/stage_app.py" cores "$T/stage" > /dev/null
@@ -48,7 +49,7 @@ bash "$T/stage/install.sh" > "$T/log3" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "new version linked" "[ \"\$(readlink $L)\" = $APP-v9.9.9 ]"
 check "old version removed" "[ ! -d $T/opt/$APP-v$V ]"
-check "both launchers back" "[ -x $HOME/.local/bin/bc250-cores-bisect-gui ] && [ -x $HOME/.local/bin/bc250-cores-unlock-gui ]"
+check "launcher back" "[ -x $HOME/.local/bin/bc250-cores-bisect-gui ]"
 
 echo "== 4. refuses to run as root"
 fakeroot -- bash "$T/stage/install.sh" > "$T/log4" 2>&1; rc=$?

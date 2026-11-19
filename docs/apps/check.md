@@ -938,7 +938,7 @@ Verify with `sudo dmesg | grep -iE 'ACPI.*(SSDT|Table Upgrade)'` — or just rer
 - Known side effect: `pp_dpm_sclk` reports nonsense clocks afterwards — tests 19/40 would
   flag that.
 
-Or use [BC-250 Cores Bisect](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/cores) (a suite app),
+Or use [BC-250 CPU Tools](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/cores) (a suite app),
 which does its own unlock and also makes it **persistent**:
 
 1. **Test first:** `bc250-cores-bisect.sh` runs a control on the stock cores, unlocks, then tests each

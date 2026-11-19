@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import wave
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -667,10 +668,18 @@ def test_a_tile_that_is_not_installed_offers_to_install_it(made, monkeypatch):
     assert len(asked) == 2 and "changes how your BC-250 runs" in warned[0] and started[-1] == ("acpi", "install")
 
 
+def two_ways(entries):
+    """The manifest with cores opened two ways, as an app with two windows would be (none has since CPU Tools)."""
+    return [replace(e, launch=(("Bisect", "~/.local/bin/a"), ("Unlock", "~/.local/bin/b"))) if e.key == "cores" else e
+            for e in entries]
+
+
 def test_an_app_with_several_ways_to_open_offers_a_menu(made, monkeypatch):
+    real = load
+    monkeypatch.setitem(globals(), "load", lambda path: two_ways(real(path)))     # make_window's manifest
     window, _ = made()
     start(window)
-    window.states["cores"].show_state(True, "local")       # Cores Bisect has two windows (CU Tools has one now)
+    window.states["cores"].show_state(True, "local")
     shown = []
     monkeypatch.setattr(mw.QMenu, "exec", lambda self, *a: shown.append([a.text() for a in self.actions()]))
     window.big.tiles["cores"].click()
@@ -695,7 +704,7 @@ def test_the_tile_menu_holds_every_action(made, monkeypatch, home):
     check = window.entries[0]                                  # check goes with the portal: no Uninstall
     assert [a.text() for a in window.tile_menu(check).actions() if not a.isSeparator()] == ["Open", "Install"]
     cores = next(e for e in window.entries if e.key == "cores")
-    assert [a.text() for a in window.tile_menu(cores).actions()][:2] == ["Bisect", "Unlock"]
+    assert [a.text() for a in window.tile_menu(cores).actions()][0] == "Open"          # CPU Tools: one window
     shown = []
     monkeypatch.setattr(mw.QMenu, "exec", lambda self, *a: shown.append([a.text() for a in self.actions()]))
     window.big.tiles["gpu"].setFocus()

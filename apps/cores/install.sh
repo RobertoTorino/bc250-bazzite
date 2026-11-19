@@ -1,25 +1,23 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs the BC-250 Cores toolset (bisect GUI + unlock GUI) as desktop apps, from a clone or the
-# extracted release tarball:
+# Installs BC-250 CPU Tools, one window for the core bisect and the core unlock, as a desktop app, from a clone or
+# the extracted release tarball:
 #
-#   ./install.sh                         # install or update both GUIs
-#   ./install.sh --bisect-only           # only the bisect GUI
-#   ./install.sh --unlock-only           # only the unlock GUI
-#   ./install.sh --no-desktop-shortcut   # app menu entries only, no icons on the Desktop
-#   ./install.sh --uninstall             # remove the apps; keeps results, settings and logs
+#   ./install.sh                         # install or update the app
+#   ./install.sh --no-desktop-shortcut   # app menu entry only, no icon on the Desktop
+#   ./install.sh --uninstall             # remove the app; keeps results, settings and logs
 #   ./install.sh --uninstall --purge     # also remove results, settings, logs and the autostart unit
 #
 # Run it as your own user, not with sudo: only the copy to /opt asks for the sudo password.
 #  * /opt/bc250-cores-bisect-v<version>, root-owned (so the scripts that run under sudo cannot be
 #    changed by a normal user), with /opt/bc250-cores-bisect pointing at it; older versions go.
 #  * ~/.local/share/bc250-cores-bisect-app/venv with PyQt6 (the wheels bundle Qt; nothing is layered).
-#  * ~/.local/bin/bc250-cores-bisect-gui and ~/.local/bin/bc250-cores-unlock-gui to start them from
-#    a terminal, plus app menu entries and Desktop icons.
+#  * ~/.local/bin/bc250-cores-bisect-gui to start it from a terminal, plus an app menu entry and a Desktop icon.
+#    The separate unlock window of before (bc250-cores-unlock-gui) is removed: this window has it now.
 set -euo pipefail
 
 APP_ID="bc250-cores-bisect"
-APP_NAME="BC-250 Cores"
+APP_NAME="BC-250 CPU Tools"
 OPT_DIR="${BC250_OPT_DIR:-/opt}"            # override only for testing
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -32,8 +30,9 @@ LINK="$OPT_DIR/$APP_ID"
 AUTO_UNIT="$CONFIG_DIR/systemd/user/bc250-cores-bisect-auto.service"
 
 BISECT_LAUNCHER="$BIN_DIR/bc250-cores-bisect-gui"
-UNLOCK_LAUNCHER="$BIN_DIR/bc250-cores-unlock-gui"
 BISECT_DESKTOP="bc250-cores-bisect-gui.desktop"
+# The separate unlock window of before: its launcher and entry go on an install, an update and an uninstall.
+UNLOCK_LAUNCHER="$BIN_DIR/bc250-cores-unlock-gui"
 UNLOCK_DESKTOP="bc250-cores-unlock.desktop"
 
 SRC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
@@ -45,25 +44,20 @@ as_root() {
     if [ "$(id -u)" -eq 0 ]; then "$@"; else sudo "$@"; fi
 }
 
-usage() { sed -n '3,12p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '3,10p' "$0" | sed 's/^# \{0,1\}//'; }
 
 DESKTOP_SHORTCUT=true
 UNINSTALL=false
 PURGE=false
-WANT_BISECT=true
-WANT_UNLOCK=true
 for arg in "$@"; do
     case "$arg" in
         --no-desktop-shortcut) DESKTOP_SHORTCUT=false ;;
-        --bisect-only) WANT_UNLOCK=false ;;
-        --unlock-only) WANT_BISECT=false ;;
         --uninstall) UNINSTALL=true ;;
         --purge) PURGE=true ;;
         -h|--help) usage; exit 0 ;;
         *) usage >&2; die "Unknown option: $arg" ;;
     esac
 done
-$WANT_BISECT || $WANT_UNLOCK || die "--bisect-only and --unlock-only cannot be combined."
 $PURGE && ! $UNINSTALL && die "--purge only goes with --uninstall."
 
 refresh_menu() {
@@ -138,10 +132,9 @@ if $UNINSTALL; then
 fi
 
 # --- Checks ------------------------------------------------------------------------------------
-[ "$(uname -s)" = Linux ] || die "These apps run on Linux (Bazzite) only."
+[ "$(uname -s)" = Linux ] || die "This app runs on Linux (Bazzite) only."
 for f in bc250-cores-bisect.sh bc250-cores-unlock.sh requirements.txt VERSION \
-         cores_bisect/__main__.py cores_unlock/__main__.py "images/$APP_ID.webp" \
-         "images/$APP_ID-128.png" images/bc250-cores-unlock.webp images/bc250-cores-unlock-128.png; do
+         cores_bisect/__main__.py "images/$APP_ID.webp" "images/$APP_ID-128.png"; do
     [ -f "$SRC/$f" ] || die "$f is missing: run install.sh from a clone or the extracted release folder."
 done
 VERSION=$(tr -d '[:space:]' <"$SRC/VERSION")
@@ -240,26 +233,16 @@ StartupWMClass=$2"
     fi
 }
 
-if $WANT_BISECT; then
-    info "Creating the launcher $BISECT_LAUNCHER and its menu entry"
-    write_launcher "$BISECT_LAUNCHER" cores_bisect
-    write_entry "$BISECT_DESKTOP" bc250-cores-bisect-gui "BC-250 Cores Bisect" \
-        "Set up and start a BC-250 CPU core bisect run" "$BISECT_LAUNCHER" "$APP_ID"
-else
-    rm -f "$BISECT_LAUNCHER" "$DATA_DIR/applications/$BISECT_DESKTOP" "$DESKTOP_DIR/$BISECT_DESKTOP"
-fi
-
-if $WANT_UNLOCK; then
-    info "Creating the launcher $UNLOCK_LAUNCHER and its menu entry"
-    write_launcher "$UNLOCK_LAUNCHER" cores_unlock
-    write_entry "$UNLOCK_DESKTOP" bc250-cores-unlock "BC-250 Cores Unlock" \
-        "Persist a validated BC-250 8C/16T core unlock across reboots" "$UNLOCK_LAUNCHER" bc250-cores-unlock
-else
+info "Creating the launcher $BISECT_LAUNCHER and its menu entry"
+write_launcher "$BISECT_LAUNCHER" cores_bisect
+write_entry "$BISECT_DESKTOP" bc250-cores-bisect-gui "BC-250 CPU Tools" \
+    "Find bad CPU cores with bc250-cores-bisect.sh, then keep a tested 8C/16T core unlock" "$BISECT_LAUNCHER" "$APP_ID"
+if [ -e "$UNLOCK_LAUNCHER" ] || [ -e "$DATA_DIR/applications/$UNLOCK_DESKTOP" ] || [ -e "$DESKTOP_DIR/$UNLOCK_DESKTOP" ]; then
+    info "Removing the separate unlock window of before (this window has it now)"
     rm -f "$UNLOCK_LAUNCHER" "$DATA_DIR/applications/$UNLOCK_DESKTOP" "$DESKTOP_DIR/$UNLOCK_DESKTOP"
 fi
 refresh_menu
 
-info "Done. Start the apps from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run:"
-$WANT_BISECT && info "  bc250-cores-bisect-gui   (or $LINK/bc250-cores-bisect.sh in a terminal)"
-$WANT_UNLOCK && info "  bc250-cores-unlock-gui   (or $LINK/bc250-cores-unlock.sh in a terminal)"
+info "Done. Start the app from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run:"
+info "  bc250-cores-bisect-gui   (or $LINK/bc250-cores-bisect.sh and $LINK/bc250-cores-unlock.sh in a terminal)"
 case ":$PATH:" in *":$BIN_DIR:"*) ;; *) info "Note: $BIN_DIR is not on your PATH, so the terminal commands need the full path." ;; esac

@@ -158,7 +158,7 @@ def test_missing_tools_advise_what_they_are_needed_for(qapp):
     installed = frozenset({"bios", "cores", "check"})
     advice = tool_advice(tools["stress-ng"], installed, load_apps(CATALOG))
     assert advice.startswith("<b>Advice:</b> Install stress-ng to be able to use:")
-    assert "BC-250 Cores Bisect</a>: Verified CPU load during core testing. <b>(required)</b>" in advice
+    assert "BC-250 CPU Tools</a>: Verified CPU load during core testing. <b>(required)</b>" in advice
     assert "BC-250 Board Test</a>: CPU stress/load tests and CPU benchmark.</li>" in advice
     assert "Install speedtest or speedtest-cli" in tool_advice(tools["speedtest"], installed, load_apps(CATALOG))
     assert "Install a flashrom that has it" in tool_advice(tools["flashrom"], installed, load_apps(CATALOG),

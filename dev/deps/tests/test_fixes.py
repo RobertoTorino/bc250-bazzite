@@ -71,7 +71,7 @@ def test_missing_and_outdated_packages_go_into_their_own_venv():
 
 def test_a_missing_required_tool_comes_from_homebrew_first_then_rpm_ostree():
     t = tools()
-    missing = [ToolStatus(t["stress-ng"]), ToolStatus(t["setpci"])]             # both required by Cores Bisect
+    missing = [ToolStatus(t["stress-ng"]), ToolStatus(t["setpci"])]             # both required by CPU Tools
     steps = plan(result(tool_results=missing), which_all).steps
     assert [(s.kind, s.command) for s in steps] == [
         ("brew", ("/usr/bin/brew", "install", "stress-ng")),
@@ -174,7 +174,7 @@ def test_the_machines_updates_alone_make_a_notification_with_fix():
 def test_a_flattened_image_installs_with_dnf_and_a_checkbox_per_package(atomic):
     """No ostree (a PS5 image): the Fedora package with dnf through pkexec, there at once, no rpm-ostree."""
     atomic.unlink()
-    missing = [ToolStatus(tools()["setpci"])]                                   # required by Cores Bisect
+    missing = [ToolStatus(tools()["setpci"])]                                   # required by CPU Tools
     steps = plan(result(tool_results=missing), only_dnf).steps
     assert [(step.kind, step.command, step.restart, step.packages) for step in steps] == [
         ("dnf", ("pkexec", "dnf", "install", "-y", "pciutils"), False, ("pciutils",))]
