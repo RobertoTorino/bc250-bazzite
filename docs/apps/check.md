@@ -453,13 +453,12 @@ test lists every Wi-Fi adapter it finds, with its USB or PCI ID and its driver, 
   the test gives the `modprobe` command;
 * **firmware missing**: the driver took the adapter but did not get its firmware file at this boot;
 * **no driver**: the running kernel has no driver for the stick's ID, so it does not work on Bazzite as it is;
-* **storage mode**: the stick shows up as a small disk with the Windows driver. An AIC8800D80 stick (the UGREEN
-  AX900 and others) needs [BC-250 Wi-Fi Adapter](wifi.md), which builds its driver; another stick switches when
-  its disk is ejected.
+* **storage mode**: the stick shows up as a small disk with the Windows driver. Most sticks switch when that disk
+  is ejected. An AIC8800D80 stick (the UGREEN AX900 and others) has no driver in Bazzite's kernel, so it does not
+  work on Bazzite as it is.
 
-With BC-250 Wi-Fi Adapter's driver installed, the test also checks its service: enabled, its last run without an
-error, the driver built for the running kernel and loaded. The test only reads: it loads no module and switches no
-stick. No adapter at all is reported, not a warning: the network cable needs nothing.
+Sticks with a Realtek (rtw88, rtw89) or MediaTek (mt76) chip mostly have a driver in Bazzite's kernel. The test
+only reads: it loads no module and switches no stick. No adapter at all is reported, not a warning: the network cable needs nothing.
 
 ### Storage and memory
 

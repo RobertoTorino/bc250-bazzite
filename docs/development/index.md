@@ -295,12 +295,6 @@ app relies on in Xenia's source at the new commit: the `--fullscreen` option and
 (`src/xenia/vfs/devices/disc_image_device.cc`, which `GAME_PARTITIONS` in the app's `games.py` copies), and GTK on
 X11 (`GDK_BACKEND` in `src/xenia/ui/windowed_app_main_posix.cc`).
 
-BC-250 Wi-Fi Adapter builds its driver from one pinned commit per branch of `shenmintao/aic8800d80` (`main` and
-`legacy-mcu1`), `PINS` in `apps/wifi/wifi_adapter/builder.py`, fetched from the suite owner's
-mirror first and from the upstream when the mirror does not answer. The tool reports a branch with commits after its
-pin (how many, the newest and the compare page), and a mirror that is not on GitHub or lacks a pinned commit. A new
-pin is built on the board against the running kernel and tried with the stick, on the branch for its chip.
-
 BC-250 Mesh Shaders builds RADV from one Mesa release (`MESA_VER` in `apps/mesh/bc250-mesh-shaders.sh`,
 with DirectMesh's patch and the suite's patch for that release in `apps/mesh/mesa/`); BC-250 ACE Queues builds it from
 the system's Mesa with one patch (`apps/ace/mesa/gfx1013-ace-queue.patch`). The tool takes Mesa's newest release from
@@ -326,7 +320,7 @@ the tool reads the version from Ookla's Homebrew formula.
 ```bash
 python3 tools/check_upstream.py            # all of them
 python3 tools/check_upstream.py helixsr    # one: shadps4, helixsr, ppsspp, pcsx2, rpcs3, directmesh,
-                                                          # vita3k, xenia, wifi, mesa, ffmpeg, webcam or speedtest
+                                                          # vita3k, xenia, mesa, ffmpeg, webcam or speedtest
 ```
 
 ## bc250_core
@@ -351,7 +345,7 @@ Code shared by the suite's apps (`core/`). Nothing in it imports an app: each ap
 | `upstream` | `publish()` / `read_all()`: the updates outside the suite an app can install now, for the portal's notice (standard library only; HelixSR carries a copy) | new: helixsr, pcsx2, portal |
 | `sensors` | `Sensors.read()`: the board's live values from `/proc` and `/sys` without root (CPU, GPU, the governor's range, VRAM, RAM, temperatures, network, disk, fans), `Reading`, `Fan` | System Overlay; used by BC-250 Turing Screen too |
 | `nexus` | The development apps' design (the theme `NEXUS`) and their header (`header()`: the checkout's last commit and its time in place of a version) | new |
-| `wifi` | The Wi-Fi adapters and whether the running kernel has a driver and firmware for them, `report()` (standard library only; `python3 -m bc250_core.wifi`) | new: check's test 53, wifi |
+| `wifi` | The Wi-Fi adapters and whether the running kernel has a driver and firmware for them, `report()` (standard library only; `python3 -m bc250_core.wifi`) | new: check's test 53 |
 
 Core is **bundled per app**: `tools/stage_app.py` copies `bc250_core/` next to the package of every app that
 imports it, so each release runs on the core it was tested with. The development apps import it from the

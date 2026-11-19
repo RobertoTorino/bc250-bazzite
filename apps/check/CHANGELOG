@@ -1,3 +1,10 @@
+Changelog: 19-11-2026 04:48:47
+
+Breaking. Test 53 (Wi-Fi Adapter) no longer checks BC-250 Wi-Fi Adapter's service, built modules and loaded
+driver: the app is no longer part of the suite (owner, 19-11-2026). The test still lists every Wi-Fi adapter and
+whether the kernel has a driver and firmware for it. For an AIC8800D80 stick it now says that Bazzite's kernel has
+no driver for it.
+
 Changelog: 18-11-2026 20:42:52
 
 Release 3.2.1.

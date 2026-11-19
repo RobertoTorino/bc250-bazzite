@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3273 test functions (3848 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3222 test functions (3797 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -38,7 +38,6 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/vita3k](#appsvita3k) | 9 | 72 | 5.3 s |
 | [apps/vram](#appsvram) | 6 | 49 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
-| [apps/wifi](#appswifi) | 4 | 47 | 0.7 s |
 | [apps/xenia](#appsxenia) | 8 | 67 | 4.5 s |
 | [core](#core) | 28 | 203 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
@@ -50,8 +49,8 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/studio](#devstudio) | 6 | 58 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 16 | 207 | 29.0 s |
-| [tools](#tools) | 36 | 224 | 11.1 s |
-| **All** | | **3273** | **183 s** |
+| [tools](#tools) | 36 | 220 | 11.1 s |
+| **All** | | **3222** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -103,7 +102,6 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `vita3k.sh` | Exercise apps/vita3k/install.sh. |
 | `vram.sh` | Exercise apps/vram/install.sh. |
 | `webcam.sh` | Exercise apps/webcam/install.sh. |
-| `wifi.sh` | Exercise apps/wifi/install.sh. |
 | `xenia.sh` | Exercise apps/xenia/install.sh. |
 
 ## apps/ace
@@ -2405,60 +2403,6 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_v4l2.py` | `test_no_frame_within_the_timeout` |  |  | No frame within the timeout. |
 | `test_v4l2.py` | `test_a_busy_camera` |  |  | A busy camera. |
 
-## apps/wifi
-
-47 tests in 4 files, 0.7 s in a local run.
-
-| File | Test | Cases | Time | What it checks |
-|---|---|---|---|---|
-| `test_builder.py` | `test_pins_name_both_branches_of_the_fork` |  |  | Pins name both branches of the fork. |
-| `test_builder.py` | `test_fetch_steps_take_the_pinned_commit_from_the_mirror_with_upstream_as_fallback` |  |  | Fetch steps take the pinned commit from the mirror with upstream as fallback. |
-| `test_builder.py` | `test_fetch_is_skipped_when_the_pinned_commit_is_there` |  |  | Fetch is skipped when the pinned commit is there. |
-| `test_builder.py` | `test_newest_sources_fetch_the_branch_head_every_time` |  |  | Newest sources fetch the branch head every time. |
-| `test_builder.py` | `test_make_uses_the_kernels_build_tree` |  |  | Make uses the kernels build tree. |
-| `test_builder.py` | `test_collect_lays_the_output_out_for_the_loader` |  |  | Collect lays the output out for the loader. |
-| `test_builder.py` | `test_collect_reports_missing_firmware` |  |  | Collect reports missing firmware. |
-| `test_driver.py` | `test_install_puts_everything_in_place` |  |  | Install puts everything in place. |
-| `test_driver.py` | `test_install_replaces_the_other_branch_and_old_kernels` |  |  | Install replaces the other branch and old kernels. |
-| `test_driver.py` | `test_install_refuses_an_incomplete_build_or_source` |  |  | Install refuses an incomplete build or source. |
-| `test_driver.py` | `test_install_reports_a_service_that_does_not_start` |  |  | Install reports a service that does not start. |
-| `test_driver.py` | `test_uninstall_removes_everything` |  |  | Uninstall removes everything. |
-| `test_driver.py` | `test_outdated_and_broken_config` |  |  | Outdated and broken config. |
-| `test_driver.py` | `test_load_with_the_modules_built` |  |  | Load with the modules built. |
-| `test_driver.py` | `test_load_labels_the_modules_for_selinux` |  |  | With SELinux, the two modules get modules_object_t before insmod: Fedora's policy loads a module from no other type, and refused them as var_lib_t (selinux-policy 44.11, owner's board 04-11-2026: "insmod: Permission denied"). |
-| `test_driver.py` | `test_load_skips_loaded_modules_and_ejects_a_stick_in_storage_mode` |  |  | Load skips loaded modules and ejects a stick in storage mode. |
-| `test_driver.py` | `test_load_builds_for_a_new_kernel_and_says_so` |  |  | Load builds for a new kernel and says so. |
-| `test_driver.py` | `test_load_reports_a_failed_build` |  |  | Load reports a failed build. |
-| `test_driver.py` | `test_load_without_a_configuration_or_with_a_failing_insmod` |  |  | Load without a configuration or with a failing insmod. |
-| `test_driver.py` | `test_unload_in_reverse_order` |  |  | Unload in reverse order. |
-| `test_driver.py` | `test_command_and_answer` |  |  | Command and answer. |
-| `test_driver.py` | `test_main_install_and_uninstall` |  |  | main() hands the module's run on by name, so this Runner takes the place of every real command. |
-| `test_driver.py` | `test_notify_desktop_reaches_each_session` |  |  | Notify desktop reaches each session. |
-| `test_main_window.py` | `test_shows_the_owners_stick_without_the_driver_installed` |  | 0.1 s | Shows the owners stick without the driver installed. |
-| `test_main_window.py` | `test_stick_modes_and_no_stick` |  |  | Stick modes and no stick. |
-| `test_main_window.py` | `test_the_wifi_adapters` |  |  | The wifi adapters. |
-| `test_main_window.py` | `test_a_failed_upload_points_at_the_legacy_branch` |  |  | A failed upload points at the legacy branch. |
-| `test_main_window.py` | `test_missing_build_tree_or_tools` |  |  | Missing build tree or tools. |
-| `test_main_window.py` | `test_build_runs_the_steps_and_collects` |  |  | Build runs the steps and collects. |
-| `test_main_window.py` | `test_newest_sources_build_and_install` |  |  | Newest sources build and install. |
-| `test_main_window.py` | `test_a_failed_build_leaves_install_off` |  |  | A failed build leaves install off. |
-| `test_main_window.py` | `test_install_update_and_remove` |  |  | Install update and remove. |
-| `test_main_window.py` | `test_a_helper_error_is_shown` |  |  | A helper error is shown. |
-| `test_main_window.py` | `test_installed_states` |  |  | Installed states. |
-| `test_main_window.py` | `test_choosing_another_branch_is_remembered` |  |  | Choosing another branch is remembered. |
-| `test_main_window.py` | `test_step_runner_runs_commands_in_turn` |  |  | Step runner runs commands in turn. |
-| `test_main_window.py` | `test_step_runner_takes_the_fallback` |  |  | Step runner takes the fallback. |
-| `test_main_window.py` | `test_the_boxes_keep_their_text_and_the_long_text_is_behind_the_info_symbols` |  | 0.1 s | The four header boxes as wide as the widest, so none cuts its text off, with short values; the driver's and the adapters' explanations behind an info symbol; the notice on the right of the driver's controls (owner, 04-11-2026). |
-| `test_stick.py` | `test_stick_in_wifi_mode` |  |  | Stick in wifi mode. |
-| `test_stick.py` | `test_stick_in_storage_and_loader_mode` |  |  | Stick in storage and loader mode. |
-| `test_stick.py` | `test_other_vendors_are_left_out` |  |  | Other vendors are left out. |
-| `test_stick.py` | `test_wifi_interface_and_modules` |  |  | Wifi interface and modules. |
-| `test_stick.py` | `test_chip_from_the_log` |  |  | Chip from the log. |
-| `test_stick.py` | `test_the_chips_product_from_legacy_mcu1s_loader` |  |  | legacy-mcu1's loader adds the chip's product (from 02-11-2026); product 0x8820, a UGREEN stick, needs that branch (owner, 05-11-2026: add it), whatever its MCU; another product changes nothing. |
-| `test_stick.py` | `test_a_wedged_stick_is_no_answer` |  |  | A wedged stick is no answer. |
-| `test_stick.py` | `test_kernel_log_is_read_from_the_journal` |  |  | Kernel log is read from the journal. |
-| `test_stick.py` | `test_build_tree_and_tools` |  |  | Build tree and tools. |
-
 ## apps/xenia
 
 67 tests in 8 files, 4.5 s in a local run.
@@ -3451,7 +3395,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## tools
 
-224 tests in 36 files, 11.1 s in a local run.
+220 tests in 36 files, 11.1 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3515,10 +3459,6 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_check_upstream.py` | `test_vita3k_a_higher_build_number_is_newer` |  |  | Vita3k a higher build number is newer. |
 | `test_check_upstream.py` | `test_xenia_a_build_published_later_is_newer` |  |  | Xenia a build published later is newer. |
 | `test_check_upstream.py` | `test_the_pinned_appimage` | 2 |  | The pinned appimage. |
-| `test_check_upstream.py` | `test_the_driver_pins_are_read_from_builder_py` |  |  | The driver pins are read from builder py. |
-| `test_check_upstream.py` | `test_the_driver_in_step` |  |  | The driver in step. |
-| `test_check_upstream.py` | `test_a_branch_past_its_pin` |  |  | A branch past its pin. |
-| `test_check_upstream.py` | `test_the_mirror` |  |  | The mirror. |
 | `test_check_upstream.py` | `test_the_new_pins_are_read_from_the_apps` |  |  | The new pins are read from the apps. |
 | `test_check_upstream.py` | `test_mesa_a_newer_release_and_the_ace_patch` |  |  | A release candidate is no release; the ACE patch is tried on the files it touches at the newest release. |
 | `test_check_upstream.py` | `test_patch_applies_tries_it_for_real` |  |  | Patch applies tries it for real. |

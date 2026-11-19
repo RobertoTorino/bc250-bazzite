@@ -114,7 +114,7 @@ reports the overall verdict.
 | 07 | Open Ports             | Lists listening TCP/UDP sockets.                                          |
 | 08 | NTP Synchronization    | Confirms the clock is synchronized.                                       |
 | 30 | SSH Service            | Reports `sshd.service` / `sshd.socket` state (off by default on Bazzite). |
-| 53 | Wi-Fi Adapter          | Every Wi-Fi adapter, its driver and firmware, rfkill and its connection; BC-250 Wi-Fi Adapter's service. |
+| 53 | Wi-Fi Adapter          | Every Wi-Fi adapter, its driver and firmware, rfkill and its connection.  |
 | 44 | Internet Speed         | **Opt-in** (`--speedtest`). See below.                                    |
 
 **How test 44 measures the connection** (Ookla's `speedtest`, or `speedtest-cli` as a fallback; about 30 s):
@@ -134,9 +134,7 @@ reports the overall verdict.
 Test 53 runs `bc250_core.wifi` with the system `python3 -I -B` (standard library only, no bytecode written as
 root): from the `bc250_core` bundled next to the script, or `core/` in the suite checkout. It reads `/sys`, the
 running kernel's `modules.dep` and `modules.alias`, this boot's kernel log and `iw dev <interface> link`, and prints
-its findings as `LEVEL: text` lines, which the script logs; a `WARNING` line counts as a warning. BC-250
-Wi-Fi Adapter's part reads `/etc/bc250-wifi-adapter/driver.json`, `/run/bc250-wifi-adapter/state.json`, the built modules under
-`/var/lib/bc250-wifi-adapter/modules/<kernel>` and `lsmod`.
+its findings as `LEVEL: text` lines, which the script logs; a `WARNING` line counts as a warning.
 
 ### Storage and memory
 

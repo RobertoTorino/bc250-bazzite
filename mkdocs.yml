@@ -100,7 +100,6 @@ nav:
           - BC-250 System Overlay: apps/overlay.md
           - BC-250 Turing Screen: apps/turing.md
           - BC-250 Webcam: apps/webcam.md
-          - BC-250 Wi-Fi Adapter: apps/wifi.md
   - Development:
       - development/index.md
       - Architecture and consistency: development/architecture.md

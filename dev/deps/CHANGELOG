@@ -1,3 +1,9 @@
+Changelog: 19-11-2026 04:48:47
+
+Breaking. The catalog no longer lists BC-250 Wi-Fi Adapter (owner, 19-11-2026: no longer an app of the suite),
+nor the tools only it needed: gcc, make, git, kmod and eject. Its lines under PyQt6, pkexec, systemctl,
+journalctl, udevadm and notify-send are gone too. Those tools stay for the apps that use them.
+
 Changelog: 15-11-2026 10:09:36
 
 Breaking. One suite (owner, 15-11-2026): the repository is the suite, so --suite is gone, the catalog is

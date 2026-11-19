@@ -1,3 +1,13 @@
+Changelog: 19-11-2026 04:48:47
+
+Breaking. BC-250 Wi-Fi Adapter is no longer an app of the suite (owner, 19-11-2026). Its driver for AIC8800D80
+USB sticks worked on the owner's UGREEN AX900, but the stick runs on USB 2.0 and gave 130 to 170 Mbit/s on a
+gigabit line with a 600 Mbit/s 5 GHz link, with power saving on or off: not worth an app. apps/wifi/, its wiki
+chapter, its installer test and its tile are gone, and so are its entries in the README, the wiki's app lists,
+mkdocs.yml, icons/categories.toml, the bug report template and requirements-dev.txt. tools/check_upstream.py no
+longer checks the driver's pins and mirror (the wifi name is gone). Its releases up to bc250-wifi-v1.2.0 stay on
+GitHub as history.
+
 Changelog: 18-11-2026 17:25:09
 
 Added. One generic CLAUDE.md (owner, 18-11-2026: "one generic CLAUDE.md that can be used in whatever suite we are

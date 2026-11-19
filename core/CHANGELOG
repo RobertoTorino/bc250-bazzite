@@ -1,3 +1,11 @@
+Changelog: 19-11-2026 04:48:47
+
+Breaking. wifi.report() no longer takes in_wifi_app, and the report no longer sends an AIC8800D80 stick to BC-250
+Wi-Fi Adapter, which is no longer an app of the suite (owner, 19-11-2026). For such a stick it now says that
+Bazzite's kernel has no driver for it, so it does not work on Bazzite as it is, with a hint that most Realtek and
+MediaTek sticks have one. When an installed AIC8800 driver has the stick and made no interface, the report says the
+chip refused it and how to read why, in place of a window that is gone.
+
 Changelog: 18-11-2026 12:26:55
 
 Version 5.2.0.

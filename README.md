@@ -72,7 +72,6 @@ By category, as the portal lists them.
 - <img src="portal/images/apps/webcam.webp" width="20" height="20" alt=""/> **[BC-250 Webcam](apps/webcam)**: the PS5 HD Camera (CFI-ZEY1) as a webcam: loads its firmware at every plug-in and shows its picture, one camera or both side by side.
 - <img src="portal/images/apps/controller.webp" width="20" height="20" alt=""/> **[BC-250 Controller](apps/controller)**: the DualSense and DualSense Edge: battery, firmware updates from the official server over USB, and the Edge's profiles with a backup.
 - <img src="portal/images/apps/bios.webp" width="20" height="20" alt=""/> **[BC-250 BIOS Reader](apps/bios)**: The BIOS settings as the setup screen shows them, hidden menus included. Stock or modded BIOS. Read-only.
-- <img src="portal/images/apps/wifi.webp" width="20" height="20" alt=""/> **[BC-250 Wi-Fi Adapter](apps/wifi)**: The driver for AIC8800D80 USB Wi-Fi sticks: built for the running kernel, loaded at boot, rebuilt after a kernel update.
 - <img src="portal/images/apps/cec.webp" width="20" height="20" alt=""/> **[BC-250 CEC Manager](apps/cec)**: Turn the TV on and off with the board, switch its input and use its remote, over HDMI-CEC.
 - <img src="portal/images/apps/sftp.webp" width="20" height="20" alt=""/> **[BC-250 SFTP Tools](apps/sftp)**: Move files between computers over SFTP, and manage the SSH server of a Bazzite host.
 - <img src="portal/images/apps/ssd.webp" width="20" height="20" alt=""/> **[BC-250 SSD Check](apps/ssd)**: The health, power cycles and power-on hours of the board's SSDs.

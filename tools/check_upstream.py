@@ -3,7 +3,7 @@
 """Upstream check: are the apps that pin an upstream release still in step with it?
 
     python3 tools/check_upstream.py [--report FILE] [shadps4] [helixsr] [ppsspp] [pcsx2] [rpcs3] [directmesh]
-                                    [vita3k] [xenia] [wifi] [mesa] [ffmpeg] [webcam] [speedtest]
+                                    [vita3k] [xenia] [mesa] [ffmpeg] [webcam] [speedtest]
                                     # all when none is named
 
 The shadPS4 Manager pins one shadPS4 release (apps/shadps4/shadps4_manager/emulator.py: VERSION, TAG,
@@ -36,12 +36,6 @@ without importing the app (owner, 04-11-2026: they come in, though both publish 
  * the pinned build: its AppImage must still be on GitHub, published with the pinned SHA-256 (or without one, which
    older uploads lack: the app checks the download itself).
 
-BC-250 Wi-Fi Adapter builds its driver from one pinned commit per branch of shenmintao/aic8800d80 (PINS in
-apps/wifi/wifi_adapter/builder.py, loaded on its own: it needs only the standard library):
- * each branch's head: commits after the pin mean a new version of the app could move the pin, after it is built and
-   tried on the board with the stick;
- * the suite owner's mirror, which the app fetches first, must be there and have each pinned commit.
-
 Mesa (Bazzite/Windows 2, 05-11-2026): BC-250 Mesh Shaders builds RADV from one Mesa release (MESA_VER in
 apps/mesh/bc250-mesh-shaders.sh, with DirectMesh's patch and the suite's for it), BC-250 ACE Queues from the system's
 Mesa with one patch (apps/ace/mesa/gfx1013-ace-queue.patch). Against Mesa's newest release (its tags on GitLab; a
@@ -72,7 +66,6 @@ from __future__ import annotations
 
 import ast
 import hashlib
-import importlib.util
 import json
 import os
 import re
@@ -84,7 +77,6 @@ import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from types import ModuleType
 
 SUITE = Path(__file__).resolve().parent.parent
 EMULATOR = SUITE / "apps" / "shadps4" / "shadps4_manager" / "emulator.py"
@@ -95,7 +87,6 @@ RPCS3 = SUITE / "apps" / "rpcs3" / "rpcs3_manager" / "emulator.py"
 MESH = SUITE / "apps" / "mesh" / "bc250-mesh-shaders.sh"
 VITA3K = SUITE / "apps" / "vita3k" / "vita3k_manager" / "emulator.py"
 XENIA = SUITE / "apps" / "xenia" / "xenia_manager" / "emulator.py"
-BUILDER = SUITE / "apps" / "wifi" / "wifi_adapter" / "builder.py"
 ACE_PATCH = SUITE / "apps" / "ace" / "mesa" / "gfx1013-ace-queue.patch"
 FFMPEG_BUILD = SUITE / "apps" / "consoles" / "native" / "ffmpeg" / "build.sh"
 WEBCAM_FIRMWARE = SUITE / "apps" / "webcam" / "webcam" / "firmware.py"
@@ -140,15 +131,6 @@ def fetch(url: str) -> bytes:
         raise CheckError(f"{url}: {'GitHub' if github else 'the server'} answered {error.code}") from error
     except (urllib.error.URLError, OSError) as error:
         raise CheckError(f"{url}: {getattr(error, 'reason', error)}") from error
-
-
-def load_loader(path: Path, name: str) -> ModuleType:
-    """A module on its own that needs only the standard library: builder.py."""
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module             # its dataclasses look their module up there
-    spec.loader.exec_module(module)
-    return module
 
 
 @dataclass
@@ -411,53 +393,6 @@ def check_build(pin: Build, get: Fetch = fetch) -> Report:
     return report
 
 
-def _repo(url: str) -> str:
-    """owner/name of a github.com URL."""
-    return url.rstrip("/").removeprefix("https://github.com/")
-
-
-def check_wifi(builder: ModuleType, get: Fetch = fetch) -> Report:
-    pins = builder.PINS
-    report = Report(", ".join(f"{b} {p.commit[:7]}" for b, p in pins.items()), name="USB Wi-Fi driver (aic8800d80)",
-                    short="The driver", newest="branch heads")
-    upstream, mirror = API.format(repo=_repo(builder.UPSTREAM)), API.format(repo=_repo(builder.MIRROR))
-    heads = []
-    for branch, pin in pins.items():
-        compare = json.loads(get(f"{upstream}/compare/{pin.commit}...{branch}"))
-        ahead = int(compare.get("ahead_by") or 0)
-        commits = compare.get("commits") or [{}]
-        head = str(commits[-1].get("sha", pin.commit))[:7] if ahead else pin.commit[:7]
-        date = str(commits[-1].get("commit", {}).get("committer", {}).get("date", ""))[:10] if ahead else ""
-        heads.append(f"{branch} {head}")
-        if ahead:
-            report.drift.append(f"{branch} is {ahead} commit{'s' if ahead != 1 else ''} past the pin {pin.commit[:7]} "
-                                f"(newest {head}, {date}): a new version of BC-250 Wi-Fi Adapter could move PINS in "
-                                f"apps/wifi/wifi_adapter/builder.py, after the driver is built and tried on the "
-                                f"board with the stick. {compare.get('html_url', '')}")
-        else:
-            report.fine.append(f"{branch} has no commit after the pin {pin.commit[:7]}")
-    report.latest = ", ".join(heads)
-    try:
-        get(mirror)
-    except CheckError as error:
-        if ": GitHub answered 404" not in str(error):
-            raise
-        report.drift.append(f"the mirror {builder.MIRROR} is not on GitHub (missing, or private): the app fetches the "
-                            f"sources from the upstream alone, so a vanished upstream stops a fresh install.")
-        return report
-    for branch, pin in pins.items():
-        try:
-            get(f"{mirror}/commits/{pin.commit}")
-        except CheckError as error:
-            if not re.search(r": GitHub answered (404|422)", str(error)):
-                raise
-            report.drift.append(f"the mirror {builder.MIRROR} lacks {branch}'s pinned commit {pin.commit[:7]}: a fresh "
-                                f"install of it depends on the upstream alone. Push the branch to the mirror.")
-        else:
-            report.fine.append(f"the mirror has {branch}'s pinned commit")
-    return report
-
-
 def shell_value(path: Path, name: str) -> str:
     """A shell script's NAME=value, or the default of NAME="${NAME:-value}"."""
     text = path.read_text(encoding="utf-8")
@@ -645,7 +580,6 @@ CHECKS = {"shadps4": ("shadPS4", lambda: check_shadps4(load_shadps4_pin())),
           "directmesh": ("DirectMesh", lambda: check_release(load_release("directmesh"))),
           "vita3k": ("Vita3K", lambda: check_build(load_build("vita3k"))),
           "xenia": ("Xenia", lambda: check_build(load_build("xenia"))),
-          "wifi": ("USB Wi-Fi driver", lambda: check_wifi(load_loader(BUILDER, "wifi_builder_pin"))),
           "mesa": ("Mesa", lambda: check_mesa(shell_value(MESH, "MESA_VER"),
                                               ACE_PATCH.read_text(encoding="utf-8"))),
           "ffmpeg": ("FFmpeg and libva", lambda: check_ffmpeg(shell_value(FFMPEG_BUILD, "FFMPEG_VERSION"),

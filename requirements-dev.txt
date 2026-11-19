@@ -35,7 +35,6 @@
 -r apps/vita3k/requirements-dev.txt
 -r apps/vram/requirements-dev.txt
 -r apps/webcam/requirements-dev.txt
--r apps/wifi/requirements-dev.txt
 -r apps/xenia/requirements-dev.txt
 -r dev/dash/requirements-dev.txt
 -r dev/demo/requirements-dev.txt        # obsws-python and dbus-fast: Nexus Demo Recorder and its tests

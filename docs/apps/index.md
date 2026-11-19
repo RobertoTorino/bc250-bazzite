@@ -60,7 +60,6 @@ controller Steam Input owns sends what its desktop layout says, by default Escap
 | ![](../assets/apps/webcam.webp){ .app-icon } [BC-250 Webcam](webcam.md) | The PS5 HD Camera (CFI-ZEY1) as a webcam: loads its firmware at every plug-in and shows its picture, one camera or both side by side. |
 | ![](../assets/apps/controller.webp){ .app-icon } [BC-250 Controller](controller.md) | The DualSense and DualSense Edge: battery, firmware updates from the official server over USB, and the Edge's profiles with a backup. |
 | ![](../assets/apps/bios.webp){ .app-icon } [BC-250 BIOS Reader](bios.md) | The BIOS settings as the setup screen shows them, hidden menus included. Stock or modded BIOS. Read-only. |
-| ![](../assets/apps/wifi.webp){ .app-icon } [BC-250 Wi-Fi Adapter](wifi.md) | The driver for AIC8800D80 USB Wi-Fi sticks: built for the running kernel, loaded at boot, rebuilt after a kernel update. **Changes the board.** |
 | ![](../assets/apps/cec.webp){ .app-icon } [BC-250 CEC Manager](cec.md) | Turn the TV on and off with the board, switch its input and use its remote, over HDMI-CEC. |
 | ![](../assets/apps/sftp.webp){ .app-icon } [BC-250 SFTP Tools](sftp.md) | Move files between computers over SFTP, and manage the SSH server of a Bazzite host. |
 | ![](../assets/apps/ssd.webp){ .app-icon } [BC-250 SSD Check](ssd.md) | The health, power cycles and power-on hours of the board's SSDs. |

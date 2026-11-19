@@ -60,7 +60,6 @@ Every app with its icon and its category.
 | ![](../assets/apps/webcam.webp){ .app-icon } [BC-250 Webcam](webcam.md) | Utilities |
 | ![](../assets/apps/controller.webp){ .app-icon } [BC-250 Controller](controller.md) | Utilities |
 | ![](../assets/apps/bios.webp){ .app-icon } [BC-250 BIOS Reader](bios.md) | Utilities |
-| ![](../assets/apps/wifi.webp){ .app-icon } [BC-250 Wi-Fi Adapter](wifi.md) | Utilities |
 | ![](../assets/apps/cec.webp){ .app-icon } [BC-250 CEC Manager](cec.md) | Utilities |
 | ![](../assets/apps/sftp.webp){ .app-icon } [BC-250 SFTP Tools](sftp.md) | Utilities |
 | ![](../assets/apps/ssd.webp){ .app-icon } [BC-250 SSD Check](ssd.md) | Utilities |

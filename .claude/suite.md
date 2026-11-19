@@ -33,7 +33,7 @@ What only this suite has. The rules every suite shares are in [CLAUDE.md](../CLA
 **check** (BC-250 Board Test) is always installed and always listed first.
 
 `apps/<name>/`: check, gpu, upscaler, compute, cores, oc, acpi, overlay, turing, webcam, controller, bios, ace, mesh,
-vram, fan, wifi, cec, sftp, consoles, clb, shadps4, rpcs3, ppsspp, pcsx2, vita3k, xenia, datstation, ssd, btpair,
+vram, fan, cec, sftp, consoles, clb, shadps4, rpcs3, ppsspp, pcsx2, vita3k, xenia, datstation, ssd, btpair,
 quickfix, password.
 
 **Licenses:** acpi is MIT. consoles is AGPL-3.0: its protocol code is ported from chiaki-ng, those files
@@ -41,11 +41,10 @@ AGPL-3.0-only, its own AGPL-3.0-or-later. clb (BC-250 XB Remote Play, XBOX) is G
 ported from Greenlight and xal-node, MIT, whose notice its README keeps. The rest is GPL-3.0-or-later.
 
 **Apps that change the board:** the CU and core unlocks, the GPU governor, GPU overclocking, the ACPI override, the
-patched RADV of ace, the DirectMesh RADV of mesh, the VRAM split of vram, the thermal guard of fan and the kernel
-module of wifi. In `portal/apps.toml`: gpu, compute, cores, oc, acpi, ace, mesh, vram, fan, wifi.
+patched RADV of ace, the DirectMesh RADV of mesh, the VRAM split of vram, and the thermal guard of fan. In
+`portal/apps.toml`: gpu, compute, cores, oc, acpi, ace, mesh, vram, fan.
 
-**Upstreams an app pins** (`tools/check_upstream.py`): an emulator, HelixSR, DirectMesh, the USB Wi-Fi driver, Mesa,
-FFmpeg.
+**Upstreams an app pins** (`tools/check_upstream.py`): an emulator, HelixSR, DirectMesh, Mesa, FFmpeg.
 
 ## Rules for this suite alone
 

@@ -127,8 +127,8 @@ def test_no_adapter_on_the_board(sys_root, modules):
     assert wifi.find_adapters(sys_root, modules) == ()
     lines = wifi.report((), modules)
     assert levels(lines) == ["INFO", "HINT"]
-    assert "The BC-250 has none of its own" in text(lines) and "from BC-250 Wi-Fi Adapter." in text(lines)
-    assert "from this app." in text(wifi.report((), modules, in_wifi_app=True))
+    assert "The BC-250 has none of its own" in text(lines) and "MediaTek (mt76)" in text(lines)
+    assert "Wi-Fi Adapter" not in text(lines)                    # the app that built the AIC driver is gone
     assert levels(wifi.report((), wifi.read_modules(KERNEL, Path("/nowhere")))) == ["NOTE", "INFO", "HINT"]
 
 
@@ -140,12 +140,11 @@ def test_the_owners_stick_in_storage_mode(sys_root, modules):
     assert stick.storage_mode and stick.aic_d80 and stick.verdict == "storage"
     lines = wifi.report((stick,), modules)
     assert lines[0] == ("INFO", "Aic MSC (a69c:5723, USB 1-5): driver usb_storage")
-    assert lines[1][0] == "NOTE" and "BC-250 Wi-Fi Adapter (in the portal) builds it" in lines[1][1]
-    assert "build and install the driver here" in text(wifi.report((stick,), modules, in_wifi_app=True))
+    assert levels(lines) == ["INFO", "WARNING", "HINT"] and "does not work on Bazzite as it is" in lines[1][1]
 
 
 def test_the_owners_stick_in_wifi_mode(sys_root, modules):
-    # 17-10-2026: 2-5, a69c:8d81, Bluetooth on btusb, Wi-Fi on the suite's out-of-tree aic8800_fdrv, wlan0.
+    # 17-10-2026: 2-5, a69c:8d81, Bluetooth on btusb, Wi-Fi on the out-of-tree aic8800_fdrv, wlan0.
     usb(sys_root, "2-5", "a69c", "8d81", "AIC 8800D80",
         {"1.0": ("e0", "btusb", "btusb"), "1.1": ("e0", "btusb", "btusb"), "1.2": ("ff", "aic8800_fdrv", None)})
     wlan(sys_root, "wlan0", sys_root / "bus/usb/devices/2-5:1.2")
@@ -169,11 +168,12 @@ def test_the_aic_stick_without_a_driver(sys_root, modules):
     (stick,) = wifi.find_adapters(sys_root, modules)
     assert stick.verdict == "aic"
     lines = wifi.report((stick,), modules)
-    assert lines[1][0] == "WARNING" and "BC-250 Wi-Fi Adapter (in the portal) builds it" in lines[1][1]
-    # The suite's loader has it, no interface yet:
+    assert levels(lines) == ["INFO", "WARNING", "HINT"] and "does not work on Bazzite as it is" in lines[1][1]
+    # An installed AIC loader has it, no interface came (the chip refused it):
     usb(sys_root, "2-6", "a69c", "8d80", "AIC Wlan", {"1.0": ("ff", "aic_load_fw", None)})
     loader = wifi.find_adapters(sys_root, modules)[1]
-    assert loader.verdict == "aic" and "its window shows what the chip answered" in text(wifi.report((loader,), modules))
+    lines = wifi.report((loader,), modules)
+    assert loader.verdict == "aic" and levels(lines) == ["INFO", "NOTE", "HINT"] and "the chip refused it" in lines[1][1]
 
 
 def test_a_realtek_stick_on_the_kernels_driver(sys_root, modules):

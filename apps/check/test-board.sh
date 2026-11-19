@@ -3759,34 +3759,6 @@ else
     done < <(python3 -I -B -c 'import sys; sys.path.insert(0, sys.argv[1]); from bc250_core import wifi; sys.exit(wifi.main())' \
         "$WIFI_CORE" 2>&1)
 fi
-
-# BC-250 Wi-Fi Adapter's driver (AIC8800D80 sticks): a system service that builds and loads it at every boot.
-WIFI_UNIT="bc250-wifi-adapter.service"
-if [ -f "/etc/systemd/system/$WIFI_UNIT" ]; then
-    WIFI_KERNEL=$(uname -r)
-    wifi_json() { python3 -I -B -c 'import json, sys; print(json.load(open(sys.argv[1])).get(sys.argv[2], ""))' "$1" "$2" 2>/dev/null; }
-    WIFI_BRANCH=$(wifi_json /etc/bc250-wifi-adapter/driver.json branch)
-    WIFI_STATE=$(systemctl is-active "$WIFI_UNIT" 2>/dev/null)
-    WIFI_ERROR=$(wifi_json /run/bc250-wifi-adapter/state.json error)
-    log_result "INFO: BC-250 Wi-Fi Adapter's driver is installed (branch ${WIFI_BRANCH:-unknown}), $WIFI_UNIT is ${WIFI_STATE:-unknown}."
-    if ! systemctl is-enabled --quiet "$WIFI_UNIT" 2>/dev/null; then
-        log_result "WARNING: $WIFI_UNIT is not enabled: the driver is not loaded at boot."
-        log_result "HINT: In BC-250 Wi-Fi Adapter, press Update to install the service again."
-        WARN_FOUND=true
-    elif [ -n "$WIFI_ERROR" ]; then
-        log_result "WARNING: The service's last run at this boot failed: $WIFI_ERROR"
-        log_result "HINT: Read why with: journalctl -b -u bc250-wifi-adapter; BC-250 Wi-Fi Adapter shows it too."
-        WARN_FOUND=true
-    elif [ ! -f "/var/lib/bc250-wifi-adapter/modules/$WIFI_KERNEL/aic8800_fdrv.ko" ]; then
-        log_result "NOTE: No driver built for kernel $WIFI_KERNEL yet: the service builds it at the next boot, or press Install in BC-250 Wi-Fi Adapter."
-    elif lsmod | grep -q '^aic_load_fw ' && lsmod | grep -q '^aic8800_fdrv '; then
-        log_result "SUCCESS: The driver is built for kernel $WIFI_KERNEL and loaded (aic_load_fw, aic8800_fdrv)."
-    else
-        log_result "WARNING: The driver is built for kernel $WIFI_KERNEL but not loaded."
-        log_result "HINT: Read why with: journalctl -b -u bc250-wifi-adapter"
-        WARN_FOUND=true
-    fi
-fi
 echo
 fi  # TEST 53
 log_result "All tests completed. Review results in $LOG_FILE."

@@ -22,7 +22,6 @@ body:
         - mesh
         - vram
         - fan
-        - wifi
         - cec
         - sftp
         - turing

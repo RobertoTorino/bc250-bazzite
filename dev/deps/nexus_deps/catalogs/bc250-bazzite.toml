@@ -87,10 +87,6 @@ launchers = ["~/.local/bin/bc250-memory-manager"]
 name = "BC-250 Fan Control"
 launchers = ["~/.local/bin/bc250-fan-control"]
 
-[app.wifi]
-name = "BC-250 Wi-Fi Adapter"
-launchers = ["~/.local/bin/bc250-wifi-adapter"]
-
 [app.cec]
 name = "BC-250 CEC Manager"
 launchers = ["~/.local/bin/bc250-hdmi-cec"]
@@ -204,11 +200,6 @@ usage = "Password prompt for reading and writing CMOS."
 owner = "fan"
 need = "required"
 usage = "Password prompt for turning the thermal guard on, changing it and turning it off."
-
-[[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "Password prompt for installing, updating and removing the Wi-Fi driver and its service."
 
 [[tool.source]]
 owner = "gpu"
@@ -705,11 +696,6 @@ need = "required"
 usage = "Install, start and remove the thermal guard's service; the guard powers the board off with it at the shutdown limit."
 
 [[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "Install, start and remove the Wi-Fi driver's service, which loads the driver at boot."
-
-[[tool.source]]
 owner = "webcam"
 need = "required"
 usage = "Tell your user's systemd about the load service, which sends the camera's firmware when it is plugged in."
@@ -726,11 +712,6 @@ name = "journalctl"
 rpm = "systemd"
 description = "Reads the systemd journal: the system, service and kernel logs."
 executables = ["journalctl"]
-
-[[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "Read the chip's answer and the loader's messages from the kernel log."
 
 [[tool.source]]
 owner = "gpu"
@@ -807,11 +788,6 @@ executables = ["notify-send"]
 owner = "fan"
 need = "optional"
 usage = "The thermal guard's warnings on the desktop; without it they go only to the journal and the app."
-
-[[tool.source]]
-owner = "wifi"
-need = "optional"
-usage = "The driver service's word on the desktop when it rebuilt the driver after a kernel update, or could not."
 
 [[tool.source]]
 owner = "controller"
@@ -1201,10 +1177,6 @@ owner = "fan"
 specifier = ">=6.11,<7"
 
 [[dependency.source]]
-owner = "wifi"
-specifier = ">=6.11,<7"
-
-[[dependency.source]]
 owner = "cec"
 specifier = ">=6.11,<7"
 
@@ -1265,73 +1237,10 @@ owner = "gpu"
 specifier = ">=6.11,<7"
 
 [[tool]]
-name = "gcc"
-brew = "gcc"
-rpm = "gcc"
-description = "The C compiler. BC-250 Wi-Fi Adapter builds the Wi-Fi driver with it against the running kernel; Bazzite's image ships it with the kernel's build tree (kernel-devel)."
-executables = ["gcc"]
-
-[[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "Build the Wi-Fi driver for the running kernel, in the app and in its service after a kernel update."
-
-[[tool]]
-name = "make"
-brew = "make"
-rpm = "make"
-description = "Runs the kernel's build system for an out-of-tree module."
-executables = ["make"]
-
-[[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "Build the Wi-Fi driver with the kernel's build tree."
-
-[[tool]]
-name = "git"
-brew = "git"
-rpm = "git"
-description = "Fetches the driver's sources at the pinned commit."
-executables = ["git"]
-
-[[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "Fetch the Wi-Fi driver's sources, one commit, the first time a branch is built."
-
-[[tool]]
-name = "kmod"
-rpm = "kmod"
-description = "Loads and unloads kernel modules (insmod, modprobe, rmmod)."
-executables = ["insmod", "modprobe", "rmmod"]
-
-[[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "The driver's service loads the Wi-Fi driver's two modules at boot and unloads them when stopped."
-
-[[tool]]
-name = "eject"
-rpm = "util-linux"
-description = "Ejects a removable disk. An AIC8800 stick leaves its storage mode when its virtual disk is ejected."
-executables = ["eject"]
-
-[[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "Switch the stick out of storage mode, from the udev rule and from the driver's service."
-
-[[tool]]
 name = "udevadm"
 rpm = "systemd-udev"
 description = "Controls udev: reloads its rules after a change."
 executables = ["udevadm"]
-
-[[tool.source]]
-owner = "wifi"
-need = "required"
-usage = "Reload udev's rules after installing or removing the stick's rule."
 
 [[tool.source]]
 owner = "turing"

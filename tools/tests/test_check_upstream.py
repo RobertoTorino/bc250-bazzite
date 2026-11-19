@@ -270,64 +270,6 @@ def test_the_pinned_appimage(name):
     assert "is gone from GitHub" in check_upstream.check_build(pin, build_github(pin, *same, gone=True)).drift[0]
 
 
-# --- BC-250 Wi-Fi Adapter: the driver's pinned commits ----------------------------------------------------------------
-
-BUILDER = check_upstream.load_loader(check_upstream.BUILDER, "wifi_builder_pin")
-UPSTREAM_API = check_upstream.API.format(repo="shenmintao/aic8800d80")
-MIRROR_API = check_upstream.API.format(repo="RobertoTorino/aic8800d80")
-
-
-def driver_github(ahead: dict[str, int] | None = None, mirror: str = "all"):
-    """*ahead*: commits past the pin per branch; *mirror*: "all", "none" (the repository missing) or a branch it
-    lacks."""
-    ahead = ahead or {}
-
-    def get(url: str) -> bytes:
-        for branch, pin in BUILDER.PINS.items():
-            if url == f"{UPSTREAM_API}/compare/{pin.commit}...{branch}":
-                n = ahead.get(branch, 0)
-                commits = [{"sha": f"{i:07d}" + "f" * 33, "commit": {"committer": {"date": "2026-11-02T06:38:11Z"}}}
-                           for i in range(n)]
-                return json.dumps({"ahead_by": n, "commits": commits, "html_url": f"c/{branch}"}).encode()
-            if url == f"{MIRROR_API}/commits/{pin.commit}":
-                if mirror == branch:
-                    raise check_upstream.CheckError(f"{url}: GitHub answered 422")
-                return b"{}"
-        if url == MIRROR_API:
-            if mirror == "none":
-                raise check_upstream.CheckError(f"{url}: GitHub answered 404")
-            return b"{}"
-        raise AssertionError(url)
-    return get
-
-
-def test_the_driver_pins_are_read_from_builder_py():
-    assert set(BUILDER.PINS) == {"main", "legacy-mcu1"}
-    assert all(len(p.commit) == 40 for p in BUILDER.PINS.values())
-
-
-def test_the_driver_in_step():
-    report = check_upstream.check_wifi(BUILDER, driver_github())
-    assert report.drift == [] and "branch heads main " in report.text()
-    assert "the mirror has legacy-mcu1's pinned commit" in report.fine
-
-
-def test_a_branch_past_its_pin():
-    report = check_upstream.check_wifi(BUILDER, driver_github({"legacy-mcu1": 24}))
-    [line] = report.drift
-    pin = BUILDER.PINS["legacy-mcu1"].commit[:7]
-    assert line.startswith(f"legacy-mcu1 is 24 commits past the pin {pin} (newest 0000023, 2026-11-02): a new "
-                           "version of BC-250 Wi-Fi Adapter could move PINS")
-    assert "legacy-mcu1 0000023" in report.latest and f"main {BUILDER.PINS['main'].commit[:7]}" in report.latest
-
-
-def test_the_mirror():
-    [line] = check_upstream.check_wifi(BUILDER, driver_github(mirror="none")).drift
-    assert "is not on GitHub (missing, or private)" in line
-    [line] = check_upstream.check_wifi(BUILDER, driver_github(mirror="main")).drift
-    assert "lacks main's pinned commit" in line
-
-
 # --- Mesa, FFmpeg and libva, BC-250 Webcam's firmware, the speedtest CLI (Bazzite/Windows 2, 05-11-2026) ---------------
 
 def test_the_new_pins_are_read_from_the_apps():

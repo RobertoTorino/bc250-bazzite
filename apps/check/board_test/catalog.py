@@ -50,7 +50,7 @@ CATEGORIES: list[Category] = [
         TestDef("30", "SSH Service", "Reports sshd.service / sshd.socket state (off by default on Bazzite)."),
         TestDef("53", "Wi-Fi Adapter",
                 "Every Wi-Fi adapter (USB or PCIe), whether the running kernel has a driver and firmware for it, "
-                "rfkill, and the band and signal of its connection; BC-250 Wi-Fi Adapter's driver when installed. "
+                "rfkill, and the band and signal of its connection. "
                 "Only reads: no module is loaded, no stick switched."),
         TestDef(SPEEDTEST_TEST_ID, "Internet Speed",
                 "Opt-in. Ookla speedtest (or speedtest-cli): download, upload, idle and loaded latency "

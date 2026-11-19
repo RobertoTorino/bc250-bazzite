@@ -1,3 +1,14 @@
+Changelog: 19-11-2026 09:05:35
+
+Release 24.0.0.
+
+Changelog: 19-11-2026 04:48:47
+
+Breaking. BC-250 Wi-Fi Adapter is no longer an app of the suite (owner, 19-11-2026: the stick it served is too
+slow on USB 2.0), so its [apps.wifi] entry and its tile are gone from apps.toml. A portal with this manifest shows
+no Wi-Fi Adapter tile. A Wi-Fi Adapter installed on a board stays until its own uninstall, which also removes its
+driver, service and udev rule: bash install.sh --uninstall --purge from the app's folder.
+
 Changelog: 18-11-2026 20:42:52
 
 Release 23.1.1. Pins bc250-check-v3.2.1.

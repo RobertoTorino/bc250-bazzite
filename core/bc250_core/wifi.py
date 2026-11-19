@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Wi-Fi adapters on the board, and whether the running kernel has a driver for them: read from /sys, the
 kernel's module tables and this boot's kernel log, without root and without Qt. BC-250 Board Test runs it as its
-Wi-Fi Adapter test (python3 -m bc250_core.wifi, with the system python), BC-250 Wi-Fi Adapter shows it in its window.
+Wi-Fi Adapter test (python3 -m bc250_core.wifi, with the system python).
 
 It only reads: it loads no module, ejects no disk and changes no setting; what would help, it says.
 
@@ -34,15 +34,15 @@ USB_WIFI_VENDORS = {
 }
 PCI_VENDORS = {0x8086: "Intel", 0x10EC: "Realtek", 0x14C3: "MediaTek", 0x168C: "Qualcomm Atheros",
                0x17CB: "Qualcomm", 0x14E4: "Broadcom", 0x1814: "Ralink"}
-# The AIC8800D80 (the UGREEN AX900 and others), whose driver BC-250 Wi-Fi Adapter builds: its storage mode, waiting
-# for its firmware, Wi-Fi mode (the IDs of wifi_adapter/stick.py).
+# The AIC8800D80 (the UGREEN AX900 and others), for which Bazzite's kernel has no driver: its storage mode, waiting
+# for its firmware, Wi-Fi mode.
 AIC_VENDORS = (0xA69C, 0x368B)
 AIC_STORAGE = {0x5721, 0x5722, 0x5723, 0x5724, 0x572C}
 AIC_D80 = AIC_STORAGE | {0x8D80, 0x8D81}
-AIC_MODULES = ("aic_load_fw", "aic8800_fdrv")   # out of tree: not in modules.dep
+AIC_MODULES = ("aic_load_fw", "aic8800_fdrv")   # an out-of-tree driver, when one is installed: not in modules.dep
 # Other sticks that come up as a small disk with the Windows driver, until something switches them.
 STORAGE_MODE = {(0x0BDA, 0x1A2B): "Realtek", (0x0E8D, 0x2870): "MediaTek"}
-WIFI_APP = "BC-250 Wi-Fi Adapter"
+KERNEL_STICKS = "Most sticks with a Realtek (rtw88, rtw89) or MediaTek (mt76) chip have a driver in Bazzite's kernel."
 FIRMWARE_LINE = re.compile(r"^(?:\S+ )?(\S+): Direct firmware load for (\S+) failed with error", re.MULTILINE)
 
 
@@ -176,8 +176,8 @@ class Adapter:
 
     @property
     def verdict(self) -> str:
-        """connected, ready, blocked, firmware, storage, aic (BC-250 Wi-Fi Adapter's driver), no-interface (a driver
-        is bound, no interface came), not-loaded (the kernel has a driver, it is not loaded) or no-driver."""
+        """connected, ready, blocked, firmware, storage, aic (an AIC8800D80 stick in Wi-Fi mode), no-interface (a
+        driver is bound, no interface came), not-loaded (the kernel has a driver, it is not loaded) or no-driver."""
         if self.interfaces:
             if any(i.soft_blocked or i.hard_blocked for i in self.interfaces):
                 return "blocked"
@@ -303,10 +303,8 @@ def _link_text(i: Interface) -> str:
     return f"{i.name} is connected" + (": " + ", ".join(parts) if parts else "") + "."
 
 
-def report(adapters: tuple[Adapter, ...], modules: Modules, in_wifi_app: bool = False) -> list[tuple[str, str]]:
-    """The findings as (level, text): SUCCESS, INFO, NOTE, WARNING or HINT, the levels of BC-250 Board Test.
-    in_wifi_app: for BC-250 Wi-Fi Adapter's own window, which builds the AIC driver itself."""
-    get_aic = "build and install the driver here" if in_wifi_app else f"{WIFI_APP} (in the portal) builds it"
+def report(adapters: tuple[Adapter, ...], modules: Modules) -> list[tuple[str, str]]:
+    """The findings as (level, text): SUCCESS, INFO, NOTE, WARNING or HINT, the levels of BC-250 Board Test."""
     lines: list[tuple[str, str]] = []
     if not modules.found:
         lines.append(("NOTE", f"The module tables of kernel {modules.kernel} are missing (modules.dep): whether "
@@ -314,8 +312,7 @@ def report(adapters: tuple[Adapter, ...], modules: Modules, in_wifi_app: bool = 
     if not adapters:
         lines.append(("INFO", "No Wi-Fi adapter. The BC-250 has none of its own; the network cable needs nothing."))
         lines.append(("HINT", "A USB Wi-Fi stick adds it; plugged in, whether the kernel has a driver for it shows "
-                              "here. AIC8800D80 sticks (the UGREEN AX900 and others) get theirs from "
-                              + ("this app." if in_wifi_app else f"{WIFI_APP}.")))
+                              "here. " + KERNEL_STICKS))
         return lines
     for a in adapters:
         drivers = ", ".join(a.drivers) or "none"
@@ -339,20 +336,23 @@ def report(adapters: tuple[Adapter, ...], modules: Modules, in_wifi_app: bool = 
                                   if not hard else "Turn on the adapter's own switch; software cannot."))
         elif verdict == "storage":
             if a.aic_d80:
-                lines.append(("NOTE", "The stick sits in its storage mode (a small disk with the Windows driver). "
-                                      f"Bazzite's kernel has no driver for its AIC8800D80 chip: {get_aic}, and the "
-                                      "installed driver switches the stick at every plug-in."))
+                lines.append(("WARNING", "The stick sits in its storage mode (a small disk with the Windows driver). "
+                                         "Bazzite's kernel has no driver for its AIC8800D80 chip: this stick does not "
+                                         "work on Bazzite as it is."))
+                lines.append(("HINT", KERNEL_STICKS))
             else:
                 lines.append(("NOTE", "The stick sits in its storage mode (a small disk with the Windows driver); "
                                       "its Wi-Fi comes up once that disk is ejected."))
                 lines.append(("HINT", "sudo eject /dev/sdX (the stick's disk, see lsblk), then look again."))
         elif verdict == "aic":
             if any(d in AIC_MODULES for d in a.drivers):
-                lines.append(("NOTE", f"{WIFI_APP}'s driver has the stick but made no interface yet: "
-                                      + ("the Chip box" if in_wifi_app else "its window") + " shows what the chip "
-                                      "answered."))
+                lines.append(("NOTE", "An installed AIC8800 driver has the stick but made no interface: the chip "
+                                      "refused it."))
+                lines.append(("HINT", "Read why with: journalctl -k -b | grep -i aic"))
             else:
-                lines.append(("WARNING", f"Bazzite's kernel has no driver for the AIC8800D80 chip: {get_aic}."))
+                lines.append(("WARNING", "Bazzite's kernel has no driver for the AIC8800D80 chip: this stick does not "
+                                         "work on Bazzite as it is."))
+                lines.append(("HINT", KERNEL_STICKS))
         elif verdict == "firmware":
             lines.append(("WARNING", f"{', '.join(a.wifi_drivers)} has the adapter but not its firmware: "
                                      + ", ".join(a.firmware_missing) + "."))
@@ -369,8 +369,7 @@ def report(adapters: tuple[Adapter, ...], modules: Modules, in_wifi_app: bool = 
         else:
             lines.append(("WARNING", f"Kernel {modules.kernel} has no driver for {a.usb_id}: this adapter does not "
                                      "work on Bazzite as it is."))
-            lines.append(("HINT", "Most sticks with a Realtek (rtw88, rtw89) or MediaTek (mt76) chip have one in "
-                                  "Bazzite's kernel."))
+            lines.append(("HINT", KERNEL_STICKS))
     return lines
 
 
