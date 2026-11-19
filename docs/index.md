@@ -100,8 +100,9 @@ Apps that **change the board** are marked, and the portal asks before it install
 ## Get started
 
 Ready to set up your BC-250 board? Download the newest portal on the board (the latest
-release on GitHub), check it with SHA256 and run its installer. It installs BC-250 Board Test with it, every other app
-installs from the portal.
+release on GitHub), check it with SHA256 and run its installer. It installs BC-250 Board Test and BC-250 Quickfix with
+it. Each fix of Quickfix, such as MangoHud Config, Fix GPU Metrics or Sensors Module, is a tile on Utilities. Every
+other app installs from the portal.
 
 [:material-download: Download](https://github.com/RobertoTorino/bc250-bazzite/releases/latest){ .md-button .md-button--primary }
 [Install steps](install.md){ .md-button }

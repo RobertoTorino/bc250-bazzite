@@ -1,3 +1,9 @@
+Changelog: 19-11-2026 10:05:34
+
+Fixed. The wiki's Home page, under Get started, said the portal installs only BC-250 Board Test with it. It
+installs BC-250 Quickfix as well, whose fixes (MangoHud Config, Fix GPU Metrics, Sensors Module and more) are tiles
+on Utilities; the page says so now.
+
 Changelog: 19-11-2026 04:48:47
 
 Breaking. BC-250 Wi-Fi Adapter is no longer an app of the suite (owner, 19-11-2026). Its driver for AIC8800D80
