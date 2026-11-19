@@ -1,3 +1,7 @@
+Changelog: 20-11-2026 00:27:04
+
+Release 1.0.0.
+
 Changelog: 19-11-2026 23:53:26
 
 Breaking. CU Bisect and CU Unlock are one app, BC-250 CU Tools, in one window on one page: the bisect's pills, numbers and switches, then the verdict with Install, Uninstall, Refresh and Re-check, the WGP rows and Preview a mask. The log of bc250-cu-unlock.sh is behind a Show logs / Hide logs button, hidden at the start; when Install or Uninstall fails, a red ! with Check logs shows beside it instead of a message box. The separate unlock window, its launcher bc250-unlock-cu-gui, its menu entry and its icon are gone: an update removes them (uninstall-gui.sh). install.sh no longer takes --bisect-only or --unlock-only, and packaging/bazzite/install-gui.sh is gone. The launcher bc250-bisect-gui, the scripts and the unlock service stay as they were.

@@ -36,8 +36,8 @@
 [apps.check]
 name = "BC-250 Board Test"
 summary = "Read-only diagnostics, stress test and benchmarks. Always installed."
-tag = "bc250-check-v4.0.1"
-sha256 = "6a770e1e18acacffa7c786928ce3ca181b8267c2991a0a47b635fe3d27f99fa6"
+tag = "bc250-check-v4.0.2"
+sha256 = ""
 required = true
 changes_board = false
 category = "sustainable"
@@ -85,8 +85,8 @@ launch = [["Open", "~/.local/bin/bc250-upscaler"]]
 [apps.compute]
 name = "BC-250 CU Tools"
 summary = "Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock."
-tag = "bc250-compute-v0.5.2"
-sha256 = "c0a49f9c4d15674df6cc8205e3eb0f58ab05acd9826028771d69fbd8ba8c31ea"
+tag = "bc250-compute-v1.0.0"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
