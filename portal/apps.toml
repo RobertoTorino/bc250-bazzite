@@ -36,8 +36,8 @@
 [apps.check]
 name = "BC-250 Board Test"
 summary = "Read-only diagnostics, stress test and benchmarks. Always installed."
-tag = "bc250-check-v4.0.2"
-sha256 = "72b81b4c1b1dacce8c2b70f9990fa79e25e2d33450ad32ad5b0ba26b36a8086f"
+tag = "bc250-check-v4.0.3"
+sha256 = ""
 required = true
 changes_board = false
 category = "sustainable"
@@ -85,8 +85,8 @@ launch = [["Open", "~/.local/bin/bc250-upscaler"]]
 [apps.compute]
 name = "BC-250 CU Tools"
 summary = "Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock."
-tag = "bc250-compute-v1.0.0"
-sha256 = "2f8e4233272e0fbaeefa041099b513278016b4514f21a5894fbe473d644c0ed4"
+tag = "bc250-compute-v1.0.1"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -108,8 +108,8 @@ launch = [["Open", "~/.local/bin/bc250-bisect-gui"]]
 [apps.cores]
 name = "BC-250 CPU Tools"
 summary = "Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock."
-tag = "bc250-cores-v0.5.3"
-sha256 = "f1fcc0d135e820a0ed684bf66e60588b250281afc9789815e61d068d6e03eb63"
+tag = "bc250-cores-v1.0.0"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
