@@ -1,3 +1,15 @@
+Changelog: 20-11-2026 10:32:13
+
+Fixed. A change to the local CI (tools/ci_local.py, tools/ci-local.sh, tools/ci-local/) no longer runs every job (owner, 20-11-2026): no job on GitHub runs these files, so tools/ci_matrix.py plans such a push as a change to any tool, the tests of tools and what else the push changed. A fix to tools/ci_local.py had started all 40 jobs on GitHub. The wiki's development page says so.
+
+Changelog: 20-11-2026 10:27:17
+
+Fixed. The CI jobs no longer wait 5 minutes on a stalled download of Bazzite's font and then fail: tools/ci-font.sh installs it in the pytest and docs jobs of ci.yml and in docs.yml, cuts a try off after 45 seconds and tries three times, and asks Ubuntu's mirror for its package lists only when an install fails. On 20-11-2026 two pytest jobs of one run stalled on the 13 MB package and failed before a test ran. A change to the script runs every job, as one to tools/ci-qt-libs.sh does.
+
+Changelog: 20-11-2026 05:35:36
+
+Fixed. tools/ci-local.sh runs fewer jobs at a time when the computer's free memory is short: one job per 1.5 GB of it, at least two and at most half the cores as before; --workers still sets the number. With six jobs side by side on a computer whose swap was full, a portal test crashed inside Qt (a segmentation fault while it scaled a picture) and passed three times when the job ran alone. The wiki's development page says so.
+
 Changelog: 20-11-2026 05:17:28
 
 Fixed. tools/ci-local.sh runs a job that compiles (native, with cargo) after the other jobs, alone. Beside five other jobs its compilers ran the computer short of memory and rustc crashed with a SIGSEGV in a crate that builds without fault when the job runs alone. The wiki's development page says so.

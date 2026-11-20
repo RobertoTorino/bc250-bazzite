@@ -69,7 +69,8 @@ the commit before it and names them:
 | An app, a `dev/` app, the portal or a tool | The installer tests that name it, side by side |
 | `apps/consoles` | Also the native job |
 | Anything but Python code | Also the wiki build |
-| `core`, a workflow, the CI tools, `requirements-dev.txt` | Every job |
+| `core`, a workflow, `tools/ci_matrix.py`, a script the jobs run (`tools/ci-qt-libs.sh`, `tools/ci-font.sh`), `requirements-dev.txt` | Every job |
+| The local CI (`tools/ci_local.py`, `tools/ci-local.sh`, `tools/ci-local/`) | As any tool: no job on GitHub runs it |
 
 Every job also runs every Monday, with **Run workflow** on the CI workflow's page on GitHub, and when the commit
 before the push is not known (a new branch, a forced push). The pytest matrix and the installer tests are read from
@@ -107,7 +108,8 @@ FFmpeg is built again when `apps/consoles/native/ffmpeg/build.sh` changes, as Gi
 is keyed on that file. It works on a copy of the checkout with every change staged, as the commit will have it. The copy is named as the
 checkout, as GitHub's is named after the repository. One run goes at a time on a computer: a second one, from a
 terminal or Nexus Release Tool's Push, says that another run is going and waits until it ends, as the two would share
-the venvs and the logs. Within a run the jobs go several at a time, except a job that compiles (`native`, with
+the venvs and the logs. Within a run the jobs go several at a time: half the cores, fewer when the free memory is short (one job per
+1.5 GB, at least two; `--workers N` sets the number yourself), except a job that compiles (`native`, with
 cargo): it runs after the others, alone, since its compilers need the computer's memory for themselves. The push commands Nexus Release Tool shows run it first (`tools/ci-local.sh && git push`): no
 push when a job fails.
 
