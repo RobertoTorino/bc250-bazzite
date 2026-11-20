@@ -359,8 +359,8 @@ launch = [["Open", "~/.local/bin/bc250-controller"]]
 [apps.rpcs3]
 name = "RPCS3 Manager"
 summary = "PS3 games with the RPCS3 emulator: a tested RPCS3 build, the firmware, your games found and added to Game Mode."
-tag = "bc250-rpcs3-v7.3.0"
-sha256 = "a35e036dd6f8f7e3c3dee7a38db88df716f5938414b1285a87dccae89fda87cf"
+tag = "bc250-rpcs3-v7.4.0"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
@@ -427,8 +427,8 @@ launch = [["Open", "~/.local/bin/bazzite-datstation"]]
 [apps.ppsspp]
 name = "PPSSPP Manager"
 summary = "PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Game Mode."
-tag = "bc250-ppsspp-v5.3.0"
-sha256 = "5a57721340111696ce34bb3bfd469b186647fe8adb24b7fa89b8ab95035b799d"
+tag = "bc250-ppsspp-v5.4.0"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
@@ -440,8 +440,8 @@ launch = [["Open", "~/.local/bin/bc250-ppsspp-manager"]]
 [apps.pcsx2]
 name = "PCSX2 Manager"
 summary = "PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Game Mode."
-tag = "bc250-pcsx2-v7.3.0"
-sha256 = "47944e30060e6e287eafc4aa23cfcc6b53e96d24e4f5d630c60a31f0d6205d79"
+tag = "bc250-pcsx2-v7.4.0"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
@@ -453,8 +453,8 @@ launch = [["Open", "~/.local/bin/bc250-pcsx2-manager"]]
 [apps.vita3k]
 name = "Vita3K Manager"
 summary = "PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Game Mode."
-tag = "bc250-vita3k-v5.4.0"
-sha256 = "8a592951389a5adee01ae1f2ffafb358d2cba370800020bd87d7edbf9398a395"
+tag = "bc250-vita3k-v5.5.0"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
@@ -466,8 +466,8 @@ launch = [["Open", "~/.local/bin/bc250-vita3k-manager"]]
 [apps.xenia]
 name = "Xenia Manager"
 summary = "XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Game Mode."
-tag = "bc250-xenia-v5.4.0"
-sha256 = "f08dbc13b9de271088034129ca714635fc4f37fcd09402cee58ed08c2561ea70"
+tag = "bc250-xenia-v5.5.0"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
