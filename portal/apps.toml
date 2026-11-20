@@ -225,8 +225,8 @@ launch = [["Open", "~/.local/bin/bc250-ace-queues"]]
 [apps.mesh]
 name = "BC-250 Mesh Shaders"
 summary = "Mesh shaders for games: RADV with DirectMesh beside the system Mesa, built on the board and tested before use."
-tag = "bc250-mesh-v4.0.0"
-sha256 = "08ea938a746641afceb23d52467580a91656e7aea2a085d86e4cad7c2e120463"
+tag = "bc250-mesh-v4.1.0"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -453,8 +453,8 @@ launch = [["Open", "~/.local/bin/bc250-pcsx2-manager"]]
 [apps.vita3k]
 name = "Vita3K Manager"
 summary = "PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Game Mode."
-tag = "bc250-vita3k-v5.0.0"
-sha256 = "7458c040cce6d040505216dba4100e408aadbf303be70493f85c963e905d8732"
+tag = "bc250-vita3k-v5.1.0"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
@@ -466,8 +466,8 @@ launch = [["Open", "~/.local/bin/bc250-vita3k-manager"]]
 [apps.xenia]
 name = "Xenia Manager"
 summary = "XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Game Mode."
-tag = "bc250-xenia-v5.0.0"
-sha256 = "7c4a930976c6a9df05c8d195c61a84946364db14abeaee941e565dae5c4e2c64"
+tag = "bc250-xenia-v5.1.0"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
