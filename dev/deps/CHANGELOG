@@ -1,3 +1,8 @@
+Changelog: 21-11-2026 00:38:50
+
+Added. The catalog lists make and gcc for BC-250 Quickfix, optional: VRM Sensors builds the bc250_vrm kernel module
+with them. The pkexec line of Quickfix names the regulator's sensors.
+
 Changelog: 20-11-2026 15:09:02
 
 Added. A card Prime95 (mprime) among the machine's updates, when mprime is in ~/mprime: the release named in

@@ -1377,6 +1377,46 @@ for h in /sys/class/hwmon/hwmon*; do
     fi
 done
 
+log_result "Check the CPU and GPU rails (bc250_vrm)"
+VRM_HWMON=""
+for h in /sys/class/hwmon/hwmon*; do
+    [ "$(cat "$h/name" 2>/dev/null)" = "bc250_vrm" ] && { VRM_HWMON="$h"; break; }
+done
+if [ -n "$VRM_HWMON" ]; then
+    for f in "$VRM_HWMON"/in*_input "$VRM_HWMON"/curr*_input "$VRM_HWMON"/power*_input "$VRM_HWMON"/temp*_input; do
+        [ -e "$f" ] || continue
+        VRM_NAME=$(basename "${f%_input}")
+        VRM_LABEL=$(cat "${f%_input}_label" 2>/dev/null)
+        VRM_LABEL=${VRM_LABEL:-$VRM_NAME}
+        VRM_RAW=$(cat "$f" 2>/dev/null)
+        if ! [[ "$VRM_RAW" =~ ^[0-9]+$ ]]; then
+            log_result "INFO: $VRM_LABEL: no reading."
+            continue
+        fi
+        case "$VRM_NAME" in
+            in*)    log_result "INFO: $VRM_LABEL: ${VRM_RAW} mV" ;;
+            curr*)  log_result "INFO: $VRM_LABEL: $(( VRM_RAW / 1000 )).$(( VRM_RAW % 1000 / 100 )) A" ;;
+            power*) log_result "INFO: $VRM_LABEL: $(( VRM_RAW / 1000000 )) W" ;;
+            temp*)
+                # The limits are the regulator's own: its warning and its shutdown temperature.
+                VRM_MAX=$(cat "${f%_input}_max" 2>/dev/null)
+                VRM_CRIT=$(cat "${f%_input}_crit" 2>/dev/null)
+                log_result "INFO: $VRM_LABEL: $(( VRM_RAW / 1000 ))C"
+                if [[ "$VRM_CRIT" =~ ^[1-9][0-9]*$ ]] && [ "$VRM_RAW" -ge "$VRM_CRIT" ]; then
+                    log_result "ERROR: $VRM_LABEL is at the regulator's limit of $(( VRM_CRIT / 1000 ))C. Check cooling."
+                    ERROR_FOUND=true
+                elif [[ "$VRM_MAX" =~ ^[1-9][0-9]*$ ]] && [ "$VRM_RAW" -ge "$VRM_MAX" ]; then
+                    log_result "WARNING: $VRM_LABEL is at the regulator's warning point of $(( VRM_MAX / 1000 ))C."
+                    WARN_FOUND=true
+                fi
+                ;;
+        esac
+    done
+else
+    log_result "INFO: bc250_vrm is not loaded: no voltage, current or power of the CPU and GPU rails."
+    log_result "HINT: BC-250 Quickfix's VRM Sensors builds and loads it."
+fi
+
 log_result "Check that at least one chassis fan is spinning"
 FAN_MAX=0
 for f in /sys/class/hwmon/hwmon*/fan?_input; do

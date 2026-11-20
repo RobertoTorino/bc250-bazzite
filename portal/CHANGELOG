@@ -1,3 +1,12 @@
+Changelog: 21-11-2026 00:51:43
+
+Release 26.8.0.
+
+Changelog: 21-11-2026 00:38:50
+
+Added. apps.toml lists the quickfix VRM Sensors, with what it changes on the board, and Quickfix's summary names the
+regulator's sensors.
+
 Changelog: 20-11-2026 22:02:28
 
 Release 26.7.0.

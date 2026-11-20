@@ -1,3 +1,13 @@
+Changelog: 21-11-2026 00:38:50
+
+Added. Test 22 names BC-250 Quickfix's VRM Sensors when the bc250_vrm module is not loaded.
+
+Changelog: 20-11-2026 23:06:26
+
+Added. Test 22 (Hardware Sensors) reports the CPU and GPU rails when the bc250_vrm kernel module is loaded: input and
+rail voltages, currents, power and the regulators' temperatures, with a warning or an error at the regulator's own
+limits. Without the module it says so in one line.
+
 Changelog: 20-11-2026 17:08:00
 
 Release 4.4.0.

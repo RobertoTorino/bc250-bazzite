@@ -54,6 +54,20 @@ def make_board(root: Path) -> Path:
     return root
 
 
+def add_vrm(root: Path, number: int = 4) -> Path:
+    """The hwmon of the bc250_vrm module, with the labels and units of its source (mV, mA, µW, m°C)."""
+    folder = root / f"sys/class/hwmon/hwmon{number}"
+    write(folder / "name", "bc250_vrm")
+    for name, label, value in (("in0", "VIN (12V Input)", 12050), ("in1", "CPU Voltage", 1050),
+                               ("in2", "GPU Core Voltage", 950), ("curr1", "CPU Current", 32500),
+                               ("curr2", "GPU Current", 61200), ("temp1", "CPU VRM Temp", 47000),
+                               ("temp2", "GPU VRM Temp", 55000), ("power1", "CPU Power", 34125000),
+                               ("power2", "GPU Power", 58140000)):
+        write(folder / f"{name}_label", label)
+        write(folder / f"{name}_input", str(value))
+    return folder
+
+
 def gpu_metrics(gfx_activity: int) -> bytes:
     """A 128-byte gpu_metrics v2.2 table with *gfx_activity* (hundredths of a percent) at byte 28."""
     raw = bytearray(128)

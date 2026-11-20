@@ -13,6 +13,8 @@ A small window that stays on top of your desktop and shows the **AMD BC-250**'s 
 | GPU | load, clock and power | the GPU governor's `gpu_metrics`, `amdgpu` |
 | Governor | the GPU governor's current clock range | the governor, over D-Bus |
 | GPU volt | core voltage (vddgfx) | `amdgpu` |
+| CPU rail | voltage, current and power of the CPU's supply | `bc250_vrm` |
+| GPU rail | voltage, current and power of the GPU's supply | `bc250_vrm` |
 | VRAM | used / total of the GPU's share of the memory | `amdgpu` |
 | RAM | used / total | `/proc/meminfo` |
 | Refresh | the refresh rate of the screen the window is on | Qt |
@@ -20,6 +22,8 @@ A small window that stays on top of your desktop and shows the **AMD BC-250**'s 
 | CPU temp | Tctl | `k10temp` |
 | GPU temp | edge | `amdgpu` |
 | VRM temp | the voltage regulators | `nct6686` ("VRM MOS") |
+| CPU VRM temp | the regulators of the CPU's supply | `bc250_vrm` |
+| GPU VRM temp | the regulators of the GPU's supply | `bc250_vrm` |
 | NVMe temp | the SSD | `nvme` |
 | Network | download and upload, all interfaces except loopback | `/proc/net/dev` |
 | Disk | read and write, all disks | `/proc/diskstats` |
@@ -28,6 +32,11 @@ The BC-250's GPU has no load sensor of its own (`gpu_busy_percent` is not suppor
 the load and, with its **fix-metrics** setting on (the default), publishes it in the `gpu_metrics` table; the GPU
 row reads it from there. Without it the row shows clock and power only, and hovering it says why. The Governor row
 shows "—" when the governor does not run.
+
+The four `bc250_vrm` rows need the kernel module of that name, which reads the board's voltage regulator.
+Bazzite does not include it. [VRM Sensors](quickfix.md#vrm-sensors) in BC-250 Quickfix builds and loads it.
+Without it these rows show "—", and hovering one says why.
+The power is the voltage times the current.
 
 A row shows "—" when the board or kernel does not offer its value. Temperatures turn orange from 80 °C and red
 from 90 °C. The values update every second.

@@ -542,7 +542,7 @@ explanation are grouped per program, with the command to read them.
 
 | #  | Test                          | Checks                                                                        |
 |----|-------------------------------|-------------------------------------------------------------------------------|
-| 22 | Hardware Sensors              | nct6683/nct6687 SuperIO, GPU and CPU temperatures, fan RPM sanity.            |
+| 22 | Hardware Sensors              | nct6683/nct6687 SuperIO, GPU and CPU temperatures, CPU and GPU rails, fan RPM sanity. |
 | 27 | Handheld Daemon               | Confirms `hhd.service` is masked; it causes constant micro-stuttering.        |
 | 28 | Suspend Targets               | Which sleep the board offers, whether systemd may use it, and the suspends since boot. |
 | 40 | Power Delivery and Throttling | GPU power cap and draw, governor frequency ceiling, throttle messages.        |

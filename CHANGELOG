@@ -1,3 +1,11 @@
+Changelog: 21-11-2026 00:38:50
+
+Added. tools/check_upstream.py vrm: the tags of Hexxeh/bc250-vrm-dkms against the tag and commit BC-250 Quickfix's VRM
+Sensors brings the bc250_vrm module's source from (a newer tag, or the pinned tag gone or moved). The Upstream
+workflow's comment and the wiki's Development index name it. The README and the wiki's apps index name the
+regulator's sensors in Quickfix's summary. tools/installer-tests/quickfix.sh checks that the module's source is
+installed with the app.
+
 Changelog: 20-11-2026 21:05:44
 
 Fixed. CLAUDE.md lost its item on .claude/suite.md, which is removed (owner, 20-11-2026). The files for the text rewrite stay as they were: .claude/writing.md, .claude/text-decisions.md, the /rewrite-text command and its workflow.

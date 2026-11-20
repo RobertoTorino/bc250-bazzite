@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The module's build, in place of upstream's Makefile, which names clang (LLVM=1): Bazzite's kernel is built with gcc,
+# and a module is built with its kernel's compiler. The kernel's own build system reads this file.
+obj-m += bc250_vrm.o
+bc250_vrm-y := bc250_vrm_core.o nct6687_smbus.o

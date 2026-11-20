@@ -1,3 +1,9 @@
+Changelog: 20-11-2026 23:06:26
+
+Added. sensors: Rail and Sensors.rail(), the voltage, current and regulator temperature of the CPU and GPU rails
+from the bc250_vrm module's hwmon, found by its labels; Reading has cpu_rail and gpu_rail, None without the module.
+vrm_temp stays the Super I/O's own sensor (ACTION-LIST row 3, VRM sensors).
+
 Changelog: 20-11-2026 17:08:00
 
 Version 6.3.0.

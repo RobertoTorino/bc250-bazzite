@@ -504,7 +504,7 @@ launch = [["Open", "~/.local/bin/bc250-bluetooth-pairing"]]
 
 [apps.quickfix]
 name = "BC-250 Quickfix"
-summary = "Small quickfixes for one job each: Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
+summary = "Small quickfixes for one job each: Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the regulator's sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
 tag = "bc250-quickfix-v1.4.0"
 sha256 = "3d2f6143127ccdd3251c7ddac39ccca29f524f3e7fe10767f6d69c6c2018dc06"
 required = true
@@ -552,6 +552,23 @@ Turn on writes one line, options nct6683 force=true, to /etc/modprobe.d/bc250-qu
 nct6683 driver, which reads the board's SuperIO chip: its temperatures and fan speeds. The file stays across reboots
 and power offs, so the driver loads at every boot. Nothing is written to the BIOS, the firmware or the chip. Turn off
 removes the file; the driver stays loaded until the next boot.
+"""
+
+[[apps.quickfix.quickfixes]]
+key = "vrm"
+name = "VRM Sensors"
+summary = "Build and load the module that reads the voltage, current and temperature of the CPU and GPU supply."
+launch = "~/.local/bin/bc250-quickfix vrm"
+changes_board = true
+board_change = """
+Turn on copies the source of the bc250_vrm kernel module to /var/lib/bc250-quickfix/vrm, writes the service
+/etc/systemd/system/bc250-quickfix-vrm.service and starts it. The service builds the module for the running kernel and
+loads it, now and at every boot, so a new kernel gets its own build. The module reads the voltage, current and
+temperature of the CPU and GPU supply from the board's voltage regulator, through the SuperIO chip. When it loads it
+sets up the SuperIO chip's SMBus port, which stays so until the board powers off. For every reading it writes the
+regulator's page register, which selects the CPU or the GPU supply. It writes no voltage, current or limit. The folder
+and the service stay across reboots and power offs. Nothing is written to the BIOS or the firmware. Turn off stops the
+service, which unloads the module, and removes the service and the folder.
 """
 
 [[apps.quickfix.quickfixes]]

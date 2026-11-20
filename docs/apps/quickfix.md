@@ -19,6 +19,7 @@ turns on only what is off, and turns off only what it turned on itself.
 | [MangoHud Config](#mangohud-config) | Open or create MangoHud's config, edit and save it; turn on the FPS log Board Test reads. | No |
 | [Fix GPU Metrics](#fix-gpu-metrics) | Let the GPU governor write the real GPU load into gpu_metrics, for the overlays. | Yes |
 | [Sensors Module](#sensors-module) | Load a driver for the board's SuperIO chip at every boot, for its temperatures and fans. | Yes |
+| [VRM Sensors](#vrm-sensors) | Build and load the module that reads the voltage, current and temperature of the CPU and GPU supply. | Yes |
 | [Game Memory Map](#game-memory-map) | Raise vm.max_map_count, the number of memory areas a game may map. | Yes |
 | [Persistent Journal](#persistent-journal) | Keep the system journal on the disk, so the logs of a boot that crashed can be read after it. | Yes |
 | [IOMMU Off](#iommu-off) | Keep the kernel from using the board's IOMMU, which is broken on the BC-250 (amd_iommu=off). | Yes |
@@ -103,6 +104,39 @@ quickfix is not needed. Other images may not load it. The kernel's own nct6683 d
 chip's sensors as it reports them. **Turn on** is offered only when no driver serves the chip. A modprobe file of
 your own that forces nct6683 already counts too; **Turn off** removes only the quickfix's file.
 
+## VRM Sensors
+
+!!! warning "Changes the board"
+    Turn on copies the source of the bc250_vrm kernel module to /var/lib/bc250-quickfix/vrm, writes the service
+    /etc/systemd/system/bc250-quickfix-vrm.service and starts it. The service builds the module for the running
+    kernel and loads it, now and at every boot, so a new kernel gets its own build. The module reads the voltage,
+    current and temperature of the CPU and GPU supply from the board's voltage regulator, through the SuperIO
+    chip. When it loads it sets up the SuperIO chip's SMBus port, which stays so until the board powers off. For
+    every reading it writes the regulator's page register, which selects the CPU or the GPU supply. It writes no
+    voltage, current or limit. The folder and the service stay across reboots and power offs. Nothing is written
+    to the BIOS or the firmware. Turn off stops the service, which unloads the module, and removes the service and
+    the folder.
+
+The board's voltage regulator knows what the CPU and the GPU draw. **VRM Sensors** gives you those values:
+
+- the voltage, current and power of the CPU supply and of the GPU supply
+- the temperature of each supply's regulators
+- the 12 V input voltage
+
+BC-250 System Overlay shows them in its **CPU rail**, **GPU rail**, **CPU VRM temp** and **GPU VRM temp** rows.
+Board Test's test 22 and lm_sensors' `sensors` report them too.
+
+The values come from a kernel module, `bc250_vrm`, which Bazzite does not include.
+Its source is [Hexxeh/bc250-vrm-dkms](https://github.com/Hexxeh/bc250-vrm-dkms), unchanged, and comes with the app.
+**Turn on** builds it for the running kernel and loads it, which takes a few seconds.
+A service then loads it at every boot.
+After a kernel update the first boot builds the module again.
+
+The boxes show whether the module is loaded, whether the service loads it at boot, and whether its sensors are there.
+**Turn on** is offered when the module is not loaded and the kernel's build files are on the image.
+When the service is on and the module is not loaded, the window names the command that shows why.
+**Turn off** unloads the module and removes the service and its folder.
+
 ## Game Memory Map
 
 !!! warning "Changes the board"
@@ -181,7 +215,7 @@ apps/quickfix/install.sh --uninstall             # remove it; --purge removes it
 ```
 
 The launcher is `~/.local/bin/bc250-quickfix`: without an argument it opens the list, with a quickfix's key the
-quickfix's own window (`bc250-quickfix tools`, `mangohud`, `metrics`, `sensors`, `mapcount`, `journal`, `iommu`,
+quickfix's own window (`bc250-quickfix tools`, `mangohud`, `metrics`, `sensors`, `vrm`, `mapcount`, `journal`, `iommu`,
 `mitigations`). The app runs on the suite's shared Python environment.
 
 ## Files
@@ -191,6 +225,8 @@ quickfix's own window (`bc250-quickfix tools`, `mangohud`, `metrics`, `sensors`,
 - `/etc/modprobe.d/bc250-quickfix-nct6683.conf`, `/etc/sysctl.d/90-bc250-quickfix-max-map-count.conf` and
   `/var/log/journal/.bc250-quickfix`: what Sensors Module, Game Memory Map and Persistent Journal turned on, while it
   is on.
+- `/etc/systemd/system/bc250-quickfix-vrm.service` and `/var/lib/bc250-quickfix/vrm/`: VRM Sensors' service, and
+  the module's source and build, while it is on.
 - `/var/lib/bc250-quickfix/iommu.karg` and `mitigations.karg`: the notes that IOMMU Off and CPU Mitigations Off added
   their kernel argument, while it is on.
 

@@ -1,3 +1,12 @@
+Changelog: 21-11-2026 00:38:50
+
+Added. A quickfix VRM Sensors (bc250-quickfix vrm; owner, 21-11-2026: a Quickfix item beside Sensors Module). It builds
+the bc250_vrm kernel module for the running kernel and loads it, now and at every boot, through a service of its own
+(bc250-quickfix-vrm.service); a new kernel gets its own build at its first boot. The module's source comes with the
+app, unchanged, from Hexxeh/bc250-vrm-dkms v1.1.0 (GPL-2.0), with a Kbuild of our own: upstream's Makefile names
+clang, and Bazzite's kernel is built with gcc. Turn off unloads the module and removes the service and its folder,
+/var/lib/bc250-quickfix/vrm.
+
 Changelog: 20-11-2026 17:08:00
 
 Release 1.4.0.

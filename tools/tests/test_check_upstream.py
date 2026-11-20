@@ -371,3 +371,21 @@ def test_speedtest():
     assert check_upstream.check_speedtest("1.2.0", formula("1.2.0")).drift == []
     [line] = check_upstream.check_speedtest("1.2.0", formula("1.3.0")).drift
     assert line.startswith("speedtest 1.3.0 is out: the development tool could install it")
+
+
+def test_vrm_module():
+    values = check_upstream._string_constants(check_upstream.QUICKFIX_SYSTEM)
+    assert values["VRM_REPO"] == "Hexxeh/bc250-vrm-dkms" and len(values["VRM_COMMIT"]) == 40
+
+    def tags(*found):
+        return lambda url: json.dumps([{"name": name, "commit": {"sha": sha}} for name, sha in found]).encode()
+    pinned = (values["VRM_TAG"], values["VRM_COMMIT"])
+    in_step = check_upstream.check_vrm(values, tags(pinned, ("v1.0.0", "ae" * 20), ("wip", "bc" * 20)))
+    assert in_step.drift == [] and in_step.latest == values["VRM_TAG"]
+    [line] = check_upstream.check_vrm(values, tags(("v9.0.0", "cd" * 20), pinned)).drift
+    assert line.startswith("v9.0.0 is out: a new version of BC-250 Quickfix could bring it")
+    [line] = check_upstream.check_vrm(values, tags((values["VRM_TAG"], "ef" * 20))).drift
+    assert "is commit efefefefefef now" in line
+    [line] = check_upstream.check_vrm(values, tags(("v1.0.0", "ae" * 20))).drift
+    assert line == f"the tag {values['VRM_TAG']} is gone from Hexxeh/bc250-vrm-dkms"
+

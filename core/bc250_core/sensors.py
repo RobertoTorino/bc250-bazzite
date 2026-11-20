@@ -4,7 +4,8 @@ missing, so an app shows "—" instead of failing on a board or kernel that lack
 
 On the BC-250: CPU temperature from k10temp (Tctl), GPU clock, power, voltage and temperature from amdgpu, fans
 and the VRM temperature from the nct6686 Super I/O. amdgpu's gpu_busy_percent is not supported on this GPU; the GPU
-load comes from the gpu_metrics table that the GPU governor patches (fix-metrics), and is None without it."""
+load comes from the gpu_metrics table that the GPU governor patches (fix-metrics), and is None without it. The CPU
+and GPU rails (voltage, current, regulator temperature) come from the bc250_vrm module, and are None without it."""
 
 from __future__ import annotations
 
@@ -17,12 +18,25 @@ from pathlib import Path
 GPU_LOAD_OFFSET = 0x1C          # gpu_metrics v2.x: average_gfx_activity, the field the governor's fix-metrics patches
 SECTOR = 512                    # /proc/diskstats counts 512-byte sectors, whatever the disk's own sector size
 _NOT_A_DISK = ("loop", "ram", "zram", "dm-", "md", "sr", "fd")
+VRM_DRIVER = "bc250_vrm"        # the hwmon of the VRM module (Hexxeh/bc250-vrm-dkms): one set of channels per rail
 
 
 @dataclass(frozen=True)
 class Fan:
     label: str
     rpm: int
+
+
+@dataclass(frozen=True)
+class Rail:
+    """What the VRM reports for one rail; a channel that gave no reading is None."""
+    mv: int | None = None
+    amps: float | None = None
+    temp: float | None = None               # °C, of the rail's regulators
+
+    @property
+    def watts(self) -> float | None:
+        return self.mv * self.amps / 1000 if self.mv is not None and self.amps is not None else None
 
 
 @dataclass(frozen=True)
@@ -39,6 +53,8 @@ class Reading:
     vram: tuple[int, int] | None = None     # used, total bytes
     ram: tuple[int, int] | None = None      # used, total bytes
     vrm_temp: float | None = None
+    cpu_rail: Rail | None = None            # None without the bc250_vrm module
+    gpu_rail: Rail | None = None
     nvme_temp: float | None = None
     net: tuple[float, float] | None = None  # download, upload bytes/s since the previous reading
     disk: tuple[float, float] | None = None     # read, write bytes/s since the previous reading
@@ -128,6 +144,8 @@ class Sensors:
     def _labelled_temp(self, word: str) -> float | None:
         """The first temperature whose label contains *word* (e.g. the Super I/O's "VRM MOS")."""
         for folder in self._hwmons():
+            if _read(folder / "name") == VRM_DRIVER:        # its rails have their own readers
+                continue
             for label_file in sorted(folder.glob("temp[0-9]*_label")):
                 if word.lower() in (_read(label_file) or "").lower():
                     value = _read_int(folder / label_file.name.replace("_label", "_input"))
@@ -235,6 +253,23 @@ class Sensors:
     def nvme_temp(self) -> float | None:
         return self._temp("nvme")
 
+    # -------------------------------------------------------------------- VRM
+    def rail(self, word: str) -> Rail | None:
+        """The rail whose labels contain *word* ("CPU" or "GPU"). Power is left to Rail.watts: the module's own
+        power file reads voltage and current once more, and every read is a transfer on the VRM's bus."""
+        folder = self._hwmon(VRM_DRIVER)
+        if folder is None:
+            return None
+
+        def channel(kind: str) -> int | None:
+            for label_file in sorted(folder.glob(f"{kind}[0-9]*_label")):
+                if word.lower() in (_read(label_file) or "").lower():
+                    return _read_int(folder / label_file.name.replace("_label", "_input"))
+            return None
+
+        mv, ma, temp = channel("in"), channel("curr"), channel("temp")
+        return Rail(mv=mv, amps=ma / 1000 if ma is not None else None, temp=temp / 1000 if temp is not None else None)
+
     # --------------------------------------------------------------- activity
     def _net_lines(self) -> list[tuple[str, list[str]]]:
         found = []
@@ -300,5 +335,5 @@ class Sensors:
         return Reading(cpu_load=self.cpu_load(), cpu_mhz=self.cpu_mhz(), cpu_temp=self.cpu_temp(),
                        gpu_load=self.gpu_load(), gpu_mhz=self.gpu_mhz(), gpu_watts=self.gpu_watts(),
                        gpu_mv=self.gpu_mv(), gpu_temp=self.gpu_temp(), governor=self.governor(), vram=self.vram(),
-                       ram=self.ram(), vrm_temp=self.vrm_temp(), nvme_temp=self.nvme_temp(), net=self.net(self.interface),
-                       disk=self.disk(), fans=self.fans())
+                       ram=self.ram(), vrm_temp=self.vrm_temp(), cpu_rail=self.rail("CPU"), gpu_rail=self.rail("GPU"),
+                       nvme_temp=self.nvme_temp(), net=self.net(self.interface), disk=self.disk(), fans=self.fans())

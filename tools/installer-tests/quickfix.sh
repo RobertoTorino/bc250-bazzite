@@ -21,6 +21,7 @@ bash "$SUITE/apps/quickfix/install.sh" > "$T/log1" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "no sudo used" "! grep -q 'sudo called' $T/log1 && [ -z \"\$(ls -A $T/opt)\" ]"
 check "app copied" "[ -f $A/quickfix/main_window.py ] && [ -f $A/images/$APP.webp ] && [ -f $A/images/$APP-128.png ]"
+check "the VRM module's source copied" "[ -f $A/quickfix/vrm/bc250_vrm_core.c ] && [ -f $A/quickfix/vrm/Kbuild ] && [ -f $A/quickfix/vrm/LICENSE ] && [ -x $A/quickfix/vrm/bc250-quickfix-vrm.sh ]"
 check "core bundled from checkout" "[ -f $A/bc250_core/theme.py ] && [ -f $A/bc250_core/widgets.py ]"
 check "no tests or caches copied" "[ ! -d $A/tests ] && ! find $A -name __pycache__ | grep -q ."
 check "shared venv" "[ -x $D/bc250-bazzite-suite/venv/bin/python ]"

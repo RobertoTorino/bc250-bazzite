@@ -209,7 +209,7 @@ its findings as `LEVEL: text` lines, which the script logs; a `WARNING` line cou
 
 | #  | Test                          | Checks                                                                        |
 |----|-------------------------------|-------------------------------------------------------------------------------|
-| 22 | Hardware Sensors              | nct6683/nct6687 SuperIO, GPU and CPU temperatures, fan RPM sanity.            |
+| 22 | Hardware Sensors              | nct6683/nct6687 SuperIO, GPU and CPU temperatures, CPU and GPU rails, fan RPM sanity. |
 | 27 | Handheld Daemon               | Confirms `hhd.service` is masked; it causes constant micro-stuttering.        |
 | 28 | Suspend Targets               | Confirms sleep/suspend/hibernate targets are masked; s2idle resume is broken. |
 | 40 | Power Delivery and Throttling | GPU power cap and draw, governor frequency ceiling, throttle messages.        |

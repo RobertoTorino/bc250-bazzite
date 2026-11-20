@@ -236,7 +236,7 @@ usage = "Password prompt for installing, changing and removing the search after 
 [[tool.source]]
 owner = "quickfix"
 need = "required"
-usage = "Password prompt for every change of the quickfixes that change the board: GPU metrics, the sensors driver, the memory map, the journal and the kernel arguments (IOMMU, CPU mitigations)."
+usage = "Password prompt for every change of the quickfixes that change the board: GPU metrics, the sensors driver, the regulator's sensors, the memory map, the journal and the kernel arguments (IOMMU, CPU mitigations)."
 
 [[tool]]
 name = "umr"
@@ -824,6 +824,30 @@ owner = "mesh"
 need = "required"
 usage = "Download Mesa source and signatures for the driver build."
 anchor = "before-you-start"
+
+[[tool]]
+name = "make"
+rpm = "make"
+description = "Runs a build from its Makefile. The kernel's own build system uses it to build a kernel module."
+executables = ["make"]
+
+[[tool.source]]
+owner = "quickfix"
+need = "optional"
+usage = "VRM Sensors builds the bc250_vrm kernel module for the running kernel with it."
+anchor = "vrm-sensors"
+
+[[tool]]
+name = "gcc"
+rpm = "gcc"
+description = "The GNU C compiler. Bazzite's kernel is built with it, and a kernel module is built with its kernel's compiler."
+executables = ["gcc"]
+
+[[tool.source]]
+owner = "quickfix"
+need = "optional"
+usage = "VRM Sensors builds the bc250_vrm kernel module for the running kernel with it."
+anchor = "vrm-sensors"
 
 [[tool]]
 name = "podman"

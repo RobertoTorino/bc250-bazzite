@@ -298,7 +298,7 @@ class SwitchWindow(QuickfixWindow):
     """A quickfix that turns one thing on or off: its status boxes, Turn on and Turn off. A subclass reads its state
     in read() and returns what the window shows."""
 
-    CHANGE = ""                         # system.py's change: metrics, sensors, mapcount, journal, iommu, mitigations
+    CHANGE = ""                         # system.py's change: metrics, sensors, vrm, mapcount, journal, iommu, ...
 
     def __init__(self, quickfix: Quickfix, info: str, boxes: tuple[str, ...], **kwargs) -> None:
         super().__init__(quickfix, info, **kwargs)
@@ -420,6 +420,50 @@ class SensorsWindow(SwitchWindow):
         self.state.set_status("On" if s.on else "Off", "ok" if s.on else "info")
         self.note.setText(f"Forced by /etc/modprobe.d/{s.elsewhere}: Turn off does not remove another file."
                           if s.elsewhere and not s.ours else "")
+
+
+VRM_INFO = ("<b>VRM Sensors</b> builds and loads <code>bc250_vrm</code>, the kernel module that reads the board's "
+            "voltage regulator: the voltage, current, power and regulator temperature of the CPU and the GPU supply, "
+            "and the 12 V input. BC-250 System Overlay shows them, and BC-250 Board Test's test 22 and lm_sensors' "
+            "<code>sensors</code> report them. Bazzite does not include the module.<br><br>"
+            f"Turn on copies the module's source (<code>{system.VRM_REPO}</code> {system.VRM_TAG}, which comes with "
+            f"the app) to <code>/var/{system.VRM_DIR}</code> and starts <code>{system.VRM_UNIT}</code>, which builds "
+            "the module for the running kernel and loads it, now and at every boot. After a kernel update the first "
+            "boot builds it again, which takes a few seconds. Turn off unloads the module and removes the service "
+            "and the folder.<br><br>"
+            "The module reads the regulator through the SuperIO chip. For every reading it writes the regulator's "
+            "page register, which selects the CPU or the GPU supply. It writes no voltage, current or limit.")
+
+
+class VrmWindow(SwitchWindow):
+    CHANGE = "vrm"
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(BY_KEY["vrm"], VRM_INFO, ("Module", "At boot", "Sensors"), **kwargs)
+        self.refresh()
+
+    def refresh(self) -> None:
+        v = state.vrm(self.root)
+        self.show_box("Module", "Loaded" if v.loaded else "Not loaded", f"{system.VRM_MODULE} {system.VRM_TAG[1:]}"
+                      if v.ours else f"/sys/module/{system.VRM_MODULE}", v.loaded)
+        self.show_box("At boot", "Yes" if v.ours else "No", f"/etc/systemd/system/{system.VRM_UNIT}" if v.ours else
+                      "The quickfix's service is not there", True if v.ours else None)
+        self.show_box("Sensors", system.VRM_MODULE if v.hwmon else "None", "The regulator's sensors are there"
+                      if v.hwmon else "No sensors of the regulator", v.hwmon)
+        self.on_button.setEnabled(not v.on and v.can_build)
+        self.off_button.setEnabled(v.ours)
+        self.state.set_status("On" if v.on else "Off", "ok" if v.on and v.loaded else "warn" if v.on else "info")
+        if v.ours and not v.loaded:
+            note = f"The module is not loaded. See why with: journalctl -b -u {system.VRM_UNIT}"
+        elif v.loaded and not v.hwmon:
+            note = "The module is loaded, but the regulator did not answer: there are no sensors."
+        elif v.loaded and not v.ours:
+            note = "The module was loaded by something else: Turn off does not unload it."
+        elif not v.can_build:
+            note = "The running kernel's build files are missing, so the module cannot be built on this image."
+        else:
+            note = ""
+        self.note.setText(note)
 
 
 MAPCOUNT_INFO = ("<b>Game Memory Map</b> raises <code>vm.max_map_count</code>, the number of memory areas one program "
@@ -580,5 +624,5 @@ class MitigationsWindow(KargWindow):
 
 WINDOWS: dict[str, Callable[..., QuickfixWindow]] = {
     "tools": ToolsWindow, "mangohud": MangoHudWindow, "metrics": MetricsWindow, "sensors": SensorsWindow,
-    "mapcount": MapCountWindow, "journal": JournalWindow, "iommu": IommuWindow, "mitigations": MitigationsWindow,
+    "vrm": VrmWindow, "mapcount": MapCountWindow, "journal": JournalWindow, "iommu": IommuWindow, "mitigations": MitigationsWindow,
 }

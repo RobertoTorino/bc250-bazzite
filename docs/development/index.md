@@ -329,10 +329,17 @@ the tool reads the version from Ookla's Homebrew formula. The same script instal
 mersenne.org's download page lists, with the SHA-256 listed there. `MPRIME_URL` and `MPRIME_SHA256` in it are one
 known release, used only when the page cannot be read. Nexus Deps compares `~/mprime/.release` with the page.
 
+BC-250 Quickfix's VRM Sensors brings the source of the `bc250_vrm` kernel module in `apps/quickfix/quickfix/vrm`.
+The files are those of one tag of `Hexxeh/bc250-vrm-dkms`, unchanged.
+`VRM_TAG`, `VRM_COMMIT` and `VRM_SHA256` in `apps/quickfix/quickfix/system.py` name the tag, its commit and each file's SHA-256.
+The tool reports a tag with a higher version, and a pinned tag that is gone or points at another commit.
+A new pin replaces the files and the three constants, after the changes are read and the module is tried on the board.
+`Kbuild` and `bc250-quickfix-vrm.sh` in that folder are the suite's own.
+
 ```bash
 python3 tools/check_upstream.py            # all of them
 python3 tools/check_upstream.py helixsr    # one: shadps4, helixsr, ppsspp, pcsx2, rpcs3, directmesh,
-                                                          # vita3k, xenia, mesa, ffmpeg, webcam or speedtest
+                                                          # vita3k, xenia, mesa, ffmpeg, webcam, speedtest or vrm
 ```
 
 ## bc250_core
@@ -357,7 +364,7 @@ Code shared by the suite's apps (`core/`). Nothing in it imports an app: each ap
 | `steam` | Steam's folders and users, `installed()`, `with_steam_closed()`, `shortcuts.vdf` and the shortcuts' artwork in `grid/`, `shortcut_number()` and `play_url()` (a shortcut's number in Steam's file, and the address that starts it) (standard library only) | consoles |
 | `steam_art` | `draw_icon_art()`: a shortcut's four pictures drawn from an app's icon, in the icon's color | consoles |
 | `upstream` | `publish()` / `read_all()`: the updates outside the suite an app can install now, for the portal's notice (standard library only; HelixSR carries a copy) | new: helixsr, pcsx2, portal |
-| `sensors` | `Sensors.read()`: the board's live values from `/proc` and `/sys` without root (CPU, GPU, the governor's range, VRAM, RAM, temperatures, network, disk, fans), `Reading`, `Fan` | System Overlay; used by BC-250 Turing Screen too |
+| `sensors` | `Sensors.read()`: the board's live values from `/proc` and `/sys` without root (CPU, GPU, the governor's range, VRAM, RAM, temperatures, network, disk, fans, and the CPU and GPU rails of the `bc250_vrm` module), `Reading`, `Fan`, `Rail` | System Overlay; used by BC-250 Turing Screen too |
 | `nexus` | The development apps' design (the theme `NEXUS`) and their header (`header()`: the checkout's last commit and its time in place of a version) | new |
 | `wifi` | The Wi-Fi adapters and whether the running kernel has a driver and firmware for them, `report()` (standard library only; `python3 -m bc250_core.wifi`) | new: check's test 53 |
 

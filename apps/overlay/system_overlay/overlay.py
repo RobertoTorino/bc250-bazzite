@@ -9,7 +9,7 @@ from PyQt6.QtCore import QRectF, Qt, QTimer
 from PyQt6.QtGui import QAction, QActionGroup, QColor, QContextMenuEvent, QMouseEvent, QPainter, QPaintEvent, QPen
 from PyQt6.QtWidgets import QGridLayout, QLabel, QMenu, QWidget
 
-from bc250_core.sensors import Reading, Sensors
+from bc250_core.sensors import Rail, Reading, Sensors
 from bc250_core.settings import SettingsStore, restore_geometry, save_geometry
 from bc250_core.theme import ACCENT, ORANGE, RED, header_font
 
@@ -21,9 +21,11 @@ DASH = "—"
 DOT = " · "
 WARM, HOT = 80, 90                       # °C: a temperature turns orange, then red
 BACKGROUNDS = {"Solid": 95, "Light see-through": 75, "See-through": 55, "Very see-through": 35}   # % opacity
-ROWS = (("cpu", "CPU"), ("gpu", "GPU"), ("governor", "Governor"), ("gpu_volt", "GPU volt"), ("vram", "VRAM"),
-        ("ram", "RAM"), ("refresh", "Refresh"), ("fan", "Fan"), ("cpu_temp", "CPU temp"), ("gpu_temp", "GPU temp"),
-        ("vrm_temp", "VRM temp"), ("nvme_temp", "NVMe temp"), ("net", "Network"), ("disk", "Disk"))
+ROWS = (("cpu", "CPU"), ("gpu", "GPU"), ("governor", "Governor"), ("gpu_volt", "GPU volt"), ("cpu_rail", "CPU rail"),
+        ("gpu_rail", "GPU rail"), ("vram", "VRAM"), ("ram", "RAM"), ("refresh", "Refresh"), ("fan", "Fan"),
+        ("cpu_temp", "CPU temp"), ("gpu_temp", "GPU temp"), ("vrm_temp", "VRM temp"), ("cpu_vrm_temp", "CPU VRM temp"),
+        ("gpu_vrm_temp", "GPU VRM temp"), ("nvme_temp", "NVMe temp"), ("net", "Network"), ("disk", "Disk"))
+RAIL_ROWS = ("cpu_rail", "gpu_rail", "cpu_vrm_temp", "gpu_vrm_temp")       # the rows the bc250_vrm module fills
 WIDEST = "↓ 100.0 MB/s · ↑ 100.0 MB/s"     # the longest value a row shows, for a steady width
 
 
@@ -53,6 +55,14 @@ def _join(*parts: str | None) -> str:
     return DOT.join(p for p in parts if p) or DASH
 
 
+def _rail(rail: Rail | None) -> str:
+    if rail is None:
+        return DASH
+    return _join(f"{rail.mv} mV" if rail.mv is not None else None,
+                 f"{rail.amps:.1f} A" if rail.amps is not None else None,
+                 f"{rail.watts:.0f} W" if rail.watts is not None else None)
+
+
 def format_reading(reading: Reading, refresh_hz: float | None) -> dict[str, tuple[str, str]]:
     """Row key -> (text, color; "" = the normal text color)."""
     r = reading
@@ -64,6 +74,8 @@ def format_reading(reading: Reading, refresh_hz: float | None) -> dict[str, tupl
                       f"{r.gpu_watts:.0f} W" if r.gpu_watts is not None else None), ""),
         "governor": (f"{r.governor[0]}–{r.governor[1]} MHz" if r.governor else DASH, ""),
         "gpu_volt": (f"{r.gpu_mv} mV" if r.gpu_mv else DASH, ""),
+        "cpu_rail": (_rail(r.cpu_rail), ""),
+        "gpu_rail": (_rail(r.gpu_rail), ""),
         "vram": (_gb(r.vram), ""),
         "ram": (_gb(r.ram), ""),
         "refresh": (f"{refresh_hz:.0f} Hz" if refresh_hz else DASH, ""),
@@ -71,6 +83,8 @@ def format_reading(reading: Reading, refresh_hz: float | None) -> dict[str, tupl
         "cpu_temp": _temp(r.cpu_temp),
         "gpu_temp": _temp(r.gpu_temp),
         "vrm_temp": _temp(r.vrm_temp),
+        "cpu_vrm_temp": _temp(r.cpu_rail.temp if r.cpu_rail else None),
+        "gpu_vrm_temp": _temp(r.gpu_rail.temp if r.gpu_rail else None),
         "nvme_temp": _temp(r.nvme_temp),
         "net": (f"↓ {_rate(r.net[0])}{DOT}↑ {_rate(r.net[1])}" if r.net else DASH, ""),
         "disk": (f"R {_rate(r.disk[0])}{DOT}W {_rate(r.disk[1])}" if r.disk else DASH, ""),
@@ -132,6 +146,10 @@ class OverlayWindow(QWidget):
                                           "is on (governor app, GPU Usage).")
         else:
             self.values["gpu"].setToolTip("")
+        for key in RAIL_ROWS:
+            self.values[key].setToolTip("" if reading.cpu_rail or reading.gpu_rail else
+                                        "No reading: turn on VRM Sensors in BC-250 Quickfix, which loads the "
+                                        "bc250_vrm kernel module.")
 
     # ------------------------------------------------------------------- rows
     def hidden_rows(self) -> set[str]:

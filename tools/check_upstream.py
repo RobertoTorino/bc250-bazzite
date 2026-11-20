@@ -3,7 +3,7 @@
 """Upstream check: are the apps that pin an upstream release still in step with it?
 
     python3 tools/check_upstream.py [--report FILE] [shadps4] [helixsr] [ppsspp] [pcsx2] [rpcs3] [directmesh]
-                                    [vita3k] [xenia] [mesa] [ffmpeg] [webcam] [speedtest]
+                                    [vita3k] [xenia] [mesa] [ffmpeg] [webcam] [speedtest] [vrm]
                                     # all when none is named
 
 The shadPS4 Manager pins one shadPS4 release (apps/shadps4/shadps4_manager/emulator.py: VERSION, TAG,
@@ -56,6 +56,11 @@ repository's default branch the same; changed or gone there means a new version 
 BC-250 Board Test's development tool installs one release of Ookla's speedtest CLI (SPEEDTEST_VERSION in
 apps/check/development/tools/install-requirements.sh); Ookla's Homebrew formula names the current one.
 
+BC-250 Quickfix's VRM Sensors brings the source of the bc250_vrm kernel module, unchanged files of one tag of its
+repository (VRM_REPO, VRM_TAG, VRM_COMMIT in apps/quickfix/quickfix/system.py). The repository has tags, no releases:
+a tag with a higher version means a new version of the app could bring it, and the pinned tag must still be the
+pinned commit.
+
 Exit code 0: all in step; 1: an upstream moved (the report says what); 2: one could not be checked (network, GitHub's
 rate limit).
 --report FILE writes what moved as Markdown, for the "Upstream review" issue (empty when all are in step).
@@ -90,6 +95,7 @@ XENIA = SUITE / "apps" / "xenia" / "xenia_manager" / "emulator.py"
 ACE_PATCH = SUITE / "apps" / "ace" / "mesa" / "gfx1013-ace-queue.patch"
 FFMPEG_BUILD = SUITE / "apps" / "consoles" / "native" / "ffmpeg" / "build.sh"
 WEBCAM_FIRMWARE = SUITE / "apps" / "webcam" / "webcam" / "firmware.py"
+QUICKFIX_SYSTEM = SUITE / "apps" / "quickfix" / "quickfix" / "system.py"
 SPEEDTEST_TOOL = SUITE / "apps" / "check" / "development" / "tools" / "install-requirements.sh"
 MESA_TAGS = ("https://gitlab.freedesktop.org/api/v4/projects/mesa%2Fmesa/repository/tags"
              "?search=%5Emesa-&order_by=version&per_page=100")
@@ -572,6 +578,29 @@ def check_speedtest(version: str, get: Fetch = fetch) -> Report:
     return report
 
 
+def check_vrm(values: dict[str, str], get: Fetch = fetch) -> Report:
+    repo, pinned, commit = values["VRM_REPO"], values["VRM_TAG"], values["VRM_COMMIT"]
+    report = Report(pinned, name="bc250_vrm module", short="bc250-vrm-dkms", newest="newest tag")
+    tags = {str(t.get("name", "")): str(t.get("commit", {}).get("sha", ""))
+            for t in json.loads(get(f"{API.format(repo=repo)}/tags?per_page=100"))}
+    versions = [name for name in tags if RELEASE_TAG.fullmatch(name)]
+    report.latest = max(versions, key=_version, default="")
+    if report.latest and _version(report.latest) > _version(pinned):
+        report.drift.append(f"{report.latest} is out: a new version of BC-250 Quickfix could bring it, after its "
+                            f"changes are read and it is tried on the board (VRM_TAG, VRM_COMMIT and VRM_SHA256 in "
+                            f"{QUICKFIX_SYSTEM.relative_to(SUITE)}, the files in quickfix/vrm). "
+                            f"https://github.com/{repo}/compare/{pinned}...{report.latest}")
+    else:
+        report.fine.append(f"no tag newer than {pinned}")
+    if pinned not in tags:
+        report.drift.append(f"the tag {pinned} is gone from {repo}")
+    elif tags[pinned] != commit:
+        report.drift.append(f"the tag {pinned} is commit {tags[pinned][:12]} now, not the pinned {commit[:12]}")
+    else:
+        report.fine.append(f"{pinned} is still commit {commit[:12]}")
+    return report
+
+
 CHECKS = {"shadps4": ("shadPS4", lambda: check_shadps4(load_shadps4_pin())),
           "helixsr": ("HelixSR", lambda: check_helixsr(load_helixsr_pin())),
           "ppsspp": ("PPSSPP", lambda: check_release(load_release("ppsspp"))),
@@ -585,7 +614,8 @@ CHECKS = {"shadps4": ("shadPS4", lambda: check_shadps4(load_shadps4_pin())),
           "ffmpeg": ("FFmpeg and libva", lambda: check_ffmpeg(shell_value(FFMPEG_BUILD, "FFMPEG_VERSION"),
                                                              shell_value(FFMPEG_BUILD, "LIBVA_VERSION"))),
           "webcam": ("BC-250 Webcam's firmware", lambda: check_webcam(load_firmware())),
-          "speedtest": ("speedtest CLI", lambda: check_speedtest(shell_value(SPEEDTEST_TOOL, "SPEEDTEST_VERSION")))}
+          "speedtest": ("speedtest CLI", lambda: check_speedtest(shell_value(SPEEDTEST_TOOL, "SPEEDTEST_VERSION"))),
+          "vrm": ("bc250_vrm module", lambda: check_vrm(_string_constants(QUICKFIX_SYSTEM)))}
 
 
 def markdown(reports: list[Report], failed: list[str]) -> str:

@@ -9,10 +9,13 @@ in isolated mode (-I), one change per call, and it needs only the standard libra
     system.py journal on | off                  the journal kept on the disk, in /var/log/journal
     system.py iommu on | off                    the kernel argument amd_iommu=off, with rpm-ostree kargs
     system.py mitigations on | off              the kernel argument mitigations=off, with rpm-ostree kargs
+    system.py vrm on | off                      the bc250_vrm module: built in /var/lib/bc250-quickfix/vrm and loaded
+                                                at every boot by a service of its own (VRM_UNIT)
 
 Each change touches only its own file (or, for metrics, the two lines of the governor's [gpu-usage] table, after a
 dated backup of config.toml beside it, the same as BC-250 GPU Manager's; for a kernel argument, that argument and a
-note in /var/lib/bc250-quickfix that the quickfix added it) and is undone by its "off". The reading side is in the app
+note in /var/lib/bc250-quickfix that the quickfix added it; for vrm, its folder and its service) and is undone by
+its "off". The reading side is in the app
 (state.py): it needs no password."""
 
 from __future__ import annotations
@@ -39,6 +42,22 @@ JOURNAL_MARK = ".bc250-quickfix"                                   # in it: the 
 KARGS = {"iommu": "amd_iommu=off", "mitigations": "mitigations=off"}  # the kernel arguments the quickfixes add
 KARGS_DIR = "lib/bc250-quickfix"                                   # in /var, shared by every deployment: <key>.karg
 REBOOT = "Restart the board to apply it: systemctl reboot"
+# VRM Sensors: the source of the bc250_vrm module comes with the app (vrm/, unchanged files of VRM_REPO at VRM_TAG;
+# tests/test_vrm.py compares them with VRM_SHA256), with a Kbuild and the service's script of our own.
+VRM_REPO = "Hexxeh/bc250-vrm-dkms"
+VRM_TAG = "v1.1.0"
+VRM_COMMIT = "67aea0d9416eec93ec058af3ff519e81af283950"
+VRM_SHA256 = {
+    "bc250_vrm_core.c": "42f04046ff91ba65157ea8b5542239a9e4ba0fbaedd1bf82ab50dcc638745286",
+    "nct6687_smbus.c": "97e173681bbea5fdf7beb4dba70c82519aad46eef915e32d5f078d9d893b6499",
+    "nct6687_smbus.h": "ef2c061be372c845a2efee7856c2b4847875fbd0c6de614c08420eeb00a04c17",
+    "LICENSE": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6",
+}
+VRM_SOURCE = Path(__file__).resolve().parent / "vrm"
+VRM_MODULE = "bc250_vrm"
+VRM_DIR = "lib/bc250-quickfix/vrm"                                 # in /var: src/, the script, one build
+VRM_SCRIPT = "bc250-quickfix-vrm.sh"
+VRM_UNIT = "bc250-quickfix-vrm.service"                            # in /etc/systemd/system
 
 
 def karg_mark(var: Path, key: str) -> Path:
@@ -192,9 +211,61 @@ def kargs(var: Path, key: str, on: bool) -> int:
     return 0
 
 
+def vrm_unit(folder: Path) -> str:
+    script = folder / VRM_SCRIPT
+    return ("# Written by BC-250 Quickfix (VRM Sensors): the module that reads the board's voltage regulator.\n"
+            "[Unit]\n"
+            "Description=BC-250 Quickfix (VRM Sensors): build and load the bc250_vrm module\n"
+            f"ConditionPathExists={script}\n\n"
+            "[Service]\n"
+            "Type=oneshot\n"
+            "RemainAfterExit=yes\n"
+            f"ExecStart=/usr/bin/bash {script} {folder}\n"
+            f"ExecStop=-/usr/sbin/rmmod {VRM_MODULE}\n\n"
+            "[Install]\n"
+            "WantedBy=multi-user.target\n")
+
+
+def vrm(etc: Path, var: Path, on: bool, source: Path = VRM_SOURCE) -> int:
+    """On: the module's source and the service's script go to /var/lib/bc250-quickfix/vrm (root's own copy: the
+    service never runs anything from the home folder), and the service is turned on and started, which builds the
+    module for the running kernel and loads it. Off: the service is stopped (it unloads the module) and removed with
+    the folder."""
+    folder, unit = var / VRM_DIR, etc / "systemd" / "system" / VRM_UNIT
+    if on:
+        missing = [name for name in (*VRM_SHA256, "Kbuild", VRM_SCRIPT) if not (source / name).is_file()]
+        if missing:
+            print(f"The module's source is not complete in {source}: {', '.join(missing)} missing.")
+            return 1
+        (folder / "src").mkdir(parents=True, exist_ok=True)
+        for name in (*VRM_SHA256, "Kbuild"):
+            shutil.copyfile(source / name, folder / "src" / name)
+        shutil.copyfile(source / VRM_SCRIPT, folder / VRM_SCRIPT)
+        os.chmod(folder / VRM_SCRIPT, 0o755)
+        print(f"Copied the module's source to {folder}")
+        write(unit, vrm_unit(folder))
+        code = run(["systemctl", "daemon-reload"]) or run(["systemctl", "enable", VRM_UNIT])
+        if code:
+            return code
+        code = run(["systemctl", "restart", VRM_UNIT])
+        if code:
+            run(["journalctl", "-u", VRM_UNIT, "-b", "-n", "40", "--no-pager", "-o", "cat"])
+            print("The module was not built or not loaded. The service stays on: Turn off removes it.")
+        return code
+    if unit.is_file():
+        run(["systemctl", "disable", "--now", VRM_UNIT])
+        unit.unlink()
+        print(f"Removed {unit}")
+        run(["systemctl", "daemon-reload"])
+    if folder.is_dir():
+        shutil.rmtree(folder)
+        print(f"Removed {folder}")
+    return 0
+
+
 def main(argv: list[str] | None = None, etc: Path = Path("/etc"), var: Path = Path("/var")) -> int:
     parser = argparse.ArgumentParser(prog="system.py", description="BC-250 Quickfix, the part that runs as root")
-    parser.add_argument("change", choices=("metrics", "sensors", "mapcount", "journal", *KARGS))
+    parser.add_argument("change", choices=("metrics", "sensors", "mapcount", "journal", "vrm", *KARGS))
     parser.add_argument("state", choices=("on", "off"))
     parser.add_argument("--method", choices=METHODS)
     args = parser.parse_args(argv)
@@ -207,6 +278,8 @@ def main(argv: list[str] | None = None, etc: Path = Path("/etc"), var: Path = Pa
         return mapcount(etc, on)
     if args.change in KARGS:
         return kargs(var, args.change, on)
+    if args.change == "vrm":
+        return vrm(etc, var, on)
     return journal(var, on)
 
 

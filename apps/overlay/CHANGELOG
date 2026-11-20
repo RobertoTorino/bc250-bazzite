@@ -1,3 +1,12 @@
+Changelog: 21-11-2026 00:38:50
+
+Added. The tooltip of the four bc250_vrm rows names BC-250 Quickfix's VRM Sensors, which loads the module.
+
+Changelog: 20-11-2026 23:06:26
+
+Added. Four rows that the bc250_vrm kernel module fills: CPU rail and GPU rail (voltage, current and power), CPU VRM
+temp and GPU VRM temp. Without the module they show a dash and a tooltip that says why.
+
 Changelog: 20-11-2026 17:08:00
 
 Release 4.3.0.

@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3358 test functions (3933 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3371 test functions (3946 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -24,11 +24,11 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/gpu](#appsgpu) | 11 | 56 | 5.8 s |
 | [apps/mesh](#appsmesh) | 5 | 47 | 3.1 s |
 | [apps/oc](#appsoc) | 2 | 14 | 0.3 s |
-| [apps/overlay](#appsoverlay) | 1 | 10 | 0.3 s |
+| [apps/overlay](#appsoverlay) | 1 | 11 | 0.3 s |
 | [apps/password](#appspassword) | 2 | 22 | 0.6 s |
 | [apps/pcsx2](#appspcsx2) | 14 | 147 | 21.5 s |
 | [apps/ppsspp](#appsppsspp) | 11 | 97 | 4.9 s |
-| [apps/quickfix](#appsquickfix) | 5 | 39 |  |
+| [apps/quickfix](#appsquickfix) | 6 | 46 |  |
 | [apps/rpcs3](#appsrpcs3) | 12 | 119 | 6.4 s |
 | [apps/sftp](#appssftp) | 11 | 84 | 0.9 s |
 | [apps/shadps4](#appsshadps4) | 17 | 151 | 8.0 s |
@@ -39,7 +39,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/vram](#appsvram) | 6 | 49 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
 | [apps/xenia](#appsxenia) | 8 | 72 | 4.5 s |
-| [core](#core) | 29 | 220 | 4.6 s |
+| [core](#core) | 29 | 224 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
@@ -49,8 +49,8 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/studio](#devstudio) | 6 | 65 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 16 | 210 | 29.0 s |
-| [tools](#tools) | 38 | 231 | 11.1 s |
-| **All** | | **3358** | **182 s** |
+| [tools](#tools) | 38 | 232 | 11.1 s |
+| **All** | | **3371** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -1223,7 +1223,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/overlay
 
-10 tests in 1 files, 0.3 s in a local run.
+11 tests in 1 files, 0.3 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -1231,6 +1231,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_overlay.py` | `test_format_missing_values` |  |  | Format missing values. |
 | `test_overlay.py` | `test_warm_is_orange` |  |  | Warm is orange. |
 | `test_overlay.py` | `test_window_shows_the_board` |  | 0.1 s | Window shows the board. |
+| `test_overlay.py` | `test_rail_rows_need_the_vrm_module` |  |  | Rail rows need the vrm module. |
 | `test_overlay.py` | `test_gpu_without_the_governors_patch` |  |  | Gpu without the governors patch. |
 | `test_overlay.py` | `test_window_flags` |  |  | Window flags. |
 | `test_overlay.py` | `test_rows_can_be_hidden` |  |  | Rows can be hidden. |
@@ -1527,7 +1528,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/quickfix
 
-39 tests in 5 files.
+46 tests in 6 files.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -1557,6 +1558,13 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_system.py` | `test_kernel_argument_set_by_hand_stays` |  |  | Kernel argument set by hand stays. |
 | `test_system.py` | `test_kernel_argument_failures` |  |  | Kernel argument failures. |
 | `test_system.py` | `test_next_kargs_reads_rpm_ostree` |  |  | Next kargs reads rpm ostree. |
+| `test_vrm.py` | `test_the_source_is_upstreams_unchanged` |  |  | The source is upstreams unchanged. |
+| `test_vrm.py` | `test_on_and_off` |  |  | On and off. |
+| `test_vrm.py` | `test_a_failed_start_shows_the_services_log` |  |  | A failed start shows the services log. |
+| `test_vrm.py` | `test_incomplete_source_changes_nothing` |  |  | Incomplete source changes nothing. |
+| `test_vrm.py` | `test_state` |  |  | State. |
+| `test_vrm.py` | `test_window` |  |  | Window. |
+| `test_vrm.py` | `test_the_script_builds_for_the_running_kernel_and_keeps_one_build` |  |  | The script builds for the running kernel and keeps one build. |
 | `test_windows.py` | `test_quickfix_lists_and_installs` |  |  | Quickfix lists and installs. |
 | `test_windows.py` | `test_mangohud_config_made_and_logging_set` |  |  | Mangohud config made and logging set. |
 | `test_windows.py` | `test_mangohud_deletes_only_old_logs` |  |  | Mangohud deletes only old logs. |
@@ -2552,7 +2560,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## core
 
-220 tests in 29 files, 4.6 s in a local run.
+224 tests in 29 files, 4.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2669,6 +2677,10 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_sensors.py` | `test_missing_sources_give_none` |  |  | Missing sources give none. |
 | `test_sensors.py` | `test_garbage_is_ignored` |  |  | Garbage is ignored. |
 | `test_sensors.py` | `test_one_network_interface` |  |  | One network interface. |
+| `test_sensors.py` | `test_rails_need_the_vrm_module` |  |  | Rails need the vrm module. |
+| `test_sensors.py` | `test_rails_from_the_vrm_module` |  |  | Rails from the vrm module. |
+| `test_sensors.py` | `test_the_super_io_keeps_the_vrm_temperature_when_the_module_sorts_first` |  |  | The super io keeps the vrm temperature when the module sorts first. |
+| `test_sensors.py` | `test_a_rail_channel_that_fails_is_none` |  |  | A rail channel that fails is none. |
 | `test_settings.py` | `test_native_file_matches_old_location` |  |  | Native file matches old location. |
 | `test_settings.py` | `test_ini_and_org_override` |  |  | Ini and org override. |
 | `test_settings.py` | `test_geometry_round_trip` |  |  | Geometry round trip. |
@@ -3520,7 +3532,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## tools
 
-231 tests in 38 files, 11.1 s in a local run.
+232 tests in 38 files, 11.1 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3590,6 +3602,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_check_upstream.py` | `test_ffmpeg_and_libva` |  |  | A point release on the pinned branch, a newer branch and a newer libva are each a line; a development tag (n8.1-dev) is no release. |
 | `test_check_upstream.py` | `test_webcam_firmware` |  |  | The file at the pinned commit, and the same file on the default branch: changed or gone there is a line. |
 | `test_check_upstream.py` | `test_speedtest` |  |  | Speedtest. |
+| `test_check_upstream.py` | `test_vrm_module` |  |  | Vrm module. |
 | `test_check_versions.py` | `test_cargo_lock_entry_of_the_crate_itself` |  |  | Cargo lock entry of the crate itself. |
 | `test_check_versions.py` | `test_copies_with_a_comment_are_read_and_odd_ones_reported` |  |  | Copies with a comment are read and odd ones reported. |
 | `test_check_versions.py` | `test_the_suite_passes` |  | 0.2 s | The suite passes. |

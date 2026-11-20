@@ -221,6 +221,35 @@ def sensors(root: Path = ROOT) -> Sensors:
     return Sensors(driver, ours, elsewhere, hwmon)
 
 
+# ------------------------------------------------------------------------------------------------- VRM Sensors
+@dataclass(frozen=True)
+class Vrm:
+    ours: bool                  # our service is there: the module is built and loaded at every boot
+    loaded: bool                # the bc250_vrm module is loaded now, by the service or by anything else
+    hwmon: bool                 # its sensors are there: the regulator answered
+    built: tuple[str, ...]      # the kernels our folder holds a build for
+    can_build: bool             # the running kernel's build files are there
+
+    @property
+    def on(self) -> bool:
+        return self.ours or self.loaded
+
+
+def vrm(root: Path = ROOT, kernel: str | None = None) -> Vrm:
+    kernel = kernel or os.uname().release
+    folder = root / "var" / system.VRM_DIR
+    built = tuple(sorted(p.parent.name for p in folder.glob(f"*/{system.VRM_MODULE}.ko"))) if folder.is_dir() else ()
+    hwmon = False
+    for name in (root / "sys" / "class" / "hwmon").glob("*/name"):
+        try:
+            hwmon = hwmon or name.read_text(encoding="utf-8").strip() == system.VRM_MODULE
+        except OSError:
+            continue
+    return Vrm((root / "etc" / "systemd" / "system" / system.VRM_UNIT).is_file(),
+               (root / "sys" / "module" / system.VRM_MODULE).is_dir(), hwmon, built,
+               (root / "lib" / "modules" / kernel / "build" / "Makefile").is_file())
+
+
 # --------------------------------------------------------------------------------------------- Game Memory Map
 @dataclass(frozen=True)
 class MapCount:

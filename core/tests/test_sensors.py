@@ -8,8 +8,8 @@ import shutil
 
 import pytest
 
-from bc250_core.sensors import Fan, Sensors
-from board import Clock, diskstats, gpu_metrics, net_dev, proc_stat, write
+from bc250_core.sensors import Fan, Rail, Sensors
+from board import Clock, add_vrm, diskstats, gpu_metrics, net_dev, proc_stat, write
 
 
 def sensors(board, governor=(1000, 1850), clock=None) -> Sensors:
@@ -126,3 +126,31 @@ def test_one_network_interface(board, tmp_path):
     s.interface = "wlan0"
     clock.now += 1
     assert s.read().net == (0.0, 0.0)                               # read() measures the chosen one
+
+
+def test_rails_need_the_vrm_module(board):
+    s = sensors(board)
+    assert s.rail("CPU") is None and s.rail("GPU") is None
+    assert s.read().cpu_rail is None
+
+
+def test_rails_from_the_vrm_module(board):
+    add_vrm(board)
+    reading = sensors(board).read()
+    assert reading.cpu_rail == Rail(mv=1050, amps=32.5, temp=47.0)
+    assert reading.gpu_rail == Rail(mv=950, amps=61.2, temp=55.0)
+    assert reading.cpu_rail.watts == pytest.approx(34.125)       # the module's own power file says the same
+    assert reading.vrm_temp == 58.0                               # still the Super I/O's "VRM MOS"
+
+
+def test_the_super_io_keeps_the_vrm_temperature_when_the_module_sorts_first(board):
+    add_vrm(board, number=10)                                     # "hwmon10" sorts before "hwmon1"'s neighbors
+    shutil.move(board / "sys/class/hwmon/hwmon1", board / "sys/class/hwmon/hwmon11")
+    assert sensors(board).vrm_temp() == 58.0
+
+
+def test_a_rail_channel_that_fails_is_none(board):
+    folder = add_vrm(board)
+    (folder / "curr1_input").unlink()                             # the module answers EIO for a reading out of range
+    rail = sensors(board).rail("CPU")
+    assert rail == Rail(mv=1050, amps=None, temp=47.0) and rail.watts is None

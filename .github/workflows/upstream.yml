@@ -8,7 +8,7 @@ name: Upstream
 # Vita3K and Xenia a build newer than the one their managers bring or a pinned AppImage gone or replaced, for the USB
 # Wi-Fi driver a branch past its pinned commit or a mirror without it, for Mesh Shaders and ACE Queues a newer Mesa,
 # for PS Remote Play a newer FFmpeg or libva, for BC-250 Webcam a changed firmware file, for Board Test a newer
-# speedtest CLI. A new issue, or a comment on the open one, notifies everyone who watches the repository; close it
+# speedtest CLI, for Quickfix's VRM Sensors a newer tag of the bc250_vrm module's source. A new issue, or a comment on the open one, notifies everyone who watches the repository; close it
 # once handled. The job fails only when an upstream could not be checked (network, GitHub's rate limit). It only
 # reads from GitHub; only that issue changes.
 
