@@ -49,8 +49,8 @@ def pytest_dirs(root: Path = ROOT) -> list[str]:
 # A change to one of these is a change to every job: what the jobs run on, not what one of them tests. The local
 # CI (tools/ci_local.py, tools/ci-local.sh, tools/ci-local/) is not among them (owner, 20-11-2026): no job on GitHub
 # runs it, so its change is one to the tools, as any other tool's.
-EVERYTHING = ("core/", ".github/workflows/", "tools/ci_matrix.py", "tools/ci-qt-libs.sh", "tools/ci-font.sh",
-              "requirements-dev.txt", "tools/installer-tests/shims.sh")
+EVERYTHING = ("core/", ".github/workflows/", ".github/actions/", "tools/ci_matrix.py", "tools/ci-apt.sh",
+              "tools/ci-qt-libs.sh", "tools/ci-font.sh", "requirements-dev.txt", "tools/installer-tests/shims.sh")
 ALWAYS = "tools"                        # its tests hold the repository's rules: the layout, the manifest, the wiki
 SHARED = ("portal/apps.toml", "icons/categories.toml")      # read by the tests of other folders, by their file name
 NATIVE = "apps/*/native/Cargo.toml"     # an app with a native core (Remote Play): the native job is its own

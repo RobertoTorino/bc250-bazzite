@@ -69,7 +69,7 @@ the commit before it and names them:
 | An app, a `dev/` app, the portal or a tool | The installer tests that name it, side by side |
 | `apps/consoles` | Also the native job |
 | Anything but Python code | Also the wiki build |
-| `core`, a workflow, `tools/ci_matrix.py`, a script the jobs run (`tools/ci-qt-libs.sh`, `tools/ci-font.sh`), `requirements-dev.txt` | Every job |
+| `core`, a workflow, `tools/ci_matrix.py`, an action or a script the jobs run (`.github/actions/`, `tools/ci-apt.sh`, `tools/ci-qt-libs.sh`, `tools/ci-font.sh`), `requirements-dev.txt` | Every job |
 | The local CI (`tools/ci_local.py`, `tools/ci-local.sh`, `tools/ci-local/`) | As any tool: no job on GitHub runs it |
 
 Every job also runs every Monday, with **Run workflow** on the CI workflow's page on GitHub, and when the commit
