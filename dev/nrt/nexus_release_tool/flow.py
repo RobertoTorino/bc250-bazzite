@@ -410,11 +410,13 @@ STEPS = (
     ("run", "The release on GitHub", "Builds and publishes the apps, pins them and makes the portal a draft."),
     ("test", "Device test", "Installs the draft portal on this device and starts it: test it as a user would."),
     ("publish", "Publish", "The test passed: publish the portal. Not OK leaves it a draft."),
-    ("finish", "Bring in the pin commit", "The release wrote a commit Pin ... on main: pull it."),
+    # The wait before the pull (owner, 20-11-2026: git pull could be pressed while jobs still ran, and the tool said
+    # finished while git pull was still to press): the pull is the last thing to do, and nothing says ready before it
     ("ready", "All runs finished", "What GitHub still runs after Publish (the wiki, the runs on the portal's tag): "
                                    "wait until they all finished."),
+    ("finish", "Bring in the pin commit", "The release wrote a commit Pin ... on main: pull it. The last step."),
 )
-READY = "All runs finished, ready."     # the last step's line once a release is out and GitHub runs nothing more
+READY = "The release is out and pulled in: ready."      # the last step's line once nothing is left to do
 KEYS = tuple(key for key, _title, _what in STEPS)
 
 
@@ -578,9 +580,9 @@ def current_step(facts: Facts) -> str:
             return "run"                    # running, or ended badly: Resume or Stop
         if facts.drafts:
             return "test"
-        # Out and pulled, but not ready while GitHub still runs something (owner, 20-11-2026: every step had its
-        # check while the wiki's run went on)
-        return "finish" if facts.behind else "ready" if facts.building else ""
+        # Not ready while GitHub still runs something (owner, 20-11-2026: every step had its check while the wiki's
+        # run went on), and the pull only after it: no git pull while jobs run
+        return "ready" if facts.building else "finish" if facts.behind else ""
     if facts.unpushed:
         return "start"                      # its push stopped: Push and start
     if facts.behind:

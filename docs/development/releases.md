@@ -114,11 +114,12 @@ explanation.
    **CI passes** and **Start new release**, which builds the portal anew (a portal that was never published keeps
    its version; the apps already out are skipped). Until the fix is committed, **Device test** and **Publish**
    stay at hand, for a Not OK pressed by mistake.
-9. **Bring in the pin commit** (**git pull**): the *Pin ...* commit is on main. Publish fetches main with the new
-   tag, so it lights as soon as Publish ends (or as soon as GitHub's runs on main show that commit).
-10. **All runs finished:** nothing to press. Publish starts more runs on GitHub (the wiki, the runs on the
-    portal's tag), and the step waits for them, with their names in its line. When GitHub runs nothing more, the
-    line reads *All runs finished, ready.* and every step shows ✓.
+9. **All runs finished:** nothing to press. Publish starts more runs on GitHub (the wiki, the runs on the
+   portal's tag). The step waits until they all finished and names the ones still running. **git pull** of the next
+   step stays off until then.
+10. **Bring in the pin commit** (**git pull**): the last step. The *Pin ...* commit is on main, and the tool knows
+    of it once Publish fetched main (or GitHub's runs on main show that commit). The step lights when GitHub runs
+    nothing more. After the pull its line reads *The release is out and pulled in: ready.* and every step shows ✓.
 
 Above the steps, three boxes say how long a release takes up to its device test: **Previous release**, **Current
 release** and the **Deviation** between the two.

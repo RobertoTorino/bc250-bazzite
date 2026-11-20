@@ -568,14 +568,15 @@ class ReleasePage(QWidget):
             # After Not OK, or after a restart of NRT, which keeps nothing of its own: the draft says it is still there
             return (f"{', '.join(facts.drafts)} is still a draft, not published: Start new release replaces it with "
                     "a new one.")
-        if key == "ready" and state == "done" and facts.run is not None:
-            return flow.READY                   # a release is out and GitHub runs nothing more
+        if key == "finish" and state == "done" and facts.run is not None:
+            return flow.READY                   # a release is out, GitHub runs nothing more and it is pulled in
         if state not in ("now", "failed"):
             return ""
         window = self.release_window
         if key == "ready":
             return (f"GitHub still runs {', '.join(facts.building)}: wait until "
-                    f"{'it' if len(facts.building) == 1 else 'they'} finished. Nothing to press.")
+                    f"{'it' if len(facts.building) == 1 else 'they'} finished. Nothing to press"
+                    + (": git pull comes after it." if facts.behind else "."))
         if key == "pull":
             return f"{facts.behind} commit{'s' if facts.behind != 1 else ''} on GitHub that this checkout lacks."
         if key == "commit":
@@ -619,7 +620,7 @@ class ReleasePage(QWidget):
         if key == "publish" and facts.drafts:
             return "After the device test: Publish, or Not OK."
         if key == "finish":
-            return "The release is out: git pull brings in its Pin ... commit."
+            return "The release is out and GitHub runs nothing more: git pull brings in its Pin ... commit."
         return ""
 
     def choose_drafts(self, drafts: list[str]) -> None:

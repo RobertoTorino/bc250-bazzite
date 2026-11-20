@@ -35,15 +35,10 @@ shows what others found.
 
 ## Using it
 
-The header shows the **Vita3K version** (its build number), **Your games** (the games installed) and those
-**Available in Steam**. **Refresh** reads everything again. Beside the title, next to the app's state, stands the controller's:
+The header has four pills: the **Vita3K version**, **Vita3K Install**, **Vita3K Uninstall** and **Refresh**, which reads everything again. Beside the title, next to the app's state, stands the controller's:
 **Controller connected**, or **No controller** when none is, looked at again every few seconds. A game started
 from Steam reads the controller that is connected when it starts, so switch yours on first. Beside the title stands
-the app's state. Under the links to **Vita3K's release notes** and to this wiki, a row of four pills does the setting up, each with what it is for on top and what it does under it: **Vita3K Install**, **Vita3K Uninstall** and **Games Install**. The fourth pill
-in that row is **Play time**: the time spent in all your games together, as Vita3K counts it, with each game's time in
-the tooltip. Three lines below the pills say where each stands, and then comes a row of six tabs: **Your games**, **Settings**,
-**Memory cards** and **Log**, and two that are buttons: **Start game**, beside Your games, and **Clear logs**,
-beside Log.
+the app's state. Under the links to **Vita3K's release notes** and to this wiki, a second row of four pills follows, each with what it is for on top and what it does under it: **Games Install** and **Games Uninstall**, **Available in Steam** (how many of your games are in Steam) and **Play time**: the time spent in all your games together, as Vita3K counts it, with each game's time in the tooltip. Below the pills are two columns. The first says in three lines where each stands (**Vita3K:**, **Firmware:**, **Game folder:**), short, with more in their tooltips. The second shows the **Installed version:** of Vita3K. Then comes a row of six tabs: **Your games**, **Start game**, **Memory cards**, **Settings**, **View logs** and **Clear logs**. Start game and Clear logs are buttons.
 
 - **Vita3K**: **Not installed.** or **Installed.**, with the button to use under it. The tooltip says which build
   is installed, or what Install takes, and when a newer build is out. **Install** downloads Vita3K from GitHub
@@ -89,7 +84,7 @@ Only the build marked **Tested** was tried on the board. To go back to it, pick 
 The table lists every game Vita3K has installed: its title and ID (PCSB…, PCSE…) from the game's own files, its
 version and its folder in Vita3K's storage (`ux0/app`).
 
-**Remove game…** deletes the chosen game from the disk. A window first lists what would go, a row each with its
+**Games Uninstall**, the pill above, deletes the chosen game from the disk. A window first lists what would go, a row each with its
 size: the game in Vita3K's storage, and its update and extra content when they are there, and its Steam shortcut when it is in Steam. Every row is ticked; untick what you want to keep, then
 **Delete marked**; **Cancel** deletes nothing. The saves stay. A game the app will not delete (one at the top of a
 drive, or in a folder that holds another game) is said so under the tabs: delete it by hand.
@@ -134,10 +129,20 @@ SteamGridDB for each game instead; the background and the logo on the game's pag
 
 **Steam** in the line under the table is a link: it opens Steam's library (Steam starts when it does not run).
 
+#### A game in Steam more than once
+
+The app checks whether a game has more than one shortcut in Steam. When one has, the line under the tabs names
+the game and says how often it is there, and the tooltip of its **In Steam** box says the same. **Update Steam** is
+on for it: it leaves one shortcut of each game, with the latest play time, and takes the others out. Its question
+says how many double shortcuts go.
+
 #### Start game
 
 The tab beside Your games, **Start game**, is a button. Choose a game in the table and click it: the game starts through Steam,
-as its shortcut in Steam starts it, and Steam starts first when it does not run. The tab you were on stays open. A
+as its shortcut in Steam starts it. When Steam does not run, the app starts Steam first and waits until it is up,
+which takes a while, and then starts the game. The line under the tabs says **Starting…** until Vita3K runs, and
+says so when Steam did not start the game. While Vita3K runs already, no second game is started. The tab you were
+on stays open. A
 game that is not in Steam yet is not started: the line under the tabs says to tick it and press **Update Steam**
 first.
 
@@ -181,13 +186,13 @@ when it was last written.
 Nothing is imported or deleted while Vita3K runs: close it first. The encrypted saves of a real PS Vita are taken in
 and written by Vita3K's own window (**Vita3K settings**), not here.
 
-### Log
+### View logs
 
 Everything the app said and did, with the time: Vita3K installed or removed, what the app set up in Vita3K, the
 firmware files given to Vita3K, the games installed or deleted, every change to Steam, and every error. The same
 lines are in `~/.local/share/bc250-vita3k-manager/bc250-vita3k-manager.log`, which turns over at 1 MB (the three
-older files are kept). **Clear logs**, the tab beside Log, empties
-the file and the Log tab and removes the three older files. The log holds what the app did, not your SteamGridDB key or anything personal.
+older files are kept). **Clear logs**, the tab beside View logs, empties
+the file and the View logs tab and removes the three older files. The log holds what the app did, not your SteamGridDB key or anything personal.
 
 ## From a terminal
 

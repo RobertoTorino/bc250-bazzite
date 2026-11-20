@@ -412,9 +412,11 @@ def test_the_step_to_do_follows_the_release():
     assert flow.current_step(flow.Facts(run=_run(), behind=1)) == "finish"
     assert flow.current_step(flow.Facts(run=_run())) == ""                               # out and pulled
     waiting = flow.Facts(run=_run(), building=("Wiki on main",))                         # GitHub still runs
-    assert flow.current_step(waiting) == "ready" and flow.step_states(waiting)["finish"] == "done"
-    assert flow.current_step(flow.Facts(run=_run(), behind=1, building=("Wiki on main",))) == "finish"
-    assert flow.KEYS[-1] == "ready" and len(flow.KEYS) == 10
+    assert flow.current_step(waiting) == "ready" and flow.step_states(waiting)["finish"] == "later"
+    # No git pull while jobs run (owner, 20-11-2026): the wait comes first, the pull is the last step
+    both = flow.Facts(run=_run(), behind=1, building=("Wiki on main",))
+    assert flow.current_step(both) == "ready" and flow.step_states(both)["finish"] == "later"
+    assert flow.KEYS[-2:] == ("ready", "finish") and len(flow.KEYS) == 10
     assert flow.current_step(flow.Facts(run=_run(), drafts=["x"], dirty=True)) == "commit"  # a fix after Not OK
 
 
@@ -1004,8 +1006,9 @@ def test_start_does_not_follow_by_itself_when_the_settings_say_so_or_another_com
 
 
 def test_the_last_step_waits_until_github_runs_nothing_more(release_window, monkeypatch):
-    """Owner, 20-11-2026: step 9 had its check while the wiki still ran on GitHub. The tenth step is the one to do
-    until every run finished, then says All runs finished, ready."""
+    """Owner, 20-11-2026: step 9 had its check while the wiki still ran on GitHub, git pull could be pressed while
+    jobs still ran, and the tool said finished while git pull was still to press. All runs finished is the ninth
+    step and waits; git pull, the tenth, lights only after it; ready is said once the pull is in."""
     w = release_window
     page = w.release_page
     head = sh(w.root, "rev-parse", "HEAD").strip()
@@ -1016,10 +1019,21 @@ def test_the_last_step_waits_until_github_runs_nothing_more(release_window, monk
     monkeypatch.setattr(w.build, "runs", [wiki, release])
     page.show_state()
     assert flow.current_step(page.facts) == "ready" and page.marks["ready"].text() == "▶"
-    assert page.marks["finish"].text() == "✓" and page.titles["ready"].text() == "10. All runs finished"
-    assert "GitHub still runs Wiki on main: wait until it finished" in page.details["ready"].text()
-    monkeypatch.setattr(w.build, "runs", [_run(head, "docs.yml", "Wiki"), release])
+    assert page.titles["ready"].text() == "9. All runs finished"
+    assert page.titles["finish"].text() == "10. Bring in the pin commit" and page.marks["finish"].text() != "✓"
+    assert page.details["ready"].text() == "GitHub still runs Wiki on main: wait until it finished. Nothing to press."
+    assert not page.finish_button.isEnabled() and page.details["finish"].text() != flow.READY
+    pin = _run("f" * 40, "ci.yml", "CI", status="in_progress", conclusion="")    # the pin commit, not pulled yet
+    monkeypatch.setattr(w.build, "runs", [pin, wiki, release])
     page.show_state()
-    assert page.marks["ready"].text() == "✓" and page.details["ready"].text() == flow.READY == \
-        "All runs finished, ready."
+    assert page.facts.behind == 1 and flow.current_step(page.facts) == "ready"  # jobs run: no git pull yet
+    assert not page.finish_button.isEnabled() and "git pull comes after it" in page.details["ready"].text()
+    monkeypatch.setattr(w.build, "runs", [_run("f" * 40, "ci.yml", "CI"), _run(head, "docs.yml", "Wiki"), release])
+    page.show_state()
+    assert flow.current_step(page.facts) == "finish" and page.finish_button.isEnabled()     # all finished: pull
+    assert page.marks["ready"].text() == "✓" and page.details["finish"].text() != flow.READY
+    monkeypatch.setattr(w.build, "runs", [_run(head, "docs.yml", "Wiki"), release])         # pulled
+    page.show_state()
+    assert page.marks["finish"].text() == "✓" and page.details["finish"].text() == flow.READY == \
+        "The release is out and pulled in: ready."
     assert flow.still_running([wiki, wiki, release]) == ("Wiki on main",)
