@@ -1,3 +1,11 @@
+Changelog: 20-11-2026 20:45:28
+
+Added. A welcome sound plays when the intro has ended (owner, 20-11-2026). It is sounds/welcome.wav, made by the
+owner in Nexus Remix Studio and turned up by 4 dB for the portal. It plays at full volume, where the other sounds
+play at 0.7. The portal reads it while the intro plays, so it starts without a delay. A skipped intro gets no
+welcome, as a skip also stops the intro's sound. The Sound pill turns it off with the other sounds. The music starts
+at the same moment, as before.
+
 Changelog: 20-11-2026 19:40:21
 
 Release 26.6.0. Pins bc250-rpcs3-v7.4.0, bc250-ppsspp-v5.4.0, bc250-pcsx2-v7.4.0, bc250-vita3k-v5.5.0, bc250-xenia-v5.5.0.
