@@ -142,6 +142,9 @@ CATEGORIES: list[Category] = [
                 "Opt-in. CPU single/multi-thread (stress-ng) and GPU FP32 compute (vkpeak), scored against "
                 "a stock BC-250 baseline (= 100) to compare CU and core unlocks, plus a comparison ladder "
                 "against known systems (Steam Deck, Series S, Steam Machine, PS5, desktop GPUs)."),
+        TestDef("60", "VKCube (Vulkan on the screen)",
+                "Draws the Vulkan tools' spinning cube in a window for five seconds, as the desktop user in the "
+                "running session: Vulkan reaches the screen. An error when vkcube ends by itself."),
     ]),
     Category("updates", "Updates", [
         TestDef("13", "Security Configuration", "firewalld zones and SELinux enforcement mode."),

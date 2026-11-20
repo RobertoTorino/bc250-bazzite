@@ -65,6 +65,7 @@ installs them:
 | `memtest_vulkan` | 41 CPU + GPU Stress (GPU load and a VRAM error check) | Binaries in `~/.local/bin` |
 | `vkpeak` | 42 Performance Benchmark (GPU score), 41 CPU + GPU Stress (GPU load, when memtest_vulkan is missing) | Binaries in `~/.local/bin` |
 | Ookla `speedtest` | 44 Internet Speed (`speedtest-cli` works too) | Speed test in `~/.local/bin` |
+| `mprime` (Prime95) | no test: [BC-250 CPU Tools](cores.md#longer-burn-in-mprime--rasdaemon) runs its torture test for a longer burn-in | Prime95 in `~/mprime`, with a link in `~/.local/bin` |
 | `sqlite` (`sqlite3`) | no test: looks into the app's history database during development | Development extras |
 
 `glmark2`, `vulkan-tools` (`vulkaninfo`, `vkcube`) and `smartmontools` (`smartctl`), which tests 10, 20, 21 and 41
@@ -76,6 +77,8 @@ option, it asks per group, says what each group is for and what it installs, and
 * **RPM packages** are layered with `rpm-ostree` and become active after a reboot (`systemctl reboot`);
 * **binaries** (`vkpeak`, `memtest_vulkan`) are the latest releases from their GitHub projects;
 * **the speed test** is Ookla's CLI; running it accepts Ookla's license and privacy terms;
+* **Prime95** is `mprime`, the release mersenne.org's download page lists, compared with the SHA-256 listed there
+  before it is unpacked; run again when there is a newer release, it installs that one over it;
 * **development extras** are only for working on the app.
 
 ```bash
@@ -83,7 +86,7 @@ option, it asks per group, says what each group is for and what it installs, and
 /opt/bc250-board-test/development/tools/install-requirements.sh --all    # every group except the development extras, no questions
 ```
 
-`--rpms`, `--bins`, `--speedtest` and `--dev` install one group.
+`--rpms`, `--bins`, `--speedtest`, `--mprime` and `--dev` install one group.
 
 > **Why `/opt`?** The test engine runs as root through sudo. A release build therefore refuses to
 > run `test-board.sh` unless the file and every folder above it are owned by root and writable by
@@ -566,6 +569,7 @@ explanation are grouped per program, with the command to read them.
 | #  | Test                                    | Checks                                                                                              |
 |----|-----------------------------------------|-----------------------------------------------------------------------------------------------------|
 | 42 | Performance Benchmark (CPU / GPU score) | **Opt-in**: run it from its button. CPU single/multi-thread and GPU FP32 compute, scored against a stock board, plus a comparison ladder against known systems (Steam Deck, Series S, Steam Machine, PS5, desktop GPUs). |
+| 60 | VKCube (Vulkan on the screen)           | Draws the Vulkan tools' spinning cube (`vkcube`) in a window for five seconds, as the desktop user in the running session. A pass when it is still drawing after that time; an error when it ended by itself, with its output. Skipped without a graphical session (a run over SSH) or without `vkcube`. |
 
 See [Performance score](#performance-score-comparing-cu-and-core-unlocks) below.
 

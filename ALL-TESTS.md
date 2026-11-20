@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3325 test functions (3900 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3331 test functions (3906 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -28,7 +28,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/password](#appspassword) | 2 | 22 | 0.6 s |
 | [apps/pcsx2](#appspcsx2) | 14 | 145 | 21.5 s |
 | [apps/ppsspp](#appsppsspp) | 11 | 95 | 4.9 s |
-| [apps/quickfix](#appsquickfix) | 5 | 38 |  |
+| [apps/quickfix](#appsquickfix) | 5 | 39 |  |
 | [apps/rpcs3](#appsrpcs3) | 12 | 117 | 6.4 s |
 | [apps/sftp](#appssftp) | 11 | 84 | 0.9 s |
 | [apps/shadps4](#appsshadps4) | 17 | 149 | 8.0 s |
@@ -42,15 +42,15 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [core](#core) | 29 | 216 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
-| [dev/deps](#devdeps) | 6 | 102 | 7.4 s |
+| [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
-| [dev/nrt](#devnrt) | 4 | 132 | 24.8 s |
+| [dev/nrt](#devnrt) | 4 | 134 | 24.8 s |
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [dev/studio](#devstudio) | 6 | 58 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 16 | 207 | 29.0 s |
 | [tools](#tools) | 38 | 231 | 11.1 s |
-| **All** | | **3325** | **182 s** |
+| **All** | | **3331** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -1523,12 +1523,13 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/quickfix
 
-38 tests in 5 files.
+39 tests in 5 files.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
 | `test_catalog.py` | `test_the_portal_lists_every_quickfix` |  |  | The portal lists every quickfix. |
 | `test_catalog.py` | `test_the_groups_are_board_tests_installers` |  |  | The groups are board tests installers. |
+| `test_catalog.py` | `test_mprime_goes_where_cpu_tools_looks_and_is_checked_first` |  |  | Prime95's mprime: unpacked into ~/mprime, the first place CPU Tools' bisect looks in, with a link in ~/.local/bin, where this window looks; the download is compared with a pinned SHA-256 before it is unpacked. |
 | `test_main_window.py` | `test_version_is_the_single_source` |  |  | Version is the single source. |
 | `test_main_window.py` | `test_icons_are_beside_the_package` |  |  | Icons are beside the package. |
 | `test_main_window.py` | `test_window_lists_every_quickfix_and_opens_one` |  |  | Window lists every quickfix and opens one. |
@@ -2858,7 +2859,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/deps
 
-102 tests in 6 files, 7.4 s in a local run.
+105 tests in 6 files, 7.4 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2889,6 +2890,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_dependencies.py` | `test_satisfies` | 10 |  | Satisfies. |
 | `test_dependencies.py` | `test_tool_check_reports_path` |  |  | Tool check reports path. |
 | `test_dependencies.py` | `test_tools_are_found_in_the_apps_extra_folders` |  |  | A launch from the menu may lack ~/.local/bin on PATH; the apps look there anyway. |
+| `test_dependencies.py` | `test_mprime_is_found_where_its_download_is_unpacked` |  |  | mprime is a tarball from mersenne.org, unpacked into ~/mprime and on no PATH: found where CPU Tools looks. |
 | `test_dependencies.py` | `test_either_speed_test_will_do` |  |  | Either speed test will do. |
 | `test_dependencies.py` | `test_flashrom_check_requires_internal_programmer` | 2 |  | Flashrom check requires internal programmer. |
 | `test_dependencies.py` | `test_latest_pypi_version_uses_project_json` |  |  | Latest pypi version uses project json. |
@@ -2904,6 +2906,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_dependencies.py` | `test_environment_needs_update` |  |  | Environment needs update. |
 | `test_fixes.py` | `test_nothing_broken_needs_no_fix` |  |  | Nothing broken needs no fix. |
 | `test_fixes.py` | `test_missing_and_outdated_packages_go_into_their_own_venv` |  |  | Missing and outdated packages go into their own venv. |
+| `test_fixes.py` | `test_a_fix_the_app_does_not_accept_is_not_for_fix` |  |  | A vulnerability fixed only in a release above the app's specifier: pip cannot meet both (owner, 20-11-2026: "paramiko>=3.4,<5,>=5.0.0", no version found), so Fix leaves it and the card says the app comes first. |
 | `test_fixes.py` | `test_a_missing_required_tool_comes_from_homebrew_first_then_rpm_ostree` |  |  | A missing required tool comes from homebrew first then rpm ostree. |
 | `test_fixes.py` | `test_optional_and_unfixable_tools_stay_out` |  |  | Optional and unfixable tools stay out. |
 | `test_fixes.py` | `test_every_tool_names_at_most_one_formula_and_package` |  |  | Every tool names at most one formula and package. |
@@ -2927,6 +2930,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_system.py` | `test_dnf_lists_the_updates_with_the_kernel_and_its_restart` |  |  | Dnf lists the updates with the kernel and its restart. |
 | `test_system.py` | `test_dnf_with_nothing_newer_or_failing` |  |  | Dnf with nothing newer or failing. |
 | `test_system.py` | `test_a_flattened_image_has_dnf_instead_of_the_image` |  |  | A flattened image has dnf instead of the image. |
+| `test_system.py` | `test_mprime_is_checked_against_mersenne_orgs_page_and_updated_by_board_tests_installer` |  |  | Prime95's mprime, when Quickfix installed it: the release in ~/mprime/.release against the one the download page lists; Update runs Board Test's installer, which installs that release (owner, 20-11-2026). |
 | `test_upstreams.py` | `test_the_catalog_is_in_sync_with_the_apps` |  | 0.1 s | The pins, repos, names and launchers are the apps' own: dev/deps/run.sh --sync-upstreams fixes this. |
 | `test_upstreams.py` | `test_every_app_with_a_pinned_upstream_is_listed` |  |  | Every app with a pinned upstream is listed. |
 | `test_upstreams.py` | `test_the_constants_are_read_without_running_the_module` |  |  | The constants are read without running the module. |
@@ -2989,7 +2993,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/nrt
 
-132 tests in 4 files, 24.8 s in a local run.
+134 tests in 4 files, 24.8 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3050,10 +3054,12 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_flow.py` | `test_the_push_shows_ci_here_and_a_failure_stays_on_its_step` |  | 0.8 s | The push shows ci here and a failure stays on its step. |
 | `test_flow.py` | `test_a_push_github_has_no_runs_of_yet_shows_no_old_failure` |  | 0.5 s | Right after a push, GitHub's newest runs are the commit's before: one that failed showed this push as failed until GitHub had started its runs (owner, 15-11-2026). |
 | `test_flow.py` | `test_the_portal_video_check` |  |  | tools/portal_tour.py --check: "" when the video is current or the suite has none, else why it waits. |
-| `test_flow.py` | `test_a_release_takes_from_its_work_commit_to_ci_passed_and_from_its_commit_to_the_end_of_its_run` |  |  | Two releases in the checkout, each a commit on top of the one CI passed on; a failed run and a run on a tag are no releases; what the owner waited between CI and Start is not counted. |
+| `test_flow.py` | `test_githubs_time_of_a_release_is_its_ci_before_start_and_from_its_commit_to_the_end_of_its_run` |  |  | Two releases in the checkout, each a commit on top of the one CI passed on; a failed run and a run on a tag are no releases; what the owner waited between CI and Start is not counted. |
 | `test_flow.py` | `test_a_release_that_still_runs_counts_the_time_so_far_and_a_first_release_has_no_deviation` |  |  | A release that still runs counts the time so far and a first release has no deviation. |
 | `test_flow.py` | `test_times_and_deviations_in_words` |  |  | Times and deviations in words. |
-| `test_flow.py` | `test_the_page_shows_both_times_and_the_deviation_and_a_banner_over_the_limit` |  |  | Over the limit the deviation is orange and in the banner; 0 or less and under the limit it is in its box only; while the release runs a deviation under the limit says nothing yet. |
+| `test_flow.py` | `test_the_clock_starts_with_the_first_step_pressed_and_ends_when_the_release_on_github_passed` |  |  | Owner, 20-11-2026: the current release is "the release that is NOW started with step 1 in NRT". |
+| `test_flow.py` | `test_the_page_shows_the_previous_release_the_current_one_and_the_deviation` |  |  | Owner, 20-11-2026: opened for a new release, what is out is the Previous release, with GitHub's own time (its CI and its release run) while this tool did not time it; the Current release is a dash until its first step is pressed, then counts; the deviation and its banner are the current one against the previous. |
+| `test_flow.py` | `test_a_clock_left_running_is_kept_and_one_that_ended_or_is_old_is_not` |  |  | A clock left running is kept and one that ended or is old is not. |
 | `test_flow.py` | `test_the_times_are_read_through_the_windows_source` |  |  | The build indicator asks with each look (check_times): the source runs off the GUI thread and its answer fills the boxes; a source that cannot reach GitHub leaves them as they were. |
 | `test_flow.py` | `test_the_time_boxes_are_wide` |  |  | Owner, 20-11-2026: wider; "9 min 39 s so far" filled its box. |
 | `test_flow.py` | `test_start_follows_by_itself_when_this_window_saw_ci_pass` |  |  | Owner, 20-11-2026: "If CI passes in NRT we autostart". |

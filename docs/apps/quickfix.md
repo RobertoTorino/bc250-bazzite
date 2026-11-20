@@ -36,6 +36,11 @@ terminal, `/opt/bc250-board-test/development/tools/install-requirements.sh` with
 the development extras (`--all`), and **Refresh** beside it reads the tools again. The groups and their tools are listed in [BC-250 Board Test](check.md#download-and-install), with the tests that use each one. Layered RPM
 packages are active after a reboot (`systemctl reboot`); until then the tools of that group still show as missing.
 
+The group **Prime95** is `mprime`, which no test uses: [BC-250 CPU Tools](cores.md#longer-burn-in-mprime--rasdaemon)
+runs its torture test for a longer burn-in. The pill installs the release that mersenne.org's download page lists
+at that moment, compared with the SHA-256 listed there, into `~/mprime`, with a link in `~/.local/bin`. A newer
+release later shows in Nexus Deps as **Prime95 (mprime)**, and its **Update** installs it over the old one.
+
 ## MangoHud Config
 
 Opens MangoHud's own settings file, `~/.config/MangoHud/MangoHud.conf`, in an editor; a file that is not there yet

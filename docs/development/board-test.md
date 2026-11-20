@@ -236,6 +236,7 @@ its findings as `LEVEL: text` lines, which the script logs; a `WARNING` line cou
 | #  | Test                                    | Checks                                                                                              |
 |----|-----------------------------------------|-----------------------------------------------------------------------------------------------------|
 | 42 | Performance Benchmark (CPU / GPU score) | **Opt-in** (`--bench`). CPU single/multi-thread and GPU FP32 compute, scored against a stock board, plus a comparison ladder against known systems (Steam Deck, Series S, Steam Machine, PS5, desktop GPUs). |
+| 60 | VKCube (Vulkan on the screen)           | Draws the Vulkan tools' spinning cube (`vkcube`) in a window for five seconds, as the desktop user in the running session. A pass when it is still drawing after that time; an error when it ended by itself, with its output. Skipped without a graphical session (a run over SSH) or without `vkcube`. |
 
 See [Performance score](#performance-score-comparing-cu-and-core-unlocks) below.
 
