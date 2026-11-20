@@ -2,16 +2,18 @@
 """The PPSSPP release this version of the app installs, pinned: the Linux AppImage of a tagged release on GitHub,
 checked against its SHA-256 before it is installed. A newer PPSSPP comes with a new version of the app, so the
 launch line and the advice in the app are tried with the release they are for. The app looks up PPSSPP's newest
-release and says when there is a newer one than it brings; it never installs one it was not tried with.
+release and says when there is a newer one than it brings. Another release is downloaded beside it in the version
+manager (owner, 20-11-2026: as shadPS4's own launcher has one; core's builds), checked against the SHA-256 GitHub
+publishes for it; it was not tried on the board.
 
-It goes to ~/.local/share/bc250-ppsspp-manager/emulator/<version>/ppsspp.AppImage, with "current" pointing to it.
+Each release goes to ~/.local/share/bc250-ppsspp-manager/emulator/<version>/ppsspp.AppImage, with "current" pointing
+to the one in use.
 The run wrapper (~/.local/bin/bc250-ppsspp-run) starts "current", so the Steam shortcuts keep working when the
 version changes. PPSSPP does not update itself on Linux: its own window only says when a new release is out."""
 
 from __future__ import annotations
 
 import hashlib
-import os
 import re
 import shutil
 import urllib.error
@@ -19,6 +21,8 @@ import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
+from bc250_core import builds
+from bc250_core.builds import Build
 from bc250_core.platform import data_home
 from bc250_core.updates import Fetch, ReleaseInfo, github_fetch
 
@@ -82,44 +86,47 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def tested() -> Build:
+    """The build this version of the app was tried with."""
+    return Build(VERSION, TAG, "2026-05-16", builds.RELEASE, URL, ASSET, SHA256, SIZE, RELEASE_PAGE)
+
+
 def install(home: Path, fetch: Download = download, progress: Progress | None = None) -> str:
-    """Downloads the pinned release, checks it and installs it as "current"; other versions go. Returns what was
-    done. Nothing changes when a step fails (EmulatorError)."""
-    home.mkdir(parents=True, exist_ok=True)
-    work = home / f".download-{os.getpid()}"
-    shutil.rmtree(work, ignore_errors=True)
-    work.mkdir()
+    """Puts the pinned build in use: from its folder when it is there unchanged, else downloaded and checked. Other
+    builds stay. Returns what was done. Nothing changes when a step fails (EmulatorError)."""
+    image = home / VERSION / MEMBER
     try:
-        image = work / MEMBER
-        try:
-            fetch(URL, image, progress)
-        except urllib.error.HTTPError as error:
-            raise EmulatorError(f"GitHub answered {error.code} for {ASSET}.") from error
-        except (urllib.error.URLError, OSError) as error:
-            reason = str(getattr(error, "reason", error))
-            raise EmulatorError(f"The download failed: {reason}.") from error
-        if sha256(image) != SHA256:
-            raise EmulatorError(f"{ASSET} is not the file this app was tested with (its SHA-256 differs); "
-                                "nothing was installed.")
-        image.chmod(0o755)
-        target = home / VERSION
-        shutil.rmtree(target, ignore_errors=True)
-        target.mkdir()
-        image.replace(target / MEMBER)
-        link = home / ".current-new"
-        link.unlink(missing_ok=True)
-        link.symlink_to(VERSION)
-        link.replace(home / "current")
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
-    for other in home.iterdir():
-        if other.is_dir() and not other.is_symlink() and other.name != VERSION and not other.name.startswith("."):
-            shutil.rmtree(other, ignore_errors=True)
+        if image.is_file() and sha256(image) == SHA256:
+            builds.remember(home, VERSION, tested(), MEMBER)
+            builds.use(home, VERSION, MEMBER)
+            return f"PPSSPP {VERSION} is in use."
+        builds.install(home, tested(), MEMBER, fetch, progress, refused="this app was tested with")
+    except builds.BuildError as error:
+        raise EmulatorError(str(error)) from error
     return f"PPSSPP {VERSION} is installed."
 
 
+_ASSET = re.compile(r"PPSSPP-v(.+)-anylinux-x86_64\.AppImage")
+
+
+def _pick(release: dict, asset: dict) -> str | None:
+    match = _ASSET.fullmatch(str(asset.get("name", "")))
+    return match.group(1) if match else None
+
+
+def available(fetch: Fetch | None = None) -> list[Build]:
+    """The PPSSPP releases that can be downloaded, newest first: those with an x86_64 AppImage (builds.BuildError
+    when GitHub cannot be asked)."""
+    return builds.github_builds(REPO, _pick, fetch or github_fetch(f"{APP_ID}/{__version__}"))
+
+
+def install_build(home: Path, build: Build, fetch: Download = download, progress: Progress | None = None) -> None:
+    """Downloads *build* beside the others, checked against its SHA-256; not in use yet."""
+    builds.install(home, build, MEMBER, fetch, progress, use_it=False)
+
+
 def remove(home: Path) -> None:
-    """The installed PPSSPP goes; PPSSPP's own folder (saves, settings, memory stick games) stays."""
+    """Every installed PPSSPP build goes; PPSSPP's own folder (saves, settings, memory stick games) stays."""
     shutil.rmtree(home, ignore_errors=True)
 
 

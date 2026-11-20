@@ -41,12 +41,12 @@ go](#where-your-games-go)); nothing is chosen or browsed to. Three lines below t
 and then comes a row of six tabs: **Your games**, **Settings**, **Memory cards** and **Log**, and two that
 are buttons: **Start game**, beside Your games, and **Clear logs**, beside Log.
 
-- **PCSX2**: **Not installed.** or **Installed.**, with the button to use under it. The tooltip says which release
-  is installed, or what Install takes; when this version of the app brings another release, the tooltip and the
-  log say so, and **Install** puts it in. **Install** downloads PCSX2 from its GitHub release (about 57 MB): the
-  stable release this version of the app was tried with, checked against its checksum before it is installed. The
-  app then sets PCSX2 up; see [PCSX2's settings](#pcsx2s-settings). **Uninstall** takes it out again; PCSX2's own
-  folder, with the BIOS, your memory cards and settings, stays.
+- **PCSX2**: **Not installed.** or **Installed.**, with the button to use under it. The tooltip says which release is
+  installed, or what Install takes; when this version of the app brings another release, the tooltip and the log say
+  so, and **Install** puts it back in use. **Install** downloads PCSX2 from its GitHub release (about 57 MB): the
+  stable release this version of the app was tried with, checked against its checksum before it is installed. The app
+  then sets PCSX2 up; see [PCSX2's settings](#pcsx2s-settings). **Uninstall** takes it out again; PCSX2's own folder,
+  with the BIOS, your memory cards and settings, stays.
 - **BIOS**: the name of the BIOS dump PCSX2 uses and nothing else, or **Not installed.**; the **i** beside it says what PCSX2 needs it for
   and where it goes. Put your dump in `~/Games/PS2/BIOS`, with the files beside it under
   the same name (such as `.NVM` and `.MEC`; only the `.bin` is needed): the app copies it into PCSX2's `bios`
@@ -56,6 +56,23 @@ are buttons: **Start game**, beside Your games, and **Clear logs**, beside Log.
 - **Game folder**: where the app looks for games, `~/Games/PS2` and a removable drive's `Games/PS2`; the **i**
   beside them says what goes there. Games in subfolders are found too, up to five folders deep, so a folder per
   game is fine.
+
+### Versions
+
+The version box in the header is a pill. A click opens the list of the PCSX2 builds installed, with a check mark at
+the one in use; pick another to put it in use. The games in Steam start whichever build is in use, and every build
+shares PCSX2's own folder (BIOS, memory cards and settings). **Manage versions…** under the list opens the version
+manager:
+
+- **Installed**: every build in the app's folder, the one in use with a check mark and the one this version of the app
+  was tried with marked **Tested**. **Use** puts the chosen build in use, **Delete** removes it (not the one in use),
+  and **Add** (**Custom build**) takes an AppImage of your own, which is not checked.
+- **Download**: **Refresh** asks GitHub which builds there are (the newest nightlies and the newest stable release;
+  each build gets its own copy of PCSX2's catalog). **Download** fetches the chosen one, checks it against the SHA-256
+  GitHub publishes for it and puts it beside the others; **Use** then puts it in use.
+
+Only the build marked **Tested** was tried on the board. To go back to it, pick it in the version pill's list or press
+**PCSX2 Install**, which puts it back in use without a download when it is still there.
 
 ### Where your games go
 
@@ -254,12 +271,12 @@ bc250-pcsx2-run                                             # PCSX2's own window
 
 ## New PCSX2 releases
 
-PCSX2 publishes a nightly build for almost every change and, now and then, a stable release (2.8.2). Each version
-of the app installs one stable release, the one it was tried with, and nothing else. When the window opens, the
-app asks GitHub for PCSX2's newest stable. When that one is newer, the PCSX2 line's tooltip and the log say so,
-with a link to what is new; the app does not install it. A newer PCSX2 comes with a newer version of the app, once
-it has been tried, from the [portal](../portal.md): after updating the app, the tooltip says so, and **Install**
-brings it.
+PCSX2 publishes a nightly build for almost every change and, now and then, a stable release (2.8.2). Each version of
+the app was tried with one stable release, the one **Install** puts in. When the window opens, the app asks GitHub for
+PCSX2's newest stable. When that one is newer, the PCSX2 line's tooltip and the log say so, with a link to what is
+new; the app does not install it by itself, but the [version manager](#versions) can. A newer PCSX2 comes with a newer
+version of the app, once it has been tried, from the [portal](../portal.md): after updating the app, the tooltip says
+so, and **Install** brings it.
 
 The app turns PCSX2's own update check off. If PCSX2 is updated in its own window anyway, the PCSX2 line's tooltip
 says that PCSX2 updated itself, and **Install** puts the tried release back.

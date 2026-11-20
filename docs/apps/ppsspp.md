@@ -39,13 +39,29 @@ beside Log.
 - **PPSSPP**: **Not installed.** or **Installed.**, with the button to use after it, on one line. The tooltip says which
   release is installed, or what Install takes, and when a newer PPSSPP is out. **Install** downloads PPSSPP from
   its GitHub release (about 48 MB) and checks it against the checksum this version of the app was tried with before
-  installing it; when another release is installed, the tooltip and the log say so, and **Install** puts the app's
-  in. **Uninstall** takes it out again; PPSSPP's own folder, with your saves and settings, stays.
+  installing it; when another release is in use, the tooltip and the log say so, and **Install** puts it back
+  in use. **Uninstall** takes it out again; PPSSPP's own folder, with your saves and settings, stays.
 - **Game folder**: where the app looks for games, `~/Games/PSP` and a removable drive's `Games/PSP` (see [Where
   your games go](#where-your-games-go)); nothing is chosen or browsed to. The **i** beside them says what goes
   there, and the tooltip how many games are on PPSSPP's memory stick. A game may sit up to five folders deep.
 - **Games Rename** renames the ISO and CSO images after their `PARAM.SFO`: see [Renaming the
   files](#renaming-the-files).
+
+### Versions
+
+The version box in the header is a pill. A click opens the list of the PPSSPP builds installed, with a check mark at
+the one in use; pick another to put it in use. The games in Steam start whichever build is in use, and every build
+shares PPSSPP's own folder (saves and settings). **Manage versions…** under the list opens the version manager:
+
+- **Installed**: every build in the app's folder, the one in use with a check mark and the one this version of the app
+  was tried with marked **Tested**. **Use** puts the chosen build in use, **Delete** removes it (not the one in use),
+  and **Add** (**Custom build**) takes an AppImage of your own, which is not checked.
+- **Download**: **Refresh** asks GitHub which builds there are (its releases that have a Linux AppImage). **Download**
+  fetches the chosen one, checks it against the SHA-256 GitHub publishes for it and puts it beside the others; **Use**
+  then puts it in use.
+
+Only the build marked **Tested** was tried on the board. To go back to it, pick it in the version pill's list or press
+**PPSSPP Install**, which puts it back in use without a download when it is still there.
 
 ### Where your games go
 
@@ -190,12 +206,12 @@ bc250-ppsspp-run                                                      # PPSSPP's
 
 ## New PPSSPP releases
 
-Each version of the app installs one PPSSPP release, the one it was tried with. When the window opens, the app
-asks GitHub for PPSSPP's newest release. When that one is newer, the PPSSPP line's tooltip and the log say so,
-with a link to what is new; the app does not install it. A newer PPSSPP comes with a newer version of the app, once
-it has been tried, from the [portal](../portal.md): after updating the app, the tooltip and the log say so, and
-**Install** brings it.
-PPSSPP's own notice of a new release is turned off by the app (see below); on Linux PPSSPP does not update itself.
+Each version of the app was tried with one PPSSPP release, the one **Install** puts in. When the window opens, the app
+asks GitHub for PPSSPP's newest release. When that one is newer, the PPSSPP line's tooltip and the log say so, with a
+link to what is new; the app does not install it by itself, but the [version manager](#versions) can. A newer PPSSPP
+comes with a newer version of the app, once it has been tried, from the [portal](../portal.md): after updating the
+app, the tooltip and the log say so, and **Install** brings it. PPSSPP's own notice of a new release is turned off by
+the app (see below); on Linux PPSSPP does not update itself.
 
 ## How it works
 

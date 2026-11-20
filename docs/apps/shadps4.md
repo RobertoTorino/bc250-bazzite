@@ -41,9 +41,9 @@ beside Log.
 
 - **shadPS4**: **Not installed.** or **Installed.**, with the button to use under it; the version box in the header
   shows the version installed. When this version of the app brings another one, the tooltip and the log say so, and
-  **Install** puts it in. **Install** downloads shadPS4 from its GitHub release (about 31 MB) and checks it against
-  the checksum this version of the app was tried with before unpacking it. **Uninstall** takes it out again; shadPS4's
-  own folder, with your saves, settings and system modules, stays.
+  **Install** puts it back in use. **Install** downloads shadPS4 from its GitHub release (about 31 MB) and checks it
+  against the checksum this version of the app was tried with before unpacking it. **Uninstall** takes it out again;
+  shadPS4's own folder, with your saves, settings and system modules, stays.
 - **Sys modules**: **Ok** in green when every module that shadPS4 cannot do without is in its module folder,
   **Missing sys modules** in red when one is not (how many there are, which are missing and the folder's path are in
   the tooltip). Many games run without them. Put the modules (`.sprx` files) you copied from your own PS4's
@@ -57,6 +57,23 @@ beside Log.
   [Packages](#packages). **Install** opens [Extract PKG](#extract-pkg) for a package anywhere else.
 - **shadNet**: the name of the account shadPS4 signs in with, **Off** while none is set up, **—** while shadPS4 has
   not run yet (the server is in the tooltip). **Account** sets it up: see [shadNet](#shadnet).
+
+### Versions
+
+The version box in the header is a pill. A click opens the list of the shadPS4 builds installed, with a check mark at
+the one in use; pick another to put it in use. The games in Steam start whichever build is in use, and every build
+shares shadPS4's own folder (saves, settings and system modules). **Manage versions…** under the list opens the
+version manager:
+
+- **Installed**: every build in the app's folder, the one in use with a check mark and the one this version of the app
+  was tried with marked **Tested**. **Use** puts the chosen build in use, **Delete** removes it (not the one in use),
+  and **Add** (**Custom build**) takes an AppImage of your own, which is not checked.
+- **Download**: **Refresh** asks GitHub which builds there are (its stable releases and the pre-release, a nightly
+  named after its date and commit). **Download** fetches the chosen one, checks it against the SHA-256 GitHub
+  publishes for it and puts it beside the others; **Use** then puts it in use.
+
+Only the build marked **Tested** was tried on the board. To go back to it, pick it in the version pill's list or press
+**shadPS4 Install**, which puts it back in use without a download when it is still there.
 
 ### Where your games go
 
@@ -402,11 +419,11 @@ python -m shadps4_manager.pkgxtractor.compare_delta <before.json> <after.json> [
 
 ## New shadPS4 releases
 
-Each version of the app installs one shadPS4 release, the one it was tried with. When the window opens, the app asks
-GitHub for shadPS4's newest release (its stable releases, not the daily development builds). When that one is newer,
-the shadPS4 line's tooltip and the log say so, with a link to what is new; the app does not install it. A newer
-shadPS4 comes with a newer version of the app, once it has been tried, from the [portal](../portal.md): after
-updating the app, the tooltip says so, and **Install** brings it.
+Each version of the app was tried with one shadPS4 release, the one **Install** puts in. When the window opens, the
+app asks GitHub for shadPS4's newest release (its stable releases, not the daily development builds). When that one is
+newer, the shadPS4 line's tooltip and the log say so, with a link to what is new; the app does not install it by
+itself, but the [version manager](#versions) can. A newer shadPS4 comes with a newer version of the app, once it has
+been tried, from the [portal](../portal.md): after updating the app, the tooltip says so, and **Install** brings it.
 
 ## How it works
 

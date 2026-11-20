@@ -2,16 +2,18 @@
 """The shadPS4 this version of the app installs: the Linux build of a tagged release on GitHub (an AppImage in a
 zip), pinned and checked against the SHA-256 this version of the app was tried with. A newer stable comes with a new
 version of the app, so the launch line and the advice in the app are tried with the release they are for; the app
-says when there is a newer one. (The nightly channel went with the window rebuilt on PCSX2 Manager's, owner,
-24-10-2026: the managers install the build they were tried with.)
+says when there is a newer one. Another build, a stable release or the pre-release (a nightly), is downloaded beside
+it in the version manager (owner, 20-11-2026: as shadPS4's own launcher has one; core's builds), checked against the
+SHA-256 GitHub publishes for it; it was not tried on the board, and Install puts the pinned one back in use.
 
-It goes to ~/.local/share/bc250-shadps4-manager/emulator/<version>/, with "current" pointing to it. The run wrapper
-(~/.local/bin/bc250-shadps4-run) starts "current", so the Steam shortcuts keep working when the version changes."""
+Each build goes to ~/.local/share/bc250-shadps4-manager/emulator/<version>/, with "current" pointing to the one in
+use. The run wrapper (~/.local/bin/bc250-shadps4-run) starts "current", so the Steam shortcuts keep working when the
+version changes."""
 
 from __future__ import annotations
 
 import hashlib
-import os
+import re
 import shutil
 import urllib.error
 import urllib.request
@@ -19,8 +21,10 @@ import zipfile
 from collections.abc import Callable
 from pathlib import Path
 
+from bc250_core import builds
+from bc250_core.builds import Build
 from bc250_core.platform import data_home
-from bc250_core.updates import Fetch, ReleaseInfo, latest_release, version_tuple
+from bc250_core.updates import Fetch, ReleaseInfo, github_fetch, latest_release, version_tuple
 
 from . import APP_ID, __version__
 
@@ -29,6 +33,8 @@ TAG = "v.0.21.0"                        # shadPS4 tags its releases "v.0.21.0"
 ASSET = "shadps4-linux-sdl-0.21.0.zip"
 SHA256 = "7c41c58254461d742b5edf564e23795697b63e9e46de11d0e1ed67bd2cbaae68"
 SIZE_MB = 32                            # the zip, for the question before downloading
+NAME = "shadps4 v0.21.0 - codename Until Mavethee Dawn"     # the release's name on GitHub
+PUBLISHED = "2026-10-30"
 MEMBER = "Shadps4-sdl.AppImage"         # the only file in the zip
 REPO = "shadps4-emu/shadPS4"
 URL = f"https://github.com/{REPO}/releases/download/{TAG}/{ASSET}"
@@ -81,57 +87,58 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _install(home: Path, version: str, url: str, asset: str, checksum: str, refused: str,
-             fetch: Download, progress: Progress | None) -> None:
-    """Downloads one build (a zip), checks it against *checksum* and installs its AppImage as "current"; other
-    versions go. Nothing changes when a step fails (EmulatorError)."""
-    home.mkdir(parents=True, exist_ok=True)
-    work = home / f".download-{os.getpid()}"
-    shutil.rmtree(work, ignore_errors=True)
-    work.mkdir()
+def unpack(archive: Path, member: Path) -> None:
+    """The AppImage out of a release's zip (core's builds.install calls it on the checked download)."""
     try:
-        archive = work / asset
-        try:
-            fetch(url, archive, progress)
-        except urllib.error.HTTPError as error:
-            raise EmulatorError(f"GitHub answered {error.code} for {asset}.") from error
-        except (urllib.error.URLError, OSError) as error:
-            reason = str(getattr(error, "reason", error))
-            raise EmulatorError(f"The download failed: {reason}.") from error
-        if sha256(archive) != checksum:
-            raise EmulatorError(f"{asset} is not the file {refused} (its SHA-256 differs); nothing was installed.")
-        try:
-            with zipfile.ZipFile(archive) as packed:
-                if MEMBER not in packed.namelist():
-                    raise EmulatorError(f"{asset} has no {MEMBER}.")
-                with packed.open(MEMBER) as source, (work / MEMBER).open("wb") as out:
-                    shutil.copyfileobj(source, out, CHUNK)
-        except zipfile.BadZipFile as error:
-            raise EmulatorError(f"{asset} is damaged.") from error
-        (work / MEMBER).chmod(0o755)
-        target = home / version
-        shutil.rmtree(target, ignore_errors=True)
-        target.mkdir()
-        (work / MEMBER).replace(target / MEMBER)
-        link = home / ".current-new"
-        link.unlink(missing_ok=True)
-        link.symlink_to(version)
-        link.replace(home / "current")
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
-    for other in home.iterdir():
-        if other.is_dir() and not other.is_symlink() and other.name != version and not other.name.startswith("."):
-            shutil.rmtree(other, ignore_errors=True)
+        with zipfile.ZipFile(archive) as packed:
+            if MEMBER not in packed.namelist():
+                raise builds.BuildError(f"{archive.name} has no {MEMBER}.")
+            with packed.open(MEMBER) as source, member.open("wb") as out:
+                shutil.copyfileobj(source, out, CHUNK)
+    except zipfile.BadZipFile as error:
+        raise builds.BuildError(f"{archive.name} is damaged.") from error
+
+
+def tested() -> Build:
+    """The release this version of the app was tried with."""
+    return Build(VERSION, NAME, PUBLISHED, builds.RELEASE, URL, ASSET, SHA256, SIZE_MB << 20, RELEASE_PAGE)
 
 
 def install(home: Path, fetch: Download = download, progress: Progress | None = None) -> str:
-    """The pinned stable release, checked against the SHA-256 this app was tried with. Returns what was done."""
-    _install(home, VERSION, URL, ASSET, SHA256, "this app was tested with", fetch, progress)
+    """Puts the pinned stable release in use: from its folder when it is there, else downloaded, checked against
+    the SHA-256 this app was tried with and unpacked. Other builds stay. Returns what was done. Nothing changes when
+    a step fails (EmulatorError)."""
+    try:
+        if (home / VERSION / MEMBER).is_file() and (home / VERSION / builds.INFO).is_file():
+            builds.use(home, VERSION, MEMBER)
+            return f"shadPS4 {VERSION} is in use."
+        builds.install(home, tested(), MEMBER, fetch, progress, unpack, refused="this app was tested with")
+    except builds.BuildError as error:
+        raise EmulatorError(str(error)) from error
     return f"shadPS4 {VERSION} is installed."
 
 
+_ASSET = re.compile(r"shadps4-linux-sdl-(.+)\.zip")
+
+
+def _pick(release: dict, asset: dict) -> str | None:
+    match = _ASSET.fullmatch(str(asset.get("name", "")))
+    return match.group(1) if match else None
+
+
+def available(fetch: Fetch | None = None) -> list[Build]:
+    """The shadPS4 builds that can be downloaded, newest first: the stable releases and the pre-release (a nightly,
+    named after its date and commit), each the Linux SDL zip (builds.BuildError when GitHub cannot be asked)."""
+    return builds.github_builds(REPO, _pick, fetch or github_fetch(f"{APP_ID}/{__version__}"))
+
+
+def install_build(home: Path, build: Build, fetch: Download = download, progress: Progress | None = None) -> None:
+    """Downloads *build* beside the others, checked against its SHA-256 and unpacked; not in use yet."""
+    builds.install(home, build, MEMBER, fetch, progress, unpack, use_it=False)
+
+
 def remove(home: Path) -> None:
-    """The installed shadPS4 goes; shadPS4's own folder (saves, system modules, settings) stays."""
+    """Every installed shadPS4 build goes; shadPS4's own folder (saves, system modules, settings) stays."""
     shutil.rmtree(home, ignore_errors=True)
 
 
