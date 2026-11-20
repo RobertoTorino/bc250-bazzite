@@ -1,3 +1,11 @@
+Changelog: 20-11-2026 16:16:04
+
+Added. steam: takes_commands, whether the running Steam takes a steam:// address now (the process its pid file names
+has Steam's command pipe open, as Steam's own start script tells), and play, which starts a game by its address and
+waits until it runs: a Steam that does not run is started and waited for first, and the address is given again, at
+most three times, while the game does not come up. For Start game in shadPS4 Manager: Steam started with the game's
+address came up and never started the game (the board, 20-11-2026).
+
 Changelog: 20-11-2026 04:55:53
 
 Version 6.1.0.

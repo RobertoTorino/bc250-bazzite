@@ -221,3 +221,57 @@ def test_the_number_of_a_shortcut_as_steams_file_has_it(tmp_path):
     path.write_bytes(steam.write_vdf(values))
     assert steam.shortcut_number(folder, game.ours) == game.number
 
+
+
+def test_steam_takes_commands_when_its_process_has_the_pipe_open(tmp_path):
+    """As Steam's own start script tells a running Steam: the process the pid file names has the command pipe open.
+    A pid file left behind, or a Steam that is still starting, takes none."""
+    home, proc = tmp_path / "home", tmp_path / "proc"
+    (home / ".steam").mkdir(parents=True)
+    assert not steam.takes_commands(home, proc)                              # no pid file
+    (home / ".steam" / "steam.pid").write_text("42\n")
+    assert not steam.takes_commands(home, proc)                              # a pid file left behind
+    (proc / "42" / "fd").mkdir(parents=True)
+    (proc / "42" / "fd" / "3").symlink_to("/dev/null")
+    assert not steam.takes_commands(home, proc)                              # still starting
+    (proc / "42" / "fd" / "7").symlink_to(home / ".steam" / "steam.pipe")
+    assert steam.takes_commands(home, proc)
+
+
+def test_play_starts_steam_first_and_waits_for_the_game():
+    """Start game with Steam closed (owner's board, 20-11-2026: Steam came up and the game never started): Steam is
+    started and waited for, then the game's address is given, again while the game does not run."""
+    ran, opened, slept = [], [], []
+    state = {"ready": 0, "started": 0}
+
+    def ready() -> bool:
+        state["ready"] += 1
+        return state["ready"] > 3
+
+    def started() -> bool:
+        state["started"] += 1
+        return len(opened) == 2                                              # the first address was dropped
+
+    steam.play("steam://rungameid/1", lambda url: opened.append(url) or True, started, run=ran.append,
+               running=lambda: False, ready=ready, pause=2, sleep=slept.append)
+    assert ran == [steam.start_command()] and opened == ["steam://rungameid/1"] * 2
+    assert len(slept) == 2 + 2                                               # for Steam, then for the first address
+
+    ran.clear(), opened.clear()
+    steam.play("steam://rungameid/1", lambda url: opened.append(url) or True, lambda: True, run=ran.append,
+               running=lambda: True, ready=lambda: True, sleep=slept.append)
+    assert ran == [] and len(opened) == 1                                    # a running Steam: the address at once
+
+
+def test_play_says_what_went_wrong():
+    nothing = lambda _seconds: None
+    with pytest.raises(steam.SteamError, match="did not start within 2 seconds"):
+        steam.play("steam://x", lambda url: True, lambda: True, run=lambda command: None, running=lambda: False,
+                   ready=lambda: False, timeout=2, sleep=nothing)
+    with pytest.raises(steam.SteamError, match="xdg-open is missing"):
+        steam.play("steam://x", lambda url: False, lambda: True, ready=lambda: True, sleep=nothing)
+    opened = []
+    with pytest.raises(steam.SteamError, match="Steam did not start it"):
+        steam.play("steam://x", lambda url: opened.append(url) or True, lambda: False, ready=lambda: True, tries=2,
+                   pause=1, sleep=nothing)
+    assert len(opened) == 2
