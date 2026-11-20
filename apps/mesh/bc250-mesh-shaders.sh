@@ -19,9 +19,9 @@ set -euo pipefail
 VERSION="4.0.0"
 # The DirectMesh release this version of the app builds: its patch (in mesa/), the stock Mesa release it is made
 # for, and the patch's SHA-256 from the release's SHA256SUMS.
-DIRECTMESH=v1.3.1
+DIRECTMESH=v1.4
 MESA_VER=26.2.1
-PATCH_SHA256=6669d4644d9a00ad8da022dd2716c59e4d235a2c6f0eb4f272c9c8d9fbcc9b77
+PATCH_SHA256=a51b430e7465b9de37d2cc88778c8970676c301c1f77d4b330edca28caff7418
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 # The suite's own patch, applied on top of DirectMesh's; a build names it by the start of its SHA-256.

@@ -18,7 +18,9 @@ with mesh shaders. Some need them to start; others fall back to an older path wi
 
 The BC-250's GPU has an older design than the one mesh shaders were made for, so the stock Mesa driver does not offer
 them. [DirectMesh](https://github.com/lonewolf0622/bc250meshtaskwork) adds them to RADV (Mesa's Vulkan driver) for
-the BC-250, drawing every mesh shader on a route that avoids the patterns that hang this chip. The app builds RADV
+the BC-250, drawing every mesh shader on a route that avoids the patterns that hang this chip. A task and mesh shader
+pair that none of these routes can take runs as compute work with an ordinary draw after it: slower, but the game
+still draws it. The app builds RADV
 with DirectMesh and installs it **beside** the system Mesa, which is never changed. Games use it only when you say
 so, and only after the app's test passed on the running kernel.
 
@@ -94,6 +96,7 @@ it. After a change, copy the launch options to the game again.
 | Switch | What it does |
 |---|---|
 | No indexed mesh draws (`RADV_BC250_MESH_IDXPASS=0`) | Keeps DirectMesh's protected mesh routes, without its indexed mesh draws. |
+| No Task index route (`RADV_BC250_MESH_TASK_IDX=0`) | A task and mesh shader pair that no mesh route can take is refused, and the game draws nothing for it, instead of running as slower compute work with an ordinary draw. |
 | No renumbered vertices (`RADV_BC250_MESH_SAFE_COMPACT=0`) | A workgroup whose culling left unused vertices exports private triangle corners instead of only the vertices it uses. |
 | Private corners only (`RADV_BC250_MESH_SAFE_ADAPTIVE=0`) | No shared vertices at all: every triangle exports its own corners. Slower; the most cautious route. |
 | DirectMesh off (`RADV_DIRECTMESH=0`) | The driver falls back to its base BC-250 settings, for a comparison on the same driver. |

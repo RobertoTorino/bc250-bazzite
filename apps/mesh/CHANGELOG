@@ -1,3 +1,12 @@
+Changelog: 20-11-2026 02:02:01
+
+Added. The app builds DirectMesh v1.4 (Mesa 26.2.1 as before). A Task and Mesh pipeline that no Mesh route can take
+used to fail, and the game drew nothing for those objects; v1.4 runs it on its new Task index route, which is on by
+default and slower than the Mesh route. The suite's patch (RADV_BC250_MESH_SPLIT_WRITES) is rebased on v1.4: 5 of
+its 8 parts no longer applied. Its effect is the same; the switch is now read through DirectMesh's own option reader,
+like the other switches. v1.4.1 is skipped: DirectMesh withdrew it (GPU hangs on a BC-250). A driver built with v1.3.1
+shows as an older build, and Build makes the new one. The wiki chapter says what the new route does. Switches… has a new switch, No Task index route (RADV_BC250_MESH_TASK_IDX=0), that turns it off for one game, for a comparison.
+
 Changelog: 19-11-2026 09:14:46
 
 Release 4.0.0.

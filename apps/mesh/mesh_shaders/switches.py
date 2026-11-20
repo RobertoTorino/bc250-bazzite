@@ -31,6 +31,9 @@ class Switch:
 SWITCHES = (
     Switch("RADV_BC250_MESH_IDXPASS", "0", "No indexed mesh draws",
            "Keeps DirectMesh's protected mesh routes, without its indexed mesh draws."),
+    Switch("RADV_BC250_MESH_TASK_IDX", "0", "No Task index route",
+           "A task and mesh shader pair that no mesh route can take is refused, and the game draws nothing for it, "
+           "instead of running as slower compute work with an ordinary draw."),
     Switch("RADV_BC250_MESH_SAFE_COMPACT", "0", "No renumbered vertices",
            "A workgroup whose culling left unused vertices exports private triangle corners instead of only the "
            "vertices it uses."),

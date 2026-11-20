@@ -1,4 +1,4 @@
-The suite's patch for BC-250 Mesh Shaders, applied on top of the DirectMesh v1.3.1 patch for Mesa 26.2.1.
+The suite's patch for BC-250 Mesh Shaders, applied on top of the DirectMesh v1.4 patch for Mesa 26.2.1.
 
 RADV_BC250_MESH_SPLIT_WRITES (default off, per game): a split Mesh shader may store to buffers (SSBO and
 global), and may use an external atomic's result when that result only decides other such writes, as the
@@ -12,10 +12,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 The app's license; the Mesa files it changes are MIT.
 
 diff --git a/src/amd/vulkan/radv_bc250.c b/src/amd/vulkan/radv_bc250.c
-index 6be2078..1790f8c 100644
 --- a/src/amd/vulkan/radv_bc250.c
 +++ b/src/amd/vulkan/radv_bc250.c
-@@ -2980,6 +2980,115 @@ bc250_split_image_store(const nir_intrinsic_instr *in)
+@@ -3139,6 +3139,115 @@
            in->intrinsic == nir_intrinsic_bindless_image_store;
  }
  
@@ -131,7 +130,7 @@ index 6be2078..1790f8c 100644
  static bool
  bc250_split_primitive_output(nir_variable *var)
  {
-@@ -3214,9 +3323,21 @@ radv_bc250_split_mesh(nir_shader *mesh, nir_shader *task, nir_shader *fs, bool d
+@@ -3380,11 +3489,23 @@
      * refuse a body that reads storage memory (an image load, an SSBO or global
      * load that is not non-writeable). Sampled texture reads and UBO loads are
      * read-only bindings.
@@ -144,16 +143,18 @@ index 6be2078..1790f8c 100644
 +    * proven from the shader: the switch declares that it does not, so the
 +    * storage read refusals above are lifted.
      */
-    const bool split_stores = debug_get_bool_option("RADV_BC250_MESH_SPLIT_STORES", false);
-+   const bool split_writes = debug_get_bool_option("RADV_BC250_MESH_SPLIT_WRITES", false);
-    bool external_atomics = false, reads_external = false, external_stores = false, reads_storage = false;
+    const bool split_stores = radv_dm_bool("RADV_BC250_MESH_SPLIT_STORES", false);
++   const bool split_writes = radv_dm_bool("RADV_BC250_MESH_SPLIT_WRITES", false);
+    bool external_atomics = false, external_stores = false, shared_atomics = false;
+    const bool reads_external = contract.memory_effects & RADV_BC250_EXTERNAL_READ;
+    const bool reads_storage = contract.memory_effects & RADV_BC250_STORAGE_READ;
 +   /* On the shader's context: the refusals below return without freeing it. */
 +   struct util_dynarray used_results;
 +   util_dynarray_init(&used_results, mesh);
     nir_foreach_function_impl(impl, mesh) {
        nir_foreach_block(block, impl) {
           nir_foreach_instr(instr, block) {
-@@ -3236,14 +3357,26 @@ radv_bc250_split_mesh(nir_shader *mesh, nir_shader *task, nir_shader *fs, bool d
+@@ -3400,11 +3521,20 @@
                 external_stores = true;
                 continue;
              }
@@ -176,16 +177,20 @@ index 6be2078..1790f8c 100644
                 external_atomics = true;
                 continue;
              }
+@@ -3412,6 +3542,9 @@
+                shared_atomics = true;
+                continue;
+             }
 +            if (split_writes && in->intrinsic == nir_intrinsic_barrier &&
 +                nir_intrinsic_execution_scope(in) == SCOPE_NONE)
 +               continue;
              if (strstr(name, "atomic") || strstr(name, "clock") ||
                  strstr(name, "global_invocation_id") ||
                  (strstr(name, "num_workgroups") && in->intrinsic != nir_intrinsic_load_num_workgroups) ||
-@@ -3275,10 +3408,14 @@ radv_bc250_split_mesh(nir_shader *mesh, nir_shader *task, nir_shader *fs, bool d
-          }
-       }
-    }
+@@ -3451,10 +3584,14 @@
+    if (shared_atomics && debug_get_bool_option("BC250_TRACE_COMPILE", false))
+       fprintf(stderr, "BC250 split shared atomics admitted: pieces=%u (%s)\n", pieces,
+               pieces == 1 ? "single piece" : "primitive slicing proven independent");
 -   if (external_atomics && reads_external)
 +   if (external_atomics && reads_external && !split_writes)
        return bc250_split_reject("external atomic with external memory reads");
@@ -199,7 +204,7 @@ index 6be2078..1790f8c 100644
  
     /* Restrict task launches to proven bounded one-dimensional grids. Never
      * clamp a valid application's launch to make it fit this experiment.
-@@ -3457,7 +3594,9 @@ radv_bc250_split_mesh(nir_shader *mesh, nir_shader *task, nir_shader *fs, bool d
+@@ -3630,7 +3767,9 @@
     nir_pop_if(&b, NULL);
  
     if (external_atomics || external_stores) {
@@ -210,7 +215,7 @@ index 6be2078..1790f8c 100644
        nir_def *first_piece = nir_ieq_imm(&b, base, 0);
        struct util_dynarray atomics;
        util_dynarray_init(&atomics, NULL);
-@@ -3466,19 +3605,27 @@ radv_bc250_split_mesh(nir_shader *mesh, nir_shader *task, nir_shader *fs, bool d
+@@ -3639,19 +3778,27 @@
              if (instr->type != nir_instr_type_intrinsic)
                 continue;
              nir_intrinsic_instr *in = nir_instr_as_intrinsic(instr);
@@ -242,30 +247,28 @@ index 6be2078..1790f8c 100644
        if (debug_get_bool_option("BC250_TRACE_COMPILE", false))
           fprintf(stderr, "BC250 split external atomics/stores: %u guarded to the first piece\n",
 diff --git a/src/amd/vulkan/radv_device.c b/src/amd/vulkan/radv_device.c
-index ba2a59d..bed42ee 100644
 --- a/src/amd/vulkan/radv_device.c
 +++ b/src/amd/vulkan/radv_device.c
-@@ -1565,6 +1565,7 @@ radv_device_init_compiler_info(struct radv_device *device)
-    info.bc250x.lds_cover = bc250_mesh && debug_get_bool_option("RADV_BC250_MESH_LDS_COVER", false);
-    info.bc250x.merged_check = bc250_mesh && debug_get_bool_option("RADV_BC250_MESH_MERGED_CHECK", false);
-    info.bc250x.idxpass = bc250_mesh && debug_get_bool_option("RADV_BC250_MESH_IDXPASS", false);
-+   info.bc250x.split_writes = bc250_mesh && debug_get_bool_option("RADV_BC250_MESH_SPLIT_WRITES", false);
+@@ -1571,6 +1571,7 @@
+    info.bc250x.merged_check = bc250_mesh && radv_dm_bool("RADV_BC250_MESH_MERGED_CHECK", false);
+    info.bc250x.idxpass = bc250_mesh && radv_dm_bool("RADV_BC250_MESH_IDXPASS", false);
+    info.bc250x.corner_alias = bc250_mesh && debug_get_bool_option("RADV_BC250_MESH_CORNER_ALIAS", false);
++   info.bc250x.split_writes = bc250_mesh && radv_dm_bool("RADV_BC250_MESH_SPLIT_WRITES", false);
  
     device->compiler_info = info;
  }
 diff --git a/src/amd/vulkan/radv_shader.h b/src/amd/vulkan/radv_shader.h
-index 7b087df..1494574 100644
 --- a/src/amd/vulkan/radv_shader.h
 +++ b/src/amd/vulkan/radv_shader.h
-@@ -786,7 +786,10 @@ struct radv_compiler_info {
-       uint32_t merged_check : 1;
-       /* RADV_BC250_MESH_IDXPASS: eligible Mesh draws become an index pass plus an indexed draw. */
-       uint32_t idxpass : 1;
--      uint32_t padding : 18;
+@@ -789,7 +789,10 @@
+       /* RADV_BC250_MESH_CORNER_ALIAS: unchanged, valid primitive streams
+        * reuse the original connectivity buffer as their corner source map. */
+       uint32_t corner_alias : 1;
+-      uint32_t padding : 17;
 +      /* RADV_BC250_MESH_SPLIT_WRITES: a split Mesh shader may store to buffers and use an external atomic's
 +       * result to decide its writes; they run in the first piece only. */
 +      uint32_t split_writes : 1;
-+      uint32_t padding : 17;
++      uint32_t padding : 16;
     } bc250x;
  
     /* Debug/tracing */

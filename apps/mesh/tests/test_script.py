@@ -11,7 +11,7 @@ from conftest import APP, BUILT, KERNEL, PREFIX, SUITE_PATCH, needs_bash
 pytestmark = needs_bash
 
 ICD = f"/{PREFIX}/share/vulkan/icd.d/radeon_icd.x86_64.json"
-PATCH_SHA256 = "6669d4644d9a00ad8da022dd2716c59e4d235a2c6f0eb4f272c9c8d9fbcc9b77"
+PATCH_SHA256 = "a51b430e7465b9de37d2cc88778c8970676c301c1f77d4b330edca28caff7418"
 
 
 def test_status_of_a_fresh_board(board):
@@ -19,7 +19,7 @@ def test_status_of_a_fresh_board(board):
         "Board": "BC-250 (1002:13fe)",
         "Kernel": KERNEL,
         "System Mesa": "26.2.4",
-        "DirectMesh": f"v1.3.1, Mesa 26.2.1, suite patch {SUITE_PATCH}",
+        "DirectMesh": f"v1.4, Mesa 26.2.1, suite patch {SUITE_PATCH}",
         "Build": "none",
         "Driver": "not installed",
         "Test": "none",
@@ -43,7 +43,7 @@ def test_build_downloads_the_pinned_mesa_and_runs_the_container(board):
     assert (src / "mesa-26.2.1.tar.xz.sig").is_file()
     podman = (board.home / "podman.log").read_text()
     assert "MESA_VER=26.2.1" in podman and f"PREFIX=/{PREFIX}" in podman
-    assert "DIRECTMESH=v1.3.1" in podman and f"PATCH_SHA256={PATCH_SHA256}" in podman
+    assert "DIRECTMESH=v1.4" in podman and f"PATCH_SHA256={PATCH_SHA256}" in podman
     assert f"{APP}:/app:ro" in podman and "bash /app/mesa/build-in-container.sh" in podman
     assert (board.home / ".cache/bc250-mesh-shaders/stage/built").is_dir()     # the work stage moved into place
 
@@ -207,7 +207,7 @@ def test_wrapper_logs_the_switches(board, tmp_path):
 def test_launch_options_and_usage(board):
     assert board.run("--launch-options").stdout == "/usr/local/bin/bc250-mesh-shaders-run %command%\n"
     version = (APP / "VERSION").read_text().strip()
-    assert board.run("--version").stdout.strip() == f"bc250-mesh-shaders {version} (DirectMesh v1.3.1, Mesa 26.2.1)"
+    assert board.run("--version").stdout.strip() == f"bc250-mesh-shaders {version} (DirectMesh v1.4, Mesa 26.2.1)"
     r = board.run("--rounds", "many")
     assert r.returncode == 1 and "takes a number" in r.stderr
     assert "Usage:" in board.run("--help").stdout

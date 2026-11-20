@@ -28,7 +28,7 @@ def window(qapp, board, monkeypatch):
 
 def test_fresh_board(window):
     assert window.pill.text() == "Not built"
-    assert window.build_state.text().startswith(f"Not built. Builds DirectMesh v1.3.1, Mesa 26.2.1, suite patch "
+    assert window.build_state.text().startswith(f"Not built. Builds DirectMesh v1.4, Mesa 26.2.1, suite patch "
                                                 f"{SUITE_PATCH}:")
     assert window.build_button.isEnabled()
     assert not window.install_button.isEnabled() and not window.remove_button.isEnabled()
@@ -70,14 +70,14 @@ def test_newer_build_waits_to_be_installed(window, board):
 def test_build_of_an_older_directmesh(window, board):
     board.make_build(directmesh="v1.3")
     window.refresh()
-    assert "This version of the app builds DirectMesh v1.3.1, Mesa 26.2.1" in window.build_state.text()
+    assert "This version of the app builds DirectMesh v1.4, Mesa 26.2.1" in window.build_state.text()
 
 
 def test_build_from_before_the_suite_patch(window, board):
     board.make_build(suite_patch=None)
     window.refresh()
-    assert window.build_state.text().startswith("Built: DirectMesh v1.3.1, Mesa 26.2.1, 2026-10-13 19:42 UTC.")
-    assert f"This version of the app builds DirectMesh v1.3.1, Mesa 26.2.1, suite patch {SUITE_PATCH}:" in \
+    assert window.build_state.text().startswith("Built: DirectMesh v1.4, Mesa 26.2.1, 2026-10-13 19:42 UTC.")
+    assert f"This version of the app builds DirectMesh v1.4, Mesa 26.2.1, suite patch {SUITE_PATCH}:" in \
         window.build_state.text()
 
 
@@ -85,7 +85,7 @@ def test_switches_go_into_the_launch_options(window, board, monkeypatch):
     board.make_build()
     board.install()
     window.refresh()
-    picked = [SWITCHES[0], SWITCHES[4]]
+    picked = [SWITCHES[0], SWITCHES[5]]
     monkeypatch.setattr(SwitchesDialog, "exec", lambda self: QDialog.DialogCode.Accepted)
     monkeypatch.setattr(SwitchesDialog, "chosen", lambda self: picked)
     window.on_switches()
@@ -103,11 +103,11 @@ def test_switches_go_into_the_launch_options(window, board, monkeypatch):
 
 
 def test_switches_dialog(qapp):
-    dialog = SwitchesDialog([SWITCHES[1]])
-    assert dialog.chosen() == [SWITCHES[1]]
-    dialog.boxes[SWITCHES[2]].setChecked(True)
-    assert dialog.chosen() == [SWITCHES[1], SWITCHES[2]]
-    assert dialog.boxes[SWITCHES[3]].text() == "DirectMesh off (RADV_DIRECTMESH=0)"
+    dialog = SwitchesDialog([SWITCHES[2]])
+    assert dialog.chosen() == [SWITCHES[2]]
+    dialog.boxes[SWITCHES[3]].setChecked(True)
+    assert dialog.chosen() == [SWITCHES[2], SWITCHES[3]]
+    assert dialog.boxes[SWITCHES[4]].text() == "DirectMesh off (RADV_DIRECTMESH=0)"
 
 
 def test_commands(window):
@@ -175,16 +175,16 @@ def checked(qapp, board, monkeypatch, answer) -> MainWindow:
 
 
 def test_a_newer_directmesh_is_announced(qapp, board, monkeypatch):
-    w = checked(qapp, board, monkeypatch, releases("directmesh-v1.4", "directmesh-v1.3.1"))
+    w = checked(qapp, board, monkeypatch, releases("directmesh-v1.5", "directmesh-v1.4"))
     text = w.build_state.text()
-    assert "<b>DirectMesh v1.4 is out</b> (2026-10-20): a newer version of this app brings it" in text
-    assert "href='https://github.com/x/releases/tag/directmesh-v1.4'" in text
+    assert "<b>DirectMesh v1.5 is out</b> (2026-10-20): a newer version of this app brings it" in text
+    assert "href='https://github.com/x/releases/tag/directmesh-v1.5'" in text
     w.close()
 
 
 def test_the_pinned_directmesh_is_the_newest(qapp, board, monkeypatch):
-    w = checked(qapp, board, monkeypatch, releases("directmesh-v1.3.1", "directmesh-v1.3"))
-    assert "DirectMesh v1.3.1 is the newest release. <a href='#check'>Check again</a>" in w.build_state.text()
+    w = checked(qapp, board, monkeypatch, releases("directmesh-v1.4", "directmesh-v1.3.1"))
+    assert "DirectMesh v1.4 is the newest release. <a href='#check'>Check again</a>" in w.build_state.text()
     w.close()
 
 

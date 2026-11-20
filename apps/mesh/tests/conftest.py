@@ -25,7 +25,7 @@ PREFIX = "usr/local/lib/bc250-mesh-shaders"
 KERNEL = "7.2.8-ogc5.1.fc44.x86_64"
 # The suite's patch as a build names it: the start of its SHA-256.
 SUITE_PATCH = hashlib.sha256((APP / "mesa" / "bc250-suite-mesa-26.2.1.patch").read_bytes()).hexdigest()[:8]
-BUILT = f"DirectMesh v1.3.1, Mesa 26.2.1, suite patch {SUITE_PATCH}, 2026-10-13 19:42 UTC"
+BUILT = f"DirectMesh v1.4, Mesa 26.2.1, suite patch {SUITE_PATCH}, 2026-10-13 19:42 UTC"
 
 needs_bash = pytest.mark.skipif(sys.platform == "win32", reason="runs the bash script with stub commands")
 
@@ -84,7 +84,7 @@ class Board:
         assert r.returncode == 0, r.stdout + r.stderr
         return dict(line.split(": ", 1) for line in r.stdout.splitlines())
 
-    def make_build(self, directmesh: str = "v1.3.1", built: str = "2026-10-13 19:42 UTC",
+    def make_build(self, directmesh: str = "v1.4", built: str = "2026-10-13 19:42 UTC",
                    library: bytes = b"radv", suite_patch: str | None = SUITE_PATCH) -> None:
         """What a finished --build leaves in the cache (suite_patch None: a build from before the suite's patch)."""
         stage = self.stage
