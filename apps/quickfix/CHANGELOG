@@ -1,3 +1,7 @@
+Changelog: 20-11-2026 15:22:26
+
+Release 1.2.0.
+
 Changelog: 20-11-2026 14:51:00
 
 Added. Quickfix has a group Prime95 with mprime: its pill installs it through Board Test's installer (--mprime),

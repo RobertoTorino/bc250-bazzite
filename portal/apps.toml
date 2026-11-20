@@ -36,8 +36,8 @@
 [apps.check]
 name = "BC-250 Board Test"
 summary = "Read-only diagnostics, stress test and benchmarks. Always installed."
-tag = "bc250-check-v4.1.0"
-sha256 = "a3c1e805cafa49802d38bf1afebab1e3861a57512de00ff76587be9e31f8bdb9"
+tag = "bc250-check-v4.2.0"
+sha256 = ""
 required = true
 changes_board = false
 category = "sustainable"
@@ -108,8 +108,8 @@ launch = [["Open", "~/.local/bin/bc250-bisect-gui"]]
 [apps.cores]
 name = "BC-250 CPU Tools"
 summary = "Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock."
-tag = "bc250-cores-v1.0.0"
-sha256 = "c375e0825b9e87fcf7ff577e205fda315019594d9efff19ce7034215a24fdaf2"
+tag = "bc250-cores-v1.0.1"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -505,8 +505,8 @@ launch = [["Open", "~/.local/bin/bc250-bluetooth-pairing"]]
 [apps.quickfix]
 name = "BC-250 Quickfix"
 summary = "Small quickfixes for one job each: Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
-tag = "bc250-quickfix-v1.1.0"
-sha256 = "28fffa9f322b3fdcd5ab68c47cc06cf2cf6dfb00bd6cbcb1ca2aa9ee7548025d"
+tag = "bc250-quickfix-v1.2.0"
+sha256 = ""
 required = true
 changes_board = false
 category = "utilities"
