@@ -1,15 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
 from pathlib import Path, PurePosixPath
-from types import SimpleNamespace
 
 import pytest
 
-from bc250_core import platform, steam
+from bc250_core import platform
 
 
 def _working_bash() -> bool:
