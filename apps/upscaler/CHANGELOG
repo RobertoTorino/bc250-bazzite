@@ -1,3 +1,7 @@
+Changelog: 20-11-2026 04:55:53
+
+Release 5.1.0.
+
 Changelog: 20-11-2026 04:24:33
 
 Added. Native Vulkan kernels for HLX DLSS (owner, 20-11-2026: an option, off by default): a box beside Version on the
