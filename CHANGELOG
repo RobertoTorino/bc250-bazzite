@@ -1,3 +1,7 @@
+Changelog: 20-11-2026 04:43:05
+
+Fixed. tools/ci-local.sh builds PS Remote Play's FFmpeg again when apps/consoles/native/ffmpeg/build.sh changes, as GitHub does: tools/ci_local.py keeps the key of an actions/cache step with its folder and skips the step that fills it only under the same key, and it fills in hashFiles() from the files. It took any filled folder for a hit, so the native job found the FFmpeg of the version before and failed in build.rs. The wiki's development page says so.
+
 Changelog: 20-11-2026 00:43:46
 
 Fixed. BC-250 Cores Bisect is BC-250 CPU Tools, one window for the core bisect and the core unlock, as CU Tools: the wiki, the README, the app list, the portal chapter, DESIGN.md, the tour notes and .claude/suite.md say so, and icons/categories.toml no longer lists the Unlock window's icon. No app has two windows any more: tools/app_tour.py and the development wiki no longer name one.
