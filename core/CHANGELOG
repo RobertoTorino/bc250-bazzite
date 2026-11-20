@@ -1,3 +1,15 @@
+Changelog: 20-11-2026 16:56:17
+
+Added. steam: doubles, what is in Steam more than once (how many shortcuts too many per game, for one Steam user),
+and put_shortcut leaves one shortcut where it recognizes several: the first is replaced, the others go, the latest
+play time kept (owner, 20-11-2026: multiple entries for the same game in Steam).
+
+Changelog: 20-11-2026 16:49:56
+
+Fixed. steam: takes_commands never said yes on Bazzite, so play waited two minutes for a Steam that was up and
+never gave it the game's address (the board, 20-11-2026). The home folder is a link there (/home to /var/home), and
+the process names its command pipe by the other spelling: both paths are resolved before they are compared.
+
 Changelog: 20-11-2026 16:27:54
 
 Version 6.2.0.

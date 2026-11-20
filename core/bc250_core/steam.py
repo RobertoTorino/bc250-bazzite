@@ -118,7 +118,10 @@ def takes_commands(home: Path | None = None, proc: Path = Path("/proc")) -> bool
         pid = (folder / "steam.pid").read_text().strip()
         if not pid.isdigit():
             return False
-        return any(os.readlink(link) == str(folder / "steam.pipe") for link in (proc / pid / "fd").iterdir())
+        # Both resolved: the home folder is a link on Bazzite (/home to /var/home), and the process names the
+        # pipe by the other spelling. Compared as written, Steam never seemed ready (the board, 20-11-2026).
+        pipe = os.path.realpath(folder / "steam.pipe")
+        return any(os.path.realpath(os.readlink(link)) == pipe for link in (proc / pid / "fd").iterdir())
     except OSError:
         return False
 
@@ -290,13 +293,18 @@ Match = Callable[[dict], bool]
 
 def put_shortcut(values: dict, new: dict, ours: Match) -> dict:
     """The file's contents with *new* added, or replacing the shortcut *ours* recognizes (its play time kept); the
-    other shortcuts stay, numbered 0, 1, ... in their order."""
-    shortcuts = list(values.get("shortcuts", {}).values())
-    for n, item in enumerate(shortcuts):
-        if ours(item):
-            shortcuts[n] = {**new, "LastPlayTime": field(item, "LastPlayTime", 0)}
-            break
-    else:
+    other shortcuts stay, numbered 0, 1, ... in their order. When *ours* recognizes several (the same game in Steam
+    more than once; owner, 20-11-2026), the first is replaced and the others go, the latest play time kept."""
+    shortcuts, placed = [], False
+    played = max((int(field(item, "LastPlayTime", 0) or 0) for item in values.get("shortcuts", {}).values()
+                  if ours(item)), default=0)
+    for item in values.get("shortcuts", {}).values():
+        if not ours(item):
+            shortcuts.append(item)
+        elif not placed:
+            shortcuts.append({**new, "LastPlayTime": played})
+            placed = True
+    if not placed:
         shortcuts.append(new)
     return {**values, "shortcuts": {str(n): item for n, item in enumerate(shortcuts)}}
 
@@ -304,6 +312,28 @@ def put_shortcut(values: dict, new: dict, ours: Match) -> dict:
 def remove_shortcut(values: dict, ours: Match) -> dict:
     shortcuts = [item for item in values.get("shortcuts", {}).values() if not ours(item)]
     return {**values, "shortcuts": {str(n): item for n, item in enumerate(shortcuts)}}
+
+
+def doubles(steam: Path, key: Callable[[dict], str]) -> dict[str, int]:
+    """What is in Steam more than once (owner, 20-11-2026: "multiple entries for the same game"): per *key* (what a
+    shortcut starts; "" for a shortcut that is not the caller's), how many shortcuts one Steam user has too many.
+    Empty when every game is there once."""
+    extra: dict[str, int] = {}
+    for config in user_folders(steam):
+        path = config / "shortcuts.vdf"
+        try:
+            values = read_vdf(path.read_bytes()) if path.is_file() else {}
+        except (OSError, ShortcutError):
+            continue
+        counts: dict[str, int] = {}
+        for item in values.get("shortcuts", {}).values():
+            name = key(item)
+            if name:
+                counts[name] = counts.get(name, 0) + 1
+        for name, count in counts.items():
+            if count > 1:
+                extra[name] = max(extra.get(name, 0), count - 1)
+    return extra
 
 
 def shortcuts(steam: Path) -> list[dict]:

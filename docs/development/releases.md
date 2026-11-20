@@ -127,9 +127,10 @@ release** and the **Deviation** between the two.
   tool measured for it. For a release the tool did not time, it is GitHub's own time: its CI before Start and its
   release run. The box's tooltip says which.
 - **Current release** is the release you are making. Its time starts with the first step you press (Get up to
-  date, Commit, Push or Start new release), runs on this computer's clock with the waiting included, and ends when
-  the release on GitHub passed. Until you press a step it shows a dash. A tool that is closed and opened again
-  during a release keeps the time.
+  date, Commit, Push or Start new release) and ends when the release on GitHub passed. It adds up the time the steps
+  work: a command that runs on this computer, GitHub's CI on the commit and the release run. The time the tool
+  waits for you between two steps is not counted. Until you press a step it shows a dash. A tool that is closed and
+  opened again during a release keeps the time worked until then.
 - **Deviation** is the current release against the previous one. Over 2 minutes longer, it also shows in an
   orange banner; under that, or at 0 or less, it shows in its box only. The limit is `DEVIATION_LIMIT` in
   `dev/nrt/nexus_release_tool/flow.py`.

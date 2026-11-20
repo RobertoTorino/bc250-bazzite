@@ -949,6 +949,41 @@ def test_packages_in_a_game_folder_wait_as_rows_and_unpack_all_takes_the_game_fi
     window.close()
 
 
+def test_a_game_in_steam_more_than_once_is_said_and_update_steam_leaves_one(qapp, folders, monkeypatch):
+    """Owner, 20-11-2026 ("multiple entries for the same shadPS4 game in Steam ... a check for that and a feature
+    to fix it"): the window says which game is there more than once, the box's tooltip too, and Update Steam, lit
+    for it, leaves one shortcut."""
+    _install(folders["home"])
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
+    window = _window(folders)
+    window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
+    window.on_update_steam()
+    _wait(window, qapp)
+    assert window.doubles == {} and not window.steam_button.isEnabled()
+    (path,) = folders["steam_dir"].glob("userdata/*/config/shortcuts.vdf")
+    values = steam.read_vdf(path.read_bytes())
+    items = list(values["shortcuts"].values())
+    ours = next(item for item in items if shortcuts.ours(item))
+    lower = {("exe" if k == "Exe" else "launchoptions" if k == "LaunchOptions" else k): v for k, v in ours.items()}
+    path.write_bytes(steam.write_vdf({"shortcuts": {str(n): i for n, i in enumerate([*items, lower])}}))
+    window.refresh()
+    title = window.games[0].title
+    assert list(window.doubles.values()) == [1]
+    assert window.running.text() == f"In Steam more than once: {title} (2 times). Update Steam leaves one of each."
+    assert window.table.item(0, 0).toolTip() == "In Steam 2 times: Update Steam leaves one"
+    assert window.steam_button.isEnabled() and window.steam_box.value.text() == "1"
+    asked = []
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: (asked.append(a[2]),
+                                                                  QMessageBox.StandardButton.Yes)[1])
+    window.on_update_steam()
+    _wait(window, qapp)
+    assert "1 double shortcut(s) taken out" in asked[0]
+    left = [i for i in steam.read_vdf(path.read_bytes())["shortcuts"].values() if shortcuts.ours(i)]
+    assert len(left) == 1 and window.doubles == {} and not window.steam_button.isEnabled()
+    assert window.table.item(0, 0).toolTip() == "In Steam"
+    window.close()
+
+
 def test_start_game_starts_the_chosen_game_through_steam(qapp, folders, monkeypatch):
     """The Start game tab (owner, 12-11-2026), a tab that is a button: a click starts the game chosen under Your
     games through Steam, by its shortcut's number, and the open tab stays open. Without a chosen game, or with one

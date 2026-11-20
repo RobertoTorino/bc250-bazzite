@@ -1,3 +1,21 @@
+Changelog: 20-11-2026 16:56:17
+
+Added. A check for a game that is in Steam more than once (owner, 20-11-2026). The app says which games and how
+often, the game's In Steam box says it in its tooltip, and Update Steam lights and leaves one shortcut of each, with
+the latest play time; its question says how many double shortcuts go.
+
+Fixed. A shortcut whose fields Steam wrote in lower case (exe, launchoptions) was not recognized as the app's, so
+Update Steam added the game a second time. They are read whatever their case now.
+
+Changelog: 20-11-2026 16:49:56
+
+Fixed. Start game still started no game: the line stayed on Starting… and Steam never got the game's address. Core's
+check whether Steam takes commands never said yes on Bazzite (see core's CHANGELOG), so the app waited for a Steam
+that was up already.
+
+Fixed. The chosen row of a table is lighter: 30 % blue, it was 50 % (owner, 20-11-2026: still hard to tell from the
+header when the first row is chosen).
+
 Changelog: 20-11-2026 16:27:54
 
 Release 7.2.0.

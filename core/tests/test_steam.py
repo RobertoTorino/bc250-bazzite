@@ -236,6 +236,10 @@ def test_steam_takes_commands_when_its_process_has_the_pipe_open(tmp_path):
     assert not steam.takes_commands(home, proc)                              # still starting
     (proc / "42" / "fd" / "7").symlink_to(home / ".steam" / "steam.pipe")
     assert steam.takes_commands(home, proc)
+    # A home folder that is a link, as Bazzite's (/home to /var/home): the process names the pipe by the other
+    # spelling, and Steam never seemed ready (the board, 20-11-2026)
+    (tmp_path / "link").symlink_to(home)
+    assert steam.takes_commands(tmp_path / "link", proc)
 
 
 def test_play_starts_steam_first_and_waits_for_the_game():
@@ -275,3 +279,25 @@ def test_play_says_what_went_wrong():
         steam.play("steam://x", lambda url: opened.append(url) or True, lambda: False, ready=lambda: True, tries=2,
                    pause=1, sleep=nothing)
     assert len(opened) == 2
+
+
+def test_a_game_in_steam_more_than_once_is_counted_and_one_is_left(tmp_path):
+    """Owner, 20-11-2026 ("multiple entries for the same game in Steam"): doubles() says how many shortcuts a game
+    has too many, and writing the game again leaves one, with the latest play time; the others' shortcuts stay."""
+    folder = _steam(tmp_path)
+    game, other = _game("Game", "-g one"), _game("Other", "-g two")
+    steam.write_shortcuts(folder, [game, other])
+    key = lambda item: str(steam.field(item, "LaunchOptions")) if str(steam.field(item, "Exe")) == '"/bin/run"' else ""
+    assert steam.doubles(folder, key) == {}
+    path = folder / "userdata" / "1000" / "config" / "shortcuts.vdf"
+    values = steam.read_vdf(path.read_bytes())
+    items = list(values["shortcuts"].values())
+    again = {**items[1], "AppName": "Game (old name)", "LastPlayTime": 77}
+    lower = {("exe" if k == "Exe" else "launchoptions" if k == "LaunchOptions" else k): v for k, v in items[1].items()}
+    path.write_bytes(steam.write_vdf({"shortcuts": {str(n): i for n, i in enumerate([*items, again, lower])}}))
+    assert steam.doubles(folder, key) == {"-g one": 2}                          # three of it: two too many
+    seen = lambda item: steam.field(item, "LaunchOptions") == "-g one"
+    steam.write_shortcuts(folder, [steam.Change(game.entry, seen)])
+    after = list(steam.read_vdf(path.read_bytes())["shortcuts"].values())
+    assert [i["AppName"] for i in after] == ["RetroArch", "Game", "Other"] and after[1]["LastPlayTime"] == 77
+    assert steam.doubles(folder, key) == {}

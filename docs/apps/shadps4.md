@@ -157,6 +157,13 @@ SteamGridDB for each game instead; the background and the logo on the game's pag
 **shadPS4 settings** beside it opens shadPS4's own window (Big Picture) for what the app does not set: the
 controller's buttons, a game's own settings and shadPS4's game list.
 
+#### A game in Steam more than once
+
+The app checks whether a game has more than one shortcut in Steam. When one has, the line under the tabs names
+the game and says how often it is there, and the tooltip of its **In Steam** box says the same. **Update Steam** is
+on for it: it leaves one shortcut of each game, with the latest play time, and takes the others out. Its question
+says how many double shortcuts go.
+
 #### Start game
 
 The tab beside Your games, **Start game**, is a button. Choose a game in the table and click it: the game starts through Steam,

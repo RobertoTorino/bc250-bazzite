@@ -1,3 +1,7 @@
+Changelog: 20-11-2026 16:52:10
+
+Fixed. The Current release box counts the time the steps of the release worked, not the time since the first step was pressed (owner, 20-11-2026: "very bizarre numbers", 48 min 28 s against 3 min 39 s). A window left open between two steps counted as release time: Get up to date at 15:37, the release at 16:27, and the 40 minutes between them were in it. Counted now: a command that runs here (Get up to date, Commit, Push with CI's jobs, Start), GitHub's CI on the commit and the release run, up to the device test. Not counted: the time the tool waits for a step to be pressed, and the time the tool is closed. The times measured before, waiting included, are no longer the Previous release: until a release is timed the new way, that box shows GitHub's own time.
+
 Changelog: 20-11-2026 13:38:39
 
 Added. Start new release starts by itself, without its question, when CI passes on the commit while the window is open and waited for it (owner, 20-11-2026); a window opened on a commit whose CI passed earlier starts nothing by itself, and release/autostart=false in NRT's settings turns it off. A tenth step, All runs finished (owner, 20-11-2026): after Publish and the pin commit it waits while GitHub still runs something (the wiki, the runs on the portal's tag) and names the runs, then reads "All runs finished, ready."; before, every step had its check while a run went on.

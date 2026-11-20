@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3335 test functions (3910 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3338 test functions (3913 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -31,7 +31,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/quickfix](#appsquickfix) | 5 | 39 |  |
 | [apps/rpcs3](#appsrpcs3) | 12 | 117 | 6.4 s |
 | [apps/sftp](#appssftp) | 11 | 84 | 0.9 s |
-| [apps/shadps4](#appsshadps4) | 17 | 150 | 8.0 s |
+| [apps/shadps4](#appsshadps4) | 17 | 151 | 8.0 s |
 | [apps/ssd](#appsssd) | 4 | 49 | 0.9 s |
 | [apps/turing](#appsturing) | 9 | 75 | 1.4 s |
 | [apps/upscaler](#appsupscaler) | 11 | 119 | 1.6 s |
@@ -39,18 +39,18 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/vram](#appsvram) | 6 | 49 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
 | [apps/xenia](#appsxenia) | 8 | 70 | 4.5 s |
-| [core](#core) | 29 | 219 | 4.6 s |
+| [core](#core) | 29 | 220 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
-| [dev/nrt](#devnrt) | 4 | 134 | 24.8 s |
+| [dev/nrt](#devnrt) | 4 | 135 | 24.8 s |
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [dev/studio](#devstudio) | 6 | 58 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 16 | 207 | 29.0 s |
 | [tools](#tools) | 38 | 231 | 11.1 s |
-| **All** | | **3335** | **182 s** |
+| **All** | | **3338** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -1784,7 +1784,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/shadps4
 
-150 tests in 17 files, 8.0 s in a local run.
+151 tests in 17 files, 8.0 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -1885,6 +1885,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_remove_game_asks_what_to_keep` |  | 0.1 s | Games Uninstall (Remove game… until 20-11-2026; owner, 03-11-2026): the keep window lists what would go; Cancel deletes nothing, Delete marked deletes the rows still ticked off the window's thread and says what went and what stayed. |
 | `test_main_window.py` | `test_remove_game_on_a_package_row_offers_the_package` |  | 0.1 s | Remove game… on a PKG row (owner, 11-11-2026: a package that cannot be unpacked stayed a row with no way out): the keep window offers the .pkg file; Cancel keeps it, Delete marked deletes it and the row goes. |
 | `test_main_window.py` | `test_packages_in_a_game_folder_wait_as_rows_and_unpack_all_takes_the_game_first` |  | 0.2 s | A .pkg put in a game folder (owner, 05-11-2026, as the Windows Portable Suite's): a row of its own, PKG or PKG update, after the games; an update whose game still waits says so; Unpack all unpacks the game first and its update beside it, then the keep window offers the packages: kept ones are no longer rows, deleted ones are gone. |
+| `test_main_window.py` | `test_a_game_in_steam_more_than_once_is_said_and_update_steam_leaves_one` |  |  | Owner, 20-11-2026 ("multiple entries for the same shadPS4 game in Steam ... |
 | `test_main_window.py` | `test_start_game_starts_the_chosen_game_through_steam` |  | 0.2 s | The Start game tab (owner, 12-11-2026), a tab that is a button: a click starts the game chosen under Your games through Steam, by its shortcut's number, and the open tab stays open. |
 | `test_main_window.py` | `test_start_game_waits_for_a_steam_that_does_not_run` |  |  | Start game with Steam closed (owner's board, 20-11-2026: Steam came up and the game never started, while the line said it did): Steam is started and waited for before the game's address is given, and what went wrong is said. |
 | `test_main_window.py` | `test_the_version_pill` |  |  | The version is a pill (owner, 20-11-2026, as shadPS4's own launcher): its menu lists the builds installed and puts another in use; Manage versions… opens the version manager (core's BuildsDialog) on the same folder. |
@@ -2541,7 +2542,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## core
 
-219 tests in 29 files, 4.6 s in a local run.
+220 tests in 29 files, 4.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2692,6 +2693,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_steam.py` | `test_steam_takes_commands_when_its_process_has_the_pipe_open` |  |  | As Steam's own start script tells a running Steam: the process the pid file names has the command pipe open. |
 | `test_steam.py` | `test_play_starts_steam_first_and_waits_for_the_game` |  |  | Start game with Steam closed (owner's board, 20-11-2026: Steam came up and the game never started): Steam is started and waited for, then the game's address is given, again while the game does not run. |
 | `test_steam.py` | `test_play_says_what_went_wrong` |  |  | Play says what went wrong. |
+| `test_steam.py` | `test_a_game_in_steam_more_than_once_is_counted_and_one_is_left` |  |  | Owner, 20-11-2026 ("multiple entries for the same game in Steam"): doubles() says how many shortcuts a game has too many, and writing the game again leaves one, with the latest play time; the others' shortcuts stay. |
 | `test_steam_art.py` | `test_steams_sizes_and_the_icon_as_logo` |  | 0.4 s | Steams sizes and the icon as logo. |
 | `test_steam_art.py` | `test_a_webp_icon_is_the_logo_as_png` |  | 0.3 s | Steam's grid files are PNG: an app's WebP icon goes in as PNG, the same picture. |
 | `test_steam_art.py` | `test_the_background_takes_the_icons_colour` |  | 0.6 s | The background takes the icons colour. |
@@ -2997,7 +2999,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/nrt
 
-134 tests in 4 files, 24.8 s in a local run.
+135 tests in 4 files, 24.8 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3062,6 +3064,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_flow.py` | `test_a_release_that_still_runs_counts_the_time_so_far_and_a_first_release_has_no_deviation` |  |  | A release that still runs counts the time so far and a first release has no deviation. |
 | `test_flow.py` | `test_times_and_deviations_in_words` |  |  | Times and deviations in words. |
 | `test_flow.py` | `test_the_clock_starts_with_the_first_step_pressed_and_ends_when_the_release_on_github_passed` |  |  | Owner, 20-11-2026: the current release is "the release that is NOW started with step 1 in NRT". |
+| `test_flow.py` | `test_the_clock_counts_the_work_and_not_the_waiting` |  |  | Owner, 20-11-2026 ("very bizarre numbers"): a window left open between Get up to date and Commit counted 40 minutes of waiting, 48 minutes against the 3 of the release before. |
 | `test_flow.py` | `test_the_page_shows_the_previous_release_the_current_one_and_the_deviation` |  |  | Owner, 20-11-2026: opened for a new release, what is out is the Previous release, with GitHub's own time (its CI and its release run) while this tool did not time it; the Current release is a dash until its first step is pressed, then counts; the deviation and its banner are the current one against the previous. |
 | `test_flow.py` | `test_a_clock_left_running_is_kept_and_one_that_ended_or_is_old_is_not` |  |  | A clock left running is kept and one that ended or is old is not. |
 | `test_flow.py` | `test_the_times_are_read_through_the_windows_source` |  |  | The build indicator asks with each look (check_times): the source runs off the GUI thread and its answer fills the boxes; a source that cannot reach GitHub leaves them as they were. |

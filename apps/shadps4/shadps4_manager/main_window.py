@@ -183,6 +183,8 @@ class MainWindow(QMainWindow):
         self.no_logo: set[str] = set()                # games in Steam whose shortcut has no logo yet
         self.old_tags: set[str] = set()               # games in Steam whose shortcut has the tags of an older name
         self.no_cover: set[str] = set()               # games in Steam not yet looked up on SteamGridDB, with a key
+        self.doubles: dict[str, int] = {}             # games in Steam more than once: how many shortcuts too many
+        self._doubles_said: dict[str, int] = {}
         self.version = ""
         self.config: dict = {}
         self.users: list[userdata.User] = []
@@ -445,11 +447,13 @@ class MainWindow(QMainWindow):
             self.no_logo = {str(g.eboot) for g in self.games if str(g.eboot) in self.in_steam and
                             shortcuts.logo_missing(self.steam_dir, g, self.in_steam[str(g.eboot)], self.run_path)}
             self.old_tags = shortcuts.old_tags(self.steam_dir) if self.steam_dir else set()
+            self.doubles = shortcuts.doubles(self.steam_dir) if self.steam_dir else {}
             self.no_cover = ({str(g.eboot) for g in self.games if str(g.eboot) in self.in_steam
                               and not covers.known(self.covers_home, shortcuts.cover_name(g))}
                              if covers.read_key(self.covers_key) else set())
         except OSError:
             self.in_steam, self.no_logo, self.old_tags, self.no_cover = {}, set(), set(), set()
+            self.doubles = {}
         # A game renamed or moved after it was put in Steam keeps its mark (owner, 03-11-2026, from the Windows
         # Portable Suite's managers, 01-11-2026; core's renamed): known by its code, else its file's size.
         found = {str(g.eboot): renamed.identity(g.title_id, g.eboot) for g in self.games}
@@ -463,6 +467,13 @@ class MainWindow(QMainWindow):
             titles = [g.title for g in self.games if str(g.eboot) in self.moved]
             self.say(f"Found again under a new name or in another folder, with its Steam mark: {', '.join(titles)}. "
                      "Update Steam brings the shortcut in Steam up to date.")
+        # The same game in Steam more than once (owner, 20-11-2026): said once, and Update Steam leaves one
+        if self.doubles and self.doubles != self._doubles_said:
+            titles = {str(g.eboot): g.title for g in self.games}
+            names = [f"{titles.get(eboot) or self.in_steam.get(eboot) or eboot} ({extra + 1} times)"
+                     for eboot, extra in self.doubles.items()]
+            self.say(f"In Steam more than once: {', '.join(names)}. Update Steam leaves one of each.", ok=False)
+        self._doubles_said = dict(self.doubles)
         self.settings_page.load()
         self.saves_page.load()
         self.show_controller()
@@ -730,7 +741,8 @@ class MainWindow(QMainWindow):
             box.setFlags(Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
             box.setCheckState(Qt.CheckState.Checked if str(game.eboot) in self.in_steam or str(game.eboot) in self.moved
                               else Qt.CheckState.Unchecked)
-            box.setToolTip("In Steam" if str(game.eboot) in self.in_steam else
+            box.setToolTip(f"In Steam {self.doubles[str(game.eboot)] + 1} times: Update Steam leaves one"
+                           if str(game.eboot) in self.doubles else "In Steam" if str(game.eboot) in self.in_steam else
                            f"Found again under a new name: in Steam as {self.in_steam.get(self.moved[str(game.eboot)], '?')}; "
                            "Update Steam brings the shortcut up to date" if str(game.eboot) in self.moved else "Not in Steam")
             self.table.setItem(row, STEAM, box)
@@ -786,7 +798,7 @@ class MainWindow(QMainWindow):
         self.unpack_button.setEnabled(idle and self.chosen_package() is not None)
         self.unpack_all_button.setEnabled(idle)
         add, remove = self.steam_plan()
-        stale = self.no_logo | self.old_tags | self.no_cover
+        stale = self.no_logo | self.old_tags | self.no_cover | set(self.doubles)
         named = shortcuts.names(add)        # a name in Steam that differs (one from before the prefix) is renamed
         changed = bool(remove) or any(self.in_steam.get(str(g.eboot)) != named[g.eboot] or str(g.eboot) in stale
                                       for g in add)
@@ -1160,6 +1172,8 @@ class MainWindow(QMainWindow):
             self.say("Install shadPS4 first: the games in Steam start it.", ok=False)
             return
         text = f"{len(add)} game(s) in Steam" + (f", {len(remove)} taken out." if remove else ".")
+        if self.doubles:
+            text += f"\n{sum(self.doubles.values())} double shortcut(s) taken out: each game stays in Steam once."
         if self.steam_running():
             text += "\n\nSteam closes for it and starts again in the background."
         if not self._ask("Steam", text):
