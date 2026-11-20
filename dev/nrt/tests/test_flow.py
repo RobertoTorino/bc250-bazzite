@@ -411,6 +411,10 @@ def test_the_step_to_do_follows_the_release():
     assert states["test"] == states["publish"] == "now" and states["run"] == "done"
     assert flow.current_step(flow.Facts(run=_run(), behind=1)) == "finish"
     assert flow.current_step(flow.Facts(run=_run())) == ""                               # out and pulled
+    waiting = flow.Facts(run=_run(), building=("Wiki on main",))                         # GitHub still runs
+    assert flow.current_step(waiting) == "ready" and flow.step_states(waiting)["finish"] == "done"
+    assert flow.current_step(flow.Facts(run=_run(), behind=1, building=("Wiki on main",))) == "finish"
+    assert flow.KEYS[-1] == "ready" and len(flow.KEYS) == 10
     assert flow.current_step(flow.Facts(run=_run(), drafts=["x"], dirty=True)) == "commit"  # a fix after Not OK
 
 
@@ -755,9 +759,10 @@ def _timed(sha, file, started, ended, conclusion="success", ref="main"):
                        started=started, file=file, ended=ended)
 
 
-def test_a_release_takes_its_ci_before_start_and_the_time_from_its_commit_to_the_end_of_its_run(suite):
+def test_a_release_takes_from_its_work_commit_to_ci_passed_and_from_its_commit_to_the_end_of_its_run(suite):
     """Two releases in the checkout, each a commit on top of the one CI passed on; a failed run and a run on a tag
-    are no releases; what the owner waited between CI and Start is not counted."""
+    are no releases; what the owner waited between CI and Start is not counted. The time before Start runs from
+    the work's commit, so the push with CI's jobs here is in it (owner, 20-11-2026), not GitHub's CI alone."""
     shas = [sh(suite, "rev-parse", "HEAD").strip()]
     for n in (1, 2, 3):
         write(suite / "apps/test/app.py", f"print({n})\n")
@@ -775,11 +780,12 @@ def test_a_release_takes_its_ci_before_start_and_the_time_from_its_commit_to_the
                     _timed(new, "release.yml", at[new] + 4, at[new] + 200),
                     _timed(old, "release.yml", at[old] + 4, at[old] + 90)]
         sha = url.split("head_sha=")[1].split("&")[0]
-        return {before_new: [_timed(before_new, "docs.yml", 10, 5000), _timed(before_new, "ci.yml", 1000, 1150)],
-                before_old: [_timed(before_old, "ci.yml", 2000, 2060)]}[sha]
+        return {before_new: [_timed(before_new, "docs.yml", 10, 5000),
+                             _timed(before_new, "ci.yml", at[before_new] + 900, at[before_new] + 1050)],
+                before_old: [_timed(before_old, "ci.yml", at[before_old] + 20, at[before_old] + 80)]}[sha]
     times = flow.release_times(suite, read=read)
-    assert [(t.sha, t.ci, t.release, t.running) for t in times] == [(new, 150, 200, False), (old, 60, 90, False)]
-    assert times[0].total == 350 and flow.deviation(times) == 200
+    assert [(t.sha, t.before, t.release, t.running) for t in times] == [(new, 1050, 200, False), (old, 80, 90, False)]
+    assert times[0].total == 1250 and flow.deviation(times) == 1080
     assert len(asked) == 3                                  # the release runs, and CI on each release's parent
 
 
@@ -790,7 +796,7 @@ def test_a_release_that_still_runs_counts_the_time_so_far_and_a_first_release_ha
     def read(url):
         return [_timed(head, "release.yml", committed + 3, 0)] if "workflows/release.yml" in url else []
     times = flow.release_times(suite, now=lambda: committed + 75, read=read)
-    assert [(t.ci, t.release, t.running) for t in times] == [(0, 75, True)]      # the CI run is no longer listed
+    assert [(t.before, t.release, t.running) for t in times] == [(0, 75, True)]      # the CI run is no longer listed
     assert flow.deviation(times) is None and flow.release_times(suite, read=lambda url: []) == []
 
 
@@ -850,3 +856,87 @@ def test_the_times_are_read_through_the_windows_source(release_window):
     page.check_times()
     answered()
     assert [t.total for t in page.times] == [180] and not page.time_checker.running
+
+
+def test_the_time_boxes_are_wide(release_window):
+    """Owner, 20-11-2026: wider; "9 min 39 s so far" filled its box."""
+    from nexus_release_tool import release_page
+    page = release_window.release_page
+    assert release_page.TIME_BOX_PX >= 240
+    assert all(box.minimumWidth() == release_page.TIME_BOX_PX
+               for box in (page.time_now, page.time_before, page.time_deviation))
+
+
+def test_start_follows_by_itself_when_this_window_saw_ci_pass(release_window, monkeypatch):
+    """Owner, 20-11-2026: "If CI passes in NRT we autostart". Only after CI passes was the step to do on this
+    commit in this window; a window opened on a commit whose CI passed already starts nothing; without the question."""
+    from PyQt6.QtWidgets import QApplication
+    w = release_window
+    page = w.release_page
+    head = sh(w.root, "rev-parse", "HEAD").strip()
+    started = []
+    monkeypatch.setattr(w, "confirm_git", lambda *a: started.append("asked") or False)
+    monkeypatch.setattr(w, "run_git", started.append)
+    monkeypatch.setattr(w.build, "source", object())
+    passed = [_run(head, "ci.yml", "CI")]
+    monkeypatch.setattr(w.build, "runs", passed)
+    page.show_state()                                           # opened on a commit that passed: the pill, as before
+    QApplication.processEvents()
+    assert started == [] and page.start_button.isEnabled()
+    monkeypatch.setattr(w.build, "runs", [_run(head, "ci.yml", "CI", status="in_progress", conclusion="")])
+    page.show_state()
+    assert page.ci_waited == head and "follows by itself" in page.details["ci"].text()
+    QApplication.processEvents()
+    assert started == []
+    monkeypatch.setattr(w.build, "runs", passed)
+    page.show_state()
+    page.show_state()                                           # a second look starts no second release
+    QApplication.processEvents()
+    assert started == [flow.start_command("Release bc250-test-v0.2.0, bc250-portal-v1.1.0")]
+    assert "starts by itself" in page.output.toPlainText()
+
+
+def test_start_does_not_follow_by_itself_when_the_settings_say_so_or_another_commit_waited(release_window, monkeypatch):
+    from PyQt6.QtCore import QSettings
+    from PyQt6.QtWidgets import QApplication
+    w = release_window
+    page = w.release_page
+    head = sh(w.root, "rev-parse", "HEAD").strip()
+    started = []
+    monkeypatch.setattr(page, "start", lambda asked=True: started.append(asked))
+    monkeypatch.setattr(w.build, "source", object())
+    facts = flow.Facts(ci="passed", something=True)
+    assert flow.autostart(facts, head, head) and not flow.autostart(facts, "other", head)
+    assert not flow.autostart(facts, "", "") and not flow.autostart(flow.Facts(ci="building", something=True), head, head)
+    assert not flow.autostart(flow.Facts(ahead=1, unpushed="Release x"), head, head)
+    w.settings = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, "nexus", "nrt-test")
+    w.settings.setValue(flow.AUTOSTART_KEY, "false")
+    monkeypatch.setattr(w.build, "runs", [_run(head, "ci.yml", "CI", status="in_progress", conclusion="")])
+    page.show_state()
+    assert "follows by itself" not in page.details["ci"].text()
+    monkeypatch.setattr(w.build, "runs", [_run(head, "ci.yml", "CI")])
+    page.show_state()
+    QApplication.processEvents()
+    assert started == [] and page.start_button.isEnabled()
+
+
+def test_the_last_step_waits_until_github_runs_nothing_more(release_window, monkeypatch):
+    """Owner, 20-11-2026: step 9 had its check while the wiki still ran on GitHub. The tenth step is the one to do
+    until every run finished, then says All runs finished, ready."""
+    w = release_window
+    page = w.release_page
+    head = sh(w.root, "rev-parse", "HEAD").strip()
+    monkeypatch.setattr(w.build, "source", object())
+    monkeypatch.setattr(flow, "waiting_portals", lambda root, at="": [])
+    release = _run(head)
+    wiki = _run(head, "docs.yml", "Wiki", status="in_progress", conclusion="")
+    monkeypatch.setattr(w.build, "runs", [wiki, release])
+    page.show_state()
+    assert flow.current_step(page.facts) == "ready" and page.marks["ready"].text() == "▶"
+    assert page.marks["finish"].text() == "✓" and page.titles["ready"].text() == "10. All runs finished"
+    assert "GitHub still runs Wiki on main: wait until it finished" in page.details["ready"].text()
+    monkeypatch.setattr(w.build, "runs", [_run(head, "docs.yml", "Wiki"), release])
+    page.show_state()
+    assert page.marks["ready"].text() == "✓" and page.details["ready"].text() == flow.READY == \
+        "All runs finished, ready."
+    assert flow.still_running([wiki, wiki, release]) == ("Wiki on main",)
