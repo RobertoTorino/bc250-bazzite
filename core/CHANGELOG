@@ -1,3 +1,7 @@
+Changelog: 20-11-2026 16:27:54
+
+Version 6.2.0.
+
 Changelog: 20-11-2026 16:16:04
 
 Added. steam: takes_commands, whether the running Steam takes a steam:// address now (the process its pid file names
