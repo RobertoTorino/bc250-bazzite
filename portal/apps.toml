@@ -49,8 +49,8 @@ launch = [["Open", "~/.local/bin/bc250-board-test"]]
 [apps.gpu]
 name = "BC-250 GPU Manager"
 summary = "Manage the cyan-skillfish GPU governor: tuning, safe points, profiles, backups."
-tag = "bc250-gpu-v0.6.2"
-sha256 = "2331792abeb77d1236fd538dbb1d23506c91b39cfb1b358107923c12d8f52eb2"
+tag = "bc250-gpu-v0.6.3"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -132,8 +132,8 @@ launch = [["Open", "~/.local/bin/bc250-cores-bisect-gui"]]
 [apps.oc]
 name = "BC-250 GPU OC Bisect"
 summary = "Find your board's safe GPU overclock and undervolt, one step at a time."
-tag = "bc250-oc-v0.4.2"
-sha256 = "72a6d9623fdf83d04dcbd796b29fd5cd28ccf726321ee0913d337fce9db54e87"
+tag = "bc250-oc-v0.4.3"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -176,8 +176,8 @@ launch = [["Open", "~/.local/bin/bc250-persistent-acpi-gui"]]
 [apps.overlay]
 name = "BC-250 System Overlay"
 summary = "CPU, GPU, refresh rate, fan and temperatures in a small window that stays on top."
-tag = "bc250-overlay-v4.6.1"
-sha256 = "270be634425d758a5f9d09eb8b2df117648d906cfd5cf4caa6523b4145e515c0"
+tag = "bc250-overlay-v4.6.2"
+sha256 = ""
 required = false
 changes_board = false
 category = "utilities"
@@ -225,8 +225,8 @@ launch = [["Open", "~/.local/bin/bc250-ace-queues"]]
 [apps.mesh]
 name = "BC-250 Mesh Shaders"
 summary = "Mesh shaders for games: RADV with DirectMesh beside the system Mesa, built on the board and tested before use."
-tag = "bc250-mesh-v4.7.1"
-sha256 = "bdf1593d4d9f0f16453f87542ba78e265e375b87efa370982cde497d64efb76e"
+tag = "bc250-mesh-v4.7.2"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """

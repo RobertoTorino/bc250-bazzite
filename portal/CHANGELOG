@@ -1,3 +1,7 @@
+Changelog: 21-11-2026 21:12:00
+
+Release 26.10.3. Pins bc250-gpu-v0.6.3, bc250-oc-v0.4.3, bc250-overlay-v4.6.2, bc250-mesh-v4.7.2.
+
 Changelog: 21-11-2026 20:32:24
 
 Release 26.10.2. Pins bc250-compute-v1.0.4, bc250-cores-v1.0.2, bc250-fan-v4.6.2, bc250-controller-v2.6.2, bc250-consoles-v5.6.2.
