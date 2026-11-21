@@ -23,7 +23,7 @@ die() { printf '\033[1;31mERROR:\033[0m %s\n' "$1" >&2; exit 1; }
 # Runs a build step with its output in a log; on failure the end of the log is shown.
 step() {
     local log=$LOGS/$1.log; shift
-    "$@" >"$log" 2>&1 || { tail -40 "$log"; die "$(basename "$log") failed; the whole log is in the build folder."; }
+    "$@" >"$log" 2>&1 || { tail -40 "$log"; die "$(basename "$log") failed. The whole log is in the build folder."; }
 }
 
 mkdir -p "$LOGS"

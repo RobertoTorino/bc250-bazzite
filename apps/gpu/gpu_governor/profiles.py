@@ -92,19 +92,19 @@ class ProfilesBox(QGroupBox):
         self.combo.currentIndexChanged.connect(self._sync)
         row.addWidget(self.combo, 1)
         self.load_button = QPushButton("Load into forms")
-        self.load_button.setToolTip(("Fills the Tuning and GPU Usage forms; nothing is written until "
+        self.load_button.setToolTip(("Fills the Tuning and GPU Usage forms. Nothing changes in the file until "
                                      "you apply."))
         self.load_button.clicked.connect(lambda: self.load_requested.emit(self.combo.currentText()))
         row.addWidget(self.load_button)
         self.apply_button = accent_button("Apply now",
-                                          ("Writes the profile to config.toml (backup first, one "
-                                           "password prompt) and restarts the governor. Pending edits "
-                                           "on the config pages are discarded."))
+                                          ("Writes the profile to config.toml and restarts the governor. It makes "
+                                           "a backup first. It discards the pending edits on the config pages. "
+                                           "You will be asked for your password."))
         self.apply_button.clicked.connect(lambda: self.apply_requested.emit(self.combo.currentText()))
         row.addWidget(self.apply_button)
         self.save_button = QPushButton("Save current as…")
-        self.save_button.setToolTip(("Stores the values in the forms right now (applied or not) under "
-                                     "a name."))
+        self.save_button.setToolTip(("Stores the values in the forms right now under a name, applied "
+                                     "or not."))
         self.save_button.clicked.connect(self.save_requested)
         row.addWidget(self.save_button)
         self.delete_button = QPushButton("Delete")

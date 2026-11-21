@@ -46,7 +46,9 @@ a line says otherwise.
 - **The installers' shared messages stay as they are** in an app's rewrite: "Run this as your own user, not with
   sudo: ...", "Keeping the suite venv: ...", "... is missing: run install.sh from ...", "Python 3.10 or newer is
   needed.", "Installing PyQt6 into the venv (...)", "PyQt6 does not load from the venv ...", "... is not installed:
-  nothing to remove." and the launcher's "... is not installed in ...; run install.sh again." They are reworded once, in every installer and `tools/new_app.py`
+  nothing to remove.", "Python 3.11 or newer is required", "Installing PyQt6 into the virtual environment (this
+  takes a moment the first time)", "Installed. Find ... or run: ...", "(note: ... is not on your PATH in this shell)"
+  and the launcher's "... is not installed in ...; run install.sh again." They are reworded once, in every installer and `tools/new_app.py`
   together. An installer's own messages are rewritten with its app.
 - **Code is left out of the rewrite.** A command keeps its words (`sudo reboot`, `systemctl reboot`), also where the
   sentence around it now says "restart".

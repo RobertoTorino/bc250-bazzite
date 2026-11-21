@@ -39,17 +39,17 @@ class AlertMonitor:
             if self.settings.temp_enabled:
                 out += self._temperature("temp", temp, float(self.settings.temp_c), now,
                                          "GPU temperature",
-                                         fmt(("The GPU is at %1 °C (alert set at "
-                                              "%2 °C)."),
+                                         fmt(("The GPU is at %1 °C. The alert is set at "
+                                              "%2 °C."),
                                              f"{temp:.0f}", str(self.settings.temp_c)))
             limit = snap.perf.temp_throttling if snap.perf.available else snap.saved.temp_throttling
             if self.settings.throttle_enabled and limit:
                 out += self._temperature("throttle", temp, float(limit), now,
                                          "Governor throttling",
-                                         fmt(("The GPU is at %1 °C, at or above the "
-                                              "governor's throttling temperature of "
-                                              "%2 °C; the maximum clock is being "
-                                              "lowered."),
+                                         fmt(("The GPU is at %1 °C. That is at or above "
+                                              "the governor's throttling temperature of "
+                                              "%2 °C. The governor lowers the top "
+                                              "clock."),
                                              f"{temp:.0f}", str(limit)))
         if snap.service.active:
             self._seen_running += 1
@@ -59,7 +59,7 @@ class AlertMonitor:
                         if snap.service.sub_state == "failed"
                         else "stopped")
                 out.append((fmt("Governor %1", state),
-                           fmt(("The governor service has %1; the GPU runs at the "
+                           fmt(("The governor service has %1. The GPU runs at the "
                                 "driver's default clocks. See the Service page."),
                                state)))
             self._seen_running = 0

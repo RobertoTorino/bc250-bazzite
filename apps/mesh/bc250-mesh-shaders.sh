@@ -121,9 +121,9 @@ do_status() {
         if tested_now; then
             echo "Test: passed on this kernel ($(field date "$TESTED"))"
         elif [ "$(field driver "$TEST_FAILED")" = "$sum" ] && [ "$(field kernel "$TEST_FAILED")" = "$(kernel)" ]; then
-            echo "Test: failed ($(field date "$TEST_FAILED")); see the test log"
+            echo "Test: failed ($(field date "$TEST_FAILED")). See the test log"
         elif [ "$(field driver "$TESTED")" = "$sum" ]; then
-            echo "Test: passed on kernel $(field kernel "$TESTED"); test again on this one"
+            echo "Test: passed on kernel $(field kernel "$TESTED"). Test again on this one"
         else
             echo "Test: not run with this driver"
         fi
@@ -162,7 +162,7 @@ do_build() {
         -v "$HERE:/app:ro" -v "$CACHE/src:/src:ro" -v "$CACHE/work:/work" \
         -e MESA_VER="$MESA_VER" -e PREFIX="$PREFIX" -e DIRECTMESH="$DIRECTMESH" -e PATCH_SHA256="$PATCH_SHA256" \
         "registry.fedoraproject.org/fedora:$fedora" bash /app/mesa/build-in-container.sh &
-    wait $! || error "The build failed; see above. Its logs are in $CACHE/work/logs."
+    wait $! || error "The build failed. See above. Its logs are in $CACHE/work/logs."
     trap - TERM INT HUP
     rm -rf "$CACHE/stage"
     mv "$CACHE/work/stage" "$CACHE/stage"
@@ -175,10 +175,10 @@ do_install_driver() {
     need_root --install-driver
     local f missing
     for f in lib64/libvulkan_radeon.so share/vulkan/icd.d/radeon_icd.x86_64.json libexec/bc250-mesh-test BUILD-INFO; do
-        [ -f "$STAGE_DRIVER/$f" ] || error "No complete build in $STAGE_DRIVER ($f is missing): build it first."
+        [ -f "$STAGE_DRIVER/$f" ] || error "No complete build in $STAGE_DRIVER ($f is missing). Build it first."
     done
     grep -qF "\"$PREFIX/lib64/libvulkan_radeon.so\"" "$STAGE_DRIVER/share/vulkan/icd.d/radeon_icd.x86_64.json" ||
-        error "The build was made for another folder than $PREFIX: build it again."
+        error "The build is for another folder than $PREFIX. Build it again."
     missing=$(ldd "$STAGE_DRIVER/lib64/libvulkan_radeon.so" 2>/dev/null | awk '/not found/ {print $1}' || true)
     [ -z "$missing" ] || error "The driver needs libraries this system does not have: $(echo "$missing" | tr '\n' ' ')"
 
@@ -202,15 +202,15 @@ do_install_driver() {
     mv "$DRIVER_DIR.new" "$DRIVER_DIR"
     install -D -m 755 "$HERE/$RUNNER_NAME" "$RUNNER"
     command -v restorecon >/dev/null 2>&1 && [ -z "$ROOT_DIR" ] && restorecon -R "$DRIVER_DIR" "$RUNNER" 2>/dev/null
-    info "Installed. Nothing uses it yet: run the test next ($0 --test)."
+    info "Installed. Nothing uses it yet. Run the test next ($0 --test)."
 }
 
 do_remove_driver() {
     need_root --remove-driver
     rm -rf "$DRIVER_DIR" "$DRIVER_DIR.new"
     rm -f "$RUNNER"
-    info "The driver is removed."
-    info "Remove \"$(launch_options)\" from the launch options of your games: without the driver they do not start."
+    info "Removed the driver."
+    info "Remove \"$(launch_options)\" from the launch options of your games. Without the driver they do not start."
 }
 
 # --- test ----------------------------------------------------------------------------------------------------
@@ -227,7 +227,7 @@ do_test() {
     need_user --test
     local rounds=$1 rc before after sum
     [ -f "$DRIVER_LIB" ] && [ -x "$MESH_TEST" ] || error "The driver is not installed."
-    board_id >/dev/null || warn "No BC-250 found: the test runs, but its result says nothing about a BC-250."
+    board_id >/dev/null || warn "No BC-250 found. The test runs, but its result says nothing about a BC-250."
     sum=$(driver_sum)
     mkdir -p "$STATE"
     rm -f "$TESTED" "$TEST_FAILED"
@@ -243,7 +243,7 @@ do_test() {
         echo "FAIL: the kernel log shows a GPU ring timeout or reset during the test" | tee -a "$STATE/test.log"
         rc=5
     fi
-    [ "$before" = "?" ] && warn "The kernel log could not be read, so it was not checked for GPU resets."
+    [ "$before" = "?" ] && warn "Could not read the kernel log, so the test did not check it for GPU resets."
     {
         echo "kernel=$(kernel)"
         echo "driver=$sum"
@@ -256,7 +256,7 @@ do_test() {
     else
         mv "$STATE/result.new" "$TEST_FAILED"
         [ "$rc" -eq 124 ] && echo "FAIL: the test did not finish in 10 minutes" | tee -a "$STATE/test.log"
-        error "The test failed (exit code $rc). Don't use the driver on this kernel; the log is $STATE/test.log."
+        error "The test failed (exit code $rc). Don't use the driver on this kernel. The log is $STATE/test.log."
     fi
 }
 

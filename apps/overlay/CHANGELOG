@@ -1,3 +1,11 @@
+Changelog: 21-11-2026 20:42:13
+
+Fixed. The text of the wiki chapter, the README, the overlay's tooltips, the --native-wayland help and the module notes
+is rewritten in short, plain sentences. The README's link now names BC-250 System Overlay in the wiki. The wiki said
+four rows need the bc250_vrm module. It is five: CPU rail, GPU rail, 12 V input, CPU VRM temp and GPU VRM temp. The GPU
+row's tooltip now names GPU Manager, where the old text said the governor app. Nothing the app does has changed. No test
+changed.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 4.6.1.

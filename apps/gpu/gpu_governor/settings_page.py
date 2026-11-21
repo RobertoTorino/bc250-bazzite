@@ -32,7 +32,7 @@ class SettingsPage(QWidget):
         header, _ = page_header("Settings")
         layout.addLayout(header)
         layout.addWidget(hint_label(
-            "These settings concern the app, not the governor. They are stored per user."))
+            "These settings concern the app, not the governor. The app keeps them for each user."))
 
         tray_box = QGroupBox("System tray")
         tray_layout = QVBoxLayout(tray_box)
@@ -43,14 +43,14 @@ class SettingsPage(QWidget):
         self.minimise.setChecked(settings.value(KEY_MINIMISE, True, bool))
         self.minimise.toggled.connect(lambda v: settings.setValue(KEY_MINIMISE, v))
         tray_layout.addWidget(self.minimise)
-        tray_layout.addWidget(hint_label(("Left-click the tray icon to show or hide the window; the menu "
-                                          "also toggles performance mode (when D-Bus is reachable) and quits "
-                                          "the app.")))
+        tray_layout.addWidget(hint_label(("Left-click the tray icon to show or hide the window. The menu "
+                                          "also quits the app. While D-Bus is reachable, it toggles performance "
+                                          "mode too.")))
         if not tray_supported:
             self.tray.setEnabled(False)
             self.minimise.setEnabled(False)
-            tray_layout.addWidget(hint_label(("This desktop offers no system tray (on GNOME, install the "
-                                              "AppIndicator extension).")))
+            tray_layout.addWidget(hint_label(("This desktop offers no system tray. On GNOME, install the "
+                                              "AppIndicator extension.")))
         layout.addWidget(tray_box)
 
         auto_box = QGroupBox("Start at login")
@@ -77,8 +77,8 @@ class SettingsPage(QWidget):
         self.update_check.toggled.connect(lambda v: settings.setValue(KEY_UPDATE_CHECK, v))
         update_layout.addWidget(self.update_check)
         update_layout.addWidget(hint_label(
-            "One request to api.github.com for the latest release of filippor/cyan-skillfish-governor, compared "
-            "with the installed RPM. Nothing else is sent. The Service page has the same check as a button."))
+            "The app asks api.github.com once for the latest release of filippor/cyan-skillfish-governor. It compares "
+            "that with the installed RPM and sends nothing else. The Service page has the same check as a button."))
         layout.addWidget(update_box)
 
         alert_box = QGroupBox("Alerts")
@@ -105,9 +105,9 @@ class SettingsPage(QWidget):
         self.alert_service.toggled.connect(lambda v: settings.setValue(KEY_ALERT_SERVICE, v))
         alert_layout.addWidget(self.alert_service)
         alert_layout.addWidget(hint_label(
-            "Shown as desktop notifications through the tray icon (in the status bar when the tray is off). One "
-            "message per event: a temperature alert re-arms once the GPU has cooled 5 °C below its threshold, "
-            "and the same alert repeats at most every 5 minutes."))
+            "Alerts show as desktop notifications through the tray icon. When the tray is off, they show in the "
+            "status bar. Each event gives one message. A temperature alert re-arms once the GPU has cooled 5 °C "
+            "below its threshold. The same alert repeats at most every 5 minutes."))
         layout.addWidget(alert_box)
         layout.addStretch(1)
         self._minimise_enabled()
@@ -153,4 +153,4 @@ class SettingsPage(QWidget):
                                              launcher_command()))
         else:
             self.autostart_info.setText(fmt(
-                "Writes a desktop entry to %1; nothing is installed system-wide.", str(AUTOSTART_FILE.parent)))
+                "Writes a desktop entry to %1. It writes nothing system-wide.", str(AUTOSTART_FILE.parent)))

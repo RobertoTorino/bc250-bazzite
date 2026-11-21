@@ -1,3 +1,18 @@
+Changelog: 21-11-2026 20:52:10
+
+Fixed. The text was rewritten to the suite's writing standard: the wiki chapter, the README, the Help page, the hints,
+tooltips, dialogs and status lines of every page, and the installer's own messages. Sentences are short with one fact
+each, with no semicolon chains, and the dialogs that lead to a password prompt end with "You will be asked for your
+password." The Safe points checkbox "Restart the governor afterwards" is now "Restart the governor afterward". The Help
+page said four things need root. The backup and the write of config.toml are one pkexec call, so it now says three, as
+the wiki does. The wiki pointed to docs/HARDWARE-CHECKLIST.md, which does not exist. It now links to the Hardware
+verification checklist in the same chapter. The wiki's file list named a test.sh in the app folder, which does not
+exist, and the line is gone. The wiki called the second page "CPU usage" and the fifth "erformance". They are now GPU
+Usage and Performance. The checklist named a "Test a point" button, which is "Start test" in the window. Nothing the
+app does has changed. No test changed. Applying a profile says "You will be asked for your password." where it promised one password prompt: it writes
+the file and restarts the service, two steps that need root. The installer messages it shares with the Upscaler
+Manager's keep their wording (owner, 21-11-2026).
+
 Changelog: 15-11-2026 04:52:06
 
 Release 0.6.2.

@@ -47,20 +47,20 @@ METRIC_ROWS = (
 def load_sensor_hint(snap: "Snapshot") -> str:
     """What the user can do about a missing GPU load sensor, from the most likely cause down."""
     if not snap.fix_metrics_supported:
-        return ("Only cyan-skillfish-governor-smu publishes a load figure (fix-metrics); the tt governor "
+        return ("Only cyan-skillfish-governor-smu publishes a load figure, through fix-metrics. The tt governor "
                 "does not, so this stays unavailable.")
     if not snap.service.installed:
-        return "Install cyan-skillfish-governor-smu; it measures the load and publishes it via gpu_metrics."
+        return "Install cyan-skillfish-governor-smu. It measures the load and publishes it via gpu_metrics."
     if not snap.saved.fix_metrics:
-        return ("Enable fix-metrics on the GPU Usage page and apply with a "
+        return ("Turn on fix-metrics on the GPU Usage page and apply with a "
                 "restart.")
     if not snap.service.active:
-        return ("Start the governor service on the Service page; fix-metrics is on but nothing publishes "
+        return ("Start the governor service on the Service page. fix-metrics is on, but nothing publishes "
                 "the load.")
     if not snap.mounted:
-        return ("fix-metrics is on and the service runs, but no patched gpu_metrics is mounted: check the "
+        return ("fix-metrics is on and the service runs, but no patched gpu_metrics is mounted. Check the "
                 "journal.")
-    return "The patched gpu_metrics table holds no valid load value; check the Service page journal."
+    return "The patched gpu_metrics table holds no valid load value. Check the journal on the Service page."
 
 
 @dataclass
@@ -113,21 +113,21 @@ class OverviewPage(QWidget):
         self.window = QComboBox()
         for seconds, label in CHART_WINDOWS:
             self.window.addItem(label, seconds)
-        self.window.setToolTip(fmt(("How much of the last %1 minutes the chart shows; the export "
-                                    "always contains everything kept."), str(MAX_SECONDS // 60)))
+        self.window.setToolTip(fmt(("How much of the last %1 minutes the chart shows. The export "
+                                    "always contains every kept sample."), str(MAX_SECONDS // 60)))
         self.window.currentIndexChanged.connect(self._redraw)
         tools.addWidget(self.window)
         tools.addStretch(1)
         self.export_button = QPushButton("Export CSV…")
-        self.export_button.setToolTip(("Saves every kept sample (time, load, clock, temperature, socket "
-                                       "power, performance mode, runtime range) as a CSV file."))
+        self.export_button.setToolTip(("Saves every kept sample as a CSV file. A sample holds the time, load, clock, "
+                                       "temperature, socket power, performance mode and runtime range."))
         self.export_button.setEnabled(False)
         self.export_button.clicked.connect(self.export_requested)
         tools.addWidget(self.export_button)
         self.compare_button = QPushButton("Compare…")
         self.compare_button.setToolTip(("Load an earlier CSV export and draw it dashed behind the live "
-                                        "lines, newest sample at the right edge, with both sessions' "
-                                        "averages below the chart."))
+                                        "lines. Its newest sample sits at the right edge. Both sessions' "
+                                        "averages show below the chart."))
         self.compare_button.clicked.connect(self.compare_requested)
         tools.addWidget(self.compare_button)
         self.clear_compare_button = QPushButton("Clear")
@@ -216,9 +216,9 @@ class OverviewPage(QWidget):
         layout.addWidget(self.metrics_box)
 
         layout.addWidget(hint_label(
-            "BC-250 usually exposes no gpu_busy_percent sensor, but the governor measures the load itself and "
-            "publishes it in its patched gpu_metrics table while fix-metrics is on and the service runs. The app "
-            "reads it from there; a missing sensor is shown as N/A, never as 0%."))
+            "The BC-250 usually has no gpu_busy_percent sensor. The governor measures the load itself. While "
+            "fix-metrics is on and the service runs, it publishes the load in its patched gpu_metrics table. The app "
+            "reads it from there. A missing sensor shows as N/A, never as 0%."))
 
     def hide_pills(self, *keys: str) -> None:
         for key in keys:
@@ -233,7 +233,7 @@ class OverviewPage(QWidget):
             service.set_status("Active", "ok", fmt("SubState: %1", snap.service.sub_state))
         elif snap.service.sub_state == "failed":
             service.set_status("Failed", "bad",
-                               "The unit failed; see the Service page for the journal.")
+                               "The unit failed. See the Service page for the journal.")
         else:
             service.set_status("Inactive", "warn",
                                fmt("SubState: %1", snap.service.sub_state or "unknown"))
@@ -355,11 +355,11 @@ class OverviewPage(QWidget):
         for key, text in values.items():
             self.metric_fields[key].setText(text)
         if patched:
-            self.metrics_note.setText(("Table as published by the governor (fix-metrics): the GFX activity "
-                                       "is its own measurement."))
+            self.metrics_note.setText(("Table as the governor publishes it with fix-metrics. The GFX activity "
+                                       "is the governor's own measurement."))
         elif not m.gfx_activity_valid():
-            self.metrics_note.setText(("Raw kernel table: the GFX activity is the broken firmware value "
-                                       "(the 655% bug); enable fix-metrics to get a real one."))
+            self.metrics_note.setText(("Raw kernel table. The GFX activity is the broken firmware value, "
+                                       "the 655% bug. Turn on fix-metrics to get a real one."))
         else:
             self.metrics_note.setText("Raw kernel table.")
 

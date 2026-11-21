@@ -85,7 +85,7 @@ def test_install_copies_the_build_and_links_drirc(board):
 
 def test_install_needs_root_a_build_and_its_libraries(board):
     assert "Run as root" in board.run("--install-driver").stderr
-    assert "build it first" in board.run("--install-driver", uid=0).stderr
+    assert "Build it first" in board.run("--install-driver", uid=0).stderr
     board.make_build()
     board.env["FAKE_LDD"] = "libdisplay-info.so.2 => not found"
     r = board.run("--install-driver", uid=0)
@@ -110,7 +110,7 @@ def test_passed_test_runs_on_the_driver_alone(board):
     assert "Device: fake --rounds 10" in (board.state / "test.log").read_text()
     assert board.status()["Test"].startswith("passed on this kernel (")
     board.env["FAKE_KERNEL"] = "7.2.9-ogc1.1.fc44.x86_64"
-    assert board.status()["Test"] == f"passed on kernel {KERNEL}; test again on this one"
+    assert board.status()["Test"] == f"passed on kernel {KERNEL}. Test again on this one"
 
 
 def test_rounds_go_to_the_test(board):
@@ -180,12 +180,12 @@ def run_game(board, tmp_path, **switches: str) -> tuple[str, str]:
 
 def test_wrapper_uses_the_driver_only_after_a_passed_test(board, tmp_path):
     got, log = run_game(board, tmp_path)
-    assert got == "" and log.endswith("AppId=2215430: system Mesa (the DirectMesh driver is not installed)")
+    assert got == "" and log.endswith("AppId=2215430: system Mesa. The DirectMesh driver is not installed.")
     board.make_build()
     board.install()
     got, log = run_game(board, tmp_path)
-    assert got == "" and log.endswith("AppId=2215430: system Mesa (the test has not passed on kernel "
-                                      f"{KERNEL} with this driver)")
+    assert got == "" and log.endswith("AppId=2215430: system Mesa. The test has not passed on kernel "
+                                      f"{KERNEL} with this driver.")
     board.pass_test()
     got, log = run_game(board, tmp_path)
     assert got == f"{board.root}/{PREFIX}/share/vulkan/icd.d/radeon_icd.x86_64.json:" \

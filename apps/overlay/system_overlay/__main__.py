@@ -18,7 +18,7 @@ from .overlay import OverlayWindow
 def main() -> int:
     parser = argparse.ArgumentParser(prog="system_overlay", description=f"{APP_NAME} {__version__}")
     parser.add_argument("--native-wayland", action="store_true",
-                        help="run as a Wayland window: sharper on scaled screens, but it cannot keep itself on top")
+                        help="run as a Wayland window. It is sharper on scaled screens but cannot keep itself on top.")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__} (core {CORE_VERSION})")
     args, qt_args = parser.parse_known_args()
 

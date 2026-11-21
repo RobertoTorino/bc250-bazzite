@@ -42,7 +42,7 @@ TARGETS = (
       "whole line.")),
     ("heroic", "Heroic / Lutris wrapper", "{cmd}",
      ("Heroic: game settings → Advanced → Wrapper command. Lutris: Runner "
-      "options → Command prefix. Only the wrapper part is needed; the launcher appends the "
+      "options → Command prefix. Paste only the wrapper part. The launcher appends the "
       "game itself.")),
     ("shell", "Terminal / script", "{cmd} <program>",
      "Replace <program> with the command to run."),

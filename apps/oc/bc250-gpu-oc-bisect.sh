@@ -38,7 +38,7 @@
 #       --volt-step MV   UV ladder step (default 25, minimum 5)
 #       --per-boot       one attempt per boot for strict isolation (default: same boot, with a
 #                        cooldown between attempts; the governor restart resets its state)
-#       --install        write the best validated step into the governor config and exit
+#       --install        write the recommended margin step into the governor config and exit
 #       --uninstall      restore the governor config from the backup made by --install and exit
 #       --status         show the results so far and write the report, then exit
 #       --reset          delete the results and start over
@@ -48,7 +48,7 @@
 # https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/oc
 
 set -u
-if (( BASH_VERSINFO[0] < 4 )); then echo "bash 4 or newer is needed." >&2; exit 1; fi
+if (( BASH_VERSINFO[0] < 4 )); then echo "This script needs bash 4 or newer." >&2; exit 1; fi
 
 VERSION="0.4.2"
 STRESS_SECS="" ROUNDS_OPT="" MODE=run SWEEP="" PER_BOOT=0
@@ -86,11 +86,11 @@ while (( $# )); do
   esac
   shift
 done
-[[ -z $STRESS_SECS ]] || { [[ $STRESS_SECS =~ ^[0-9]+$ ]] && (( STRESS_SECS >= 60 )); } || die "--time needs a number of seconds (60 or more)."
+[[ -z $STRESS_SECS ]] || { [[ $STRESS_SECS =~ ^[0-9]+$ ]] && (( STRESS_SECS >= 60 )); } || die "--time needs 60 seconds or more."
 [[ -z $ROUNDS_OPT || $ROUNDS_OPT =~ ^[2-9]$ ]] || die "--rounds needs a number from 2 to 9."
 [[ $MAX_FREQ =~ ^[0-9]+$ ]] && (( MAX_FREQ <= HARD_MAX_FREQ )) || die "--max-freq must be a number up to $HARD_MAX_FREQ MHz."
-[[ $MIN_VOLT =~ ^[0-9]+$ ]] && (( MIN_VOLT >= HARD_MIN_VOLT )) || die "--min-volt must be a number of $HARD_MIN_VOLT mV or more."
-[[ -z $OC_VOLT_OPT ]] || { [[ $OC_VOLT_OPT =~ ^[0-9]+$ ]] && (( OC_VOLT_OPT <= HARD_MAX_VOLT )); } || die "--oc-volt must be a number up to $HARD_MAX_VOLT mV. Hard ceiling; see the manual."
+[[ $MIN_VOLT =~ ^[0-9]+$ ]] && (( MIN_VOLT >= HARD_MIN_VOLT )) || die "--min-volt must be $HARD_MIN_VOLT mV or more."
+[[ -z $OC_VOLT_OPT ]] || { [[ $OC_VOLT_OPT =~ ^[0-9]+$ ]] && (( OC_VOLT_OPT <= HARD_MAX_VOLT )); } || die "--oc-volt must be a number up to $HARD_MAX_VOLT mV. The wiki explains this hard ceiling."
 [[ $FREQ_STEP =~ ^[0-9]+$ ]] && (( FREQ_STEP >= 25 )) || die "--freq-step must be 25 MHz or more."
 [[ $VOLT_STEP =~ ^[0-9]+$ ]] && (( VOLT_STEP >= 5 )) || die "--volt-step must be 5 mV or more."
 SWEEP_OPT=$SWEEP
@@ -234,7 +234,8 @@ build_plan() {
 # ---------------------------------------------------------------- summary --
 summary() {
   local it verdict total=0 done_n=0 ctrl_fail=0 best_oc="" best_uv="" oc_margin="" uv_margin="" prev_oc="" prev_uv=""
-  hdr "Results  (stock top point: ${TOP_F} MHz @ ${TOP_V} mV, rounds: $ROUNDS, load: ${STRESS_SECS}s)"
+  hdr "Results"
+  say "Stock top point ${TOP_F} MHz @ ${TOP_V} mV, $ROUNDS rounds, ${STRESS_SECS}s load per attempt."
   printf '%-10s %-18s %-6s %s\n' "Step" "Point" "Tries" "Verdict and outcomes"
   for it in "${ITEMS[@]}"; do
     local outs fails=0 tries=0 o skipped=0
@@ -251,7 +252,7 @@ summary() {
         uv:*) uv_margin=$prev_uv; best_uv=$it; prev_uv=$it ;;
       esac
     elif (( fails == tries && tries >= 2 )); then verdict="FAILS EVERY TIME"
-    elif (( fails == tries )); then verdict="failed (only 1 try so far)"
+    elif (( fails == tries )); then verdict="failed its 1 try so far"
     else verdict="RANDOM ($fails of $tries failed)"
     fi
     [[ $it == control ]] && (( fails )) && ctrl_fail=1
@@ -260,8 +261,8 @@ summary() {
   say ""
   say "What this means:"
   if (( ctrl_fail )); then
-    say "- The CONTROL failed: it changes nothing, it only restarts the governor with your own top"
-    say "  point. Power, heat or the load tool is at fault; no step verdict can be trusted."
+    say "- The CONTROL failed. The control changes nothing. It only restarts the governor with your"
+    say "  own top point. So power, heat or the load tool is at fault. You cannot trust any step verdict."
   fi
   if (( done_n < total )); then
     say "- $done_n of $total attempts done (skipped steps excluded). Run the script again to continue."
@@ -270,17 +271,17 @@ summary() {
       say "- Best overclock that passed every round: ${ITEM_F[$best_oc]} MHz @ ${ITEM_V[$best_oc]} mV."
       [[ -n $oc_margin ]] && say "  With a margin step back: ${ITEM_F[$oc_margin]} MHz (recommended for daily use)."
     elif [[ $SWEEP == *oc,* ]]; then
-      say "- No OC step passed every round; your board's stable ceiling is the stock ${TOP_F} MHz."
+      say "- No OC step passed every round. Your board's stable ceiling is the stock ${TOP_F} MHz."
     fi
     if [[ -n $best_uv ]]; then
       say "- Lowest voltage that passed every round at ${TOP_F} MHz: ${ITEM_V[$best_uv]} mV."
       [[ -n $uv_margin ]] && say "  With a margin step back: ${ITEM_V[$uv_margin]} mV (recommended for daily use)."
     elif [[ $SWEEP == *uv,* ]]; then
-      say "- No UV step passed every round; keep the stock ${TOP_V} mV."
+      say "- No UV step passed every round. Keep the stock ${TOP_V} mV."
     fi
     say "- A step that passed here can still fail under other conditions (heat, a long game)."
     say "  Pick the margin step, then make it permanent:  $0 --install"
-    say "  Undo at any time:  sudo cp $INSTALL_BAK $GOV_CONF && sudo systemctl restart $GOV_SVC"
+    say "  Undo it at any time with  sudo cp $INSTALL_BAK $GOV_CONF && sudo systemctl restart $GOV_SVC"
   fi
 }
 
@@ -307,8 +308,8 @@ if [[ $MODE == reset ]]; then
   say "Results deleted."; exit 0
 fi
 
-(( EUID != 0 )) || die "run this as your normal desktop user, not as root; it uses sudo where needed."
-[[ -r $GOV_CONF ]] || die "$GOV_CONF not found. Install cyan-skillfish-governor-smu first (see the manual)."
+(( EUID != 0 )) || die "run this as your normal desktop user, not as root. The script uses sudo where it needs root."
+[[ -r $GOV_CONF ]] || die "$GOV_CONF not found. Install cyan-skillfish-governor-smu first. The wiki lists what the script needs."
 lspci -nn 2>/dev/null | grep -qi '1002:13fe' || die "no BC-250 GPU (1002:13fe) found."
 
 say "The governor config and service need root. sudo may ask for your password once."
@@ -319,13 +320,13 @@ trap 'kill "$KEEPALIVE" 2>/dev/null' EXIT
 
 # A crash can leave the test config installed; put the user's own config back before anything else.
 if [[ -f $TEST_MARKER && -f $ORIG_CONF ]]; then
-  say "A test config from an interrupted attempt is still installed; restoring your own config."
+  say "A test config from an interrupted attempt is still installed. Restoring your own config."
   restore_config || die "could not restore $GOV_CONF from $ORIG_CONF. Do it by hand, then rerun."
 fi
 
 if [[ $MODE == install || $MODE == uninstall ]]; then
   if [[ $MODE == uninstall ]]; then
-    sudo -n test -f "$INSTALL_BAK" || die "no backup at $INSTALL_BAK; nothing to uninstall."
+    sudo -n test -f "$INSTALL_BAK" || die "no backup at $INSTALL_BAK. The script has nothing to uninstall."
     sudo -n cp "$INSTALL_BAK" "$GOV_CONF" && gov_restart || die "restore failed."
     # The backup is the config now. Left behind, a later --install would keep it instead of backing up the
     # config as it is then, and --uninstall would restore a config from before every change made since.
@@ -334,14 +335,14 @@ if [[ $MODE == install || $MODE == uninstall ]]; then
     exit 0
   fi
   # install: the best GOOD step, preferring the margin pick (one step back from the edge).
-  [[ -s $RUNS && -f $ORIG_CONF ]] || die "no finished results; run the sweep first."
+  [[ -s $RUNS && -f $ORIG_CONF ]] || die "no finished results. Run the sweep first."
   read -r TOP_F TOP_V < <(top_safepoint "$ORIG_CONF")
   read -r LOW_F LOW_V < <(low_safepoint "$ORIG_CONF")
   OC_VOLT=${OC_VOLT_OPT:-$(cfg_get OC_VOLT)}; OC_VOLT=${OC_VOLT:-$TOP_V}
   ROUNDS=$(cfg_get ROUNDS); ROUNDS=${ROUNDS:-3}; STRESS_SECS=$(cfg_get TIME); STRESS_SECS=${STRESS_SECS:-180}
   SWEEP=$(cfg_get SWEEP); SWEEP=${SWEEP:-oc,uv,}
   build_plan
-  next_attempt >/dev/null && die "the sweep is not finished yet; run the script again first."
+  next_attempt >/dev/null && die "the sweep is not finished yet. Run the script again first."
   BEST_F=$TOP_F BEST_V=$TOP_V PREV_F="" PREV_V=""
   for it in "${ITEMS[@]}"; do
     [[ $it == control ]] && continue
@@ -354,13 +355,13 @@ if [[ $MODE == install || $MODE == uninstall ]]; then
   # Margin: step back once from the last passing step where a previous passing step exists.
   [[ -n $PREV_F ]] && BEST_F=$PREV_F
   [[ -n $PREV_V ]] && BEST_V=$PREV_V
-  [[ $BEST_F == "$TOP_F" && $BEST_V == "$TOP_V" ]] && die "nothing better than stock passed; there is nothing to install."
+  [[ $BEST_F == "$TOP_F" && $BEST_V == "$TOP_V" ]] && die "nothing better than stock passed. The script has nothing to install."
   say "Installing top safe-point ${BEST_F} MHz @ ${BEST_V} mV (margin pick) into $GOV_CONF."
   [[ $(ask "Continue? [y/N]") =~ ^[Yy]$ ]] || exit 0
   sudo -n test -f "$INSTALL_BAK" || sudo -n cp "$GOV_CONF" "$INSTALL_BAK"
   write_test_config "$BEST_F" "$BEST_V" || die "could not write $GOV_CONF."
   rm -f "$TEST_MARKER"   # this one is deliberate, not a test leftover
-  gov_restart || die "governor restart failed; restore with: sudo cp $INSTALL_BAK $GOV_CONF"
+  gov_restart || die "governor restart failed. Restore your config with  sudo cp $INSTALL_BAK $GOV_CONF"
   say "Done. Backup of your previous config: $INSTALL_BAK   Undo: $0 --uninstall"
   exit 0
 fi
@@ -369,7 +370,7 @@ fi
 # Baseline: snapshot the user's config on the first run; every later run must use the same one.
 if [[ ! -f $ORIG_CONF ]]; then
   [[ $MODE == status ]] && die "no results yet."
-  cp "$GOV_CONF" "$ORIG_CONF" || die "could not snapshot $GOV_CONF."
+  cp "$GOV_CONF" "$ORIG_CONF" || die "could not take a snapshot of $GOV_CONF."
   cfg_set CREATED "$(date '+%F %T')"
 elif ! cmp -s "$GOV_CONF" "$ORIG_CONF"; then
   die "the governor config changed since this run started. Finish or --reset before editing it."
@@ -377,7 +378,7 @@ fi
 read -r TOP_F TOP_V < <(top_safepoint "$ORIG_CONF")
 read -r LOW_F LOW_V < <(low_safepoint "$ORIG_CONF")
 [[ -n ${TOP_F:-} && -n ${TOP_V:-} ]] || die "no [[safe-points]] found in $GOV_CONF."
-(( TOP_V <= HARD_MAX_VOLT )) || die "your config's top voltage (${TOP_V} mV) is already above the ${HARD_MAX_VOLT} mV rail; not touching it."
+(( TOP_V <= HARD_MAX_VOLT )) || die "your config's top voltage of ${TOP_V} mV is already above the ${HARD_MAX_VOLT} mV rail. The script leaves it alone."
 
 ROUNDS=${ROUNDS_OPT:-$(cfg_get ROUNDS)}; ROUNDS=${ROUNDS:-3}
 STRESS_SECS=${STRESS_SECS:-$(cfg_get TIME)}; STRESS_SECS=${STRESS_SECS:-180}
@@ -423,12 +424,12 @@ if [[ -s $PENDING ]]; then
   read -r P_ROUND P_ITEM P_F P_V P_BOOT <"$PENDING"
   if [[ $P_BOOT != "$BOOT_ID" ]]; then
     hdr "The last attempt did not finish"
-    say "Round $P_ROUND, $P_ITEM (${P_F} MHz @ ${P_V} mV): the system went down during the load."
+    say "The system went down during the load of round $P_ROUND, $P_ITEM at ${P_F} MHz @ ${P_V} mV."
     PREV=$(sudo -n journalctl -k -b -1 --no-pager 2>/dev/null | grep -E "$FAULT_RE" | tail -5)
     [[ -n $PREV ]] && { say "Kernel faults in the previous boot:"; say "$PREV"; }
     if [[ $(ask "Did the system freeze, crash or reboot by itself? [Y/n]") =~ ^[Nn]$ ]]; then
       record "$P_ROUND" "$P_ITEM" "$P_F" "$P_V" ABORTED - - - - - "rebooted by hand during the attempt"
-      say "Recorded as interrupted; this attempt will run again."
+      say "Recorded as interrupted. This attempt will run again."
     else
       record "$P_ROUND" "$P_ITEM" "$P_F" "$P_V" CRASH-LOAD - "$(grep -c . <<<"$PREV")" - - - "system went down"
       say "Recorded as CRASH-LOAD."
@@ -476,7 +477,7 @@ wait_idle() {
   while (( calm < 3 )); do
     if (( $(gpu_busy) <= 15 )); then (( calm += 1 )); else calm=0; fi
     sleep 1; (( t++ ))
-    (( t == 60 )) && { say "The GPU stayed busy; skipping this attempt."; return 1; }
+    (( t == 60 )) && { say "The GPU stayed busy. Skipping this attempt."; return 1; }
   done
 }
 
@@ -492,7 +493,7 @@ run_attempt() { # round item
   local r=$1 it=$2 f=${ITEM_F[$2]} v=${ITEM_V[$2]} t0 faults errs=0 rc note="" o
   local maxt=0 maxf=0 maxb=0 log
   log="$LOGS/$(date '+%Y%m%d-%H%M%S')-r$1-${2//:/-}.log"
-  hdr "Round $r/$ROUNDS: $it  (${f} MHz @ ${v} mV)"
+  hdr "Round $r/$ROUNDS, $it, ${f} MHz @ ${v} mV"
   wait_idle || { record "$r" "$it" "$f" "$v" ABORTED - - - - - "GPU not idle"; return 1; }
   t0=$(date '+%F %T')
   set_pending "$r" "$it" "$f" "$v"
@@ -521,7 +522,7 @@ run_attempt() { # round item
         kill "$LOAD_PID" 2>/dev/null; wait "$LOAD_PID" 2>/dev/null; LOAD_PID=""
         record "$r" "$it" "$f" "$v" ABORTED - - "$maxt" "$maxf" "$maxb" "aborted at ${maxt}C - fix cooling first"
         rm -f "$PENDING"; restore_config
-        die "GPU reached ${maxt}C; aborting the run. Improve cooling, then continue."
+        die "the GPU reached ${maxt}C, so the run stops. Improve the cooling, then run the script again to continue."
       fi
     fi
     printf '\r  %3ds  %s C  %s MHz  busy %s%%   ' "$(( SECONDS - start ))" "$maxt" "$maxf" "$maxb"

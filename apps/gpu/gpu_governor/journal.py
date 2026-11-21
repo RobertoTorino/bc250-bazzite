@@ -38,11 +38,11 @@ class JournalView(QWidget):
         bar.addWidget(self.filter, 1)
         self.follow = QCheckBox("Follow")
         self.follow.setChecked(True)
-        self.follow.setToolTip("Keep scrolling to the newest line. Untick to read without being moved.")
+        self.follow.setToolTip("Keep scrolling to the newest line. Uncheck it to read while the view stays put.")
         self.follow.toggled.connect(self._render)
         bar.addWidget(self.follow)
         self.clear = QPushButton("Clear")
-        self.clear.setToolTip("Forget the lines shown so far; new entries keep coming in.")
+        self.clear.setToolTip("Forget the lines shown so far. New entries keep coming in.")
         self.clear.clicked.connect(self._clear)
         bar.addWidget(self.clear)
         layout.addLayout(bar)
@@ -94,7 +94,7 @@ class JournalView(QWidget):
             self.lines.extend(complete)
             self._render_timer.start()
         if not self._following:
-            self.state.setText(fmt("Following journalctl -u %1; up to %2 lines are kept.",
+            self.state.setText(fmt("Following journalctl -u %1. The app keeps up to %2 lines.",
                                     self.unit, str(MAX_LINES)))
             self._following = True
 
@@ -119,8 +119,8 @@ class JournalView(QWidget):
     def _error(self, error: QProcess.ProcessError) -> None:
         if error == QProcess.ProcessError.FailedToStart:
             self._following = False
-            self.state.setText(("journalctl is not available on this system; the journal cannot be "
-                                "shown."))
+            self.state.setText(("journalctl is not available on this system. The app cannot show "
+                                "the journal."))
 
     # ------------------------------------------------------------------ view
     def _filter_changed(self, text: str) -> None:
@@ -154,7 +154,7 @@ class JournalView(QWidget):
             self.state.setText(fmt("%1 of %2 lines match%3.",
                                     str(len(shown)), str(len(self.lines)), self._pattern_error))
         elif self.lines and self.process.state() == QProcess.ProcessState.Running:
-            self.state.setText(fmt("Following journalctl -u %1; up to %2 lines are kept.",
+            self.state.setText(fmt("Following journalctl -u %1. The app keeps up to %2 lines.",
                                     self.unit, str(MAX_LINES)))
             self._following = True
 

@@ -10,7 +10,7 @@ PREFIX=/usr/local/lib/bc250-mesh-shaders
 TESTED="$HOME/.local/state/bc250-mesh-shaders/tested"
 LOG="$HOME/.local/state/bc250-mesh-shaders/run.log"
 
-[ $# -gt 0 ] || { echo "Usage: $0 <command>   (Steam launch options: $0 %command%)" >&2; exit 2; }
+[ $# -gt 0 ] || { printf '%s\n' "Usage: $0 <command>" "Steam launch options: $0 %command%" >&2; exit 2; }
 
 # One line per start: what the game got, and the game (Steam's AppId=, else the program's name).
 note() {
@@ -33,9 +33,9 @@ kernel=$(sed -n 's/^kernel=//p' "$TESTED" 2>/dev/null)
 driver=$(sed -n 's/^driver=//p' "$TESTED" 2>/dev/null)
 sum=$(sha256sum "$PREFIX/lib64/libvulkan_radeon.so" 2>/dev/null | cut -d' ' -f1)
 if [ -z "$sum" ]; then
-    note "system Mesa (the DirectMesh driver is not installed)" "$@"
+    note "system Mesa. The DirectMesh driver is not installed." "$@"
 elif [ "$kernel" != "$(uname -r)" ] || [ "$driver" != "$sum" ]; then
-    note "system Mesa (the test has not passed on kernel $(uname -r) with this driver)" "$@"
+    note "system Mesa. The test has not passed on kernel $(uname -r) with this driver." "$@"
 else
     # The DirectMesh 64-bit driver, the stock 32-bit one (Proton's 32-bit helpers need one) and lavapipe
     # (VK_DRIVER_FILES replaces the loader's search, so without it there would be no Vulkan at all if amdgpu ever

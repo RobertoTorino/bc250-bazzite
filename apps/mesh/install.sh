@@ -4,7 +4,7 @@
 #
 #   ./install.sh                         # install or update
 #   ./install.sh --no-desktop-shortcut   # app menu entry only, no icon on the Desktop
-#   ./install.sh --uninstall             # remove the app and its build; the driver stays as it is
+#   ./install.sh --uninstall             # remove the app and its build, but keep the driver
 #   ./install.sh --uninstall --purge     # also remove its settings and test results
 #
 # Installing the app changes nothing on the board: the driver is built, installed and switched on from the app.
@@ -80,8 +80,9 @@ if $UNINSTALL; then
     if ! $found; then
         info "$APP_NAME is not installed: nothing to remove."
         if [ -d "$DRIVER_DIR" ]; then
-            info "The patched driver is still installed in $DRIVER_DIR. To remove it as well: install the app again"
-            info "and use Remove in its window, or run: sudo bash $SRC/bc250-mesh-shaders.sh --remove-driver"
+            info "The patched driver is still installed in $DRIVER_DIR."
+            info "To remove it as well, install the app again and use Remove in its window."
+            info "Or run \"sudo bash $SRC/bc250-mesh-shaders.sh --remove-driver\"."
         fi
         exit 0
     fi
@@ -106,8 +107,9 @@ if $UNINSTALL; then
     fi
     info "$APP_NAME is uninstalled."
     if [ -d "$DRIVER_DIR" ]; then
-        info "The patched driver is still installed in $DRIVER_DIR. To remove it as well: install the app again"
-        info "and use Remove in its window, or run: sudo bash $SRC/bc250-mesh-shaders.sh --remove-driver"
+        info "The patched driver is still installed in $DRIVER_DIR."
+        info "To remove it as well, install the app again and use Remove in its window."
+        info "Or run \"sudo bash $SRC/bc250-mesh-shaders.sh --remove-driver\"."
     fi
     exit 0
 fi
@@ -222,5 +224,5 @@ elif ! $DESKTOP_SHORTCUT; then
 fi
 
 info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run: $APP_ID"
-info "Installing the app changed nothing on the board; build and install the driver from its window."
+info "Installing the app changed nothing on the board. Build and install the driver from its window."
 case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) info "Note: ~/.local/bin is not on your PATH, so the terminal command needs the full path: $LAUNCHER" ;; esac

@@ -36,9 +36,9 @@ class MainWindow(QWidget):
 
         root = QVBoxLayout(self)
         root.addLayout(self._build_header())
-        note = QLabel("Choose how you want to run bc250-gpu-oc-bisect.sh, then click Start. This window closes and "
-                      "the real sweep continues in a terminal, exactly like running the script by hand. An unstable "
-                      "step can freeze the system - save your work first.")
+        note = QLabel("Choose how to run bc250-gpu-oc-bisect.sh, then click Start GPU OC Bisect. This window then "
+                      "closes. The real sweep continues in a terminal, exactly like running the script by hand. An "
+                      "unstable step can freeze the system, so save your work first.")
         note.setWordWrap(True)
         note.setStyleSheet(f"color:{muted()};")
         root.addWidget(note)
@@ -114,7 +114,7 @@ class MainWindow(QWidget):
         self.time_spin.setRange(60, 36000)
         self.time_spin.setSingleStep(30)
         self.time_spin.setValue(180)
-        self.time_spin.setToolTip("GPU load per attempt (-t). Minimum 60s, default 180s.")
+        self.time_spin.setToolTip("GPU load per attempt (-t). At least 60s, 180s by default.")
         grid.addWidget(self.time_spin, row, 1)
         row += 1
 
@@ -123,8 +123,8 @@ class MainWindow(QWidget):
         self.rounds_spin.setRange(2, 9)
         self.rounds_spin.setValue(3)
         self.rounds_spin.setToolTip(
-            "Attempts per step (-r). All rounds of a step finish before the next step is tried, "
-            "so the sweep never drives past a step that is still failing. Minimum 2.")
+            "Attempts per step (-r). All rounds of a step finish before the sweep tries the next step. "
+            "So the sweep never drives past a step that is still failing. At least 2.")
         grid.addWidget(self.rounds_spin, row, 1)
         row += 1
 
@@ -141,8 +141,8 @@ class MainWindow(QWidget):
         self.max_freq_spin.setSingleStep(50)
         self.max_freq_spin.setValue(DEFAULT_MAX_FREQ)
         self.max_freq_spin.setToolTip(
-            "--max-freq: highest frequency to try. Hard ceiling {0} MHz; the community record of "
-            "hard-locks above ~1850-2000 MHz is the reason.".format(HARD_MAX_FREQ))
+            "--max-freq: the highest frequency to try. The hard ceiling is {0} MHz. The reason is the "
+            "community record of hard-locks above ~1850-2000 MHz.".format(HARD_MAX_FREQ))
         grid.addWidget(self.max_freq_spin, row, 1)
         row += 1
 
@@ -151,7 +151,7 @@ class MainWindow(QWidget):
         self.freq_step_spin.setRange(25, 500)
         self.freq_step_spin.setSingleStep(25)
         self.freq_step_spin.setValue(DEFAULT_FREQ_STEP)
-        self.freq_step_spin.setToolTip("--freq-step: OC ladder step. Minimum 25 MHz.")
+        self.freq_step_spin.setToolTip("--freq-step: the OC ladder step. At least 25 MHz.")
         grid.addWidget(self.freq_step_spin, row, 1)
         row += 1
 
@@ -162,8 +162,8 @@ class MainWindow(QWidget):
         self.oc_volt_spin.setValue(0)
         self.oc_volt_spin.setSpecialValueText("config default")
         self.oc_volt_spin.setToolTip(
-            "--oc-volt: voltage used for the OC ladder. Hard ceiling {0} mV - one board was "
-            "bricked by overvolting; leave at the default unless you know why not.".format(HARD_MAX_VOLT))
+            "--oc-volt: the voltage for the OC ladder. The hard ceiling is {0} mV. One board was "
+            "bricked by overvolting. Leave the default unless you know why not.".format(HARD_MAX_VOLT))
         grid.addWidget(self.oc_volt_spin, row, 1)
         row += 1
 
@@ -179,7 +179,8 @@ class MainWindow(QWidget):
         self.min_volt_spin.setRange(HARD_MIN_VOLT, 1100)
         self.min_volt_spin.setSingleStep(25)
         self.min_volt_spin.setValue(DEFAULT_MIN_VOLT)
-        self.min_volt_spin.setToolTip("--min-volt: lowest voltage to try. Hard floor {0} mV.".format(HARD_MIN_VOLT))
+        self.min_volt_spin.setToolTip(
+            "--min-volt: the lowest voltage to try. The hard floor is {0} mV.".format(HARD_MIN_VOLT))
         grid.addWidget(self.min_volt_spin, row, 1)
         row += 1
 
@@ -188,14 +189,14 @@ class MainWindow(QWidget):
         self.volt_step_spin.setRange(5, 100)
         self.volt_step_spin.setSingleStep(5)
         self.volt_step_spin.setValue(DEFAULT_VOLT_STEP)
-        self.volt_step_spin.setToolTip("--volt-step: UV ladder step. Minimum 5 mV.")
+        self.volt_step_spin.setToolTip("--volt-step: the UV ladder step. At least 5 mV.")
         grid.addWidget(self.volt_step_spin, row, 1)
         row += 1
 
         self.per_boot_check = QCheckBox("One attempt per boot (strict isolation, slower)")
         self.per_boot_check.setToolTip(
-            "--per-boot: reboot between attempts. Default is same boot with a cooldown; the "
-            "governor restart resets its state.")
+            "--per-boot: restart the board between attempts. By default, the attempts share one boot, with a "
+            "cooldown. The governor restart resets its state.")
         grid.addWidget(self.per_boot_check, row, 0, 1, 2)
         row += 1
 
@@ -223,9 +224,9 @@ class MainWindow(QWidget):
         buttons.addWidget(self.status_btn)
         self.install_btn = QPushButton("Install result")
         self.install_btn.setToolTip(
-            "--install: write the best validated step into the governor config (backup kept at "
-            "config.toml.pre-oc-bisect). The script checks the sweep is complete and asks for "
-            "confirmation in the terminal.")
+            "--install: write the recommended margin step into the governor config. The script keeps a backup "
+            "at config.toml.pre-oc-bisect. It checks that the sweep is complete. It asks you to confirm in the "
+            "terminal.")
         self.install_btn.clicked.connect(self._on_install)
         buttons.addWidget(self.install_btn)
         self.uninstall_btn = QPushButton("Uninstall")
@@ -288,11 +289,13 @@ class MainWindow(QWidget):
         confirm = QMessageBox(self)
         confirm.setIcon(QMessageBox.Icon.Warning)
         confirm.setWindowTitle(APP_NAME)
-        confirm.setText("Write the best validated step into the governor config?")
+        confirm.setText("Write the recommended margin step into the governor config?")
         confirm.setInformativeText(
-            "This changes /etc/cyan-skillfish-governor-smu/config.toml (--install). A backup is "
-            "kept at config.toml.pre-oc-bisect and Uninstall restores it. The script will show "
-            "the chosen point and ask you to confirm once more in the terminal.")
+            "This changes /etc/cyan-skillfish-governor-smu/config.toml (--install).\n"
+            "The script keeps a backup at config.toml.pre-oc-bisect.\n"
+            "Uninstall restores it.\n"
+            "The terminal shows the chosen point and asks you to confirm once more.\n"
+            "You will be asked for your password, unless sudo still has it.")
         confirm.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel)
         confirm.setDefaultButton(QMessageBox.StandardButton.Cancel)
         if confirm.exec() == QMessageBox.StandardButton.Yes:
@@ -304,9 +307,9 @@ class MainWindow(QWidget):
         confirm.setWindowTitle(APP_NAME)
         confirm.setText("Delete all bc250-gpu-oc-bisect results?")
         confirm.setInformativeText(
-            "This permanently deletes every saved result and log in "
-            "~/.local/share/bc250-gpu-oc-bisect (--reset). This cannot be undone and there is no "
-            "backup. The script will still ask you to confirm once more in the terminal.")
+            "This permanently deletes every saved result and log in ~/.local/share/bc250-gpu-oc-bisect (--reset).\n"
+            "You cannot undo this, and there is no backup.\n"
+            "The terminal still asks you to confirm once more.")
         confirm.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel)
         confirm.setDefaultButton(QMessageBox.StandardButton.Cancel)
         if confirm.exec() == QMessageBox.StandardButton.Yes:
@@ -322,11 +325,12 @@ class MainWindow(QWidget):
         sweep = ("overclock + undervolt" if opts.sweep_oc and opts.sweep_uv
                  else "overclock only" if opts.sweep_oc else "undervolt only")
         summary = (
-            "Start bc250-gpu-oc-bisect.sh with:\n\n"
+            "Start bc250-gpu-oc-bisect.sh with these options?\n\n"
             "  load time: {t}s\n  rounds: {r}\n  sweep: {s}\n"
             "  max frequency: {mf} MHz (step {fs})\n  min voltage: {mv} mV (step {vs})\n"
             "  OC voltage: {ov}\n  per boot: {pb}\n\n"
-            "This window will close and the sweep continues in a terminal."
+            "This window closes.\nThe sweep continues in a terminal.\n"
+            "You will be asked for your password, unless sudo still has it."
         ).format(t=opts.time_secs, r=opts.rounds, s=sweep,
                   mf=opts.max_freq, fs=opts.freq_step, mv=opts.min_volt, vs=opts.volt_step,
                   ov=(f"{opts.oc_volt} mV" if opts.oc_volt else "config default"),

@@ -37,7 +37,7 @@ def validate(points: list[tuple[int, int]]) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
     if len(points) < MIN_POINTS:
-        errors.append(fmt("At least %1 points are needed.",
+        errors.append(fmt("The curve needs at least %1 points.",
                            str(MIN_POINTS)))
     seen: dict[int, int] = {}
     for frequency, voltage in points:
@@ -88,10 +88,10 @@ class SafePointsPage(QWidget):
         layout.addLayout(header)
         layout.addWidget(hint_label(fmt(
             "The [[safe-points]] of %1 define the frequency/voltage curve the governor scales along. "
-            "It never leaves the range between the lowest and the highest point; [frequency-range] and the runtime "
-            "controls are clamped to it. Edit with care: wrong voltages can freeze or damage the board. Apply checks "
-            "the governor's rules and the hard rails (%2–%3 mV, up to %4 "
-            "MHz) first and makes a backup.", config_path, str(HARD_MIN_VOLT), str(HARD_MAX_VOLT),
+            "It never leaves the range between the lowest and the highest point. The governor clamps [frequency-range] "
+            "and the runtime controls to it. Edit with care, because wrong voltages can freeze or damage the board. "
+            "Apply first checks the governor's rules and the hard rails of %2–%3 mV and up to %4 "
+            "MHz. Then it makes a backup.", config_path, str(HARD_MIN_VOLT), str(HARD_MAX_VOLT),
             str(HARD_MAX_FREQ))))
 
         body = QHBoxLayout()
@@ -165,11 +165,11 @@ class SafePointsPage(QWidget):
 
         apply_row = QHBoxLayout()
         self.apply_button = accent_button("Apply safe points",
-                                          ("Writes the [[safe-points]] blocks to config.toml (asks for your "
-                                           "password, makes a backup first)."))
+                                          ("Writes the [[safe-points]] blocks to config.toml. It makes a "
+                                           "backup first and asks for your password."))
         self.apply_button.clicked.connect(lambda: self.apply_requested.emit(sorted(self.points()),
                                                                              self.restart.isChecked()))
-        self.restart = QCheckBox("Restart the governor afterwards")
+        self.restart = QCheckBox("Restart the governor afterward")
         self.restart.setChecked(True)
         self.restart.setToolTip("The governor reads config.toml only at start.")
         self.revert_button = QPushButton("Revert")
@@ -190,11 +190,11 @@ class SafePointsPage(QWidget):
         self.test_box = test_box = QGroupBox("Test a point before saving it (runtime, root)")
         test_layout = QVBoxLayout(test_box)
         test_layout.addWidget(hint_label(
-            "SetTestMode over D-Bus pins this frequency and voltage right now and stops the automatic scaling; "
-            "the governor's thermal throttling stays active. Nothing is written to config.toml and the governor "
+            "SetTestMode over D-Bus pins this frequency and voltage right now and stops the automatic scaling. "
+            "The governor's thermal throttling stays active. Nothing changes in config.toml. The governor "
             "applies the pair as given, so stay inside the hard rails. Put the GPU under load while it runs. "
-            "Stop test (or the timer) switches performance mode off, which returns to normal scaling with the "
-            "start-up range. A point the silicon cannot hold freezes the board; have your work saved."))
+            "Stop test or the timer switches performance mode off. That returns to normal scaling with the "
+            "start-up range. A point the silicon cannot hold freezes the board, so save your work first."))
         tool_row = QHBoxLayout()
         tool_row.addWidget(QLabel("Load:"))
         self.test_tool = QComboBox()
@@ -204,19 +204,19 @@ class SafePointsPage(QWidget):
             self.test_tool.addItem(name, name)
         if self.test_tool.count() > 1:
             self.test_tool.setCurrentIndex(1)
-        self.test_tool.setToolTip(("A GPU load generator found on PATH, started with the test and killed "
-                                   "when it ends. If it dies while the point is pinned, that is reported."))
+        self.test_tool.setToolTip(("A GPU load generator found on PATH. It starts with the test and is killed "
+                                   "when the test ends. If it dies while the point is pinned, the status says so."))
         tool_row.addWidget(self.test_tool, 1)
         tool_row.addWidget(hint_label("" if self.test_tool.count() > 1 else
-                                      ("No load tool found (vkmark, glmark2, vkcube or glxgears): run a game "
-                                       "or benchmark yourself during the test.")), 2)
+                                      ("No load tool found. The app looks for vkmark, glmark2, vkcube and glxgears. "
+                                       "Run a game or benchmark yourself during the test.")), 2)
         test_layout.addLayout(tool_row)
         test_row = QHBoxLayout()
         self.test_freq = QSpinBox()
         self.test_freq.setRange(1, HARD_MAX_FREQ)
         self.test_freq.setSingleStep(FREQ_STEP)
         self.test_freq.setSuffix(" MHz")
-        self.test_freq.setToolTip("Prefilled from the selected row; edit freely.")
+        self.test_freq.setToolTip("Filled in from the selected row. You can change it.")
         self.test_volt = QSpinBox()
         self.test_volt.setRange(HARD_MIN_VOLT, HARD_MAX_VOLT)
         self.test_volt.setSingleStep(VOLT_STEP)
@@ -226,8 +226,8 @@ class SafePointsPage(QWidget):
         self.test_seconds.setValue(60)
         self.test_seconds.setSuffix(" s")
         self.test_seconds.setSpecialValueText("Until stopped")
-        self.test_seconds.setToolTip(("The app ends the test by itself after this time (0 = only by Stop "
-                                      "test)."))
+        self.test_seconds.setToolTip(("The app ends the test by itself after this time. With 0 only Stop "
+                                      "test ends it."))
         test_row.addWidget(QLabel("Frequency:"))
         test_row.addWidget(self.test_freq)
         test_row.addWidget(QLabel("Voltage:"))
@@ -236,7 +236,8 @@ class SafePointsPage(QWidget):
         test_row.addWidget(self.test_seconds)
         test_row.addStretch(1)
         self.test_button = QPushButton("Start test")
-        self.test_button.setToolTip("Asks for your password (pkexec): the TestMode interface is root-only.")
+        self.test_button.setToolTip(("The TestMode interface is root-only. You will be asked for your "
+                                     "password (pkexec)."))
         self.test_button.clicked.connect(
             lambda: self.test_requested.emit(self.test_freq.value(), self.test_volt.value(), self.test_seconds.value(),
                                              self.test_tool.currentData()))
@@ -246,9 +247,9 @@ class SafePointsPage(QWidget):
         test_row.addWidget(self.test_button)
         test_row.addWidget(self.stop_test_button)
         self.add_test_button = QPushButton("Add to table")
-        self.add_test_button.setToolTip(("Puts this frequency/voltage pair into the safe-points table above "
-                                         "(sorted by frequency, replacing a point at the same frequency). "
-                                         "Apply to save."))
+        self.add_test_button.setToolTip(("Puts this frequency/voltage pair into the safe-points table above. "
+                                         "The table stays sorted by frequency. The pair replaces a point at the same "
+                                         "frequency. Apply to save."))
         self.add_test_button.clicked.connect(self._add_test_point)
         test_row.addWidget(self.add_test_button)
         test_layout.addLayout(test_row)
@@ -263,8 +264,8 @@ class SafePointsPage(QWidget):
         self.runtime = hint_label("")
         layout.addWidget(self.runtime)
         layout.addWidget(hint_label(fmt(
-            "Finding how far your own board can go (higher top frequency, lower voltages) is a job for "
-            "%1: it tests one step at a time under a verified load and "
+            "To find how far your own board can go, use %1. It finds a higher top frequency and lower voltages. "
+            "It tests one step at a time under a verified load and "
             "can install the result. Edit the points by hand only if you know what the silicon tolerates.",
             f'<a href="{BISECT_URL}">bc250-gpu-oc-bisect</a>')))
 
@@ -359,7 +360,7 @@ class SafePointsPage(QWidget):
             volts = [v for _, v in ordered]
             y0, y1 = _floor(min(volts) - 50, 50), _ceil(max(volts) + 50, 50)
         else:
-            self.summary.setText(("No [[safe-points]]; the governor would fall back to 350 MHz @ 700 mV and "
+            self.summary.setText(("No [[safe-points]]. The governor would fall back to 350 MHz @ 700 mV and "
                                   "2000 MHz @ 1000 mV."))
             x0, x1, y0, y1 = 0, 2500, 600, 1100
         self.axis_x.setRange(x0, x1)
@@ -449,8 +450,8 @@ class SafePointsPage(QWidget):
             warnings.append(fmt("the curve above would give %1 mV at %2 MHz; this is lower",
                                  str(expected), str(frequency)))
         if not self._bus_ok:
-            self.test_status.setText(("The governor's D-Bus interface is not reachable (service stopped or "
-                                      "[dbus] enabled = false)."))
+            self.test_status.setText(("The governor's D-Bus interface is not reachable. The service is stopped, or "
+                                      "config.toml has [dbus] enabled = false."))
         elif self._notice:
             self.test_status.setText(self._notice)
         elif warnings:

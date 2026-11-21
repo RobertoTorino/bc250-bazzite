@@ -321,7 +321,7 @@ class MainWindow(QMainWindow):
         if self.tray is not None and self.settings_page.minimise_on_close() and not self._quitting:
             self.hide()
             self.tray.sync_toggle()
-            self.tray.showMessage(APP_NAME, "Still running in the tray; use Quit in its menu to leave.",
+            self.tray.showMessage(APP_NAME, "Still running in the tray. Use Quit in its menu to leave.",
                                   QSystemTrayIcon.MessageIcon.Information, 3000)
             event.ignore()
             return
@@ -466,8 +466,8 @@ class MainWindow(QMainWindow):
             ok, output = self.backend.service_action("restart")
             if not ok:
                 QMessageBox.warning(self, "Saved, but the restart failed",
-                                    "config.toml was updated, but the governor could not be restarted.\n\n"
-                                    + (output or "No error text was returned."))
+                                    "config.toml was updated, but the governor did not restart.\n\n"
+                                    + (output or "The command gave no error text."))
                 message += " — restart failed"
             else:
                 message += ", governor restarted"
@@ -479,9 +479,10 @@ class MainWindow(QMainWindow):
         answer = QMessageBox.warning(
             self, "Apply safe points",
             fmt(("Write %1 safe points (%2–%3 MHz) to config.toml?\n\n"
-                 "The governor will scale along this curve. A point the silicon cannot hold freezes the "
-                 "board under load; a backup of the current file is made first and can be restored from "
-                 "the Backups page."), str(len(points)), str(points[0][0]), str(top)),
+                 "The governor will scale along this curve.\n"
+                 "A point the silicon cannot hold freezes the board under load.\n"
+                 "The app backs up the current file first. You can restore it from the Backups page.\n"
+                 "You will be asked for your password."), str(len(points)), str(points[0][0]), str(top)),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel, QMessageBox.StandardButton.Cancel)
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -539,7 +540,7 @@ class MainWindow(QMainWindow):
         for page in self.config_pages:
             page.show_values(config)
         self.nav.setCurrentRow(self._page_rows[self.tuning])
-        self.statusBar().showMessage(fmt("Profile '%1' loaded into the forms; apply to write it", name),
+        self.statusBar().showMessage(fmt("Profile '%1' loaded into the forms. Apply to write it", name),
                                      6000)
 
     def _profile_apply(self, name: str) -> None:
@@ -549,7 +550,8 @@ class MainWindow(QMainWindow):
         if dirty:
             answer = QMessageBox.question(
                 self, "Apply profile",
-                fmt("Apply '%1'? The %2 unapplied changes, they are discarded.", name, dirty),
+                fmt("Apply '%1'?\n\nThe %2 unapplied changes. Applying the profile discards them.\n"
+                    "You will be asked for your password.", name, dirty),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel, QMessageBox.StandardButton.Cancel)
             if answer != QMessageBox.StandardButton.Yes:
                 return
@@ -580,7 +582,7 @@ class MainWindow(QMainWindow):
         command = profile_command(name)
         QApplication.clipboard().setText(command)
         self.tuning.profiles.hint.setText(fmt("Copied: %1", command))
-        self.statusBar().showMessage(("Bind that command to a key in your desktop's shortcut settings; it "
+        self.statusBar().showMessage(("Bind that command to a key in your desktop's shortcut settings. It "
                                       "reaches the running app and applies the profile."), 10000)
 
     def _profile_save(self) -> None:
@@ -609,10 +611,11 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(fmt("Profile '%1' deleted", name), 5000)
 
     def _restore_backup(self, path: Path, restart: bool) -> None:
-        message = fmt("Replace %1 with %2?\n\nThe current file is backed up first.",
+        message = fmt("Replace %1 with %2?\n\nThe app backs up the current file first.",
                       self.backend.config_path.name, path.name)
         if restart:
-            message += "\nThe governor is restarted afterwards."
+            message += "\nThe governor restarts afterward."
+        message += "\nYou will be asked for your password."
         answer = QMessageBox.question(self, "Restore backup", message)
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -638,7 +641,7 @@ class MainWindow(QMainWindow):
         self.service.show_update(result)
         if result.update_available:
             self.statusBar().showMessage(
-                fmt("Governor %1 is available (installed %2); see the Service page",
+                fmt("Governor %1 is available. You have %2 installed. See the Service page",
                     result.latest, result.installed), 15000)
             if self.tray is not None:
                 self.tray.showMessage(APP_NAME, fmt("Governor update %1 is available.", result.latest),
@@ -716,7 +719,7 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(fmt("systemctl %1: done", action), 5000)
         else:
             QMessageBox.warning(self, fmt("systemctl %1 failed", action),
-                                output or "No error text was returned.")
+                                output or "The command gave no error text.")
         self.refresh()
 
     # ------------------------------------------------------------ performance mode (D-Bus)
@@ -763,7 +766,7 @@ class MainWindow(QMainWindow):
     def _perf_copy(self) -> None:
         self.tuning.take_runtime(self.performance.state())
         self.nav.setCurrentRow(self._page_rows[self.tuning])
-        self.statusBar().showMessage("Runtime values copied to the Tuning page; apply to save them", 6000)
+        self.statusBar().showMessage("Runtime values copied to the Tuning page. Apply to save them", 6000)
 
     # ------------------------------------------------------------ test mode (D-Bus, root)
     def _test_point(self, frequency: int, voltage: int, seconds: int, tool: str = NO_TOOL) -> None:
@@ -772,10 +775,12 @@ class MainWindow(QMainWindow):
         answer = QMessageBox.warning(
             self, "Test a safe point",
             fmt(("Pin the GPU to %1 MHz at %2 mV %3%4?\n\n"
-                 "The governor applies this pair as given and stops its automatic scaling; thermal "
-                 "throttling stays active. A point the silicon cannot hold freezes the board under load. "
-                 "Nothing is written to config.toml. You will be asked for your password (the TestMode "
-                 "interface is root-only)."), str(frequency), str(voltage), duration, load),
+                 "The governor applies this pair as given and stops its automatic scaling.\n"
+                 "Thermal throttling stays active.\n"
+                 "A point the silicon cannot hold freezes the board under load.\n"
+                 "Nothing changes in config.toml.\n"
+                 "The TestMode interface is root-only. You will be asked for your password."),
+                 str(frequency), str(voltage), duration, load),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel, QMessageBox.StandardButton.Cancel)
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -890,7 +895,7 @@ class MainWindow(QMainWindow):
         if not perf.available:
             # The governor went away (stopped or restarted): test mode went with it.
             self._end_test()
-            self.safe_points.show_test(False, "The governor stopped; the test ended with it.")
+            self.safe_points.show_test(False, "The governor stopped. The test ended with it.")
             return
         left = (fmt(", %1 s left", str(max(0, round(deadline - time.monotonic()))))
                 if deadline else "")
@@ -903,7 +908,7 @@ class MainWindow(QMainWindow):
         watch = (" Kernel log not readable, no hang detection." if self._kernel.reason
                  else " Kernel log watched." if self._kernel.running else "")
         self.safe_points.show_test(True, fmt(("Testing %1 MHz @ %2 mV%3.%4%5 Watch "
-                                              "the Overview; Stop test returns to normal scaling."),
+                                              "the Overview. Stop test returns to normal scaling."),
                                               str(frequency), str(voltage), left, load, watch))
 
 

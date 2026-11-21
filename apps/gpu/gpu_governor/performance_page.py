@@ -42,10 +42,11 @@ class PerformancePage(QWidget):
         layout.addLayout(header)
 
         layout.addWidget(hint_label(
-            "Runtime controls over D-Bus (com.cyanskillfish.Governor): they apply immediately, need no password "
-            "and are lost at the next governor restart. config.toml is unchanged; use the Tuning page to persist "
-            "values. Performance mode opens the full safe-points range; a fixed frequency pins the clock; the "
-            "load target and temperature thresholds change how the governor scales without touching the mode."))
+            "These controls talk to the governor over D-Bus (com.cyanskillfish.Governor). They apply at once and "
+            "need no password. They last until the next governor restart. The app leaves config.toml unchanged. "
+            "Use the Tuning page to keep values. Performance mode opens the full safe-points range. A fixed "
+            "frequency pins the clock. The load target and temperature thresholds change how the governor scales. They "
+            "leave the mode unchanged."))
 
         status = QGroupBox("Runtime state")
         grid = QGridLayout(status)
@@ -83,8 +84,8 @@ class PerformancePage(QWidget):
             self.mode_button.setText(text)
             widths.append(self.mode_button.sizeHint().width())
         self.mode_button.setFixedWidth(max(widths))
-        self.mode_button.setToolTip(("SetEnabled: on lets the governor use the whole allowed range and "
-                                     "react faster to load; off returns to the range the governor started "
+        self.mode_button.setToolTip(("Calls SetEnabled. On lets the governor use the whole allowed range and "
+                                     "react faster to load. Off returns to the range the governor started "
                                      "with."))
         self.mode_button.clicked.connect(lambda: self.enable_requested.emit(not self._state.enabled))
         set_button_active(self.mode_button, False)
@@ -114,8 +115,8 @@ class PerformancePage(QWidget):
             spin.setSingleStep(FREQ_STEP)
             spin.setSuffix(" MHz")
             spin.setSpecialValueText("No limit")
-        self.range_min.setToolTip("Lower clock limit for now; No limit = the lowest safe point.")
-        self.range_max.setToolTip("Upper clock limit for now; No limit = the highest safe point.")
+        self.range_min.setToolTip("Lower clock limit for now. No limit = the lowest safe point.")
+        self.range_max.setToolTip("Upper clock limit for now. No limit = the highest safe point.")
         self.range_button = QPushButton("Set range")
         self.range_button.setToolTip("SetRange(min, max): a temporary range, leaves performance mode.")
         self.range_button.clicked.connect(lambda: self.range_requested.emit(self.range_min.value(),
@@ -154,13 +155,13 @@ class PerformancePage(QWidget):
         self.temp_throttle = QSpinBox()
         self.temp_throttle.setRange(1, 100)
         self.temp_throttle.setSuffix(" °C")
-        self.temp_throttle.setToolTip("Above this temperature the governor lowers the maximum clock.")
+        self.temp_throttle.setToolTip("Above this temperature the governor lowers the top clock.")
         self.temp_recover = QSpinBox()
         self.temp_recover.setRange(0, 100)
         self.temp_recover.setSuffix(" °C")
         self.temp_recover.setSpecialValueText("Not set")
-        self.temp_recover.setToolTip(("Below this temperature the full range is allowed again; Not set = "
-                                      "the governor's own hysteresis."))
+        self.temp_recover.setToolTip(("Below this temperature the governor allows the full range again. "
+                                      "Not set = the governor's own hysteresis."))
         for spin in (self.temp_throttle, self.temp_recover):
             spin.valueChanged.connect(self._check_targets)
         self.temp_button = QPushButton("Set temperatures")
@@ -237,11 +238,11 @@ class PerformancePage(QWidget):
             if not service_active:
                 reason = "The governor service is not running (Service page)."
             elif not saved.dbus_enabled:
-                reason = ("D-Bus is off in config.toml: enable it on the Tuning page and apply with a "
+                reason = ("D-Bus is off in config.toml. Turn on D-Bus on the Tuning page and apply with a "
                           "restart.")
             else:
                 reason = state.error or "The governor did not answer on the system bus."
-            self.reason.setText(fmt("Controls are disabled: %1", reason))
+            self.reason.setText(fmt("The controls are off. %1", reason))
         self.controls.setEnabled(state.available)
         self._check_targets()
 

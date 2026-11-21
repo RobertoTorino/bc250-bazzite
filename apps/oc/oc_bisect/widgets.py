@@ -39,8 +39,8 @@ class AboutDialog(QDialog):
         top.addStretch(1)
         layout.addLayout(top)
 
-        desc = QLabel(("A PyQt6 launcher for bc250-gpu-oc-bisect.sh: pick your options and start a sweep, "
-                       "which then continues in a terminal exactly as if typed by hand."))
+        desc = QLabel(("A PyQt6 launcher for bc250-gpu-oc-bisect.sh. You pick your options and start a sweep. "
+                       "The sweep then continues in a terminal, exactly as if you typed it by hand."))
         desc.setWordWrap(True)
         layout.addWidget(desc)
 
@@ -88,7 +88,7 @@ class HelpDialog(QDialog):
             pass
         return (
             "Could not read bc250-gpu-oc-bisect.sh --help.\n\n"
-            "Run it from a terminal instead:\n"
+            "Run this command in a terminal instead.\n"
             f"  bash {script} --help"
         )
 

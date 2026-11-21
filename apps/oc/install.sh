@@ -190,5 +190,6 @@ fi
 refresh_menu
 
 info "Done. Start from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run:"
-info "  $APP_ID-gui   (or $LINK/bc250-gpu-oc-bisect.sh in a terminal)"
+info "  $APP_ID-gui"
+info "To run the script itself, type $LINK/bc250-gpu-oc-bisect.sh in a terminal."
 case ":$PATH:" in *":$BIN_DIR:"*) ;; *) info "Note: $BIN_DIR is not on your PATH, so the command needs the full path." ;; esac

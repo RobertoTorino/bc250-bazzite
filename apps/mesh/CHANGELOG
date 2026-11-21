@@ -1,3 +1,15 @@
+Changelog: 21-11-2026 20:49:06
+
+Fixed. The text of BC-250 Mesh Shaders is rewritten to the suite's writing standard. This covers the wiki chapter, the
+README, the window's introduction, hints, tooltips, step texts and dialogs, and the Switches dialog. It also covers the
+status lines and messages of bc250-mesh-shaders.sh, the wrapper's run.log lines and the installer's own messages.
+Sentences are short, with one fact each and no chains. The Build, Install and Remove dialogs ask their question first
+and give one fact per line. Install and Remove end with "You will be asked for your password." The introduction links to
+the Wiki instead of the Manual. No label is renamed. The wiki said that the portal lists the app under Gaming. It is
+under Graphics. The wiki's list of states next to the title now also names No BC-250, which the app shows on another
+board. Nothing the app does has changed. The tests that assert the reworded strings changed with them:
+test_main_window.py, test_script.py and test_status.py.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 4.7.1.

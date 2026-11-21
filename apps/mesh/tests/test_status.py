@@ -48,6 +48,6 @@ def test_verdicts():
     assert verdict(status(Build=BUILT))[0] == "Not installed"
     installed = {"Build": BUILT, "Driver": f"installed, {BUILT}"}
     assert verdict(status(**installed, Test="not run with this driver"))[:2] == ("Test needed", "warn")
-    assert verdict(status(**installed, Test="passed on kernel 7.2.7; test again on this one"))[0] == "Test needed"
-    assert verdict(status(**installed, Test="failed (2026-10-13 21:00); see the test log"))[:2] == ("Test failed", "bad")
+    assert verdict(status(**installed, Test="passed on kernel 7.2.7. Test again on this one"))[0] == "Test needed"
+    assert verdict(status(**installed, Test="failed (2026-10-13 21:00). See the test log"))[:2] == ("Test failed", "bad")
     assert verdict(status(**installed, Test="passed on this kernel (2026-10-13 21:00)"))[:2] == ("Ready", "ok")

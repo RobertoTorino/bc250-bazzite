@@ -6,10 +6,12 @@
 
 # BC-250 GPU Manager
 
-PyQt6 front-end for **cyan-skillfish-governor-smu**, the GPU governor of an **AMD BC-250** board (Cyan
-Skillfish APU, `gfx1013`) running **Bazzite** (Fedora Atomic / rpm-ostree).
+BC-250 GPU Manager lets you set up and watch the GPU of an **AMD BC-250** board running **Bazzite**. It is a PyQt6
+window for **cyan-skillfish-governor-smu**, the GPU governor. A governor is the service that sets the GPU's clocks
+and voltages. The board's APU is the Cyan Skillfish (`gfx1013`). Bazzite is a Fedora Atomic system that updates with
+rpm-ostree.
 
-How to install and use it: [BC-250 GPU Manager in the manual](https://robertotorino.github.io/bc250-bazzite/apps/gpu/).
+How to install and use it: [BC-250 GPU Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/gpu/).
 
 ## License
 

@@ -27,12 +27,12 @@ from .updates import Release, is_newer, latest_release
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/mesh/"
 INTRO = ("Games that need mesh shaders (DirectX 12 Ultimate) get them on the BC-250 through RADV with DirectMesh. "
-         "The driver is built on this board and installed beside the system Mesa, which stays as it is. Games use "
-         "it only with their launch options, and only after the test passed on the running kernel. "
-         f"<a href='{MANUAL_URL}'>Manual</a>")
+         "The app builds the driver on this board and installs it beside the system Mesa. The system Mesa is "
+         "never changed. Games use the driver only with their launch options, and only after the test passed on the "
+         f"running kernel. <a href='{MANUAL_URL}'>Wiki</a>")
 ABOUT = ("<b>BC-250 Mesh Shaders</b> builds, installs and tests a second graphics driver that gives games mesh "
          "shaders.<br><br><b>What it changes.</b> The driver goes in <code>/usr/local/lib/bc250-mesh-shaders</code>, "
-         "after your password. The system Mesa is never changed, and Remove takes the driver out again."
+         "after you give your password. The system Mesa is never changed, and Remove takes the driver out again."
          f"<br><br><a href='{MANUAL_URL}'>BC-250 Mesh Shaders in the wiki</a>")
 CHECK_AT_START = "updates/check_on_start"
 CHECK_LINK = "#check"
@@ -81,10 +81,10 @@ class MainWindow(CardWindow):
         self.build_button = ActionPill("Build", "20 to 40 minutes", "Build RADV with DirectMesh in a podman container")
         self.build_button.clicked.connect(self.on_build)
         self.install_button = ActionPill("Install", "The build", "Install the build in /usr/local/lib/bc250-mesh-"
-                                         "shaders (asks for your password)")
+                                         "shaders. You will be asked for your password")
         self.install_button.clicked.connect(self.on_install)
         self.remove_button = ActionPill("Remove", "The driver",
-                                        "Remove the driver; games with the launch options no longer start")
+                                        "Remove the driver. Games with the launch options no longer start")
         self.remove_button.clicked.connect(self.on_remove)
         self.test_button = ActionPill("Run test", "A few minutes",
                                       "Run the mesh test with the installed driver (a few minutes)")
@@ -187,12 +187,13 @@ class MainWindow(CardWindow):
                             f"system Mesa {escape(s.system_mesa or '?')}")
 
         if not s.built:
-            build = f"Not built. Builds DirectMesh {escape(s.directmesh or '?')}: downloads the Mesa source (checked " \
-                    "against its signature) and the build tools, then builds in a Fedora container: 20 to 40 minutes."
+            build = f"Not built. Builds DirectMesh {escape(s.directmesh or '?')}. It downloads the Mesa source and " \
+                    "the build tools, and checks the source against its signature. The build runs in a Fedora " \
+                    "container and takes 20 to 40 minutes."
         else:
             build = f"Built: {escape(s.get('Build'))}."
             if s.build_outdated:
-                build += f" <b>This version of the app builds DirectMesh {escape(s.directmesh)}:</b> build again " \
+                build += f" <b>This version of the app builds DirectMesh {escape(s.directmesh)}.</b> Build again " \
                          "to get it."
         self.build_state.setText(f"{build}<br>{self._release_line()}")
         self.build_box.set_value("Outdated" if s.built and s.build_outdated else "Built" if s.built else "Not built",
@@ -200,11 +201,11 @@ class MainWindow(CardWindow):
         self.build_box.set_colour(GREEN if s.built and not s.build_outdated else ORANGE)
 
         if not s.installed:
-            install = "Not installed." if s.built else "Not installed: build it first."
+            install = "Not installed." if s.built else "Not installed. Build it first."
         else:
             install = f"Installed: {escape(s.driver)}, in /usr/local/lib/bc250-mesh-shaders."
             if s.install_outdated:
-                install += " <b>A newer build is waiting:</b> install it."
+                install += " <b>A newer build is waiting.</b> Install it."
         self.install_state.setText(install)
         self.driver_box.set_value("Update" if s.installed and s.install_outdated else
                                   "Installed" if s.installed else "None", install)
@@ -217,15 +218,15 @@ class MainWindow(CardWindow):
         elif s.test_failed:
             test = f"<span style='color:#c62828'><b>Failed</b></span> {escape(s.get('Test')[len('failed '):])}."
         else:
-            test = f"{escape(s.get('Test')).capitalize()}. Games only use the driver once it passed on this kernel."
+            test = f"{escape(s.get('Test')).capitalize()}. Games only use the driver once it has passed on this kernel."
         self.test_state.setText(test)
         self.test_box.set_value("Passed" if s.installed and s.tested else "Failed" if s.installed and s.test_failed
                                 else "Not run" if s.installed else "\u2014", test)
         self.test_box.set_colour(GREEN if s.installed and s.tested else RED if s.installed and s.test_failed
                                  else ORANGE if s.installed else GREY)
 
-        use = (f"Per game, Steam launch options: <code>{escape(self.launch_options())}</code><br>"
-               "Started without a passed test on this kernel, the game uses the system Mesa.")
+        use = (f"Per game, in the Steam launch options: <code>{escape(self.launch_options())}</code><br>"
+               "Without a passed test on this kernel, the game starts with the system Mesa.")
         chosen = self.chosen_switches()
         if chosen:
             use += f"<br><b>Switches:</b> {escape(', '.join(switch.label for switch in chosen))}."
@@ -246,8 +247,8 @@ class MainWindow(CardWindow):
         if release.error:
             return f"Could not look for a newer DirectMesh release: {escape(release.error)}. {again}"
         if is_newer(release, pinned):
-            return (f"<b>DirectMesh {escape(release.version)} is out</b> ({escape(release.published)}): a newer version "
-                    f"of this app brings it, from the portal. <a href='{escape(release.url)}'>Release notes</a>")
+            return (f"<b>DirectMesh {escape(release.version)} is out</b> ({escape(release.published)}). A newer version "
+                    f"of this app brings it, through the portal. <a href='{escape(release.url)}'>Release notes</a>")
         return f"DirectMesh {escape(release.version)} is the newest release. {again}"
 
     def _fit_states(self) -> None:
@@ -278,21 +279,26 @@ class MainWindow(CardWindow):
 
     def on_build(self) -> None:
         if self._ask("Build", f"Build RADV with DirectMesh {self.status.directmesh or ''}?\n\n"
-                     "It runs as your user in a Fedora container (podman) and downloads several hundred MB: the "
-                     "Mesa source and the build tools. It takes 20 to 40 minutes; nothing on the system changes."):
+                     "It runs as your user in a Fedora container (podman).\n"
+                     "It downloads the Mesa source and the build tools, several hundred MB in all.\n"
+                     "It takes 20 to 40 minutes.\n"
+                     "Nothing on the system changes."):
             self.run("build")
 
     def on_install(self) -> None:
         if self._ask("Install", "Install RADV with DirectMesh?\n\n"
-                     "It goes to /usr/local/lib/bc250-mesh-shaders, beside the system Mesa, which stays as it is. "
-                     "Nothing uses it until the test has passed and you give a game the launch options. "
-                     "Remove takes it out again."):
+                     "It goes to /usr/local/lib/bc250-mesh-shaders, beside the system Mesa.\n"
+                     "The system Mesa is never changed.\n"
+                     "Nothing uses it until the test has passed and you give a game the launch options.\n"
+                     "Remove takes it out again.\n"
+                     "You will be asked for your password."):
             self.run("install")
 
     def on_remove(self) -> None:
         if self._ask("Remove", "Remove RADV with DirectMesh?\n\n"
-                     f"Also remove \"{self.launch_options()}\" from the launch options of your games: without the "
-                     "driver they do not start."):
+                     f"Also remove \"{self.launch_options()}\" from the launch options of your games.\n"
+                     "Without the driver, those games do not start.\n"
+                     "You will be asked for your password."):
             self.run("remove")
 
     def on_test(self) -> None:
@@ -324,7 +330,7 @@ class MainWindow(CardWindow):
 
     def copy_launch_options(self) -> None:
         QApplication.clipboard().setText(self.launch_options())
-        self.running.setText("Launch options copied: paste them into a game's Properties → Launch options in Steam.")
+        self.running.setText("Launch options copied. Paste them into a game's Properties → Launch options in Steam.")
 
     def command(self, action: str) -> list[str]:
         args, root, _ = ACTIONS[action]
@@ -361,7 +367,7 @@ class MainWindow(CardWindow):
         elif root and code in NOT_AUTHORISED:
             self.running.setText("Not authorized: the password dialog was canceled or refused.")
         else:
-            self.running.setText(f"Stopped with exit code {code}; see the output.")
+            self.running.setText(f"Stopped with exit code {code}. See the output.")
         self.process = None
         self.refresh()
 

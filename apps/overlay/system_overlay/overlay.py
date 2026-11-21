@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The overlay: a frameless, see-through window with rounded corners and a thin border that stays on top. Drag it
-with the left mouse button; the right button opens a menu (rows, background, always on top, quit). Its position and
-choices are remembered."""
+with the left mouse button. The right button opens a menu with rows, background, always on top and quit. The window
+remembers its position and choices."""
 
 from __future__ import annotations
 
@@ -145,13 +145,13 @@ class OverlayWindow(QWidget):
             label.setStyleSheet(f"{self._font} color:{colour or 'white'}; font-size:12px; font-weight:700;")
         self.values["fan"].setToolTip("\n".join(f"{f.label}: {f.rpm} RPM" for f in reading.fans) or "No fan reports a speed.")
         if reading.gpu_load is None:
-            self.values["gpu"].setToolTip("No GPU load: the BC-250 reports one only when the GPU governor's fix-metrics "
-                                          "is on (governor app, GPU Usage).")
+            self.values["gpu"].setToolTip("No GPU load. The BC-250 reports one only when the GPU governor's "
+                                          "fix-metrics is on (GPU Manager, GPU Usage).")
         else:
             self.values["gpu"].setToolTip("")
         for key in RAIL_ROWS:
             self.values[key].setToolTip("" if reading.cpu_rail or reading.gpu_rail else
-                                        "No reading: turn on VRM Sensors in BC-250 Quickfix, which loads the "
+                                        "No reading. Turn on VRM Sensors in BC-250 Quickfix. It loads the "
                                         "bc250_vrm kernel module.")
 
     # ------------------------------------------------------------------- rows

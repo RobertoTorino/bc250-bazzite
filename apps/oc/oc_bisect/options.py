@@ -41,7 +41,7 @@ class SweepOptions:
         if not 2 <= self.rounds <= 9:
             errors.append("Rounds must be between 2 and 9.")
         if not (self.sweep_oc or self.sweep_uv):
-            errors.append("Pick at least one sweep: overclock, undervolt or both.")
+            errors.append("Pick at least one sweep. Choose overclock, undervolt or both.")
         if not 0 < self.max_freq <= HARD_MAX_FREQ:
             errors.append(f"Max frequency must be between 1 and {HARD_MAX_FREQ} MHz (hard ceiling).")
         if self.min_volt < HARD_MIN_VOLT:

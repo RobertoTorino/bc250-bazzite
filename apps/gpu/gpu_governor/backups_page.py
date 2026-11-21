@@ -36,8 +36,8 @@ class BackupsPage(QWidget):
         layout.addLayout(header)
         layout.addWidget(hint_label(fmt(
             "Before every write the app copies %1 to config.toml.bak-YYYYMMDD-HHMMSS next to it. "
-            "Pick one to see what differs from the current file; Restore puts it back (the current file is backed "
-            "up first, so nothing is lost).", config_path)))
+            "Pick one to see what differs from the current file. Restore puts it back. "
+            "The app backs up the current file first, so you lose nothing.", config_path)))
 
         box = QGroupBox("Copies, newest first")
         box_layout = QVBoxLayout(box)

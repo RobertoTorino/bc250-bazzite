@@ -32,21 +32,22 @@ SWITCHES = (
     Switch("RADV_BC250_MESH_IDXPASS", "0", "No indexed mesh draws",
            "Keeps DirectMesh's protected mesh routes, without its indexed mesh draws."),
     Switch("RADV_BC250_MESH_TASK_IDX", "0", "No Task index route",
-           "A task and mesh shader pair that no mesh route can take is refused, and the game draws nothing for it, "
-           "instead of running as slower compute work with an ordinary draw."),
+           "The driver refuses a task and mesh shader pair that no mesh route can take. The game draws nothing for it. "
+           "Without this switch, the pair runs as slower compute work with an ordinary draw."),
     Switch("RADV_BC250_MESH_SAFE_COMPACT", "0", "No renumbered vertices",
-           "A workgroup whose culling left unused vertices exports private triangle corners instead of only the "
-           "vertices it uses."),
+           "Culling can leave a workgroup with unused vertices. Such a workgroup then exports private triangle corners "
+           "instead of only the vertices it uses."),
     Switch("RADV_BC250_MESH_SAFE_ADAPTIVE", "0", "Private corners only",
-           "No shared vertices at all: every triangle exports its own corners. Slower; the most cautious route."),
+           "No shared vertices at all. Every triangle exports its own corners. This is slower, and the most cautious "
+           "route."),
     Switch("RADV_DIRECTMESH", "0", "DirectMesh off",
            "The driver falls back to its base BC-250 settings, for a comparison on the same driver."),
     Switch("RADV_DEBUG", "nomeshshader", "Hide mesh shaders",
            "The game does not see mesh shaders and takes its own path without them, for a comparison."),
     Switch("RADV_BC250_MESH_SPLIT_WRITES", "1", "Split mesh shaders that write memory",
-           "For a game whose large mesh shaders write to buffers (PS5 emulators): the driver splits them anyway and "
-           "runs those writes once. It cannot check that the game never reads them back in the same draw, so only "
-           "for the game that needs it."),
+           "For a game whose large mesh shaders write to buffers, such as PS5 emulators. The driver splits these "
+           "shaders anyway and runs their writes once. It cannot check that the game never reads them back in the "
+           "same draw. Use it only for the game that needs it."),
 )
 
 
@@ -61,7 +62,8 @@ class SwitchesDialog(QDialog):
         self.setWindowTitle(window_title("Switches"))
         lay = QVBoxLayout(self)
         intro = QLabel("For comparisons and for finding the cause of a problem in one game. Leave them all off to "
-                       "play, unless the game needs one: off is the driver as DirectMesh ships it.")
+                       "play, unless the game needs one. With every switch off, the driver works as DirectMesh "
+                       "ships it.")
         intro.setWordWrap(True)
         lay.addWidget(intro)
         self.boxes: dict[Switch, QCheckBox] = {}
@@ -75,7 +77,7 @@ class SwitchesDialog(QDialog):
             lay.addWidget(box)
             lay.addWidget(help_text)
             self.boxes[switch] = box
-        hint = QLabel("They go into the launch options: copy those again for the game after a change.")
+        hint = QLabel("They go into the launch options. After a change, copy the launch options to the game again.")
         hint.setWordWrap(True)
         hint.setStyleSheet("color:palette(placeholder-text);")
         lay.addWidget(hint)

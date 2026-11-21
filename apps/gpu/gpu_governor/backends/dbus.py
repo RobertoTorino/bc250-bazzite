@@ -72,7 +72,7 @@ class GovernorBus:
                                     "TemperatureThrottling", "TemperatureRecovery")
         if perf is None:
             state.available = False
-            state.error = "The governor answered on the bus, but its properties could not be read."
+            state.error = "The governor answered on the bus, but the app could not read its properties."
             return state
         state.enabled = perf[0] == "true"
         state.load_min, state.load_max = float(perf[1]), float(perf[2])

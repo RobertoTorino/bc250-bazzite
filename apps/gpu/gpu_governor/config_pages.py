@@ -28,14 +28,14 @@ METHOD_HELP = {
                "stock Bazzite does not have."),
 }
 TEMP_HELP = {
-    "drm": ("AMDGPU_INFO_SENSOR_GPU_TEMP ioctl; keeps a DRM device handle open "
-            "while the governor runs (default)."),
+    "drm": ("Reads the AMDGPU_INFO_SENSOR_GPU_TEMP ioctl. Keeps a DRM device handle "
+            "open while the governor runs. This is the default."),
     "sysfs": ("Reads the amdgpu hwmon temp1_input instead, so no DRM client stays "
               "open. Same sensor."),
 }
 SET_METHOD_HELP = {
-    "smu": ("Talks to the SMU directly (bc250collective's API); applies the "
-            "safe-points voltage with the clock (default)."),
+    "smu": ("Talks to the SMU directly through bc250collective's API. Applies the "
+            "safe-points voltage with the clock. This is the default."),
     "kernel": ("Goes through the amdgpu sysfs interface (pp_od_clk_voltage) "
                "instead of the SMU."),
 }
@@ -49,16 +49,16 @@ PRESETS: dict[str, tuple[tuple[int, int, float, float, int, int], str]] = {
         "The values of the config.toml the governor package installs."),
     "Quiet": (
         (500, 1500, 0.80, 0.65, 80, 70),
-        ("Lowest clocks that still keep up: ramps up late, tops out at 1500 MHz, "
-         "throttles at 80 °C.")),
+        ("Lowest clocks that still keep up. Ramps up late, tops out at 1500 MHz "
+         "and throttles at 80 °C.")),
     "Responsive": (
         (1000, 2000, 0.55, 0.40, 85, 75),
         ("Ramps up early and allows the full safe range, at the cost of more heat "
          "and power.")),
     "Maximum clock": (
         (1850, 2000, 0.50, 0.35, 85, 75),
-        ("Stays near the top of the safe range; close to a fixed clock while "
-         "leaving thermal throttling on.")),
+        ("Stays near the top of the safe range. Close to a fixed clock, but "
+         "thermal throttling stays on.")),
 }
 CUSTOM = "Custom"
 FREQ_STEP = 25
@@ -91,8 +91,8 @@ class ConfigPage(QWidget):
         row.addStretch(1)
         self.apply = accent_button("Apply changes",
                                    fmt(("Asks for your password once (pkexec), makes a timestamped backup "
-                                        "of config.toml and writes %1. Pending edits on the other "
-                                        "config page are written too."), what))
+                                        "of config.toml and writes %1. It also writes the pending edits "
+                                        "of the other config page."), what))
         self.apply.setEnabled(False)
         self.apply.clicked.connect(lambda: self.apply_requested.emit(self.restart_after.isChecked()))
         row.addWidget(self.apply)
@@ -152,9 +152,9 @@ class GpuUsagePage(ConfigPage):
         form.setVerticalSpacing(10)
 
         self.fix_metrics = QCheckBox(f"fix-metrics — {'patch GPU usage in gpu_metrics'}")
-        self.fix_metrics.setToolTip(("Writes the load the governor measures into a patched gpu_metrics table "
-                                     "and bind-mounts it over sysfs, so MangoHud, Steam's overlay, radeontop "
-                                     "and this app show a real percentage instead of the 655% bug."))
+        self.fix_metrics.setToolTip(("Writes the load the governor measures into a patched gpu_metrics table. "
+                                     "The governor bind-mounts that table over sysfs. MangoHud, Steam's overlay, "
+                                     "radeontop and this app then show a real percentage instead of the 655% bug."))
         form.addRow(self.fix_metrics)
 
         self.fix_freq = QCheckBox(f"fix-freq — {'patch the GPU clock in hwmon'}")
@@ -212,10 +212,10 @@ class GpuUsagePage(ConfigPage):
         path_label.setToolTip(plain_tooltip(config_path))
         file_layout.addWidget(path_label)
         file_layout.addWidget(hint_label(
-            "Only the keys this app manages ([gpu-usage], [gpu], [frequency-range], [timing], [frequency-thresholds], "
-            "[load-target], [temperature], [dbus]) are written; every other line of the file, including comments and "
-            "the safe-points table, stays as it is. Before each write a copy named config.toml.bak-YYYYMMDD-HHMMSS "
-            "is made next to it."))
+            "The app writes only the keys it manages. These are in [gpu-usage], [gpu], [frequency-range], [timing], "
+            "[frequency-thresholds], [load-target], [temperature] and [dbus]. Every other line stays as it is, "
+            "including comments and the safe-points table. Before each write the app makes a copy named "
+            "config.toml.bak-YYYYMMDD-HHMMSS next to the file."))
         self.raw = Terminal()
         self.raw.setMinimumHeight(120)
         file_layout.addWidget(self.raw, 1)
@@ -317,7 +317,7 @@ class TuningPage(ConfigPage):
             self.preset.addItem(name, name)
             self.preset.setItemData(self.preset.count() - 1, description,
                                     Qt.ItemDataRole.ToolTipRole)
-        self.preset.setToolTip("Fills the form below; nothing is written until you apply.")
+        self.preset.setToolTip("Fills the form below. Nothing changes in the file until you apply.")
         preset_row.addWidget(self.preset, 1)
         self.preset_hint = hint_label("")
         preset_row.addWidget(self.preset_hint, 2)
@@ -339,7 +339,7 @@ class TuningPage(ConfigPage):
         freq_form.addRow("Minimum:", self.freq_min)
         freq_form.addRow("Maximum:", self.freq_max)
         self.allowed_hint = hint_label(
-            "Values outside the safe-points table of config.toml are clamped by the governor.")
+            "The governor clamps values outside the safe-points table of config.toml.")
         freq_form.addRow(self.allowed_hint)
         left.addWidget(freq_box)
 
@@ -350,7 +350,7 @@ class TuningPage(ConfigPage):
         self.load_lower = _percent_spin("GPU load below which the governor lowers the clock (lower).")
         load_form.addRow("Ramp up above:", self.load_upper)
         load_form.addRow("Ramp down below:", self.load_lower)
-        load_form.addRow(hint_label(("A wide gap keeps the clock steady; a narrow gap follows the load "
+        load_form.addRow(hint_label(("A wide gap keeps the clock steady. A narrow gap follows the load "
                                      "closely. Governor defaults when the section is missing: 95 % / 80 %.")))
         left.addWidget(load_box)
 
@@ -366,8 +366,8 @@ class TuningPage(ConfigPage):
         self.temp_recovery.setRange(0, 99)
         self.temp_recovery.setSuffix(" °C")
         self.temp_recovery.setSpecialValueText("Not set")
-        self.temp_recovery.setToolTip(("Below this temperature throttling ends. Must be lower than the "
-                                       "throttling temperature; Not set leaves the key out of config.toml."))
+        self.temp_recovery.setToolTip(("Below this temperature throttling ends. It must be lower than the "
+                                       "throttling temperature. Not set leaves the key out of config.toml."))
         temp_form.addRow("Throttle above:", self.temp_throttling)
         temp_form.addRow("Recover below:", self.temp_recovery)
         left.addWidget(temp_box)
@@ -421,7 +421,7 @@ class TuningPage(ConfigPage):
         self.down_events_label = QLabel("Step down after:")
         timing_form.addRow(self.down_events_label, self.down_events)
         timing_form.addRow(hint_label(("Faster sampling and adjusting react sooner but cost CPU time. Burst "
-                                       "mode shortens the lag when a game starts; more down-events stop the "
+                                       "mode shortens the lag when a game starts. More down-events stop the "
                                        "clock from dropping during short pauses.")))
         right.addWidget(timing_box)
 
@@ -505,11 +505,11 @@ class TuningPage(ConfigPage):
 
     def show_allowed_range(self, state: PerformanceState) -> None:
         if state.available and state.allowed_max:
-            self.allowed_hint.setText(fmt(("The governor reports a safe-points range of %1–%2 MHz; values "
-                                           "outside it are clamped."), str(state.allowed_min), str(state.allowed_max)))
+            self.allowed_hint.setText(fmt(("The governor reports a safe-points range of %1–%2 MHz. It clamps "
+                                           "values outside it."), str(state.allowed_min), str(state.allowed_max)))
         else:
             self.allowed_hint.setText(
-                "Values outside the safe-points table of config.toml are clamped by the governor.")
+                "The governor clamps values outside the safe-points table of config.toml.")
 
     def _preset_chosen(self, index: int) -> None:
         name = self.preset.itemData(index)      # the key of PRESETS

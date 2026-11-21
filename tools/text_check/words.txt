@@ -267,3 +267,5 @@ util-linux
 coreutils
 taskset
 ras-mc-ctl
+SMU
+overvolting

@@ -1,3 +1,13 @@
+Changelog: 21-11-2026 20:49:20
+
+Fixed. The text was rewritten to the suite's writing standard: the wiki chapter, the README, the window's note, tooltips
+and dialogs, the About and Help texts, the sweep script's messages and the installer's closing lines. Sentences are
+shorter, with one fact each and no semicolons. The README links to the wiki instead of the manual, and the script's
+errors point to the wiki. The Install result dialog and the start summary now end with when you are asked for your
+password. No labels were renamed. Corrected fact: the --install help line, the Install result tooltip and its dialog
+said the best validated step is written. The script writes the margin pick, one step back from the best step that
+passed, as the wiki and the summary already said. Nothing the app does has changed. No test changed. The wiki's warning about the hard rails is a warning box now, as in the other chapters.
+
 Changelog: 15-11-2026 04:52:06
 
 Release 0.4.2.

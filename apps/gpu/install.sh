@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Installs BC-250 GPU Manager for the current user: a private venv with PyQt6, the app
-# in ~/.local/share, a launcher in ~/.local/bin and a desktop entry with icon, so it shows up in
-# the application menu like any other app. Nothing is layered with rpm-ostree, no root needed.
+# Installs BC-250 GPU Manager for the current user, so it shows up in the application menu like any
+# other app. It puts a private venv with PyQt6 and the app in ~/.local/share, a launcher in ~/.local/bin
+# and a desktop entry with icon. It layers nothing with rpm-ostree and needs no root.
 #
 #   ./install.sh                         install or update
 #   ./install.sh --no-desktop-shortcut   app menu entry only, no icon on the Desktop
@@ -11,7 +11,7 @@
 #   ./install.sh --uninstall --purge     also remove its settings, profiles and the start-at-login entry
 #   ./install.sh --run                   install and start the app
 #
-# Run it as your own user, not with sudo. The governor's own config.toml and its backups are never touched.
+# Run it as your own user, not with sudo. It never touches the governor's own config.toml and its backups.
 
 set -euo pipefail
 

@@ -29,7 +29,7 @@ def window(qapp, board, monkeypatch):
 def test_fresh_board(window):
     assert window.pill.text() == "Not built"
     assert window.build_state.text().startswith(f"Not built. Builds DirectMesh v1.4, Mesa 26.2.1, suite patch "
-                                                f"{SUITE_PATCH}:")
+                                                f"{SUITE_PATCH}. It downloads")
     assert window.build_button.isEnabled()
     assert not window.install_button.isEnabled() and not window.remove_button.isEnabled()
     assert not window.test_button.isEnabled()
@@ -77,7 +77,7 @@ def test_build_from_before_the_suite_patch(window, board):
     board.make_build(suite_patch=None)
     window.refresh()
     assert window.build_state.text().startswith("Built: DirectMesh v1.4, Mesa 26.2.1, 2026-10-13 19:42 UTC.")
-    assert f"This version of the app builds DirectMesh v1.4, Mesa 26.2.1, suite patch {SUITE_PATCH}:" in \
+    assert f"This version of the app builds DirectMesh v1.4, Mesa 26.2.1, suite patch {SUITE_PATCH}.</b>" in \
         window.build_state.text()
 
 
@@ -178,7 +178,7 @@ def checked(qapp, board, monkeypatch, answer) -> MainWindow:
 def test_a_newer_directmesh_is_announced(qapp, board, monkeypatch):
     w = checked(qapp, board, monkeypatch, releases("directmesh-v1.5", "directmesh-v1.4"))
     text = w.build_state.text()
-    assert "<b>DirectMesh v1.5 is out</b> (2026-10-20): a newer version of this app brings it" in text
+    assert "<b>DirectMesh v1.5 is out</b> (2026-10-20). A newer version of this app brings it" in text
     assert "href='https://github.com/x/releases/tag/directmesh-v1.5'" in text
     w.close()
 
