@@ -1,3 +1,7 @@
+Changelog: 21-11-2026 15:13:54
+
+Release 1.7.0.
+
 Changelog: 21-11-2026 13:50:55
 
 Fixed. VRM Sensors offers Turn on again while its service is there and the module is not loaded. After a load that

@@ -6,7 +6,7 @@ still happens in bc250-cu-bisect.sh itself, exactly as if typed by hand."""
 
 APP_NAME = "BC-250 CU Tools"
 APP_ID = "bc250-cu-bisect-gui"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 from pathlib import Path
 

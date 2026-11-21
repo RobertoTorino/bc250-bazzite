@@ -1,3 +1,7 @@
+Changelog: 21-11-2026 15:13:54
+
+Release 26.10.0. Pins bc250-check-v4.7.0, bc250-quickfix-v1.7.0, bc250-upscaler-v5.6.0, bc250-compute-v1.0.2, bc250-acpi-v0.5.3, bc250-overlay-v4.6.0, bc250-bios-v4.6.0, bc250-ace-v4.6.0, bc250-mesh-v4.7.0, bc250-vram-v4.6.0, bc250-fan-v4.6.0, bc250-cec-v4.6.0, bc250-sftp-v4.6.0, bc250-turing-v2.6.0, bc250-webcam-v2.6.0, bc250-controller-v2.6.0, bc250-rpcs3-v7.7.0, bc250-consoles-v5.6.0, bc250-clb-v4.6.0, bc250-shadps4-v7.6.0, bc250-datstation-v6.6.0, bc250-ppsspp-v5.7.0, bc250-pcsx2-v7.7.0, bc250-vita3k-v5.8.0, bc250-xenia-v5.8.0, bc250-ssd-v3.6.0, bc250-btpair-v2.6.0, bc250-password-v1.6.0.
+
 Changelog: 21-11-2026 14:24:02
 
 Added. The Sys info window's Sensors list also has the voltages and currents of every sensor chip, beside the

@@ -1,3 +1,7 @@
+Changelog: 21-11-2026 15:13:54
+
+Version 6.6.0.
+
 Changelog: 21-11-2026 14:24:02
 
 Added. The sensors read the board's 12 V input from the bc250_vrm module (Reading.vin_mv, Sensors.vin_mv()): the

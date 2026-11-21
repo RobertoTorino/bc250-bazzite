@@ -1,3 +1,7 @@
+Changelog: 21-11-2026 15:13:54
+
+Release 0.5.3.
+
 Changelog: 21-11-2026 14:05:27
 
 Fixed. The app's text is rewritten to the suite's writing standard in .claude/writing.md. The sentences are short, hold
