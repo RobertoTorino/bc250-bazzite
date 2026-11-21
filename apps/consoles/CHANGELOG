@@ -1,3 +1,7 @@
+Changelog: 21-11-2026 20:32:24
+
+Release 5.6.2.
+
 Changelog: 21-11-2026 20:24:42
 
 Fixed. Two tests of the stream expected the old wording of two log lines (STREAMINFO before BANG, and pad info of
