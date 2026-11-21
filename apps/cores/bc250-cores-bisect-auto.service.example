@@ -34,7 +34,8 @@ Description=BC-250 cores bisect - auto-resume after reboot
 Type=oneshot
 # Give the desktop a few seconds to settle before testing.
 ExecStartPre=/bin/sleep 20
-ExecStart=/home/admin/IdeaProjects/bc250-cores-bisect/bc250-cores-bisect.sh --auto -t 1800 -r 5
+# Example: put the real path of bc250-cores-bisect.sh here (%h is your home folder).
+ExecStart=%h/bc250-cores-bisect/bc250-cores-bisect.sh --auto -t 1800 -r 5
 StandardOutput=append:%h/.local/share/bc250-cores-bisect/auto.log
 StandardError=append:%h/.local/share/bc250-cores-bisect/auto.log
 

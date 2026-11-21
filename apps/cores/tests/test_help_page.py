@@ -23,7 +23,7 @@ def test_the_scripts_help_becomes_a_page():
     assert "<td class='name'><code>-t, --time SECS</code></td><td>CPU load per attempt" in page
     assert "<td class='name'><code>--mprime-bin PATH</code></td><td>mprime binary" in page   # one space before
     # a continued line belongs to the option above it
-    assert "login (needs the autostart unit, see the manual) until all items are done</td>" in page
+    assert "login until every item is done. This needs the autostart unit, see the wiki.</td>" in page
     assert page.count("<td class='name'><code>-") == 11                       # every option of Usage
     assert "<a href='https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/cores'>" in page
 

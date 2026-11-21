@@ -21,9 +21,15 @@ As a last resort it shuts the board down cleanly.
 
 ## Using it
 
-The top row has four boxes: the **GPU** temperature, the **CPU** temperature, the **fan** speed and the state of
-the **thermal guard**. A temperature box turns orange at the warning limit and red at the cooling limit. The names
-in brackets are the sensors the readings come from: `edge` is amdgpu's and `Tctl` is k10temp's.
+The top row has four boxes:
+
+- the **GPU** temperature
+- the **CPU** temperature
+- the **fan** speed
+- the state of the **thermal guard**
+
+A temperature box turns orange at the warning limit and red at the cooling limit. The names in brackets are the
+sensors the readings come from. `edge` is amdgpu's and `Tctl` is k10temp's.
 
 Under **Thermal guard** you set the limits and turn the guard on or off.
 
@@ -53,8 +59,8 @@ limits:
 | Shutdown | 95 °C, held for 10 s | It shuts the board down cleanly (`systemctl poweroff`), to protect it. |
 
 - **When the board has cooled down.** At 5 °C below the warning limit the guard puts the fans back to how they
-  were: the firmware's curve, or the manual value they had. With the defaults that is at 80 °C. From then on the
-  guard can warn again.
+  were. That is the firmware's curve, or the manual value they had. With the defaults that is at 80 °C. From then
+  on the guard can warn again.
   **Performance mode stays off.** Switch it on again in the GPU Manager when you want it.
 - **The shutdown waits.** The guard shuts the board down only when the temperature stays at the shutdown limit for
   the whole time you set. If the temperature drops below the limit before that, the countdown stops. The guard

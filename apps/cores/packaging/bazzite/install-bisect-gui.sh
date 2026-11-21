@@ -47,10 +47,10 @@ python3 -m venv "$VENV_DIR"
 "$VENV_DIR/bin/pip" install --quiet --upgrade pip
 "$VENV_DIR/bin/pip" install --quiet --upgrade -r "$APP_SRC/requirements.txt"
 
-echo "==> Checking PyQt6 can actually be imported in this venv"
+echo "==> Checking that PyQt6 loads in this venv"
 if ! "$VENV_DIR/bin/python" -c "from PyQt6.QtWidgets import QApplication" 2>"$APP_DIR/import-check.log"; then
   echo "error: PyQt6 installed but failed to import - see $APP_DIR/import-check.log" >&2
-  echo "       this is usually a missing system Qt/X11 library (e.g. libxcb-cursor0)." >&2
+  echo "       this is usually a missing system Qt/X11 library, for example libxcb-cursor0." >&2
   cat "$APP_DIR/import-check.log" >&2
   exit 1
 fi
@@ -81,7 +81,7 @@ sed -e "s#^Exec=.*#Exec=$LAUNCHER#" -e "s#^Icon=.*#Icon=$ICON_FILE#" \
 
 # The separate unlock window of before: this window has it now.
 if [ -e "$BIN_HOME/bc250-cores-unlock-gui" ] || [ -e "$DATA_HOME/bc250-cores-unlock-gui" ]; then
-  echo "==> Removing the separate unlock window of before (this window has it now)"
+  echo "==> Removing the separate unlock window of earlier versions. This window has it now."
   bash "$SCRIPT_DIR/uninstall-gui.sh" >/dev/null
 fi
 
@@ -98,7 +98,7 @@ Done. BC-250 CPU Tools is installed for your user account only:
   - menu entry: $DESKTOP_FILE
 
 Launch it from your app menu, or run: $LAUNCHER
-If it ever fails to open (e.g. a bouncing launcher icon that never shows a window), check:
+If it ever fails to open, for example a bouncing launcher icon that never shows a window, check:
   $APP_DIR/launch.log
 To remove it again: bash "$SCRIPT_DIR/uninstall-bisect-gui.sh"
 EOF

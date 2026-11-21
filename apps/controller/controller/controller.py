@@ -21,8 +21,8 @@ EDGE = 0x0DF2
 BUSES = {0x03: "usb", 0x05: "bluetooth"}
 CONNECTIONS = {"usb": "USB cable", "bluetooth": "Bluetooth"}
 REPORT_FIRMWARE = 0x20
-NOT_FOUND = ("Plug the controller in with a USB cable, or pair it over Bluetooth: hold Create and the PS button "
-             "until the light bar flashes, then pair it in the system's Bluetooth settings.")
+NOT_FOUND = ("Plug the controller in with a USB cable, or pair it over Bluetooth. To pair it, hold Create and the PS "
+             "button until the light bar flashes. Then pair it in the system's Bluetooth settings.")
 
 
 @dataclass(frozen=True)

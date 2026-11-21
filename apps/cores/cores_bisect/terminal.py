@@ -56,8 +56,8 @@ def launch_in_terminal(shell_command: str, *, keep_open: bool = True) -> None:
     term = find_terminal()
     if term is None:
         raise RuntimeError(
-            "No terminal emulator found (tried konsole, gnome-terminal, ptyxis, xfce4-terminal, "
-            "foot, alacritty, kitty, x-terminal-emulator, xterm, and $TERMINAL)."
+            "No terminal emulator found. Tried: $TERMINAL, konsole, gnome-terminal, ptyxis, xfce4-terminal, "
+            "foot, alacritty, kitty, x-terminal-emulator and xterm."
         )
 
     builder = dict(_TERMINALS).get(term)

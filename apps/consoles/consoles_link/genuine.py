@@ -115,7 +115,7 @@ def _calibration(report: bytes | None, bluetooth_order: bool) -> Check:
     ok = symmetric and speed_plus + speed_minus != 0
     return Check("Motion calibration", ok,
                  "Calibrated, both directions of every axis alike." if ok else
-                 "Missing, empty or lopsided: the motion sensors may be off or absent.")
+                 "Missing, empty or lopsided. The motion sensors may be off or absent.")
 
 
 def check(vendor: int, product: int, bus: int, read: ReadFeature, today: datetime.date | None = None) -> Result | None:

@@ -6,10 +6,10 @@
 
 # BC-250 CPU Tools
 
-Tells **bad CPU cores** apart from an **unstable core unlock** on the AMD BC-250 (Cyan Skillfish),
-*before* you trust or persist the 8C/16T unlock.
+BC-250 CPU Tools tells **bad CPU cores** apart from an **unstable core unlock** on the AMD BC-250 (Cyan Skillfish).
+Use it *before* you trust or keep the 8C/16T core unlock.
 
-How to install and use it: [BC-250 CPU Tools in the manual](https://robertotorino.github.io/bc250-bazzite/apps/cores/).
+How to install and use it: [BC-250 CPU Tools in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/cores/).
 
 ## License
 

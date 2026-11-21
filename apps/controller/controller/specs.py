@@ -52,17 +52,17 @@ FACTS: dict[int, tuple[Fact, ...]] = {
 
 PARTS: dict[int, tuple[Part, ...]] = {
     EDGE: (
-        Part("L2 and R2 stop sliders", "Back", "Three strokes for each trigger: long, medium and short. On medium "
+        Part("L2 and R2 stop sliders", "Back", "Each trigger has three strokes, long, medium and short. On medium "
              "and short the trigger effects are off."),
         Part("RELEASE latch", "Back", "Slide it to take off the front cover and change a stick module."),
-        Part("Reset button", "Back, a pinhole", "Press it with a pin if the controller responds unexpectedly; the "
+        Part("Reset button", "Back, a pinhole", "Press it with a pin if the controller responds unexpectedly. The "
              "pairing and the profiles stay."),
         Part("Back button slots", "Back", "Take either of the two back button types in the box."),
         Part("Connector housing", "Top", "Locks the USB cable to the controller."),
         Part("Headset jack", "Bottom edge", "For a headset or headphones (3.5 mm)."),
         Part("Charging contacts", "Bottom edge, two pins on each side of the headset jack", "For a charging "
-             "cradle: some docks charge the controller through them instead of the USB cable. Sony's manual does not "
-             "describe them; they carry no sound or picture."),
+             "cradle. Some docks charge the controller through them instead of the USB cable. Sony's manual does not "
+             "describe them. They carry no sound or picture."),
         Part("Microphone", "Bottom edge", "Built in."),
         Part("Speaker", "Front", "Built in."),
     ),
@@ -70,8 +70,8 @@ PARTS: dict[int, tuple[Part, ...]] = {
 DUALSENSE_PARTS = (
     Part("Headset jack", "Bottom edge", "For a headset or headphones (3.5 mm)."),
     Part("Charging contacts", "Bottom edge, two pins on each side of the headset jack", "For a charging "
-         "cradle: some docks charge the controller through them instead of the USB cable. Sony's manual does not "
-         "describe them; they carry no sound or picture."),
+         "cradle. Some docks charge the controller through them instead of the USB cable. Sony's manual does not "
+         "describe them. They carry no sound or picture."),
     Part("Microphone", "Bottom edge", "Built in."),
     Part("Speaker", "Front", "Built in."),
 )

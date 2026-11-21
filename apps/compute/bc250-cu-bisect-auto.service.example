@@ -35,7 +35,7 @@ Type=oneshot
 # Give the desktop and GPU a few seconds to settle before testing.
 ExecStartPre=/bin/sleep 20
 # Example: add the correct path to bc250-cu-bisect.sh
-ExecStart=/home/admin/IdeaProjects/bc250-cu-bisect/bc250-cu-bisect.sh --auto -t 60 -r 2
+ExecStart=%h/bc250-cu-bisect/bc250-cu-bisect.sh --auto -t 60 -r 2
 StandardOutput=append:%h/.local/share/bc250-cu-bisect/auto.log
 StandardError=append:%h/.local/share/bc250-cu-bisect/auto.log
 

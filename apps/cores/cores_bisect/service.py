@@ -5,7 +5,7 @@ after every reboot/login (see bc250-cores-bisect-auto.service.example and the ma
 checklist"). The setup GUI only offers this as a convenience for the unattended path; everything it
 does here is exactly what that manual section tells you to do by hand.
 
-The script disables and removes this unit itself once every attempt is done."""
+The script disables this unit itself once every attempt is done."""
 
 from __future__ import annotations
 
@@ -58,7 +58,7 @@ def install(script_path: str, opts: BisectOptions) -> None:
     path.write_text(_unit_contents(script_path, opts))
 
     if not shutil.which("systemctl"):
-        raise RuntimeError("systemctl not found; install the unit manually (see the manual).")
+        raise RuntimeError("systemctl not found. Install the unit by hand, as the wiki says.")
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
     # Deliberately "enable" and not "enable --now": the GUI starts the run in a terminal right
     # after this, and a second concurrent instance would fight it over the same state dir. The

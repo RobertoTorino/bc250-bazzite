@@ -6,10 +6,10 @@
 
 # BC-250 PS Remote Play
 
-BC-250 PS Remote Play connects the **AMD BC-250** on **Bazzite** to your PS4 or PS5: find the consoles on your
-network, wake them from rest mode, register the board with them, and start a session and its stream.
+BC-250 PS Remote Play connects the **AMD BC-250** on **Bazzite** to your PS4 or PS5. It finds the consoles on your
+network and wakes them from rest mode. It registers the board with them. Then it starts a session and its stream.
 
-How to install and use it: [BC-250 PS Remote Play in the manual](https://robertotorino.github.io/bc250-bazzite/apps/consoles/).
+How to install and use it: [BC-250 PS Remote Play in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/consoles/).
 
 ## Disclaimer
 

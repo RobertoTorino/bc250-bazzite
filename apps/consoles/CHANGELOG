@@ -1,3 +1,15 @@
+Changelog: 21-11-2026 20:15:07
+
+Fixed. The app's text is rewritten to the writing standard. That covers the wiki chapter, the README's introduction, the
+hints, tooltips, messages and log lines in the app, and the installer's own messages. Sentences are short and hold one
+fact each. The README now names the wiki, where it said the manual. The statistics file's legend is now one header line
+per column, where it was one long line. No label was renamed. Three facts in the wiki chapter were corrected. Without
+the native core, neither Test stream nor Stream works, where the chapter said only Test stream does not. The button
+under "Search finds nothing" is Search address, where the chapter said Search at address. The box at the top is Last
+session, where the chapter wrote it in lowercase. The chapter no longer says "this version" in its introduction. Nothing
+the app does has changed. Two tests changed with the wording they assert. They are the unusual session ID's log line in
+test_session.py and the missing launcher's message in test_steam_shortcuts.py.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 5.6.1.

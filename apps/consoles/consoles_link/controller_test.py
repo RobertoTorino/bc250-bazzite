@@ -144,7 +144,7 @@ class ControllerTest(QDialog):
         lay_sticks.addWidget(self.l2_bar, 2, 0)
         lay_sticks.addWidget(self.r2_bar, 2, 1)
         lay_sticks.addWidget(hint_label(
-            f"Let go of the sticks: each should come back inside the small circle ({DRIFT:.0%}). One that stays "
+            f"Let go of the sticks. Each should come back inside the small circle ({DRIFT:.0%}). One that stays "
             "outside it drifts."), 3, 0, 1, 2)
 
         touch = QGroupBox("Touchpad and motion")
@@ -245,8 +245,8 @@ class ControllerTest(QDialog):
         firmware = f", firmware {info.firmware:#06x}" if info.firmware else ""      # SDL knows it only over USB
         self.info_label.setText(
             f"{info.model}: USB ID {info.vendor:04x}:{info.product:04x}{firmware}, "
-            f"connected by {info.connection}, battery {power}. Motion sensors: {sensors}; touchpad: "
-            f"{'yes' if info.touchpads else 'no'}; rumble: {'yes' if info.rumble else 'no'}; light bar: "
+            f"connected by {info.connection}, battery {power}. Motion sensors: {sensors}. Touchpad: "
+            f"{'yes' if info.touchpads else 'no'}. Rumble: {'yes' if info.rumble else 'no'}. Light bar: "
             f"{'yes' if info.light_bar else 'no'}.")
         if pad_id not in self.results:
             self.results[pad_id] = self.check(info.path) if info.path else None

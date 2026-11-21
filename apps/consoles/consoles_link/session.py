@@ -121,7 +121,7 @@ class Session:
     def _request_once(self, target: Target) -> bytes:
         version = rp_version(target)
         if version is None:
-            raise SessionError("The console's Remote Play version is unknown; register the board again.")
+            raise SessionError("The console's Remote Play version is unknown. Register the board again.")
         init_path, _ctrl = _paths(target)
         request = (f"GET {init_path} HTTP/1.1\r\nHost: {self.host}:{self.port}\r\nUser-Agent: remoteplay Windows\r\n"
                    f"Connection: close\r\nContent-Length: 0\r\nRP-Registkey: {regist_key_hex(self.regist_key)}\r\n"
@@ -162,7 +162,7 @@ class Session:
             except VersionMismatch as mismatch:
                 if mismatch.server.unknown or mismatch.server == target:
                     raise
-                self.note(f"The console wants Remote Play {rp_version(mismatch.server)}; asking again with it.")
+                self.note(f"The console wants Remote Play {rp_version(mismatch.server)}. Asking again with it.")
                 target = mismatch.server
                 continue
             except (OSError, ProtocolError) as error:
@@ -269,11 +269,12 @@ class Session:
             else:                                       # the reference then makes one up: time and random bytes
                 self.info.session_id = f"{int(time.monotonic())}{base64.b64encode(self.random(48)).decode()}"
                 if text == INVALID_SESSION_ID:
-                    self.note("The console sent no session ID (\"InvalidSessionId\"); using a made-up one, which "
-                              "the console accepts for the stream.")
+                    self.note("The console sent no session ID (\"InvalidSessionId\"). The app uses a made-up one, "
+                              "which the console accepts for the stream.")
                 else:
-                    self.note(f"The console sent an unusual session ID ({len(payload)} bytes: "
-                              f"{payload[:48].hex(' ')}{' …' if len(payload) > 48 else ''}); using a made-up one.")
+                    self.note(f"The console sent an unusual session ID of {len(payload)} bytes, "
+                              f"{payload[:48].hex(' ')}{' …' if len(payload) > 48 else ''}. The app uses a "
+                              "made-up one.")
             self.enable_features()
         elif msg_type == LOGIN_PIN_REQ:
             if not self.login_pin:
@@ -283,7 +284,7 @@ class Session:
                 raise SessionError("The console did not accept the login passcode.")
             self.send(LOGIN_PIN_REP, self.login_pin.encode())
             self.login_pin_sent = True
-            self.note("The console asked for the login passcode; sent.")
+            self.note("The console asked for the login passcode. The app sent it.")
         elif msg_type == LOGIN and payload[:1] == b"\x01":
             raise SessionError("The console did not accept the login passcode.")
 

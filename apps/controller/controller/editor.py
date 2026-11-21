@@ -110,7 +110,7 @@ class ProfileEditor(QDialog):
         self.l2 = TriggerRow(grid, 0, "L2", start_l2, end_l2)
         self.r2 = TriggerRow(grid, 1, "R2", start_r2, end_r2)
         grid.setColumnStretch(5, 1)
-        note = QLabel("Saved in the profile. On Linux the controller still reports the whole travel; a PS5 may use "
+        note = QLabel("Saved in the profile. On Linux the controller still reports the whole travel. A PS5 may use "
                       "the range.")
         note.setWordWrap(True)
         note.setStyleSheet(f"color:{muted()};")

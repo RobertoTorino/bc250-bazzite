@@ -1,3 +1,8 @@
+Changelog: 21-11-2026 20:19:32
+
+Fixed. The development page Board Test plan named a home folder with a user name in its MangoHud example. It says
+~/mangohud-logs now, as BC-250 Quickfix writes it.
+
 Changelog: 21-11-2026 13:40:52
 
 Fixed. tools/new_app.py escapes a quote mark and a backslash in a new app's summary where it stands between double

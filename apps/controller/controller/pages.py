@@ -64,7 +64,7 @@ class ConnectPage(QWidget):
         layout.addWidget(self.view, 1)
         layout.addWidget(_title("Connect your controller"))
         self.text = _text("Plug your DualSense or DualSense Edge into a USB port of the board, with a USB-C cable. "
-                          "The app finds it by itself. A controller paired over Bluetooth shows up too; only the "
+                          "The app finds it by itself. A controller paired over Bluetooth shows up too. Only the "
                           "firmware update needs the cable.")
         layout.addWidget(self.text, 0, Qt.AlignmentFlag.AlignHCenter)
         layout.addSpacing(12)
@@ -79,7 +79,7 @@ class ConnectPage(QWidget):
             "Your controller is on the cable, but Linux did not take it while it was still connected over "
             "Bluetooth. Unplug the cable and plug it in again." if held else
             "Plug your DualSense or DualSense Edge into a USB port of the board, with a USB-C cable. The app finds "
-            "it by itself. A controller paired over Bluetooth shows up too; only the firmware update needs the "
+            "it by itself. A controller paired over Bluetooth shows up too. Only the firmware update needs the "
             "cable.")
 
     def showEvent(self, event) -> None:  # noqa: N802 (Qt override)
@@ -103,12 +103,12 @@ def intro_steps(edge: bool) -> list[IntroStep]:
     Edge's profiles (or, on a DualSense, its battery)."""
     steps = [
         IntroStep("Your controller on the board",
-                  "Linux already lets you play with your controller. This app looks after the controller itself: it "
-                  "shows its battery and its firmware, keeps the firmware up to date and, on a DualSense Edge, shows "
-                  "its profiles.", ("ps", "touchpad", "lightbar")),
+                  "Linux already lets you play with your controller. This app looks after the controller itself. It "
+                  "shows its battery and its firmware, and keeps the firmware up to date. On a DualSense Edge, it "
+                  "also shows its profiles.", ("ps", "touchpad", "lightbar")),
         IntroStep("Up-to-date firmware",
                   "Controllers get better with firmware updates, offered officially only on a PS5 and in an app for "
-                  "Windows. This app gets the same firmware from the official update server and puts it on the "
+                  "Windows. This app gets the same firmware from the official update server. It puts it on the "
                   "controller over the USB cable, in about half a minute. Leave the cable in until it is done.", ("usb",)),
     ]
     if edge:
@@ -154,7 +154,7 @@ class IntroPage(QWidget):
         self.back_button = QPushButton("Back")
         self.back_button.setToolTip("The page before.")
         self.back_button.clicked.connect(lambda: self.go(self.index - 1))
-        self.next_button = accent_button("Next", "The next page; on the last one, Start opens your controller.")
+        self.next_button = accent_button("Next", "The next page. On the last one, Start opens your controller.")
         self.next_button.clicked.connect(self.next)
         buttons.addWidget(self.skip_button)
         buttons.addStretch(1)
@@ -360,8 +360,9 @@ class ProfileCard(QFrame):
         self.slot.setText(f"Fn + {SYMBOLS[profile.slot]}  {profile.slot}")
         default = profile.slot not in profiles.WRITE_REPORTS
         self.setToolTip(f"Fn + {profile.slot}: no profile yet. Create… makes one." if profile.empty else
-                        f"Fn + {profile.slot}: {profile.name}. Click to see on the drawing what it sets; click again "
-                        "to let go." + (" The default profile: the app does not change it." if default else ""))
+                        f"Fn + {profile.slot}: {profile.name}. Click to see on the drawing what it sets. Click again "
+                        "to let go." + (" This is the default profile, and the app does not change it." if default
+                                        else ""))
         if profile.empty:
             self.name.setText("Empty")
             self.name.setStyleSheet(header_font() + f"font-size:17px; font-weight:800; color:{muted()};")

@@ -58,7 +58,7 @@ It reports the following:
 ### Game detection
 FPS needs MangoHud logging, set this once in `~/.config/MangoHud/MangoHud.conf`
 ```
-output_folder=/home/admin/mangohud-logs
+output_folder=~/mangohud-logs
 autostart_log=1
 log_interval=500
 ```

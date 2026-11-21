@@ -232,7 +232,7 @@ class StreamView(QOpenGLWidget):
 
 
 BEAT_MS = 10                    # the window's own timer, to see how late it runs (a busy window draws and plays late)
-KEYS = "F11 full screen, Esc leaves it, M mutes; closing the window ends the stream"
+KEYS = "F11 full screen, Esc leaves it, M mutes, closing the window ends the stream"
 
 
 class StreamWindow(QWidget):

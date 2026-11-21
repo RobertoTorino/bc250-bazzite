@@ -18,10 +18,11 @@ from __future__ import annotations
 import html
 import re
 
-WINDOW = ("This window starts <code>bc250-cores-bisect.sh</code> for you: choose the options, then click "
-          "<b>Start</b>. The window closes and the run continues in a terminal, exactly as if you typed the command "
-          "yourself. Under the run's options are the bisect's verdict and the unlock: once every item passed, "
-          "<b>Install</b> keeps the 8 cores at every boot. Hover a field or a pill to see what it does.")
+WINDOW = ("This window starts <code>bc250-cores-bisect.sh</code> for you. Choose the options, then click "
+          "<b>Start</b>. The window closes, and the run continues in a terminal, exactly as if you typed the "
+          "command yourself. Under the run's options are the verdict on the bisect results and the core unlock. "
+          "Once every item passed, <b>Install</b> keeps the 8 cores at every boot. Hover a field or a pill to see "
+          "what it does.")
 
 _TERM = re.compile(r"^  (\S(?:.*?\S)?)\s{2,}(\S.*)$")             # "  control       before the unlock, ..."
 # "  -t, --time SECS       CPU load per attempt": the flags and an ALL-CAPS argument, so one space before the text
@@ -84,7 +85,7 @@ def help_html(text: str, window: str = "") -> str:
             parts.append(_table(_entries(block[1:], _OPTION), code=True))
         elif len(block) == 1 and re.match(r"^https?://\S+$", block[0]):
             url = html.escape(block[0], quote=True)
-            parts.append(f"<p class='more'>More in the manual and the code: <a href='{url}'>{url}</a></p>")
+            parts.append(f"<p class='more'>More on the app and its code: <a href='{url}'>{url}</a></p>")
         else:
             if not heading:
                 parts.append("<h2>How it works</h2>")

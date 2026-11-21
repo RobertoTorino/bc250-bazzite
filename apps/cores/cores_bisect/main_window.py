@@ -79,17 +79,19 @@ class MainWindow(QWidget):
         title_row.addStretch(1)
         header_right.addLayout(title_row)
         # The window's actions as pills under the title, as CU Tools': Help, Start, Show status, Reset.
-        self.help_pill = Pill("Help", "How it works", "The script's help, as a page: what it does and every option.")
+        self.help_pill = Pill("Help", "How it works", "The script's help as a page. It says what the script does "
+                              "and lists every option.")
         self.help_pill.clicked.connect(lambda: HelpDialog(self.script, self).exec())
-        self.start_pill = Pill("Start", "Run in a terminal", "Starts bc250-cores-bisect.sh with these options in a "
-                               "terminal, after a summary; this window closes.", ACCENT)
+        self.start_pill = Pill("Start", "Run in a terminal", "Shows a summary first. Then it starts "
+                               "bc250-cores-bisect.sh with these options in a terminal, and this window closes.",
+                               ACCENT)
         self.start_pill.clicked.connect(self._on_start)
         self.status_pill = Pill("Show status", "Results so far", "Shows the results so far and writes the report "
                                 "(--status), in a terminal. Starts nothing.")
         self.status_pill.clicked.connect(self._on_status)
-        self.reset_pill = Pill("Reset", "Delete results", "Deletes every saved result and log in "
-                               "~/.local/share/bc250-cores-bisect (--reset), after a question; the next run starts "
-                               "from scratch.", RED)
+        self.reset_pill = Pill("Reset", "Delete results", "Asks first. Then it deletes every saved result and log in "
+                               "~/.local/share/bc250-cores-bisect (--reset). The next run starts from scratch.",
+                               RED)
         self.reset_pill.clicked.connect(self._on_reset)
         pills = QHBoxLayout()
         pills.setSpacing(8)
@@ -112,7 +114,7 @@ class MainWindow(QWidget):
         self.time_spin.setSingleStep(60)
         self.time_spin.setValue(DEFAULT_TIME_SECS)
         self.time_spin.setSuffix(" s")
-        self.time_spin.setToolTip("How long the CPU is loaded in each attempt (-t): at least {0} s, {1} s by default."
+        self.time_spin.setToolTip("How long each attempt loads the CPU (-t). At least {0} s, and {1} s by default."
                                   .format(MIN_TIME_SECS, DEFAULT_TIME_SECS))
         self.time_spin.valueChanged.connect(self._update_hint)
         self.rounds_spin = QSpinBox()
@@ -129,8 +131,9 @@ class MainWindow(QWidget):
         self.load_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
         self.load_combo.setToolTip("The load of every attempt (--load). stress-ng verifies its own results and is "
                                    "always there. mprime's torture test is a much heavier AVX/FMA load that checks "
-                                   "every result, so it catches silent miscalculation stress-ng misses; it has to be "
-                                   "installed separately. both: one after the other, twice the load time.")
+                                   "every result. So it catches silent miscalculation that stress-ng misses. You "
+                                   "install mprime separately. With both, they run one after the other, at twice "
+                                   "the load time.")
         self.load_combo.currentIndexChanged.connect(self._update_hint)
         for caption, field in (("Load per attempt", self.time_spin), ("Rounds per item", self.rounds_spin),
                                ("Load tool", self.load_combo)):
@@ -151,19 +154,21 @@ class MainWindow(QWidget):
         """The run's switches as on/off pills; each one's tooltip says what it does."""
         row = QHBoxLayout()
         row.setSpacing(8)
-        self.ras_pill = TogglePill("Rasdaemon", "--rasdaemon: reads ras-mc-ctl's error database before and after "
-                                   "every attempt. rasdaemon keeps its errors, so they are still counted when the "
-                                   "journal is volatile or the attempt ends in a crash. Needs the rasdaemon service.")
-        self.same_boot_pill = TogglePill("Same boot", "--same-boot: no reboot between attempts. Much faster, but every "
-                                         "attempt inherits the one before, so a failure is harder to pin on one core.")
+        self.ras_pill = TogglePill("Rasdaemon", "--rasdaemon reads ras-mc-ctl's error database before and after "
+                                   "every attempt. rasdaemon keeps its errors, so they still count when the "
+                                   "journal is volatile or the attempt ends in a crash. It needs the rasdaemon "
+                                   "service.")
+        self.same_boot_pill = TogglePill("Same boot", "--same-boot does not restart between attempts. That is much "
+                                         "faster. But every attempt inherits the one before, so a failure is harder "
+                                         "to pin on one core.")
         self.same_boot_pill.toggled.connect(self._update_hint)
-        self.auto_pill = TogglePill("Unattended", "--auto: no questions, reboots by itself and goes on after every "
-                                    "login until every item is done. Needs passwordless sudo for setpci and "
+        self.auto_pill = TogglePill("Unattended", "--auto asks no questions. It restarts by itself and goes on after "
+                                    "every login until every item is done. It needs passwordless sudo for setpci and "
                                     "journalctl.")
         self.auto_pill.toggled.connect(self._on_auto_toggled)
-        self.autostart_pill = TogglePill("Auto resume", "Installs and enables "
-                                         "~/.config/systemd/user/bc250-cores-bisect-auto.service, which starts the "
-                                         "run again after every reboot and login; the script removes it once every "
+        self.autostart_pill = TogglePill("Auto resume", "Installs and turns on "
+                                         "~/.config/systemd/user/bc250-cores-bisect-auto.service. It starts the run "
+                                         "again after every restart and login. The script turns it off once every "
                                          "item is done. Only with Unattended.")
         self.autostart_pill.setEnabled(False)
         switches = [self.ras_pill, self.same_boot_pill, self.auto_pill, self.autostart_pill]
@@ -199,10 +204,10 @@ class MainWindow(QWidget):
             per_attempt += _REBOOT_OVERHEAD_SECS
         total_hours = _TYPICAL_ITEMS * self.rounds_spin.value() * per_attempt / 3600
         self.hint_label.setText("About {0:.1f} h".format(total_hours))
-        self.hint_label.setToolTip(("A rough estimate for a typical board: {0} items x {1} rounds{2}. The run can be "
-                                    "resumed: the results are saved after every attempt.").format(
+        self.hint_label.setToolTip(("A rough estimate for a typical board, from {0} items x {1} rounds{2}. You can "
+                                    "resume the run, because every attempt saves its result.").format(
             _TYPICAL_ITEMS, self.rounds_spin.value(),
-            "" if self.same_boot_pill.isChecked() else ", reboots included"))
+            "" if self.same_boot_pill.isChecked() else ", restarts included"))
 
     def _load_tool(self) -> str:
         return self.load_combo.currentData() or DEFAULT_LOAD_TOOL
@@ -234,9 +239,9 @@ class MainWindow(QWidget):
         confirm.setWindowTitle(APP_NAME)
         confirm.setText("Delete all bc250-cores-bisect results?")
         confirm.setInformativeText(
-            "This permanently deletes every saved result and log in "
-            "~/.local/share/bc250-cores-bisect (--reset). This cannot be undone and there is no "
-            "backup. The script will still ask you to confirm once more in the terminal.")
+            "This deletes every saved result and log in ~/.local/share/bc250-cores-bisect (--reset).\n"
+            "You cannot undo it, and there is no backup.\n"
+            "The script asks you once more in the terminal.")
         confirm.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel)
         confirm.setDefaultButton(QMessageBox.StandardButton.Cancel)
         if confirm.exec() != QMessageBox.StandardButton.Yes:
@@ -251,10 +256,10 @@ class MainWindow(QWidget):
             return
 
         summary = (
-            "Start bc250-cores-bisect.sh with:\n\n"
+            "Start bc250-cores-bisect.sh with these options?\n\n"
             "  load time: {t}s\n  rounds: {r}\n  load tool: {lt}\n  rasdaemon: {ras}\n"
             "  same-boot: {sb}\n  unattended: {au}\n\n"
-            "This window will close and the run continues in a terminal."
+            "This window closes, and the run continues in a terminal."
         ).format(t=opts.time_secs, r=opts.rounds, lt=opts.load_tool, ras=opts.rasdaemon,
                  sb=opts.same_boot, au=opts.unattended)
         if QMessageBox.question(self, APP_NAME, summary) != QMessageBox.StandardButton.Yes:
@@ -267,8 +272,8 @@ class MainWindow(QWidget):
             except Exception as exc:  # noqa: BLE001 - surfaced to the user, not fatal to starting
                 QMessageBox.warning(self, APP_NAME, (
                     "Could not install the auto-resume login service:\n{0}\n\n"
-                    "The run will still start now; see the manual's --auto checklist to set it up "
-                    "by hand.").format(exc))
+                    "The run still starts now. To set the service up by hand, see the --auto checklist "
+                    "in the wiki.").format(exc))
 
         if not self._run_script(*opts.to_args()):
             return

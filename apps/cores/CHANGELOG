@@ -1,3 +1,25 @@
+Changelog: 21-11-2026 20:17:07
+
+Fixed. The text is rewritten to the writing standard (.claude/writing.md): the wiki chapter, the README, the text in the
+window, the messages and the --help of bc250-cores-bisect.sh and bc250-cores-unlock.sh, install.sh and the packaging
+scripts. Sentences are short and hold one fact, the spelling is American English, "reboot" is "restart", "the manual" is
+"the wiki", and "the unlock" is "the core unlock". The questions before Install and Uninstall now have one fact per line
+and end with "You will be asked for your password, unless sudo still has it." The results of --status and the report
+open with a Results header and a line with the phase, the rounds and the load. No label is renamed. Facts corrected:
+Auto resume's tooltip and the wiki said the script removes bc250-cores-bisect-auto.service once every item is done, but
+the script disables it and leaves the file. The wiki said the script carries on without rasdaemon when ras-mc-ctl is
+missing, but the script stops then, and only warns and carries on when the service is not running or ras-mc-ctl fails.
+The script's --help said that machine-check events are attributed to the tested CPUs, but the script counts every
+machine-check line since the attempt started. The --help, the script's message for a run as root and the wiki said sudo
+is used only for setpci and the kernel log, but the script also uses it to stop and start the governor's service, for
+ras-mc-ctl and for a restart. After a cold boot before the new cores came up, the script said "Re-applying...", but it
+offers the unlock again first. The words lspci, pciutils, util-linux, coreutils, taskset and ras-mc-ctl are added to
+tools/text_check/words.txt. Nothing the app does has changed. Tests changed for the new wording: test_gate.py ("The
+control failed. It runs on the stock 6C/12T", "isn't finished. 4 of 8"), test_help_page.py (the --auto line of the
+options) and test_main_window.py ("restarts included", "Install failed (exit code 1). The log says why."). The wiki's note on a custom BIOS says it is another route that is not part of the suite, without a link (owner,
+21-11-2026). The example unit bc250-cores-bisect-auto.service.example had a home folder with a user name in its
+ExecStart; it is a placeholder under %h now.
+
 Changelog: 20-11-2026 15:22:26
 
 Release 1.0.1.

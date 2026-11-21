@@ -96,7 +96,8 @@ def test_unusual_session_id_gets_a_made_up_one():
     finally:
         console.close()
     assert info.session_id and info.session_id != "short"
-    assert "The console sent an unusual session ID (6 bytes: 4a 73 68 6f 72 74); using a made-up one." in info.log
+    assert ("The console sent an unusual session ID of 6 bytes, 4a 73 68 6f 72 74. The app uses a made-up one."
+            in info.log)
     assert "The session ID message says 74 characters but has 5." in info.log
 
 

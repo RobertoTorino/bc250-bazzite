@@ -93,7 +93,7 @@ def latest(get: Get = _get) -> dict[int, int]:
 
 def header(data: bytes) -> Header:
     if len(data) < HEADER or not data.startswith(b"Copyright"):
-        raise FirmwareError("This is not a controller firmware image: it has no firmware header.")
+        raise FirmwareError("This is not a controller firmware image. It has no firmware header.")
     word = lambda offset, size: int.from_bytes(data[offset:offset + size], "little")  # noqa: E731
     text = lambda offset: data[offset:offset + 16].split(b"\0", 1)[0].decode("ascii", "replace")  # noqa: E731
     return Header(text(0x40), text(0x50), word(0x62, 2), word(0x70, 4), word(0x74, 2), word(0x78, 2))
@@ -115,10 +115,10 @@ def problem(data: bytes, controller: Controller, info: FirmwareInfo) -> str:
         return str(exc)
     if head.product != controller.product or head.target != info.target:
         name = TARGET_NAMES.get(head.target, "another controller")
-        return (f"This image is for the {name} with target {head.target:04X}; this {controller.name} has target "
+        return (f"This image is for the {name} with target {head.target:04X}. This {controller.name} has target "
                 f"{info.target:04X}.")
     if head.update <= info.update:
-        return (f"This image is version {version_text(head.update)}; the controller already runs "
+        return (f"This image is version {version_text(head.update)}. The controller already runs "
                 f"{version_text(info.update)}. The controller takes no older or equal version.")
     if len(data) > MAX_SIZE:
         return "This image is larger than any controller firmware."

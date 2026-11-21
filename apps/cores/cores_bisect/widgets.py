@@ -53,7 +53,7 @@ class HelpDialog(QDialog):
             pass
         return (
             "Could not read bc250-cores-bisect.sh --help.\n\n"
-            "Run it from a terminal instead:\n"
+            "Run it from a terminal instead.\n"
             f"  bash {script} --help"
         )
 

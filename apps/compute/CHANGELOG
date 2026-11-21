@@ -1,3 +1,8 @@
+Changelog: 21-11-2026 20:19:17
+
+Fixed. The example unit bc250-cu-bisect-auto.service.example had a home folder with a user name in its ExecStart. It is
+a placeholder under %h now, the user's home folder.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 1.0.3.

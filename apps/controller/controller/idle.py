@@ -144,8 +144,8 @@ class Watcher:
                     self.watched.pop(node)[0].close()
             in_game = bool(self.present) and self.game()        # looked for only while a controller is there
             if in_game != self.in_game:
-                self.log("A game started from Steam runs: the controllers stay on." if in_game else
-                         "The game ended: a controller unused from now on is switched off after the wait.")
+                self.log("A game started from Steam runs. The controllers stay on." if in_game else
+                         "The game ended. A controller unused from now on is switched off after the wait.")
             self.in_game = in_game
         for node, found in self.present.items():
             if node not in self.watched:

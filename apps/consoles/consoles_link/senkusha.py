@@ -132,7 +132,7 @@ class Senkusha:
         if not times:
             raise SenkushaError("The console answered none of the network test's pings.")
         rtt_us = int(sum(times) / len(times) * 1_000_000)
-        self.note(f"Round trip {rtt_us / 1000:.2f} ms ({len(times)} of {PING_COUNT} pings answered).")
+        self.note(f"Round trip {rtt_us / 1000:.2f} ms, {len(times)} of {PING_COUNT} pings answered.")
         return rtt_us, len(times)
 
     def mtu_in_test(self, timeout: float) -> int:

@@ -64,7 +64,7 @@ def set_guide_focus(on: bool, steam: Path, run: Run = _run, running: Callable[[]
     """Changes the setting for every Steam user; Steam is closed first and started again when it was running.
     Returns whether Steam was restarted."""
     if game_mode():
-        raise SteamError("In Game Mode Steam keeps the PS button for its own menu; change it in Desktop Mode.")
+        raise SteamError("In Game Mode Steam keeps the PS button for its own menu. Change it in Desktop Mode.")
     configs = user_configs(steam)
     if not configs:
         raise SteamError("Steam has no users on this system yet.")

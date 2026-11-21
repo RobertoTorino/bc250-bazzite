@@ -1,3 +1,12 @@
+Changelog: 21-11-2026 20:07:50
+
+Fixed. The rest of the app's text was rewritten to the writing standard. The wiki chapter lists the four boxes of the
+top row and splits two sentences that went on after a colon. The info text on the limits and the note about a guard
+that does not report are split into short sentences. The info text now says "The boards slow down", so it is clear
+that the boards are meant and not the defaults. The installer's notes about pkexec and about a thermal guard
+from another version are short sentences too. No label was renamed and no fact was corrected. Nothing the app does has
+changed. No test changed.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 4.6.1.

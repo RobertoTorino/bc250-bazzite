@@ -87,7 +87,7 @@ def _call(request: urllib.request.Request, what: str) -> dict:
         except (ValueError, OSError):
             body = {}
         if body.get("error") == "invalid_grant":
-            raise PsnError("PSN did not accept the code: it works only once and only for a few minutes. Sign in "
+            raise PsnError("PSN did not accept the code. It works only once and only for a few minutes. Sign in "
                            "again and paste the new address.") from error
         detail = body.get("error_description") or body.get("error") or error.reason
         raise PsnError(f"PSN refused the {what} (HTTP {error.code}: {detail}).") from error

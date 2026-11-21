@@ -29,7 +29,7 @@ class HistoryDialog(QDialog):
         for column in range(1, len(COLUMNS)):
             self.table.horizontalHeader().setSectionResizeMode(column, QHeaderView.ResizeMode.ResizeToContents)
         self.total = QLabel()
-        note = QLabel("Counted while a console streams to this board, the Game Mode shortcut included; play on the "
+        note = QLabel("Counted while a console streams to this board, the Game Mode shortcut included. Play on the "
                       "console itself is not seen. Kept only on this board, in "
                       "~/.config/bc250-console-link/history.json.")
         note.setWordWrap(True)

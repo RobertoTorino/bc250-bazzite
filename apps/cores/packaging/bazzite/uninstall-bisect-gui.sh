@@ -20,5 +20,5 @@ rm -f "$LAUNCHER" "$DESKTOP_FILE" "$ICON_FILE" "$OLD_ICON"
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$DATA_HOME/applications" >/dev/null 2>&1 || true
 command -v gtk-update-icon-cache >/dev/null 2>&1 && gtk-update-icon-cache -f -t "$DATA_HOME/icons/hicolor" >/dev/null 2>&1 || true
 
-echo "Removed BC-250 CPU Tools (app, venv, launcher, menu entry, icon)."
-echo "Your results in $DATA_HOME/bc250-cores-bisect were kept."
+echo "Removed the app, venv, launcher, menu entry and icon of BC-250 CPU Tools."
+echo "Your results in $DATA_HOME/bc250-cores-bisect stay."

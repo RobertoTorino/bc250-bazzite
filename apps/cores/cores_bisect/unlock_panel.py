@@ -36,10 +36,11 @@ _COLORS = {
 }
 _MARKS = {"stock": "stock", "good": "ok", "bad": "xx", "random": "??", "none": ".."}
 
-LEGEND = ("The 8 physical cores, in the order of the script's map: the stock cores first, the ones the unlock adds "
-          "last.<br><b>stock</b>: always enabled (6C/12T). <b>ok</b>: passed every round. <b>xx</b>: fails every "
-          "time, likely a bad core. <b>??</b>: random failures, more likely power or heat. <b>..</b>: not tested "
-          "yet.<br>The unlock enables all cores or none, so one bad core means: don't install it.")
+LEGEND = ("The 8 physical cores, in the order of the script's map. The stock cores come first. The cores that the "
+          "core unlock adds come last.<br>A <b>stock</b> core is always enabled (6C/12T). A core marked <b>ok</b> "
+          "passed every round. A core marked <b>xx</b> fails every time, likely a bad core. A core marked <b>??</b> "
+          "fails at random, more likely from power or heat. A core marked <b>..</b> is not tested yet.<br>The core "
+          "unlock enables all cores or none. So with one bad core, don't install it.")
 
 
 class CoreMapWidget(QWidget):
@@ -156,19 +157,19 @@ class UnlockPanel(QWidget):
     def _build_actions(self) -> QHBoxLayout:
         """The verdict, then Install, Uninstall, Refresh, Root status and Re-check."""
         self.gate_box = MetricBox("Bisect results")
-        self.install_pill = Pill("Install", "Keep 8 cores", "Enables the root service that applies the unlock again "
-                                 "after a cold boot and warm-reboots once, so the 8 cores (16 threads) stay at every "
-                                 "boot. Needs the results to accept the unlock.")
+        self.install_pill = Pill("Install", "Keep 8 cores", "Turns on the root service that applies the core unlock "
+                                 "again after a cold boot and does one warm restart. So the 8 cores (16 threads) "
+                                 "stay at every boot. The results must accept the core unlock first.")
         self.install_pill.clicked.connect(self._on_install)
-        self.uninstall_pill = Pill("Uninstall", "Stock after power off", "Removes the service. The unlock stays "
-                                   "active until the next full power off (cold boot); then the board is back to the "
+        self.uninstall_pill = Pill("Uninstall", "Stock after power off", "Removes the service. The core unlock stays "
+                                   "active until the next full power off (cold boot). Then the board is back to the "
                                    "stock 6C/12T.", RED)
         self.uninstall_pill.clicked.connect(self._on_uninstall)
-        self.status_pill = Pill("Refresh", "Service and cores", "Shows the threads, the service's and the guard's "
-                                "state (--status, no root needed), in the log.")
+        self.status_pill = Pill("Refresh", "Service and cores", "Shows the threads and the state of the service and "
+                                "the guard in the log (--status). It needs no root.")
         self.status_pill.clicked.connect(self._refresh_status)
-        self.sudo_status_pill = Pill("Root status", "With sudo", "The status as root (asks for the sudo password), so "
-                                     "it also shows the core presence mask, in the log.")
+        self.sudo_status_pill = Pill("Root status", "With sudo", "Shows the status as root in the log, so it includes "
+                                     "the core presence mask. It asks for the sudo password when sudo needs one.")
         self.sudo_status_pill.clicked.connect(self._on_sudo_status)
         self.recheck_pill = Pill("Re-check", "Bisect results", "Reads bc250-cores-bisect.sh's recorded results again, "
                                  "for example after more rounds finished, and writes the verdict in the log.")
@@ -253,7 +254,7 @@ class UnlockPanel(QWidget):
             self._append_line("({0} finished, exit code {1})".format(action, code))
             self._refresh_status()
         if code != 0 and action:
-            self.failed_label.setToolTip("{0} failed (exit code {1}): the log says why.".format(action.capitalize(),
+            self.failed_label.setToolTip("{0} failed (exit code {1}). The log says why.".format(action.capitalize(),
                                                                                               code))
             self.failed_label.setVisible(self.output.isHidden())
 
@@ -284,9 +285,10 @@ class UnlockPanel(QWidget):
         answer = QMessageBox.question(
             self, APP_NAME,
             ("Keep all 8 cores (16 threads) enabled on every boot?\n\n"
-             "A root service checks the core mask at every boot. After a cold boot it re-applies "
-             "the unlock and warm-reboots once. If the unlock isn't active right now, reboot (warm) "
-             "after installing to bring the cores up."),
+             "A root service checks the core mask at every boot.\n"
+             "After a cold boot it applies the core unlock again and does one warm restart.\n"
+             "If the core unlock isn't active right now, do a warm restart after installing to bring the cores up.\n"
+             "You will be asked for your password, unless sudo still has it."),
         )
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -297,8 +299,10 @@ class UnlockPanel(QWidget):
             return
         answer = QMessageBox.question(
             self, APP_NAME,
-            ("Remove the unlock service? The 8 cores stay enabled until the next full power off "
-             "(cold boot); after that the board is back to the stock 6C/12T."),
+            ("Remove the unlock service?\n\n"
+             "The 8 cores stay enabled until the next full power off (cold boot).\n"
+             "After that the board is back to the stock 6C/12T.\n"
+             "You will be asked for your password, unless sudo still has it."),
         )
         if answer != QMessageBox.StandardButton.Yes:
             return

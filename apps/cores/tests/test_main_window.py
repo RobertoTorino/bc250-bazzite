@@ -97,9 +97,9 @@ def test_unattended_installs_the_resume_unit(qapp, started, monkeypatch):
 def test_the_estimate_is_short_and_follows_the_options(qapp):
     window = bisect_window.MainWindow(SCRIPT, UNLOCK)
     assert window.hint_label.text() == "About 3.0 h"               # 5 items x 3 rounds x (600 s + a reboot)
-    assert "reboots included" in window.hint_label.toolTip()
+    assert "restarts included" in window.hint_label.toolTip()
     window.same_boot_pill.setChecked(True)
-    assert window.hint_label.text() == "About 2.5 h" and "reboots" not in window.hint_label.toolTip()
+    assert window.hint_label.text() == "About 2.5 h" and "restarts" not in window.hint_label.toolTip()
     window.load_combo.setCurrentIndex(window.load_combo.findData("both"))
     assert window.hint_label.text() == "About 5.0 h"
     window.close()
@@ -222,7 +222,7 @@ def test_a_failed_install_shows_a_red_mark_not_a_message(qapp, unlock_script, mo
         unlock._pending_action = "install"
         unlock._on_finished(1)
         assert not unlock.failed_label.isHidden() and "Check logs" in unlock.failed_label.text()
-        assert unlock.failed_label.toolTip() == "Install failed (exit code 1): the log says why."
+        assert unlock.failed_label.toolTip() == "Install failed (exit code 1). The log says why."
         assert unlock.output.isHidden() and warnings == []          # no message box, the log stays closed
         unlock.logs_button.click()
         assert unlock.failed_label.isHidden() and not unlock.output.isHidden()

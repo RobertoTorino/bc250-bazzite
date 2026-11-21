@@ -125,7 +125,7 @@ VERSION=$(tr -d '[:space:]' <"$SRC/VERSION")
 command -v python3 >/dev/null 2>&1 || die "python3 is not installed."
 python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || die "Python 3.10 or newer is needed."
 python3 -c 'import venv, ensurepip' 2>/dev/null || die "python3 has no venv/ensurepip module."
-command -v pkexec >/dev/null 2>&1 || info "Note: pkexec is not installed; turning the thermal guard on and off needs it."
+command -v pkexec >/dev/null 2>&1 || info "Note: pkexec is not installed. Turning the thermal guard on and off needs it."
 
 info "Installing $APP_NAME $VERSION"
 
@@ -200,7 +200,7 @@ elif ! $DESKTOP_SHORTCUT; then
 fi
 
 if [ -f "$GUARD_DIR/guard.py" ] && ! cmp -s "$GUARD_DIR/guard.py" "$APP_DIR/fan_control/guard.py"; then
-    info "The thermal guard is from another version: press Apply in the app (it asks for your password)"
+    info "The thermal guard is from another version. Press Apply in the app. It asks for your password."
 fi
 
 info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run: $APP_ID"

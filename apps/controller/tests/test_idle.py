@@ -204,14 +204,14 @@ def test_while_a_game_from_steam_runs_the_controllers_stay_on(tmp_path):
     clock.now += 9 * 60
     game[0] = True
     w.step()
-    assert logged == ["A game started from Steam runs: the controllers stay on."]
+    assert logged == ["A game started from Steam runs. The controllers stay on."]
     clock.now += 60 * 60
     w.step()
     assert asked == []                                                      # an hour unused in the game: on
     game[0] = False
     clock.now += idle.LOOK
     w.step()
-    assert logged[-1] == "The game ended: a controller unused from now on is switched off after the wait."
+    assert logged[-1] == "The game ended. A controller unused from now on is switched off after the wait."
     clock.now += 9 * 60
     w.step()
     assert asked == []                                                      # the wait started over

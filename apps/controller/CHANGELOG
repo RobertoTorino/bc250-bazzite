@@ -1,3 +1,17 @@
+Changelog: 21-11-2026 20:12:04
+
+Fixed. The app's text is rewritten to the writing standard: its wiki chapter, its README and the text in the window
+(tooltips, hints, state lines, the update's messages, the spec sheet and the introduction). Sentences are short, hold
+one fact each and no longer chain facts with a colon, a semicolon or parentheses. The README now names the wiki, not
+the manual. The question before a firmware update now opens with the question, "Update the <controller> to firmware
+<version>?", and gives one fact per line. No label was renamed. One fact was corrected: that question said "The app
+saves a backup of the profiles first" for every controller, but the app saves one only for a DualSense Edge, so the
+line now shows only for the Edge. The service's two journal lines on a game from Steam now read "A game started from
+Steam runs. The controllers stay on." and "The game ended. A controller unused from now on is switched off after the
+wait." Nothing the app does has changed. Tests changed: test_idle.py asserts the two journal lines, and
+test_main_window.py asserts "The update ends the Bluetooth pairing" in the message after an update. The names nchie,
+steffalon, dualsense-edge-profile-web-application and uaccess were added to the text check's word list.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 2.6.1.

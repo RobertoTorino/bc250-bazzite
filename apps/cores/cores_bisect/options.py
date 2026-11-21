@@ -24,10 +24,10 @@ MAX_ROUNDS = 9
 LOAD_TOOLS = ("stress-ng", "mprime", "both")
 DEFAULT_LOAD_TOOL = "stress-ng"
 LOAD_TIPS: dict[str, str] = {
-    "stress-ng": "stress-ng --verify: checks its own results, always available. The default.",
-    "mprime": "mprime's torture test: a much heavier AVX/FMA load that checks every result, so it catches silent "
-              "miscalculation stress-ng misses. Has to be installed separately.",
-    "both": "stress-ng, then mprime: an attempt takes twice the load time.",
+    "stress-ng": "stress-ng --verify checks its own results and is always available. It is the default.",
+    "mprime": "mprime's torture test is a much heavier AVX/FMA load that checks every result. So it catches silent "
+              "miscalculation that stress-ng misses. You install it separately.",
+    "both": "stress-ng, then mprime. An attempt takes twice the load time.",
 }
 
 

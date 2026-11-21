@@ -29,7 +29,7 @@ class StreamOptionsDialog(QDialog):
         self.fps = QComboBox()
         for fps in sorted(FRAME_RATES, reverse=True):
             self.fps.addItem(f"{fps} frames per second", fps)
-        self.fps.setToolTip("30 halves the work for the network and the board; most games look smoother at 60.")
+        self.fps.setToolTip("30 halves the work for the network and the board. Most games look smoother at 60.")
         form.addRow("Frame rate", self.fps)
 
         self.bitrate = QSpinBox()
@@ -37,7 +37,7 @@ class StreamOptionsDialog(QDialog):
         self.bitrate.setSuffix(" Mbit/s")
         self.bitrate.setSpecialValueText("Automatic (2 to 15 Mbit/s by resolution)")
         self.bitrate.setToolTip("How much picture data the console may send. More is sharper in busy scenes and "
-                                "needs a better network; on Wi-Fi less is safer.")
+                                "needs a better network. On Wi-Fi less is safer.")
         form.addRow("Bitrate", self.bitrate)
 
         self.screen = QComboBox()
@@ -56,8 +56,9 @@ class StreamOptionsDialog(QDialog):
         form.addRow("Audio delay", self.audio_delay)
 
         self.low_latency = QCheckBox("Low latency")
-        self.low_latency.setToolTip("A shorter sound buffer and the decoder's low-delay mode: a little less delay, "
-                                    "with more risk of short gaps in the sound on a busy network or board.")
+        self.low_latency.setToolTip("Uses a shorter sound buffer and the decoder's low-delay mode. That gives a little "
+                                    "less delay, with more risk of short gaps in the sound on a busy network or "
+                                    "board.")
         form.addRow("", self.low_latency)
 
         hint = QLabel("They apply from the next stream, the Game Mode shortcut's too.")

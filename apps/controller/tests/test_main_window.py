@@ -219,7 +219,7 @@ def test_update_downloads_backs_up_and_sends(make, tmp_path, qapp):
     [backup] = (tmp_path / "home" / "profiles").glob("profiles-*.json")
     assert json.loads(backup.read_text())["profiles"][0]["name"] == "Default Profile"
     assert "restarts" in window.progress_text.text() and not window.progress_bar.isVisible()
-    assert "pair it again: the update ends the pairing" in window.progress_text.text()
+    assert "The update ends the Bluetooth pairing" in window.progress_text.text()
 
 
 def test_update_with_the_image_kept_names_its_check(make, tmp_path, qapp):

@@ -82,7 +82,7 @@ if $UNINSTALL; then
     if $PURGE; then
         info "Removing the settings and the registered consoles"
         rm -rf "${CONFIG_DIR:?}/$APP_ID"
-        info "$APP_NAME is uninstalled. A PS5 still lists the board under Link Device; remove it there too."
+        info "$APP_NAME is uninstalled. A PS5 still lists the board under Link Device. Remove it there too."
     else
         info "$APP_NAME is uninstalled. Its settings and registered consoles are kept in $CONFIG_DIR/$APP_ID."
     fi
@@ -107,7 +107,7 @@ info "Installing $APP_NAME $VERSION"
 # Its program files go; its settings and registered consoles move to this app's folder (the app does the same at
 # its first start), so the consoles need no new registration.
 if [ -e "$DATA_DIR/$OLD_ID" ] || [ -e "$HOME/.local/bin/$OLD_ID" ]; then
-    info "Removing BC250 Remote Play, this app's former name (its registered consoles move over)"
+    info "Removing BC250 Remote Play, this app's former name. Its registered consoles move over."
     rm -rf "${DATA_DIR:?}/$OLD_ID" "$HOME/.local/bin/$OLD_ID" "$DATA_DIR/applications/$OLD_ID.desktop" \
         "$DESKTOP_DIR/$OLD_ID.desktop"
 fi
@@ -152,22 +152,23 @@ FFMPEG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/$APP_ID/ffmpeg-$FFMPEG_VERSION"
 if [ -n "$WHEEL" ]; then
     info "Installing the native core for the stream from the release ($(basename "$WHEEL"))"
     "$VENV/bin/python" -m pip install -q --disable-pip-version-check --force-reinstall --no-deps "$WHEEL" ||
-        info "Note: the native core did not install; the app works, but Test stream will say it is missing."
+        info "Note: the native core did not install. The app works, but Test stream will say it is missing."
 elif [ -x "$CARGO" ]; then
     features=python,pyo3/extension-module
     if [ -f "$FFMPEG_DIR/lib/pkgconfig/libavcodec.pc" ]; then
         features+=,decoder
         info "Building the native core for the stream with Rust, with the video decoder (FFmpeg $FFMPEG_VERSION)"
     else
-        info "Building the native core for the stream with Rust (takes a minute or two the first time); without"
-        info "the video decoder, which needs FFmpeg from native/ffmpeg/build.sh first"
+        info "Building the native core for the stream with Rust, without the video decoder."
+        info "The decoder needs FFmpeg from native/ffmpeg/build.sh first."
+        info "The build takes a minute or two the first time."
     fi
     BUILD_DIR=$(mktemp -d)
     if PATH="$(dirname "$CARGO"):$PATH" CARGO_TARGET_DIR="$BUILD_DIR" MATURIN_PEP517_ARGS="--features $features" \
         "$VENV/bin/python" -m pip install -q --disable-pip-version-check "$APP_DIR/native"; then
         info "Native core installed"
     else
-        info "Note: the native core did not build; the app works, but Test stream will say it is missing."
+        info "Note: the native core did not build. The app works, but Test stream will say it is missing."
     fi
     rm -rf "$BUILD_DIR"
 else

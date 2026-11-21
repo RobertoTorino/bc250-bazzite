@@ -209,7 +209,7 @@ def framed(slot: str, parts: tuple[bytes, ...]) -> list[bytes]:
 
 def _slot(slot: str) -> int:
     if slot not in WRITE_REPORTS:
-        raise ProfileError(f"Fn + {slot} is the default profile; the app does not change it")
+        raise ProfileError(f"Fn + {slot} is the default profile, which the app does not change")
     return SLOTS.index(slot)
 
 

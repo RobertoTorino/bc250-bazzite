@@ -124,8 +124,8 @@ def _search(host: str, target: Target, port: int, timeout: float) -> str:
                                   "switched on (not in rest mode)?") from None
             if data.startswith(answer):
                 return sender
-    raise RegistError(f"No answer from {host}. Show the PIN on the console first (PS5: Link Device; PS4: Add "
-                      "Device), and check that the board and the console are on the same network.")
+    raise RegistError(f"No answer from {host}. Show the PIN on the console first, with Link Device on a PS5 or Add "
+                      "Device on a PS4. Check that the board and the console are on the same network.")
 
 
 def register(host: str, target: Target, account_id: bytes, pin: int, port: int = PORT, timeout: float = TIMEOUT,

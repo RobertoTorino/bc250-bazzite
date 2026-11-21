@@ -178,12 +178,17 @@ def _stats_header(console: RegisteredConsole, started: session.Session, connecti
         f"desktop {os.environ.get('XDG_CURRENT_DESKTOP', '?')}"
         + ("; started from Steam" if os.environ.get("BC250_LEFT_STEAM_LIBRARIES") or os.environ.get("SteamAppId")
            else ""),
-        "Each line: one second of the stream (in: frames received; decode: time per frame; recovery: frames FEC "
-        "could not rebuild, key frames asked for, frames skipped until one came, frames without their reference; "
-        "shown/skipped: pictures "
-        "drawn and replaced by a newer one before drawing; age: decoder to drawing; window late: the window's "
-        "longest delay; sound gaps: silence played because the buffer ran empty; controller: reads and the longest "
-        "gap between two; cpu: all cores, the busiest core, the app and its busy threads)",
+        "Each line is one second of the stream.",
+        "in: frames received",
+        "decode: time per frame",
+        "recovery: frames FEC could not rebuild, key frames asked for, frames skipped until one came, frames "
+        "without their reference",
+        "shown/skipped: pictures drawn and replaced by a newer one before drawing",
+        "age: decoder to drawing",
+        "window late: the window's longest delay",
+        "sound gaps: silence played because the buffer ran empty",
+        "controller: reads and the longest gap between two",
+        "cpu: all cores, the busiest core, the app and its busy threads",
     ]
 
 
@@ -339,7 +344,7 @@ def steam_shortcut(console: RegisteredConsole, steam: Path, remove: bool = False
     was running."""
     launcher = launcher or Path(steam_shortcuts.LAUNCHER).expanduser()
     if not remove and not launcher.is_file():
-        return Outcome(False, f"The shortcut runs {launcher}, which is not there: install {APP_NAME} through "
+        return Outcome(False, f"The shortcut runs {launcher}, which is not there. Install {APP_NAME} through "
                               "the portal first.")
     name = steam_shortcuts.shortcut_name(console)
     art = {} if remove else steam_shortcuts.draw_art(console, logo)

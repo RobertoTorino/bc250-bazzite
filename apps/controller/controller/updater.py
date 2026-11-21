@@ -35,25 +35,25 @@ TIMEOUT_S = 60.0                    # one status: the start erases the flash fir
 # ("retry") as after 0x00, and so does the app.
 START_BUSY = {0x04}
 START_OK = {0x00, 0x10}
-START_ERRORS = {0x01: "The controller refused the image's header: its signature does not match.",
-                0x02: "The controller refused the image: it is not newer than the firmware it runs.",
-                0x03: "The controller refused the image's header: it is not meant for this controller.",
+START_ERRORS = {0x01: "The controller refused the image's header. Its signature does not match.",
+                0x02: "The controller refused the image. The image is not newer than the firmware the controller runs.",
+                0x03: "The controller refused the image's header. The image is not meant for this controller.",
                 0x05: "The controller could not erase its flash for the update.",
                 0x06: "The controller did not receive the image's header.",
-                0x11: "The controller refused the image's header: its parameters are wrong."}
+                0x11: "The controller refused the image's header. Its parameters are wrong."}
 WRITE_BUSY = {0x01, 0x10}
 WRITE_NEXT = {0x00, 0x03}
 WRITE_ERRORS = {0x02: "The controller could not write the image to its flash.",
                 0x04: "The controller had not started the update.",
-                0x11: "The controller refused a piece of the image: its parameters are wrong."}
+                0x11: "The controller refused a piece of the image. Its parameters are wrong."}
 VERIFY_BUSY = {0x10}
 VERIFY_ERRORS = {0x01: "The image's header failed the controller's check.",
                  0x02: "The image is not newer than the firmware the controller runs.",
                  0x03: "The image is not meant for this controller.",
-                 0x04: "The image failed the controller's check: it is damaged or not an official image.",
+                 0x04: "The image failed the controller's check. It is damaged or not an official image.",
                  0x11: "The image's parameters are wrong."}
-AFTER_ERROR = (" Unplug the controller and plug it in again: the window then shows which firmware it runs, and the "
-               "update can be tried again.")
+AFTER_ERROR = (" Unplug the controller and plug it in again. The window then shows which firmware it runs, and you "
+               "can try the update again.")
 
 
 class UpdateError(Exception):
@@ -133,7 +133,7 @@ def update(device: Device, image: bytes, progress: Progress | None = None,
             raise _failed(code, VERIFY_ERRORS, "verifying")
         progress.note("The controller verified the image.")
     except OSError as exc:
-        raise UpdateError(f"The controller stopped answering: {exc.strerror or exc}. Leave it plugged in; if it "
+        raise UpdateError(f"The controller stopped answering: {exc.strerror or exc}. Leave it plugged in. If it "
                           "does not come back, unplug it and plug it in again.") from exc
 
     progress.step = FINALIZE

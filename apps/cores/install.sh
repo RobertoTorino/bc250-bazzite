@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs BC-250 CPU Tools, one window for the core bisect and the core unlock, as a desktop app, from a clone or
-# the extracted release tarball:
+# Installs BC-250 CPU Tools as a desktop app. It is one window for the core bisect and the core unlock.
+# Run it from a clone or the extracted release tarball.
 #
 #   ./install.sh                         # install or update the app
 #   ./install.sh --no-desktop-shortcut   # app menu entry only, no icon on the Desktop
@@ -238,11 +238,11 @@ write_launcher "$BISECT_LAUNCHER" cores_bisect
 write_entry "$BISECT_DESKTOP" bc250-cores-bisect-gui "BC-250 CPU Tools" \
     "Find bad CPU cores with bc250-cores-bisect.sh, then keep a tested 8C/16T core unlock" "$BISECT_LAUNCHER" "$APP_ID"
 if [ -e "$UNLOCK_LAUNCHER" ] || [ -e "$DATA_DIR/applications/$UNLOCK_DESKTOP" ] || [ -e "$DESKTOP_DIR/$UNLOCK_DESKTOP" ]; then
-    info "Removing the separate unlock window of before (this window has it now)"
+    info "Removing the separate unlock window of earlier versions. This window has it now."
     rm -f "$UNLOCK_LAUNCHER" "$DATA_DIR/applications/$UNLOCK_DESKTOP" "$DESKTOP_DIR/$UNLOCK_DESKTOP"
 fi
 refresh_menu
 
-info "Done. Start the app from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run:"
-info "  bc250-cores-bisect-gui   (or $LINK/bc250-cores-bisect.sh and $LINK/bc250-cores-unlock.sh in a terminal)"
+info "Done. Start the app from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run bc250-cores-bisect-gui."
+info "In a terminal you can also run $LINK/bc250-cores-bisect.sh and $LINK/bc250-cores-unlock.sh."
 case ":$PATH:" in *":$BIN_DIR:"*) ;; *) info "Note: $BIN_DIR is not on your PATH, so the terminal commands need the full path." ;; esac

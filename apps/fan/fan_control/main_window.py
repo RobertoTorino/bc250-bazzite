@@ -38,8 +38,8 @@ GUARD_INFO = (
     "the time you set."
     f"<br><br>At {guard.REARM_C} °C below the warning limit the fans go back to how they were. Performance mode "
     "stays off until you switch it on again."
-    "<br><br>AMD publishes no limits for the BC-250. The defaults follow what is known from these boards: they "
-    "slow down from about 85 °C and become unstable between 90 and 95 °C. "
+    "<br><br>AMD publishes no limits for the BC-250. The defaults follow what is known from these boards. The "
+    "boards slow down from about 85 °C and become unstable between 90 and 95 °C. "
     f"<a href='{MANUAL_URL}'>Wiki</a>")
 TURN_ON_TIP = "Turn the guard on with these limits. It keeps running after you close this window"
 FANS_INFO = (
@@ -229,8 +229,8 @@ class MainWindow(QMainWindow):
             self.badge.set_status("Guard not running", "bad", "The guard is turned on but is not running.")
             self.guard_box.set_value("Stopped")
             set_box_colour(self.guard_box, RED)
-            notes.append(f"The guard is turned on but has not reported for {guard.STALE_S} seconds. Look in its log: "
-                         f"<code>journalctl -u {guard.UNIT}</code>")
+            notes.append(f"The guard is turned on but has not reported for {guard.STALE_S} seconds. To read its log, "
+                         f"run <code>journalctl -u {guard.UNIT}</code>")
         else:
             level = self.state.get("level", "ok")
             text, kind = {"ok": ("Guard on", "ok"), "warn": ("Hot", "warn"), "cooling": ("Cooling", "bad"),

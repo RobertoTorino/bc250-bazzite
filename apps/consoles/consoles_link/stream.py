@@ -58,7 +58,7 @@ def _core():
         import bc250_console_link_core
     except ImportError as error:
         raise StreamError("The stream needs the app's native core (bc250_console_link_core), which is not "
-                          "installed: install Rust (rustup) and run install.sh again.") from error
+                          "installed. Install Rust (rustup) and run install.sh again.") from error
     return bc250_console_link_core
 
 
@@ -258,7 +258,7 @@ class StreamConnection:
             self.stats.pad_info_unknown += 1
             if self.stats.pad_info_unknown == 1:
                 self.note(f"The console sent pad info of {len(data)} bytes, a layout not known yet "
-                          f"({data.hex(' ')}); such messages are left aside.")
+                          f"({data.hex(' ')}). The app leaves such messages aside.")
             return
         self.stats.pad_info += 1
         if reset:
@@ -346,7 +346,8 @@ class StreamConnection:
 
     def _open_decoder(self) -> None:
         if not getattr(self.core, "DECODER", False):
-            self.note("This native core has no video decoder (built without FFmpeg): the frames are not decoded.")
+            self.note("This native core has no video decoder, because it was built without FFmpeg. The frames are not "
+                      "decoded.")
             return
         codec = "hevc" if self.hevc else "h264"
         try:
@@ -430,7 +431,7 @@ class StreamConnection:
     def _on_bang(self, message: tkproto.Message) -> bool:
         if message.type == tkproto.STREAMINFO and self._early_streaminfo is None:
             self._early_streaminfo = message                 # the reference keeps one that comes before BANG
-            self.note("STREAMINFO came before BANG; kept for later.")
+            self.note("STREAMINFO came before BANG. It is kept for later.")
             return False
         bang = tkproto.bang(message)
         if bang is None:
@@ -452,7 +453,7 @@ class StreamConnection:
         except ValueError as error:
             raise StreamError("The console's public key for the stream is invalid.") from error
         self.takion.set_crypt(self.handshake_key, secret)
-        self.note(f"BANG received (server version {bang.server_version}); the stream is encrypted.")
+        self.note(f"BANG received (server version {bang.server_version}). The stream is encrypted.")
         return True
 
     def _on_streaminfo(self, message: tkproto.Message) -> bool:
@@ -481,7 +482,7 @@ class StreamConnection:
                       f"{self.players.controller_id}, mark {self.players.mark}).")
         self.send(tkproto.microphone(tkproto.MICROPHONE.save()))
         sizes = ", ".join(f"{r.width}×{r.height}" for r in info.resolutions) or "no resolution"
-        self.note(f"STREAMINFO received ({sizes}; audio {self.audio.channels} channels at {self.audio.rate} Hz).")
+        self.note(f"STREAMINFO received: {sizes}, audio {self.audio.channels} channels at {self.audio.rate} Hz.")
         return True
 
     # --- The connection -------------------------------------------------------------------------------------
@@ -540,15 +541,15 @@ class StreamConnection:
             return "No video stream."
         stats = self.takion.stats()
         summary = (f"Video: {video['frames']} frames, {video['fec_recovered']} rebuilt with FEC, {video['fec_failed']} "
-                   f"beyond repair, {video['frames_lost']} lost; {video['bad_units'] + video['old_packets']} units "
-                   f"refused; {stats['congestion_reports']} congestion reports sent. Recovery: "
+                   f"beyond repair, {video['frames_lost']} lost. {video['bad_units'] + video['old_packets']} units "
+                   f"refused. {stats['congestion_reports']} congestion reports sent. Recovery: "
                    f"{video['idr_requests']} key frames asked for, {video['frames_skipped']} frames skipped waiting "
                    f"for one, {video['missing_reference']} without their reference"
                    + (f", {video['references_changed']} pointed at an older one" if video["references_changed"] else "")
-                   + ("; the frames' headers were not read as expected, so frames were not checked for a lost "
+                   + (". The frames' headers were not read as expected, so frames were not checked for a lost "
                       "reference" if video.get("references_untrusted") else "")
-                   + f"; {stats['video_skipped']} video packets never came, {stats['video_late']} came late"
-                   + (f"; {stats['video_simulated_lost']} video packets dropped on purpose"
+                   + f". {stats['video_skipped']} video packets never came, {stats['video_late']} came late"
+                   + (f". {stats['video_simulated_lost']} video packets dropped on purpose"
                       if stats["video_simulated_lost"] else "") + ". Controller: "
                    f"{stats['feedback_states']} states and {stats['feedback_history']} button packets sent.")
         audio = self.takion.audio_stats()

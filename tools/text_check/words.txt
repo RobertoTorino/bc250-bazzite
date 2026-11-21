@@ -257,3 +257,13 @@ sclk
 mclk
 idempotently
 fq_codel
+nchie
+steffalon
+dualsense-edge-profile-web-application
+uaccess
+lspci
+pciutils
+util-linux
+coreutils
+taskset
+ras-mc-ctl

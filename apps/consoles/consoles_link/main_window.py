@@ -138,7 +138,8 @@ class AccountDialog(QDialog):
                              "page:"))
         lay.addLayout(row)
         lay.addWidget(QLabel("2. The sign-in then shows a page that only says \"redirect\". Copy that page's address "
-                             "from the address bar:\n    the app takes it from there by itself (or paste it here)."))
+                             "from the address bar.\n    The app takes it from there by itself. You can also paste it "
+                             "here."))
         lay.addWidget(self.redirect_edit)
         lay.addWidget(hint_label(
             "The app sends the code in that address to PSN once, to read your account ID, and keeps only the ID. "
@@ -208,16 +209,16 @@ class AppSettingsDialog(QDialog):
         lay.addWidget(_title("Personal details"))
         lay.addWidget(reveal_box)
         lay.addWidget(hint_label(
-            "Shows the account ID, the PSN online ID and the consoles' addresses in full until you switch it off; "
-            "the app starts with them masked every time. The log is always copied with them masked."))
+            "Shows the account ID, the PSN online ID and the consoles' addresses in full until you switch it off. "
+            "The app starts with them masked every time. The log is always copied with them masked."))
         lay.addSpacing(12)
         lay.addWidget(_title("Steam"))
         lay.addWidget(steam_box)
         lay.addWidget(steam_note)
         lay.addWidget(hint_label(
-            "Steam's own setting Guide Button Focus Steam (Settings > Controller > Show Advanced Settings). Switch it "
-            "off so the PS button only goes to the console. Steam closes for the change, after asking, and starts "
-            "again in the background."))
+            "This is Steam's own setting Guide Button Focus Steam, under Settings > Controller > Show Advanced "
+            "Settings. Switch it off so the PS button only goes to the console. Steam closes for the change, after "
+            "asking, and starts again in the background."))
         lay.addStretch(1)
         lay.addWidget(buttons)
         self.resize(560, self.sizeHint().height())
@@ -261,13 +262,13 @@ class MainWindow(QMainWindow):
         for box in (self.found_box, self.registered_box, self.session_box, self.console_box):
             header.add_second(box)
         intro = hint_label(
-            "Remote Play with your own PS4 or PS5 on the BC-250: find the console, register the board with it once, "
-            "then stream it here or from Game Mode, with the controllers on the board. The app talks to consoles "
-            "and PSN only when you press a button. " + style.link(self, MANUAL_URL, "Wiki"))
+            "Remote Play with your own PS4 or PS5 on the BC-250. Find the console and register the board with it "
+            "once. Then stream it here or from Game Mode, with the controllers on the board. The app talks to "
+            "consoles and PSN only when you press a button. " + style.link(self, MANUAL_URL, "Wiki"))
 
         self.address_edit = PrivateLineEdit(self.settings.get("address"), privacy.mask_address)
         self.address_edit.setPlaceholderText("Console address, e.g. 192.168.1.20 (optional)")
-        self.address_edit.setToolTip("For networks that do not pass broadcasts: ask one address")
+        self.address_edit.setToolTip("Ask one address, for networks that do not pass broadcasts")
         self.search_button = QPushButton("Search network")
         self.search_button.setToolTip("Ask every PS4 and PS5 on the network to answer")
         self.search_button.clicked.connect(self.search)
@@ -276,13 +277,13 @@ class MainWindow(QMainWindow):
         self.address_button.clicked.connect(self.search_address)
         self.address_edit.returnPressed.connect(self.address_button.click)
         find_cell = self._cell(self.address_edit, hint_label(
-            "The console answers when Remote Play is on (Settings > System > Remote Play). In rest mode it only "
-            "answers when its rest-mode settings keep it connected to the internet and allow turning it on from "
-            "the network."))
+            "The console answers when Remote Play is on, under Settings > System > Remote Play. In rest mode it "
+            "only answers when its rest-mode settings keep it connected to the internet and allow turning it on "
+            "from the network."))
 
         self.account_edit = PrivateLineEdit(self.settings.get("account_id"), privacy.mask_id)
         self.account_edit.setPlaceholderText("Account ID: a number, or a code ending with =")
-        self.account_edit.setToolTip("Your PSN account ID: a number, or the 12-character code ending with =")
+        self.account_edit.setToolTip("Your PSN account ID, a number or the 12-character code ending with =")
         self.pin_edit = QLineEdit()
         self.pin_edit.setPlaceholderText("8-digit PIN")
         self.pin_edit.setToolTip("The 8-digit PIN the console shows")
@@ -299,10 +300,10 @@ class MainWindow(QMainWindow):
         fields.addWidget(self.account_edit, 1)
         fields.addWidget(self.pin_edit)
         register_cell = self._cell(fields, hint_label(
-            "On a PS5, open Settings > System > Remote Play > Link Device; on a PS4, Settings > Remote Play "
-            "Connection Settings > Add Device: it shows an 8-digit PIN for a few minutes. The account ID is your "
-            "PSN account's number, not your online name: Find my account ID reads it through the PlayStation "
-            "sign-in."))
+            "On a PS5, open Settings > System > Remote Play > Link Device. On a PS4, open Settings > Remote Play "
+            "Connection Settings > Add Device. The console shows an 8-digit PIN for a few minutes. The account ID "
+            "is your PSN account's number, not your online name. Find my account ID reads it through the "
+            "PlayStation sign-in."))
 
         self.console_state = hint_label("")
         self.passcode_button = QPushButton("Login passcode…")
@@ -313,11 +314,11 @@ class MainWindow(QMainWindow):
         self.remove_button.clicked.connect(self.remove)
         console_cell = self._cell(self.console_state, hint_label(
             "The keys from registration are stored in ~/.config/bc250-console-link/consoles.json, readable only by "
-            "you. Remove forgets them here; a PS5 also lists the board under Link Device, where it can be removed. "
+            "you. Remove forgets them here. A PS5 also lists the board under Link Device, where you can remove it. "
             "A PS4 only keeps a history, under Remote Play Connection Settings > Connection History."))
 
         self.game_mode_button = QPushButton("Add to Game Mode")
-        self.game_mode_button.setToolTip("A Steam shortcut for this console: in Game Mode it starts the stream full "
+        self.game_mode_button.setToolTip("A Steam shortcut for this console. In Game Mode it starts the stream full "
                                          "screen, waking the console when needed. Steam restarts for it.")
         self.game_mode_button.clicked.connect(self.add_to_game_mode)
         game_mode_cell = hint_label("A Steam shortcut starts the stream of the selected console in Game Mode, full "
@@ -383,7 +384,7 @@ class MainWindow(QMainWindow):
         self.history_button.setToolTip("The games played through the app and the time played")
         self.history_button.clicked.connect(self.show_history)
         self.watch_button = style.primary_button("Stream", "Show the console's picture and play its sound until you "
-                                                 "close the window; the controllers on the board play")
+                                                 "close the window. The controllers on the board play")
         self.watch_button.clicked.connect(self.watch)
         self.stream_window: StreamWindow | None = None
         self._stream_stop: threading.Event | None = None
@@ -727,7 +728,7 @@ class MainWindow(QMainWindow):
         stop = threading.Event()
         window = StreamWindow(f"{name} · {APP_NAME}", stop.set, self, console.options)
         if not self.steam_box.isHidden() and self.steam_box.isEnabled() and self.steam_box.isChecked():
-            self.say("Steam comes to the front when you press PS: switch off \"Steam comes to the front on the PS "
+            self.say("Steam comes to the front when you press PS. Switch off \"Steam comes to the front on the PS "
                      "button\" in Settings so the PS button only goes to the console.")
         self.stream_window, self._stream_stop = window, stop
         window.destroyed.connect(self._stream_window_gone)
@@ -794,7 +795,7 @@ class MainWindow(QMainWindow):
         if console is None:
             self.console_box.set_value("—", "Select a registered console.")
             self.console_state.setText("Select a registered console in the list below." if self.registered else
-                                       "No registered console yet: register the board with one first (step 2).")
+                                       "No registered console yet. Register the board with one first (step 2).")
             return
         self.console_state.setText(f"Selected: {console.nickname or 'Console'} ({console.target.console}).")
         info = self.console_info.get(console.key, {})
@@ -823,8 +824,8 @@ class MainWindow(QMainWindow):
         console = self.selected_registered()
         if console is None:
             return
-        text, ok = QInputDialog.getText(self, APP_NAME, "Login passcode of the PSN account on the console "
-                                        "(4 digits; empty when it has none):", QLineEdit.EchoMode.Password)
+        text, ok = QInputDialog.getText(self, APP_NAME, "The 4-digit login passcode of the PSN account on the "
+                                        "console. Leave it empty when it has none:", QLineEdit.EchoMode.Password)
         if not ok:
             return
         try:
