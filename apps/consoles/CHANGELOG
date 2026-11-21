@@ -1,3 +1,9 @@
+Changelog: 21-11-2026 20:24:42
+
+Fixed. Two tests of the stream expected the old wording of two log lines (STREAMINFO before BANG, and pad info of
+an unknown layout), which the rewrite of 21-11-2026 changed. They run only where the native core is built. The
+installer's note on a missing native core names Stream too: it needs the core as Test stream does.
+
 Changelog: 21-11-2026 20:15:07
 
 Fixed. The app's text is rewritten to the writing standard. That covers the wiki chapter, the README's introduction, the

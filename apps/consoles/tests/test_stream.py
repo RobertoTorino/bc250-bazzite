@@ -307,8 +307,8 @@ def test_rumble_and_pad_info_go_to_the_controllers(console_factory):
     assert (connection.stats.rumble, connection.stats.pad_info, connection.stats.other_data) == (1, 2, 1)
     assert "The console sent a rumble message of 2 bytes (3 at least)." in connection.log
     unknown = [line for line in connection.log if "pad info of 7 bytes" in line]
-    assert unknown == ["The console sent pad info of 7 bytes, a layout not known yet (00 00 00 40 01 00 00); such "
-                       "messages are left aside."] and connection.stats.pad_info_unknown == 2
+    assert unknown == ["The console sent pad info of 7 bytes, a layout not known yet (00 00 00 40 01 00 00). The app "
+                       "leaves such messages aside."] and connection.stats.pad_info_unknown == 2
 
 
 def test_motion_reaches_the_console(console_factory):
@@ -374,7 +374,7 @@ def test_streaminfo_before_bang_is_kept(console_factory):
     console = console_factory(early_streaminfo=True)
     with _connection(console) as connection:
         connection.connect()
-        assert "STREAMINFO came before BANG; kept for later." in connection.log
+        assert "STREAMINFO came before BANG. It is kept for later." in connection.log
     assert console.received[:2] == [tkproto.BIG, tkproto.STREAMINFOACK]
 
 

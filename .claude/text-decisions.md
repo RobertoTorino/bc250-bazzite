@@ -45,8 +45,8 @@ a line says otherwise.
   dialog had no such line. Where the app skips the prompt while sudo still has the password, the line says so.
 - **The installers' shared messages stay as they are** in an app's rewrite: "Run this as your own user, not with
   sudo: ...", "Keeping the suite venv: ...", "... is missing: run install.sh from ...", "Python 3.10 or newer is
-  needed.", "Installing PyQt6 into the venv (...)", "PyQt6 does not load from the venv ..." and the launcher's "... is
-  not installed in ...; run install.sh again." They are reworded once, in every installer and `tools/new_app.py`
+  needed.", "Installing PyQt6 into the venv (...)", "PyQt6 does not load from the venv ...", "... is not installed:
+  nothing to remove." and the launcher's "... is not installed in ...; run install.sh again." They are reworded once, in every installer and `tools/new_app.py`
   together. An installer's own messages are rewritten with its app.
 - **Code is left out of the rewrite.** A command keeps its words (`sudo reboot`, `systemctl reboot`), also where the
   sentence around it now says "restart".
@@ -55,3 +55,8 @@ a line says otherwise.
 - **"Not authorized: the password dialog was canceled or refused."** keeps this wording in every app.
 - **A group title or label stays as it is**, also with text in parentheses. A text written to a log or a file may
   be reworded when nothing reads it.
+- **A file whose change makes an installed service count as outdated** keeps its text until it changes for another
+  reason: HDMI CEC's `boot.py` and Fan Control's `guard.py`. Changing it would ask every user with the service on to
+  apply it again.
+- **A message that only a test reads** may be reworded. Change the test with it, also a test that runs only where the
+  native core is built (PS Remote Play's `test_stream.py` and `test_senkusha.py`).
