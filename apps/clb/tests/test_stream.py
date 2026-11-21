@@ -83,8 +83,9 @@ def process(qapp, condition, timeout=15.0) -> bool:
 
 def test_state_texts():
     assert state_text(State("WaitingForResources", wait_s=150)) == \
-        "In the queue for a cloud server: about 2 minutes…"
-    assert state_text(State("WaitingForResources", wait_s=30)) == "In the queue for a cloud server: about 1 minute…"
+        "In the queue for a cloud server. About 2 minutes to wait…"
+    assert state_text(State("WaitingForResources", wait_s=30)) == \
+        "In the queue for a cloud server. About 1 minute to wait…"
     assert state_text(State("WaitingForResources")) == "In the queue for a cloud server…"
     assert state_text(State("Provisioning")) == "Getting the XBOX ready…"
     assert state_text(State("Odd")) == "Odd…"
@@ -128,7 +129,7 @@ def test_a_cloud_stream_from_start_to_the_persons_end(qapp):
         session = FakeSession.instances[0]
         assert session.args == ("CLOUD", "cloud", "FORTNITE", "nl-NL")
         assert session.calls[:3] == ["play", "ready:LPT", "sdp"] and session.calls[3].startswith("ice:")
-        assert "In the queue for a cloud server: about 2 minutes…" in got["status"]
+        assert "In the queue for a cloud server. About 2 minutes to wait…" in got["status"]
         image = got["image"][-1]
         assert not image.isNull() and image.width() > 0
         assert len(got["sound"][-1]) % 4 == 0 and got["sound"][-1]

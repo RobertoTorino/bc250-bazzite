@@ -61,7 +61,7 @@ class StressControls(QWidget):
         row.addStretch(1)
 
         graph = QPushButton("Show graph")
-        graph.setToolTip("Plot the telemetry CSV of the latest stress run (older runs can be picked in the window).")
+        graph.setToolTip("Plot the telemetry CSV of the latest stress run. Older runs can be picked in the window.")
         graph.clicked.connect(self._show_graph)
         row.addWidget(graph)
         calc = QPushButton("Open CSV")

@@ -62,10 +62,10 @@ class MainWindow(QMainWindow):
         self.system.setWordWrap(True)
         header.add_second(self.system, 1)            # board, kernel and Mesa
         intro = hint_label(
-            "Games use the BC-250's dedicated compute queues (async compute) through a patched RADV driver. It is "
-            "built on this board and installed beside the system Mesa, which stays as it is. Games use it only "
-            "with their launch options, or every app after you switch that on, and only after the test passed on "
-            f"the running kernel. <a href='{MANUAL_URL}'>Manual</a>")
+            "Games use the BC-250's dedicated compute queues (async compute) through a patched RADV driver. The "
+            "app builds it on this board and installs it beside the system Mesa, which stays as it is. Games use "
+            "it only with their launch options, or every app after you switch that on. The test must first pass "
+            f"on the running kernel. <a href='{MANUAL_URL}'>Wiki</a>")
 
         grid = QGridLayout()
         grid.setColumnStretch(1, 1)
@@ -75,10 +75,10 @@ class MainWindow(QMainWindow):
         self.build_button = accent_button("Build", "Build the patched RADV in a podman container")
         self.build_button.clicked.connect(self.on_build)
         self.install_button = QPushButton("Install")
-        self.install_button.setToolTip("Install the build in /usr/local/lib/bc250-ace-queues (asks for your password)")
+        self.install_button.setToolTip("Install the build in /usr/local/lib/bc250-ace-queues. It asks for your password")
         self.install_button.clicked.connect(self.on_install)
         self.remove_button = QPushButton("Remove")
-        self.remove_button.setToolTip("Remove the driver; every app uses the system Mesa again")
+        self.remove_button.setToolTip("Remove the driver. Every app uses the system Mesa again")
         self.remove_button.clicked.connect(self.on_remove)
         self.test_button = QPushButton("Run test")
         self.test_button.setToolTip("Run the ACE queue test with the installed driver (about a minute)")
@@ -87,8 +87,8 @@ class MainWindow(QMainWindow):
         self.copy_button.setToolTip("Copy the Steam launch options for a game to the clipboard")
         self.copy_button.clicked.connect(self.copy_launch_options)
         self.all_button = QPushButton("All apps: on")
-        self.all_button.setToolTip("Every app uses the patched driver, without launch options (asks for your "
-                                   "password; applies after you log out and back in)")
+        self.all_button.setToolTip("Every app uses the patched driver, without launch options. It asks for "
+                                   "your password. It applies after you log out and back in")
         self.all_button.clicked.connect(self.on_all_apps)
         rows = [("1. Build", self.build_state, [self.build_button]),
                 ("2. Install", self.install_state, [self.install_button, self.remove_button]),
@@ -166,20 +166,20 @@ class MainWindow(QMainWindow):
                             f"system Mesa {escape(s.system_mesa or '?')}")
 
         if not s.built:
-            build = "Not built. Downloads the Mesa source (checked against its signature) and the build tools, " \
-                    "then builds in a Fedora container: 20 to 40 minutes."
+            build = "Not built. Build downloads the Mesa source and the build tools, and checks the source against " \
+                    "its signature. Then it builds in a Fedora container. It takes 20 to 40 minutes."
         else:
             build = f"Built: {escape(s.get('Build'))}."
             if s.build_outdated:
-                build += f" <b>The system has Mesa {escape(s.system_mesa)} now:</b> build again to keep up with it."
+                build += f" <b>The system has Mesa {escape(s.system_mesa)} now.</b> Build again to keep up with it."
         self.build_state.setText(build)
 
         if not s.installed:
-            install = "Not installed." if s.built else "Not installed: build it first."
+            install = "Not installed." if s.built else "Not installed. Build it first."
         else:
             install = f"Installed: {escape(s.get('Driver')[len('installed, '):])}, in /usr/local/lib/bc250-ace-queues."
             if s.install_outdated:
-                install += " <b>A newer build is waiting:</b> install it."
+                install += " <b>A newer build is waiting.</b> Install it."
         self.install_state.setText(install)
 
         if not s.installed:
@@ -196,7 +196,7 @@ class MainWindow(QMainWindow):
                "Started without a passed test on this kernel, the game uses the system Mesa.")
         off_note = s.get("All apps").removeprefix("off").strip(" ()")
         if s.all_apps:
-            use += "<br><b>On for all apps</b> (after a log-out and back in). Flatpak apps keep their own driver."
+            use += "<br><b>On for all apps</b>, after you log out and back in. Flatpak apps keep their own driver."
         elif off_note:
             use += f"<br>All apps: off ({escape(off_note)})."
         self.use_state.setText(use)
@@ -234,21 +234,26 @@ class MainWindow(QMainWindow):
     def on_build(self) -> None:
         if self._ask("Build", "Build the patched RADV for Mesa "
                      f"{self.status.system_mesa or '(the system version)'}?\n\n"
-                     "It runs as your user in a Fedora container (podman) and downloads several hundred MB: the "
-                     "Mesa source and the build tools. It takes 20 to 40 minutes; nothing on the system changes."):
+                     "It runs as your user in a Fedora container (podman).\n"
+                     "It downloads the Mesa source and the build tools, several hundred MB.\n"
+                     "It takes 20 to 40 minutes.\n"
+                     "Nothing on the system changes."):
             self.run("build")
 
     def on_install(self) -> None:
         if self._ask("Install", "Install the patched RADV?\n\n"
-                     "It goes to /usr/local/lib/bc250-ace-queues, beside the system Mesa, which stays as it is. "
-                     "Nothing uses it until the test has passed and you give a game the launch options. "
-                     "Remove takes it out again."):
+                     "It goes to /usr/local/lib/bc250-ace-queues, beside the system Mesa, which stays as it is.\n"
+                     "Nothing uses it until the test has passed and you give a game the launch options.\n"
+                     "Remove takes it out again.\n"
+                     "You will be asked for your password."):
             self.run("install")
 
     def on_remove(self) -> None:
-        if self._ask("Remove", "Remove the patched RADV? Every app uses the system Mesa again.\n\n"
-                     f"Also remove \"{self.status.launch_options}\" from the launch options of your games: without "
-                     "the driver they do not start."):
+        if self._ask("Remove", "Remove the patched RADV?\n\n"
+                     "Every app uses the system Mesa again.\n"
+                     f"Also remove \"{self.status.launch_options}\" from the launch options of your games.\n"
+                     "Without the driver they do not start.\n"
+                     "You will be asked for your password."):
             self.run("remove")
 
     def on_test(self) -> None:
@@ -259,15 +264,17 @@ class MainWindow(QMainWindow):
             self.run("all-off")
             return
         if self._ask("All apps", "Let every app use the patched RADV, the desktop included?\n\n"
-                     "It applies after you log out and back in. When the kernel or the driver changes, it switches "
-                     "itself off at the next boot, until the test passes again.\n\n"
-                     "If the desktop does not come back: press Ctrl+Alt+F3, log in and run\n"
-                     "sudo rm /etc/environment.d/90-bc250-ace-queues.conf\nthen reboot."):
+                     "It applies after you log out and back in.\n"
+                     "When the kernel or the driver changes, it switches itself off at the next boot, until the "
+                     "test passes again.\n\n"
+                     "If the desktop does not come back, press Ctrl+Alt+F3, log in and run\n"
+                     "sudo rm /etc/environment.d/90-bc250-ace-queues.conf\nthen restart the board.\n\n"
+                     "You will be asked for your password."):
             self.run("all-on")
 
     def copy_launch_options(self) -> None:
         QApplication.clipboard().setText(self.status.launch_options)
-        self.running.setText("Launch options copied: paste them into a game's Properties → Launch options in Steam.")
+        self.running.setText("Launch options copied. Paste them into a game's Properties → Launch options in Steam.")
 
     def command(self, action: str) -> list[str]:
         args, root, _ = ACTIONS[action]
@@ -304,7 +311,7 @@ class MainWindow(QMainWindow):
         elif root and code in NOT_AUTHORISED:
             self.running.setText("Not authorized: the password dialog was canceled or refused.")
         else:
-            self.running.setText(f"Stopped with exit code {code}; see the output.")
+            self.running.setText(f"Stopped with exit code {code}. See the output.")
         self.process = None
         self.refresh()
 

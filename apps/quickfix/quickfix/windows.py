@@ -428,11 +428,13 @@ class VrmWindow(SwitchWindow):
                       "The quickfix's service is not there", True if v.ours else None)
         self.show_box("Sensors", system.VRM_MODULE if v.hwmon else "None", "The regulator's sensors are there"
                       if v.hwmon else "No sensors of the regulator", v.hwmon)
-        self.on_button.setEnabled(not v.on and v.can_build)
+        # On, but not loaded: Turn on is there again. It copies the script and the source anew and starts the service,
+        # which is what a newer version of the quickfix needs after a load that failed.
+        self.on_button.setEnabled(v.can_build and (not v.on or (v.ours and not v.loaded)))
         self.off_button.setEnabled(v.ours)
         self.state.set_status("On" if v.on else "Off", "ok" if v.on and v.loaded else "warn" if v.on else "info")
         if v.ours and not v.loaded:
-            note = f"The module is not loaded. See why with: journalctl -b -u {system.VRM_UNIT}"
+            note = f"The module is not loaded. Turn on tries again. See why with: journalctl -b -u {system.VRM_UNIT}"
         elif v.loaded and not v.hwmon:
             note = "The module is loaded, but the regulator did not answer: there are no sensors."
         elif v.loaded and not v.ours:

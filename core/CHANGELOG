@@ -1,3 +1,8 @@
+Changelog: 21-11-2026 14:24:02
+
+Added. The sensors read the board's 12 V input from the bc250_vrm module (Reading.vin_mv, Sensors.vin_mv()): the
+voltage channel whose label names VIN. None without the module.
+
 Changelog: 21-11-2026 12:24:43
 
 Version 6.5.0.

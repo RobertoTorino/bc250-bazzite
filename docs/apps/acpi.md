@@ -10,14 +10,15 @@
     moment the two files are. Uninstall removes the file and the line, puts back any line that was there before,
     and regenerates GRUB; after the next reboot the board runs on the BIOS's tables again.
 
-Safe alternative to BIOS flashing: a **persistent** ACPI fix for the AMD BC-250 that gives the
-board CPU C-states (idle) and frequency scaling (800 MHz – 3.2 GHz, 8 steps) on Linux —
-without the P3.00 MeiMeiDXE v3 modded BIOS.
+BC-250 Persistent ACPI gives the CPU of the **AMD BC-250** its idle states (C-states) and frequency scaling on
+Linux. The frequency scales from 800 MHz to 3.2 GHz in 8 steps. The fix is **persistent**, so it stays across
+restarts and updates. It is a safe alternative to BIOS flashing. You don't need the P3.00 MeiMeiDXE v3 modded BIOS.
 
-The ACPI tables come from [e-tho/bc250-acpi-fix](https://github.com/e-tho/bc250-acpi-fix)
-(maintained fork of [bc250-collective/bc250-acpi-fix](https://github.com/bc250-collective/bc250-acpi-fix)),
-vendored here from release **v1.1.1**. Three SSDT overrides are loaded from an early initrd via the
-kernel's [ACPI table upgrade](https://docs.kernel.org/admin-guide/acpi/initrd_table_override.html):
+The ACPI tables come from [e-tho/bc250-acpi-fix](https://github.com/e-tho/bc250-acpi-fix). That project is the
+maintained fork of [bc250-collective/bc250-acpi-fix](https://github.com/bc250-collective/bc250-acpi-fix). The app
+carries a copy of its release **v1.1.1**. Three SSDT overrides do the work. The kernel loads them from an early
+initrd with its [ACPI table upgrade](https://docs.kernel.org/admin-guide/acpi/initrd_table_override.html). An early
+initrd is a file that GRUB hands to the kernel at boot.
 
 | Table | Fixes |
 |---|---|
@@ -25,40 +26,44 @@ kernel's [ACPI table upgrade](https://docs.kernel.org/admin-guide/acpi/initrd_ta
 | `SSDT-PST` | Publishes the 8 frequency states |
 | `SSDT-STUBS` | Defines missing firmware methods as no-ops |
 
-Works on stock 6-core and unlocked 8-core boards, on all stock BIOS versions
-(1.00, 2.00, 3.00 and 5.00 share the same DSDT).
+It works on stock 6-core and unlocked 8-core boards. It works on all stock BIOS versions, because 1.00, 2.00, 3.00
+and 5.00 share the same DSDT.
 
 ## Is this ACPI fix persistent?
 
-**Yes, it survives updates**:
+**Yes, it survives updates**.
 
-* `/boot/acpi_override.cpio` — extra files in `/boot` are left alone by `rpm-ostree`
-  / bootc image updates; only `/boot/ostree` and `/boot/loader` are managed.
-* `/etc/default/grub` — `/etc` is machine-local state on ostree systems and is
-  3-way-merged across deployments, so the `GRUB_EARLY_INITRD_LINUX_CUSTOM` line stays. An early-initrd
-  line that was in the file before is kept beside it as a comment, and Uninstall puts it back.
-* **Kernel updates**: Fedora's `blscfg` GRUB module prepends the early initrd to **every**
-  BLS boot entry at boot time, including kernels installed later. No re-install, no
-  regeneration needed after a kernel or image update.
+* `/boot/acpi_override.cpio` stays. `rpm-ostree` and bootc image updates leave extra files in `/boot` alone. They
+  manage only `/boot/ostree` and `/boot/loader`.
+* `/etc/default/grub` stays. `/etc` is machine-local state on ostree systems, and it is 3-way-merged across
+  deployments. So the `GRUB_EARLY_INITRD_LINUX_CUSTOM` line stays. An early initrd line that was in the file before
+  is kept beside it as a comment. **Uninstall** puts it back.
+* **Kernel updates** need nothing from you. Fedora's `blscfg` GRUB module prepends the early initrd to **every** BLS
+  boot entry at boot time. That includes kernels installed later. You don't install again or regenerate GRUB after
+  a kernel or image update.
 
-Unlike BIOS flashing it is fully reversible (Uninstall in the app,
-`sudo ./bc250-acpi-override.sh --uninstall`, or just delete the file and the GRUB line) and
-carries zero bricking risk.
+Unlike BIOS flashing, you can reverse it fully, and it carries zero bricking risk. You can reverse it in three ways:
+
+* **Uninstall** in the app
+* `sudo ./bc250-acpi-override.sh --uninstall`
+* Delete the file and the GRUB line
 
 ## Install (Bazzite / Universal Blue)
 
-Install the app from the BC250 Bazzite Suite portal, or from a clone or release folder, as your
-own user (not with sudo):
+Install the app from the BC250 Bazzite Suite portal. You can also install it from a clone or a release folder. Run
+the installer as your own user, not with sudo.
 
 ```bash
 ./install.sh                         # app menu entry and Desktop icon
 ./install.sh --no-desktop-shortcut   # app menu entry only
 ```
 
-Installing the app changes nothing on the board. Open **BC-250 Persistent ACPI** and click
-**Install**, then reboot. The window shows whether the override is installed, the CPU's
-frequency steps and idle states, and (with **Status with sudo**) whether the kernel loaded the
-tables this boot.
+Installing the app changes nothing on the board. Open **BC-250 Persistent ACPI** and click **Install**, then
+restart. The window shows:
+
+* Whether the override is installed
+* The CPU's frequency steps and idle states
+* With **Status with sudo**, whether the kernel loaded the tables this boot
 
 From a terminal, without the app:
 
@@ -67,12 +72,19 @@ sudo ./bc250-acpi-override.sh --install
 # reboot
 ```
 
-The installer checks for a BC-250 GPU, warns on modded BIOSes (duplicate tables fail to
-load — do **not** combine this with a modded BIOS that injects its own fixes), verifies
-`CONFIG_ACPI_TABLE_UPGRADE`, installs the cpio, adds the GRUB line idempotently and runs
-`ujust regenerate-grub` (or `grub2-mkconfig` on plain Fedora, where the path in
-`GRUB_EARLY_INITRD_LINUX_CUSTOM` is relative to `/boot/grub2/`). In a terminal a warning asks
-"Continue anyway?"; the app shows the warning in a dialog. `--yes` answers yes to both warnings.
+The installer takes these steps:
+
+1. It checks for a BC-250 GPU.
+2. It warns when the BIOS looks modded. Duplicate tables fail to load, so do **not** combine this with a modded
+   BIOS that injects its own fixes.
+3. It verifies `CONFIG_ACPI_TABLE_UPGRADE`.
+4. It installs the cpio.
+5. It adds the GRUB line, and only once.
+6. It runs `ujust regenerate-grub`. On plain Fedora it runs `grub2-mkconfig`, where the path in
+   `GRUB_EARLY_INITRD_LINUX_CUSTOM` is relative to `/boot/grub2/`.
+
+In a terminal a warning asks "Continue anyway?". The app shows the warning in a dialog. `--yes` answers yes to both
+warnings.
 
 ### Manual install
 
@@ -93,21 +105,20 @@ cpupower frequency-info                              # 8 steps, 800 MHz - 3.2 GH
 cpupower idle-info                                   # POLL, C1, C2 (C2 at 0x414)
 ```
 
-Or run test 26 of [BC-250 Board Test](check.md),
-which reports whether the ACPI tables came from the initrd override or the BIOS.
+Or run test 26 of [BC-250 Board Test](check.md). It reports whether the ACPI tables came from the initrd override
+or the BIOS.
 
 ## Uninstall
 
-Click **Uninstall** in the app and reboot, or from a terminal:
+Click **Uninstall** in the app and restart. Or from a terminal:
 
 ```bash
 sudo ./bc250-acpi-override.sh --uninstall
 # reboot
 ```
 
-To remove the app itself: `./install.sh --uninstall` (add `--purge` to also remove its
-settings). This leaves the override as it is; uninstall the override first if you want the
-board back on the BIOS tables.
+To remove the app itself, run `./install.sh --uninstall`. Add `--purge` to also remove its settings. This leaves
+the override as it is. Uninstall the override first if you want the board back on the BIOS tables.
 
 ## Vendored artifacts
 
@@ -124,11 +135,12 @@ To rebuild from source instead, see the upstream `Makefile` (needs `acpica`/`ias
 
 ## Acknowledgements
 
-* [e-tho](https://github.com/e-tho/bc250-acpi-fix) — maintained tables and installation method.
-* [shinf1x](https://github.com/bc250-collective/bc250-acpi-fix) — original tables.
-* [rw-r-r-0644](https://github.com/rw-r-r-0644/bc250-acpi-fix) — idle-table diagnosis and ACPI error cleanup.
-* [mendesrr](https://github.com/mendesrr/bc250-acpi-fix-updated-8c) — 8-core extension.
+* [e-tho](https://github.com/e-tho/bc250-acpi-fix) — maintained tables and installation method
+* [shinf1x](https://github.com/bc250-collective/bc250-acpi-fix) — original tables
+* [rw-r-r-0644](https://github.com/rw-r-r-0644/bc250-acpi-fix) — idle-table diagnosis and ACPI error cleanup
+* [mendesrr](https://github.com/mendesrr/bc250-acpi-fix-updated-8c) — 8-core extension
 
 ## License
 
-MIT — see [LICENSE](https://github.com/RobertoTorino/bc250-bazzite/blob/main/apps/acpi/LICENSE). Vendored tables are MIT-licensed by their upstream authors.
+MIT, see [LICENSE](https://github.com/RobertoTorino/bc250-bazzite/blob/main/apps/acpi/LICENSE). The vendored tables are
+MIT-licensed by their upstream authors.

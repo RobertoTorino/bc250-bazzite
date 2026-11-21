@@ -74,9 +74,9 @@ class MainWindow(QMainWindow):
         for box in (self.account_box, self.consoles_box, self.cloud_box):
             header.add_second(box)
         intro = hint_label(
-            "XBOX games on the BC-250: stream your own XBOX (Remote Play) or a game from XBOX Cloud Gaming. Sign "
-            "in with your Microsoft account; the app never sees your password. " + style.link(self, MANUAL_URL,
-                                                                                            "Manual"))
+            "Stream your own XBOX to the BC-250 (Remote Play), or play a game from XBOX Cloud Gaming. Sign in "
+            "with your Microsoft account. The app never sees your password. " + style.link(self, MANUAL_URL,
+                                                                                           "Wiki"))
 
         grid = QGridLayout()
         grid.setColumnStretch(2, 1)
@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
         self.account_state.setWordWrap(True)
         self.account_state.setOpenExternalLinks(True)
         self.account_state.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
-        self.sign_in_button = style.primary_button("Sign in", "Sign in with your Microsoft account: you get a "
+        self.sign_in_button = style.primary_button("Sign in", "Sign in with your Microsoft account. You get a "
                                                               "code to enter on microsoft.com/link")
         self.sign_in_button.clicked.connect(self.on_sign_in)
         self.sign_out_button = QPushButton("Sign out")
@@ -103,8 +103,8 @@ class MainWindow(QMainWindow):
         self.console_table.doubleClicked.connect(lambda _index: self.on_stream_console())
         self.console_table.itemSelectionChanged.connect(self._update_buttons)
         self.wake_button = QPushButton("Wake")
-        self.wake_button.setToolTip("Wake the console from sleep (it needs the Sleep power mode and remote "
-                                    "features on)")
+        self.wake_button.setToolTip("Wake the console from sleep. Its power mode must be Sleep, and remote "
+                                    "features must be on")
         self.wake_button.clicked.connect(self.on_wake)
         self.stream_console_button = style.primary_button("Stream", "Stream the console on the board")
         self.stream_console_button.clicked.connect(self.on_stream_console)
@@ -208,12 +208,12 @@ class MainWindow(QMainWindow):
             link = style.link(self, self.code.verification_uri, escape(self.code.verification_uri))
             self.account_state.setText(f"Open {link} on a phone or a computer and enter the code "
                                        f"<b style='font-size:18px;'>{escape(self.code.user_code)}</b>. "
-                                       "This window goes on by itself once you signed in.")
+                                       "This window goes on by itself once you are signed in.")
         elif self.account.signed_in:
             who = f"<b>{escape(self.gamertag)}</b>" if self.gamertag else "your Microsoft account"
             self.account_state.setText(f"Signed in as {who}.")
         else:
-            self.account_state.setText("Not signed in. Sign in gives you a code to enter on Microsoft's page, "
+            self.account_state.setText("Not signed in. Sign in gives you a code. Enter it on Microsoft's page, "
                                        "on a phone or any computer.")
         self.account_box.set_value(self.gamertag or ("signed in" if self.account.signed_in else "—"))
         self.consoles_box.set_value(str(len(self.consoles)) if self.account.signed_in else "—")
@@ -233,7 +233,7 @@ class MainWindow(QMainWindow):
     def _fill_consoles(self) -> None:
         self.console_table.setRowCount(len(self.consoles))
         for row, console in enumerate(self.consoles):
-            remote = "On" if console.streaming_enabled else "Off: switch it on on the XBOX"
+            remote = "On" if console.streaming_enabled else "Off. Switch it on in the XBOX's settings"
             for column, text in enumerate((console.name, console.type_name, console.power_name, remote)):
                 self.console_table.setItem(row, column, QTableWidgetItem(text))
 
@@ -248,10 +248,10 @@ class MainWindow(QMainWindow):
             self.title_table.setItem(row, 0, QTableWidgetItem(title.name))
         offering = OFFERINGS.get(self.account.cloud_offering, "")
         if self.titles:
-            note = f"{len(self.titles)} games" + (f" ({offering})" if offering else "")
+            note = f"{len(self.titles)} games" + (f" ({offering})" if offering else "") + "."
             if self.account.cloud_offering == auth.CLOUD_FREE:
-                note += ": without Game Pass Ultimate, only the free-to-play games"
-            self.cloud_state.setText(note + ".")
+                note += " Without Game Pass Ultimate, the list has only the free-to-play games."
+            self.cloud_state.setText(note)
         else:
             self.cloud_state.setText(self.cloud_note)
 
@@ -323,7 +323,7 @@ class MainWindow(QMainWindow):
                 try:
                     xbox.name_titles(account.client, cloud, titles, locale_name())
                 except HttpError as error:
-                    notes.append(f"The games' names could not be read ({error}): their IDs are shown.")
+                    notes.append(f"The app could not read the games' names ({error}). It shows their IDs instead.")
                 titles.sort(key=lambda t: t.name.lower())
             except (AuthError, HttpError) as error:
                 cloud_note = f"No cloud games: {error}"
@@ -355,7 +355,7 @@ class MainWindow(QMainWindow):
             except (AuthError, HttpError) as error:
                 return False, f"{error}"
         self.sign_in_worker.start(wait)
-        self.say("Waiting for the code to be entered on Microsoft's page…")
+        self.say("Waiting for you to enter the code on Microsoft's page…")
         self._show_state()
 
     def _signed_in(self, result) -> None:
@@ -378,7 +378,7 @@ class MainWindow(QMainWindow):
             return
         self.account.sign_out()
         self.gamertag, self.consoles, self.titles, self.cloud_note = "", [], [], ""
-        self.say("Signed out; the account is forgotten on this board.")
+        self.say("Signed out. The account is forgotten on this board.")
         self._show_state()
 
     def on_wake(self) -> None:
@@ -392,7 +392,7 @@ class MainWindow(QMainWindow):
                 xbox.wake(account.client, account.web_token(), console.id)
             except (AuthError, HttpError) as error:
                 return "wake", False, f"{console.name} was not woken: {error}"
-            return "wake", True, (f"{console.name} is waking up: give it a few seconds, then Refresh or Stream.")
+            return "wake", True, (f"{console.name} is waking up. Give it a few seconds, then refresh or click Stream.")
         self._start(f"Waking {console.name}…", job)
 
     # --- Streams ----------------------------------------------------------------------------------------------
@@ -402,7 +402,7 @@ class MainWindow(QMainWindow):
         if console is None or self.stream_view is not None:
             return
         if not console.streaming_enabled:
-            self.say(f"Remote play is off on {console.name}: switch it on in the XBOX's Settings, Devices & "
+            self.say(f"Remote play is off on {console.name}. Switch it on in the XBOX's Settings, Devices & "
                      "connections, Remote features.", error=True)
             return
         self.open_stream("home", console.id, console.name)

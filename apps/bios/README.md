@@ -6,10 +6,10 @@
 
 # BC-250 BIOS Reader
 
-Reads the BIOS settings of the **AMD BC-250** on **Bazzite** and shows them in a layout like the BIOS setup
-screen, hidden menus included. It only reads: nothing on the board or in the BIOS changes.
+BC-250 BIOS Reader shows the BIOS settings of the **AMD BC-250** on **Bazzite**. The layout is like the BIOS setup
+screen, hidden menus included. The app only reads. Nothing on the board or in the BIOS changes.
 
-How to install and use it: [BC-250 BIOS Reader in the manual](https://robertotorino.github.io/bc250-bazzite/apps/bios/).
+How to install and use it: [BC-250 BIOS Reader in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/bios/).
 
 ## License
 

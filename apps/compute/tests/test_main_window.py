@@ -224,7 +224,7 @@ def test_a_failed_install_shows_a_red_mark_not_a_message(qapp, unlock_script, st
         unlock._pending_action = "install"
         unlock._on_finished(1)
         assert not unlock.failed_label.isHidden() and "Check logs" in unlock.failed_label.text()
-        assert unlock.failed_label.toolTip() == "Install failed (exit code 1): the log says why."
+        assert unlock.failed_label.toolTip() == "Install failed (exit code 1). The log says why."
         assert unlock.output.isHidden() and warnings == []          # no message box, the log stays closed
         unlock.logs_button.click()
         assert unlock.failed_label.isHidden() and not unlock.output.isHidden()

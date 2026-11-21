@@ -35,7 +35,7 @@
 #       --same-boot       don't reboot between attempts; restore the baseline live instead
 #                         (faster, but every attempt then inherits the previous one's state)
 #       --auto            don't ask anything; auto-reboot after each attempt and keep going on
-#                         its own after every login (needs the autostart unit, see the manual) until
+#                         its own after every login (needs the autostart unit, see the wiki) until
 #                         every item is done. Still one attempt per boot: no loss of isolation.
 #       --no-watch        don't read the registers back during the load
 #       --status          show the results so far and write the report, then exit
@@ -61,7 +61,7 @@ ask()  { # prompt [default-used-in---auto-mode]; only the answer goes to stdout 
 }
 do_reboot() { # --no-ask-password: fail instead of raising a GUI auth popup, then fall back to sudo
   systemctl reboot --no-ask-password 2>/dev/null || sudo -n systemctl reboot 2>/dev/null \
-    || { say "Could not reboot automatically; reboot WARM by hand (do not power off)."; exit 1; }
+    || { say "Could not reboot automatically. Reboot WARM by hand (do not power off)."; exit 1; }
 }
 usage() { sed -n '4,/^$/{s/^# \{0,1\}//;p;}' "$0"; }   # the header comment, after the SPDX line and the blank
 
@@ -97,9 +97,9 @@ while (( $# )); do
 done
 [[ -z $STRESS_SECS ]] || { [[ $STRESS_SECS =~ ^[0-9]+$ ]] && (( STRESS_SECS >= 60 )); } || die "--time needs a number of seconds (60 or more)."
 [[ -z $ROUNDS_OPT || $ROUNDS_OPT =~ ^[1-9]$ ]] || die "--rounds needs a number from 1 to 9."
-(( CONTROL_ONLY_OPT )) || [[ -z $ROUNDS_OPT ]] || (( ROUNDS_OPT >= 2 )) || die "--rounds needs 2 or more (control-only runs may use 1)."
+(( CONTROL_ONLY_OPT )) || [[ -z $ROUNDS_OPT ]] || (( ROUNDS_OPT >= 2 )) || die "--rounds needs 2 or more. A control-only run may use 1."
 MASK_RE='^0x[0-9a-fA-F]{1,2}(,0x[0-9a-fA-F]{1,2}){3}$'
-[[ -z $BASE_OPT || $BASE_OPT =~ $MASK_RE ]] || die "--baseline needs 4 masks, e.g. 0x07,0x07,0x07,0x07"
+[[ -z $BASE_OPT || $BASE_OPT =~ $MASK_RE ]] || die "--baseline needs 4 masks, for example 0x07,0x07,0x07,0x07"
 
 STATE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/bc250-cu-bisect"
 CONFIG="$STATE_DIR/umr-config"
@@ -205,7 +205,7 @@ draw_cu_map() { # [current item, e.g. SE0.SH1.WGP3]
   done
   say ""
   say "Legend: ${C_GREEN}██${C_RESET} baseline (always unlocked)  ${C_YELLOW}${C_REV}>>${C_RESET} testing now  ${C_CYAN}ok${C_RESET} passed every round  ${C_RED}xx${C_RESET} fails every time  ${C_MAGENTA}??${C_RESET} random  ${C_DIM}..${C_RESET} not tested yet"
-  say "$(cu_count "$BASE") of 40 CUs unlocked by default; up to 40 possible if every WGP is healthy."
+  say "$(cu_count "$BASE") of 40 CUs are unlocked by default. Up to 40 are possible if every WGP is healthy."
 }
 record() { # round item masks outcome errors faults drift maxtemp maxsclk maxbusy note
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(date '+%F %T')" "${BOOT_ID:0:8}" "$@" >>"$RUNS"
@@ -243,7 +243,7 @@ summary() {
     elif (( fails == tries && tries >= 2 )); then
       verdict="FAILS EVERY TIME"; (( errs )) && verdict+=" (memory errors)"
       [[ $it != control ]] && consistent+=("$it")
-    elif (( fails == tries )); then verdict="failed (only 1 try so far)"
+    elif (( fails == tries )); then verdict="failed (1 try so far)"
     else verdict="RANDOM ($fails of $tries failed)"; [[ $it != control ]] && random+=("$it")
     fi
     [[ $it == control ]] && (( fails )) && ctrl_fail=1
@@ -252,16 +252,16 @@ summary() {
   say ""
   say "What this means:"
   if (( ctrl_fail )); then
-    say "- The CONTROL failed: it adds no CUs, it only does the register writes. So the unlock method"
-    say "  itself (or power/heat) causes failures. The WGP verdicts can't blame your CUs."
+    say "- The CONTROL failed. It adds no CUs and only writes the registers. So the unlock method"
+    say "  itself, power or heat causes the failures. The WGP verdicts can't blame your CUs."
   fi
   if (( ${#mech[@]} )); then
     say "- Signs of the unlock method itself: ${mech[*]}"
-    say "  (CRASH-APPLY = down while writing the masks on an idle GPU; DRIFT/MISMATCH = the"
-    say "  registers didn't hold the masks.)"
+    say "  CRASH-APPLY means the system went down while writing the masks on an idle GPU."
+    say "  DRIFT and MISMATCH mean the registers didn't hold the masks."
   fi
   if (( ${#consistent[@]} )) && (( ! ctrl_fail )); then
-    say "- Fail every time: ${consistent[*]}. These look like bad WGPs; leave them locked."
+    say "- Fail every time: ${consistent[*]}. These look like bad WGPs. Leave them locked."
   fi
   if (( ${#random[@]} )); then
     say "- Fail at random: ${random[*]}. A bad WGP normally fails every time, so this points to"
@@ -296,14 +296,14 @@ summary() {
     say "- WGPs that passed every round: ${good[*]}"
     say "  Combined: $FINAL ($(cu_count "$FINAL") CUs, WGPs per row: ${rowcounts[*]})."
     if (( uneven )); then
-      say "  That is UNEVEN, and uneven masks cannot be installed: the GPU splits work across all 4"
-      say "  rows in lockstep, so it would run exactly as fast as its smallest row ($level WGPs ="
+      say "  That is UNEVEN, and you cannot install an uneven mask. The GPU splits work across all 4"
+      say "  rows in lockstep. So it would run exactly as fast as its smallest row ($level WGPs ="
       say "  $(cu_count "$EVEN") CUs) while burning the extra power. Only 3 WGPs per row (24 CUs,"
       say "  stock), 4 per row (32 CUs) and 5 per row (40 CUs, max) are supported."
       say "  Use the even version instead: $EVEN ($(cu_count "$EVEN") CUs)."
     fi
-    say "  WGPs that pass one by one can still fail together (more power at the same voltage), so"
-    say "  test the combination before saving it to boot:"
+    say "  WGPs that pass one by one can still fail together, because they draw more power at the"
+    say "  same voltage. So test the combination before you save it to boot:"
     say "  $0 --reset && $0 --baseline $EVEN --control-only --rounds 1"
     say "  Once the combination also passes, make it survive a reboot:"
     say "  sudo ./bc250-cu-unlock.sh --install $EVEN"
@@ -348,13 +348,13 @@ if [[ $MODE == status ]]; then
 fi
 
 # ------------------------------------------------------------ preflight ----
-(( EUID != 0 )) || die "run this as your normal desktop user, not as root; it uses sudo only for umr."
-lspci -nn 2>/dev/null | grep -qi '1002:13fe' || die "no BC-250 GPU (1002:13fe) found; refusing to write GPU registers."
+(( EUID != 0 )) || die "run this as your normal desktop user, not as root. It uses sudo only for umr."
+lspci -nn 2>/dev/null | grep -qi '1002:13fe' || die "no BC-250 GPU (1002:13fe) found. Refusing to write GPU registers."
 
 UMR=""
 for p in /usr/bin/umr /usr/sbin/umr /usr/local/bin/umr; do [[ -x $p ]] && { UMR=$p; break; }; done
 [[ -n $UMR ]] || die "umr not found. Install it: sudo rpm-ostree install umr, then reboot."
-root_safe "$UMR" || die "$UMR is not owned by root (or others can write to it); it would run as root."
+root_safe "$UMR" || die "$UMR is not owned by root, or others can write to it. It would run as root."
 
 GPU_DEV=""
 for d in /sys/class/drm/card*/device; do
@@ -433,12 +433,12 @@ if [[ -s $PENDING ]]; then
   read -r P_ROUND P_ITEM P_PHASE P_BOOT P_MASKS <"$PENDING"
   if [[ $P_BOOT != "$BOOT_ID" ]]; then
     hdr "The last attempt did not finish"
-    say "Round $P_ROUND, $P_ITEM ($P_MASKS): the system went down while $([[ $P_PHASE == load ]] && echo 'the GPU load was running' || echo 'the masks were being written (GPU idle)')."
+    say "Round $P_ROUND, $P_ITEM ($P_MASKS). The system went down while $([[ $P_PHASE == load ]] && echo 'the GPU load was running' || echo 'the masks were being written (GPU idle)')."
     PREV=$(sudo -n journalctl -k -b -1 --no-pager 2>/dev/null | grep -E "$FAULT_RE" | tail -5)
     [[ -n $PREV ]] && { say "Kernel faults in the previous boot:"; say "$PREV"; }
     if [[ $(ask "Did the system freeze, crash or reboot by itself? [Y/n]" y) =~ ^[Nn]$ ]]; then
       record "$P_ROUND" "$P_ITEM" "$P_MASKS" ABORTED - - - - - - "rebooted by hand during the attempt"
-      say "Recorded as interrupted; this attempt will run again."
+      say "Recorded as interrupted. This attempt will run again."
     else
       O=CRASH-LOAD; [[ $P_PHASE == apply ]] && O=CRASH-APPLY
       record "$P_ROUND" "$P_ITEM" "$P_MASKS" "$O" - "$(grep -c . <<<"$PREV")" - - - - "system went down"
@@ -457,11 +457,11 @@ if (( AUTO )); then
     # a finished run disables the unit (auto_cleanup); re-arm it for this run
     if ! systemctl --user is-enabled --quiet "$AUTO_UNIT" 2>/dev/null; then
       systemctl --user enable "$AUTO_UNIT" 2>/dev/null \
-        && say "Re-enabled $AUTO_UNIT so this run continues after every reboot." \
-        || say "WARNING: could not enable $AUTO_UNIT; the run will stop at the next reboot."
+        && say "Re-enabled $AUTO_UNIT, so this run continues after every reboot." \
+        || say "WARNING: could not enable $AUTO_UNIT. The run will stop at the next reboot."
     fi
   else
-    say "WARNING: $AUTO_UNIT is not installed: nothing will restart this script after a"
+    say "WARNING: $AUTO_UNIT is not installed. Nothing will restart this script after a"
     say "reboot, so --auto cannot continue on its own. See bc250-cu-bisect-auto.service.example."
   fi
 fi
@@ -495,8 +495,8 @@ if [[ $SAME_BOOT == 0 ]]; then
     exit 0
   fi
   if [[ -n $CC_NOW ]] && [[ -z $(tr -d '0x ' <<<"$CC_NOW") ]]; then
-    die "the unlock is already active in this boot (CC registers are 0): something applied it at boot.
-       Disable whatever applies a CU unlock at boot, then reboot and run this again."
+    die "the unlock is already active in this boot (CC registers are 0). Something applied it at boot.
+       Turn off whatever applies a CU unlock at boot, then reboot and run this again."
   fi
 fi
 [[ $SPI_NOW != "$BASE" && $SAME_BOOT == 0 && $(cfg_get BASE_FROM) == live ]] && WARNINGS+=("The live masks ($SPI_NOW) differ from the baseline ($BASE).")
@@ -504,8 +504,8 @@ GOV_MAX=$(grep -oE "max[_a-z]*\s*=\s*[0-9]+" "$GOV_CONF" 2>/dev/null | grep -oE 
 [[ -n $GOV_MAX ]] && (( GOV_MAX > 1500 )) &&
   WARNINGS+=("The governor may run the GPU up to ${GOV_MAX} MHz. For this test cap it at 1500 MHz in $GOV_CONF, so power and heat don't hide the result.")
 [[ $LOAD != memtest_vulkan ]] &&
-  WARNINGS+=("$LOAD only shows crashes. memtest_vulkan also finds wrong results; put it in ~/.local/bin.")
-[[ -z $GPU_DEV ]] && WARNINGS+=("GPU sysfs node not found: no idle check, temperature or clock.")
+  WARNINGS+=("$LOAD only shows crashes. memtest_vulkan also finds wrong results. Put it in ~/.local/bin.")
+[[ -z $GPU_DEV ]] && WARNINGS+=("GPU sysfs node not found, so there is no idle check, temperature or clock.")
 if (( ${#WARNINGS[@]} )); then
   hdr "Before you start"
   for w in "${WARNINGS[@]}"; do say "- $w"; done
@@ -513,7 +513,7 @@ if (( ${#WARNINGS[@]} )); then
 fi
 say ""
 say "WARNING: this writes GPU registers. A bad WGP or the unlock itself can freeze the system."
-say "Save your work. After a freeze: cold boot and run the script again; it records the crash."
+say "Save your work. After a freeze, cold boot and run the script again. It then records the crash."
 
 # ---------------------------------------------------------------- attempt --
 LOAD_PID=""
@@ -523,7 +523,7 @@ on_exit() {
     read -r P_ROUND P_ITEM _ _ P_MASKS <"$PENDING"
     record "$P_ROUND" "$P_ITEM" "$P_MASKS" ABORTED - - - - - - "stopped (Ctrl+C)"
     rm -f "$PENDING"
-    say ""; say "Stopped. The unlock may still be active: reboot before using the system normally."
+    say ""; say "Stopped. The unlock may still be active. Reboot before using the system normally."
   fi
   kill "$KEEPALIVE" 2>/dev/null
 }
@@ -622,7 +622,7 @@ run_attempt() { # round item
 revert() {
   say "Restoring the baseline masks live..."
   apply_masks "$BASE" && [[ $(read_spi_all) == "$BASE" ]] && return 0
-  say "The baseline did not read back. Stopping: reboot, then run the script again."
+  say "The baseline did not read back. Stopping. Reboot, then run the script again."
   return 1
 }
 
@@ -631,9 +631,9 @@ auto_cleanup() { # the run is finished: stop the --auto loop from coming back at
   rm -f "$HOME/.config/autostart/bc250-cu-bisect-watch.desktop"
   # disable WITHOUT --now: this script may be running inside that very unit
   if systemctl --user disable "$AUTO_UNIT" 2>/dev/null; then
-    say "All attempts are done: disabled $AUTO_UNIT and removed the"
+    say "All attempts are done. Disabled $AUTO_UNIT and removed the"
     say "live-output autostart entry. Nothing will start at the next login."
-    say "(A new --auto run re-enables the unit by itself.)"
+    say "A new --auto run re-enables the unit by itself."
   fi
 }
 
@@ -656,7 +656,7 @@ else
       case $(ask "[p]ower off (best: cold boot), [r]eboot, or [n]othing? [p/r/N]") in
         [Pp]) systemctl poweroff ;;
         [Rr]) systemctl reboot ;;
-        *) say "Reboot before you use the system normally: the unlock is still active." ;;
+        *) say "Reboot before you use the system normally. The unlock is still active." ;;
       esac
     fi
   else

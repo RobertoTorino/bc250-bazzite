@@ -72,7 +72,7 @@ def read_for_view(path: Path) -> str:
                 "Files in /tmp are removed at reboot, and the report may come from another machine.")
     except PermissionError:
         return (f"No permission to read {path}.\n\n"
-                f"Open it from a terminal instead: sudo less {path}")
+                f"Open it from a terminal instead with this command.\nsudo less {path}")
     except OSError as exc:
         return f"Could not read {path}: {exc}"
 

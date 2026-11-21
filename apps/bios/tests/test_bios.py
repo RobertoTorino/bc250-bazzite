@@ -133,7 +133,7 @@ def test_dump_of_an_unknown_release(dump_file, sys_root):
 def test_running_stock(sys_root, tables_dir, stock):
     v = bios.verdict(bios.load_running(sys_root, tables_dir))
     assert (v.kind, v.certain) == ("stock", False)
-    assert "read the BIOS chip" in v.reasons[-1]
+    assert "Read the BIOS chip" in v.reasons[-1]
 
 
 def test_running_with_other_cbs_layout(sys_root, tables_dir, stock):

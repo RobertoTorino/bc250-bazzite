@@ -216,17 +216,17 @@ class GraphDialog(QDialog):
             views = [self._line_chart(t, u, s, rows, "elapsed_s", "Time (s)") for t, u, s in STRESS_PANELS]
         elif "gpu_fp32" in cols and "date" in cols:
             note = self._rescore(rows)
-            self.summary.setText(f"<b>{html.escape(path.name)}</b>: {len(rows)} benchmark run(s), oldest first. {note}")
+            self.summary.setText(f"<b>{html.escape(path.name)}</b>: {len(rows)} benchmark run(s), the oldest first. {note}")
             views = [self._bar_chart(t, u, s, rows) for t, u, s in HISTORY_PANELS]
         elif "down_mbps" in cols and "date" in cols:
-            self.summary.setText(f"<b>{html.escape(path.name)}</b>: {len(rows)} speed test run(s), oldest first. "
+            self.summary.setText(f"<b>{html.escape(path.name)}</b>: {len(rows)} speed test run(s), the oldest first. "
                                  "Loaded latency far above idle latency means bufferbloat.")
             views = [self._bar_chart(t, u, s, rows, _speedtest_label, _speedtest_tip, "%.1f")
                      for t, u, s in SPEEDTEST_PANELS]
         else:
             numeric = [c for c in cols if any(_float(r.get(c)) is not None for r in rows)]
             x = numeric[0] if numeric else None
-            self.summary.setText(f"<b>{html.escape(path.name)}</b>: {len(rows)} rows, x axis: {html.escape(x or 'row number')}.")
+            self.summary.setText(f"<b>{html.escape(path.name)}</b>: {len(rows)} rows, x-axis: {html.escape(x or 'row number')}.")
             # Column names come from the file and chart titles render HTML, so escape them for display.
             views = [self._line_chart(html.escape(c), "", [(c, html.escape(c))], rows, x, html.escape(x or "Row"))
                      for c in numeric[1:] or numeric]
@@ -418,7 +418,7 @@ def show_graph(parent: QWidget, path: Path | None, siblings: list[Path] | None =
                missing: str = "No CSV file found yet.") -> None:
     if not CHARTS_AVAILABLE:
         QMessageBox.information(parent, "Show graph",
-                                "Graphs are not available: this installation lacks the Qt Charts module.\n\n"
+                                "Graphs are not available. This installation lacks the Qt Charts module.\n\n"
                                 "Reinstall or update the app to get them back.")
         return
     if path is None:
@@ -449,9 +449,10 @@ def _user_readable(parent: QWidget, path: Path) -> Path | None:
     except OSError:
         QMessageBox.information(
             parent, "Open in Calc",
-            f"No permission to read {path} (it belongs to root).\n\n"
-            "Turn on Settings > General > \"Copy the full reports to Desktop\" so the next run leaves "
-            f"a readable copy, or copy it yourself:\nsudo cp {path} ~/ && sudo chown $USER ~/{path.name}")
+            f"No permission to read {path}. It belongs to root.\n\n"
+            "Turn on Settings > General > \"Copy the full reports to Desktop\". The next run then leaves "
+            f"a readable copy.\n\nOr copy it yourself with this command.\n"
+            f"sudo cp {path} ~/ && sudo chown $USER ~/{path.name}")
         return None
 
 
@@ -480,5 +481,5 @@ def open_in_calc(parent: QWidget, path: Path | None, missing: str = "No CSV file
             return
     if not QDesktopServices.openUrl(QUrl.fromLocalFile(str(path))):
         QMessageBox.information(parent, "Open in Calc",
-                                "LibreOffice Calc was not found and no other application is set up "
+                                "LibreOffice Calc was not found, and no other application is set up "
                                 f"for CSV files.\n\nOpen the file yourself: {path}")

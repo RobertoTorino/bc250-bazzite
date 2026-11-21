@@ -219,3 +219,11 @@ Kokoro
 kokoro-onnx
 onnxruntime
 uv
+Winbond
+e-tho
+vendored
+ensurepip
+bluetoothctl
+bluez
+cec-ctl
+kscreen-doctor

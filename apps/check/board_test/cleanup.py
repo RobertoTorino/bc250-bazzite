@@ -139,7 +139,7 @@ class CleanupDialog(QDialog):
         layout.addWidget(self.details, 1)
         keep = QLabel("Always kept: bench-baseline.json, bc250-bench-history.csv and bc250-speedtest-history.csv, "
                       "so performance and speed comparisons survive a cleanup. Removing old logs keeps their "
-                      "results in the history; only “Remove ALL” also empties it.")
+                      "results in the history. Only “Remove ALL” also empties it.")
         keep.setWordWrap(True)
         keep.setStyleSheet("color:#9aa0a6;")
         layout.addWidget(keep)

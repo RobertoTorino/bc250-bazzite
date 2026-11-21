@@ -185,14 +185,14 @@ def _frametime_check(rows: list[dict[str, str]], summary: dict) -> Check:
                                 "filling up (tests 37 and 47) or hhd running (test 27). A second "
                                 "session of the same game that keeps this ratio points at memory "
                                 "pressure rather than shader compilation.")
-        return Check("ok", f"Frametimes are consistent (1% low is {ratio:.0f}% of the average)", text)
+        return Check("ok", f"Frametimes are consistent, 1% low at {ratio:.0f}% of the average", text)
     if column(rows, "fps"):
         return Check("info", "Smoothness not judged",
-                     "Only sampled FPS is in this log (one average per sample interval), which hides "
-                     "single hitches. MangoHud's per-frame log was not found for this session; test 48 "
-                     "does the same maths over all logs it can find.")
+                     "Only sampled FPS is in this log, one average per sample interval. That hides "
+                     "single hitches. MangoHud's per-frame log was not found for this session. Test 48 "
+                     "does the same math over all logs it can find.")
     return Check("info", "No FPS recorded",
-                 "Use the launch line with MangoHud and click \"Enable FPS logging\" once; without it "
+                 "Use the launch line with MangoHud and click \"Enable FPS logging\" once. Without it "
                  "FPS, the 1% low and the stutter share stay empty.")
 
 
@@ -239,7 +239,7 @@ def _memory_checks(rows: list[dict[str, str]], budget: dict) -> list[Check]:
     if free:
         if min(free) < 512:
             out.append(Check("warn", "System memory ran low",
-                             f"Only {min(free):.0f} MiB of RAM was left at the tightest point; the OOM "
+                             f"Only {min(free):.0f} MiB of RAM was left at the tightest point. The OOM "
                              f"killer or swapping can hit the game here."))
         else:
             out.append(Check("ok", "System memory headroom is fine",
@@ -253,7 +253,7 @@ def _throttle_checks(rows: list[dict[str, str]], budget: dict, duration: float) 
     cap = budget.get("power_cap_w")
     if power and cap and 100 * max(power) / cap >= 95:
         out.append(Check("info", "Power-capped",
-                         f"GPU power peaked at {max(power):.0f} W against the {cap:.0f} W cap: the board "
+                         f"GPU power peaked at {max(power):.0f} W against the {cap:.0f} W cap. The board "
                          f"is at its power limit. That is normal under full load, but clocks cannot rise "
                          f"any further (test 40)."))
     temp = column(rows, "gpu_temp_c")
@@ -278,8 +278,8 @@ def _throttle_checks(rows: list[dict[str, str]], budget: dict, duration: float) 
         if first and last < 0.85 * first:
             out.append(Check("warn", "Clocks dropped over the session",
                              f"The GPU core averaged {first:.0f} MHz in the first fifth and {last:.0f} MHz "
-                             f"in the last ({100 * last / first:.0f}%): sustained performance is limited "
-                             f"by heat or the power cap."))
+                             f"in the last ({100 * last / first:.0f}%). Heat or the power cap limits "
+                             f"sustained performance."))
         elif first:
             out.append(Check("ok", "Clocks held up",
                              f"{first:.0f} MHz at the start against {last:.0f} MHz at the end."))
@@ -316,6 +316,6 @@ def session_checks(rows: list[dict[str, str]], summary: dict) -> list[Check]:
                                 "this game ran."))
     if 0 < duration < SHORT_SESSION_S:
         checks.append(Check("info", "Short session",
-                            f"Only {duration:.0f} s of gameplay; play longer for a verdict that means "
+                            f"Only {duration:.0f} s of gameplay. Play longer for a verdict that means "
                             f"something."))
     return checks

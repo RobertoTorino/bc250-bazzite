@@ -22,10 +22,10 @@ DOT = " · "
 WARM, HOT = 80, 90                       # °C: a temperature turns orange, then red
 BACKGROUNDS = {"Solid": 95, "Light see-through": 75, "See-through": 55, "Very see-through": 35}   # % opacity
 ROWS = (("cpu", "CPU"), ("gpu", "GPU"), ("governor", "Governor"), ("gpu_volt", "GPU volt"), ("cpu_rail", "CPU rail"),
-        ("gpu_rail", "GPU rail"), ("vram", "VRAM"), ("ram", "RAM"), ("refresh", "Refresh"), ("fan", "Fan"),
+        ("gpu_rail", "GPU rail"), ("vin", "12 V input"), ("vram", "VRAM"), ("ram", "RAM"), ("refresh", "Refresh"), ("fan", "Fan"),
         ("cpu_temp", "CPU temp"), ("gpu_temp", "GPU temp"), ("vrm_temp", "VRM temp"), ("cpu_vrm_temp", "CPU VRM temp"),
         ("gpu_vrm_temp", "GPU VRM temp"), ("nvme_temp", "NVMe temp"), ("net", "Network"), ("disk", "Disk"))
-RAIL_ROWS = ("cpu_rail", "gpu_rail", "cpu_vrm_temp", "gpu_vrm_temp")       # the rows the bc250_vrm module fills
+RAIL_ROWS = ("cpu_rail", "gpu_rail", "vin", "cpu_vrm_temp", "gpu_vrm_temp")       # the rows the bc250_vrm module fills
 WIDEST = "↓ 100.0 MB/s · ↑ 100.0 MB/s"     # the longest value a row shows, for a steady width
 
 
@@ -76,6 +76,7 @@ def format_reading(reading: Reading, refresh_hz: float | None) -> dict[str, tupl
         "gpu_volt": (f"{r.gpu_mv} mV" if r.gpu_mv else DASH, ""),
         "cpu_rail": (_rail(r.cpu_rail), ""),
         "gpu_rail": (_rail(r.gpu_rail), ""),
+        "vin": (f"{r.vin_mv / 1000:.2f} V" if r.vin_mv else DASH, ""),
         "vram": (_gb(r.vram), ""),
         "ram": (_gb(r.ram), ""),
         "refresh": (f"{refresh_hz:.0f} Hz" if refresh_hz else DASH, ""),

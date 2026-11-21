@@ -66,7 +66,7 @@ class ReadmeView(QWidget):
 
         bar = QHBoxLayout()
         self.back = QPushButton("◀  Back")
-        self.back.setToolTip("Back to the previous document (after following a link to another .md file).")
+        self.back.setToolTip("Back to the previous document, after you followed a link to another .md file.")
         self.back.clicked.connect(self._go_back)
         bar.addWidget(self.back)
         bar.addStretch(1)

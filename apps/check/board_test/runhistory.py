@@ -273,7 +273,7 @@ class HistoryPage(QWidget):
         row.addWidget(self.count)
         row.addStretch(1)
         self.only_diff = QCheckBox("Only differences")
-        self.only_diff.setToolTip("When comparing two runs: show only the tests whose result changed, "
+        self.only_diff.setToolTip("When comparing two runs, show only the tests whose result changed "
                                   "and the measurements both runs have")
         self.only_diff.setChecked(True)
         self.only_diff.toggled.connect(self._show_selection)

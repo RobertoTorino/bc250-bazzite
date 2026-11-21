@@ -97,7 +97,7 @@ class OverlayWindow(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         if draggable:
             self.setCursor(Qt.CursorShape.OpenHandCursor)
-            self.setToolTip("Drag to where the overlay should sit; the position is saved for the games.")
+            self.setToolTip("Drag to where the overlay should sit. The position is saved for the games.")
 
         grid = QGridLayout(self)
         grid.setContentsMargins(16, 12, 16, 12)

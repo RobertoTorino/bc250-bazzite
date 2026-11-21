@@ -31,15 +31,16 @@ class DiskControls(QWidget):
         row.setContentsMargins(0, 0, 0, 0)
 
         self.write = QCheckBox("Disk speed test (43): also test writes")
-        self.write.setToolTip("Writes a temporary file to /var/tmp (removed afterwards) to measure write speed and "
-                              "find where the SLC cache runs out. Without it the test only reads.")
+        self.write.setToolTip("Writes a temporary file to /var/tmp to measure write speed and find where the "
+                              "SLC cache runs out. The file is removed afterward. Without it the test only reads.")
         self.write.toggled.connect(lambda v: settings.set(write=v))
         row.addWidget(self.write)
         row.addWidget(QLabel("Write size (GiB):"))
         self.size = QSpinBox()
         self.size.setRange(1, 256)
-        self.size.setToolTip("How much to write. The SLC cache is found only if it is smaller than this: "
-                             "a few GiB on cheap/QLC drives, tens of GiB on large TLC drives. Needs this much + 5 GiB free.")
+        self.size.setToolTip("How much to write. The SLC cache is found only if it is smaller than this. "
+                             "That is a few GiB on cheap/QLC drives and tens of GiB on large TLC drives. "
+                             "Needs this much + 5 GiB free.")
         self.size.valueChanged.connect(lambda v: settings.set(write_gib=v))
         row.addWidget(self.size)
         row.addStretch(1)

@@ -15,6 +15,7 @@ A small window that stays on top of your desktop and shows the **AMD BC-250**'s 
 | GPU volt | core voltage (vddgfx) | `amdgpu` |
 | CPU rail | voltage, current and power of the CPU's supply | `bc250_vrm` |
 | GPU rail | voltage, current and power of the GPU's supply | `bc250_vrm` |
+| 12 V input | the board's 12 V input, as the voltage regulator measures it | `bc250_vrm` |
 | VRAM | used / total of the GPU's share of the memory | `amdgpu` |
 | RAM | used / total | `/proc/meminfo` |
 | Refresh | the refresh rate of the screen the window is on | Qt |

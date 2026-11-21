@@ -153,7 +153,7 @@ class History:
             self.db = self._open()
         except sqlite3.DatabaseError as exc:
             self.recovered_from = self._move_aside()
-            print(f"Test history: {exc}; moved to {self.recovered_from}, starting a new one.")
+            print(f"Test history: {exc}. The file is moved to {self.recovered_from}, and a new one starts.")
             self.db = self._open()
         self.keep_system_details = True     # kernel version and mitigation state; see Settings > Privacy
         self._migrate()

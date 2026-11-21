@@ -1,3 +1,17 @@
+Changelog: 21-11-2026 14:05:51
+
+Fixed. The text is rewritten to the writing standard: the wiki chapter, the README, the window's hint, tooltips,
+state lines, dialogs and status tooltips, and the messages of install.sh, bc250-ace-queues.sh, bc250-ace-queues-run
+and mesa/build-in-container.sh. Sentences are short and hold one fact each, without chains by semicolon, colon or
+parentheses. The dialogs give one fact per line and end with "You will be asked for your password." where the step
+asks for it. The window's link reads Wiki, and the README says "in the wiki". No label is renamed. One fact is
+corrected: the chapter said the portal lists the app under Gaming, and it is under Graphics. The lines in run.log now
+read "system Mesa. The patched driver is not installed." and "system Mesa. The ACE queue test has not passed on
+kernel ... with this driver.", with a period where the parentheses were. The comment lines in the two All apps
+environment files start with "Written by BC-250 ACE Queues.". Nothing the app does has changed. Two tests in
+tests/test_script.py follow the new wording: "Build it first" and the run.log line. The installer's messages that every app shares keep their old wording, and so does "Not authorized: the password
+dialog was canceled or refused." (owner, 21-11-2026: those are reworded once, in all installers together).
+
 Changelog: 21-11-2026 12:24:43
 
 Release 4.5.0.

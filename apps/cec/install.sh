@@ -138,7 +138,7 @@ VERSION=$(tr -d '[:space:]' <"$SRC/VERSION")
 command -v python3 >/dev/null 2>&1 || die "python3 is not installed."
 python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || die "Python 3.10 or newer is needed."
 python3 -c 'import venv, ensurepip' 2>/dev/null || die "python3 has no venv/ensurepip module."
-command -v cec-ctl >/dev/null 2>&1 || info "Note: cec-ctl is not installed (package v4l-utils); the app needs it."
+command -v cec-ctl >/dev/null 2>&1 || info "Note: cec-ctl is not installed (package v4l-utils). The app needs it."
 
 info "Installing $APP_NAME $VERSION"
 
@@ -222,7 +222,7 @@ if [ -f "$WATCH_FILE" ]; then
 fi
 
 if [ -f "$BOOT_DIR/boot.py" ] && ! cmp -s "$BOOT_DIR/boot.py" "$APP_DIR/hdmi_cec/boot.py"; then
-    info "The boot service is from another version: press Update under \"At boot\" in the app (it asks for your password)"
+    info "The boot service is from another version. Press Update under \"At boot\" in the app. It asks for your password."
 fi
 
 info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run: $APP_ID"

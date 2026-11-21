@@ -30,21 +30,23 @@ from . import APP_NAME, INFO, LOGO_PATH, __version__, bluez, boot, plasma, runne
 
 NAMES_KEY = "names"                     # the list while the system part is not installed
 
-ABOUT = ("<b>BC-250 Bluetooth Pairing</b> lets a board without a USB keyboard or mouse be used with Bluetooth ones "
-         "from the first boot.<br><br>"
-         "<b>Pair after boot</b>: for 5 minutes after every boot, a small system service searches for the devices "
-         "listed here. Put one in pairing mode (hold its connect button until the light blinks fast) and it is "
-         "paired, trusted and connected within seconds, on the login screen. One that was paired before but "
-         "dropped its pairing is paired again. Devices with other names are never paired, and the search stops "
-         "once every listed device is connected.<br><br>"
-         "<b>Controller batteries</b>: a DualSense reports its battery through its own driver, not Bluetooth, so "
-         "the Bluetooth icon shows none; this hands it to Bluetooth every 30 seconds.<br><br>"
-         "<b>Bluetooth at login</b>: Plasma switches Bluetooth back to the state it saved when the last session "
-         "ended. A reboot from a terminal saves it as off, and the keyboard and mouse then stop at the desktop. "
-         "With this on, Plasma switches Bluetooth on at every login (System Settings, Bluetooth, \"When logging "
-         "in\").<br><br>"
-         "A name can be copied by someone nearby with deliberate effort; the search is limited to the listed names "
-         "and to the first minutes after a boot.")
+ABOUT = ("<b>BC-250 Bluetooth Pairing</b> lets you use a board with a Bluetooth keyboard and mouse from the first "
+         "boot. You need no USB ones.<br><br>"
+         "<b>Pair after boot:</b> for 5 minutes after every boot, a small system service searches for the devices "
+         "listed here. Put one in pairing mode. To do that, hold its connect button until the light blinks fast. "
+         "The service pairs, trusts and connects it within seconds, on the login screen. It pairs a device again "
+         "when the device dropped its old pairing. It never pairs devices with other names. The search stops once "
+         "every listed device is connected.<br><br>"
+         "<b>Controller batteries:</b> a DualSense reports its battery through its own driver, not through "
+         "Bluetooth. So the Bluetooth icon shows none. This hands the battery to Bluetooth every 30 seconds."
+         "<br><br>"
+         "<b>Bluetooth at login:</b> Plasma switches Bluetooth back to the state it saved when the last session "
+         "ended. A restart from a terminal saves it as off. The keyboard and mouse then stop at the desktop. With "
+         "this on, Plasma switches Bluetooth on at every login. The setting is in System Settings, Bluetooth, "
+         "\"When logging in\".<br><br>"
+         "Someone nearby can copy a name with deliberate effort. So the search takes only the listed names. "
+         "It runs only in the first minutes after a boot. "
+         f"<a href='{boot.MANUAL_URL}'>Wiki</a>")
 
 
 class AddDialog(QDialog):
@@ -109,7 +111,7 @@ class AddDialog(QDialog):
         name = self.name.text()
         problem = boot.name_problem(name) if name else ""
         if not problem and name in self.listed:
-            problem = "It is listed already."
+            problem = "This name is listed already."
         self.problem.setText(problem)
         self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(bool(name) and not problem)
 
@@ -160,10 +162,10 @@ class MainWindow(QMainWindow):
         self.add_button.setToolTip("Pick a device Bluetooth knows, search for one in pairing mode, or type its name")
         self.add_button.clicked.connect(self.add_device)
         self.remove_button = QPushButton("Remove")
-        self.remove_button.setToolTip("Take the chosen name off the list; the device itself stays paired")
+        self.remove_button.setToolTip("Take the chosen name off the list. The device itself stays paired")
         self.remove_button.clicked.connect(self.remove_device)
         self.save_button = QPushButton("Save")
-        self.save_button.setToolTip("Give the search after boot the changed list; it asks for your password")
+        self.save_button.setToolTip("Give the search after boot the changed list. It asks for your password")
         self.save_button.clicked.connect(self.save_names)
         list_buttons = QVBoxLayout()
         for button in (self.add_button, self.remove_button, self.save_button):
@@ -183,7 +185,7 @@ class MainWindow(QMainWindow):
                                    "connected")
         self.pair_check.toggled.connect(self.choose_pair)
         self.search_button = QPushButton("Search now")
-        self.search_button.setToolTip("Search again now, without a reboot: put a device in pairing mode first")
+        self.search_button.setToolTip("Search again now, without a restart. Put a device in pairing mode first")
         self.search_button.clicked.connect(self.search_now)
         self.update_button = QPushButton("Update")
         self.update_button.setToolTip("Install this version of the system part")
@@ -194,7 +196,7 @@ class MainWindow(QMainWindow):
         pair_row.addWidget(self.update_button)
         pair_row.addWidget(self.search_button)
         self.battery_check = QCheckBox("Show controller batteries in the Bluetooth icon")
-        self.battery_check.setToolTip("A DualSense reports its battery through its own driver; this hands it to "
+        self.battery_check.setToolTip("A DualSense reports its battery through its own driver. This hands it to "
                                       "Bluetooth every 30 seconds")
         self.battery_check.toggled.connect(self.choose_battery)
         self.system_note = hint_label("")
@@ -205,8 +207,8 @@ class MainWindow(QMainWindow):
 
         login = QGroupBox("When you log in (your own setting, no password)")
         self.login_check = QCheckBox("Switch Bluetooth on at every login")
-        self.login_check.setToolTip("Plasma's \"When logging in: Enable Bluetooth\". Off: Plasma restores the state "
-                                    "it saved when the last session ended")
+        self.login_check.setToolTip("Sets Plasma's \"When logging in: Enable Bluetooth\". When off, Plasma restores "
+                                    "the state it saved when the last session ended")
         self.login_check.toggled.connect(self.choose_login)
         lay_login = QVBoxLayout(login)
         lay_login.addWidget(self.login_check)
@@ -262,9 +264,9 @@ class MainWindow(QMainWindow):
             item.setData(Qt.ItemDataRole.UserRole, name)
             self.list.addItem(item)
         if not self.names:
-            self.list_note.setText("No devices listed: Add… picks one Bluetooth knows or finds one in pairing mode.")
+            self.list_note.setText("No devices listed. Add… picks one Bluetooth knows or finds one in pairing mode.")
         elif self.changed():
-            self.list_note.setText("Changed: Save gives the search after boot this list.")
+            self.list_note.setText("The list changed. Save gives it to the search after boot.")
         else:
             self.list_note.setText("")
         self._update_buttons()
@@ -283,9 +285,9 @@ class MainWindow(QMainWindow):
         stale = at_boot is not None and boot.outdated(self.paths)
         self.update_button.setVisible(stale)
         if at_boot is None:
-            self.system_note.setText("Not installed: switching one on installs a small system service.")
+            self.system_note.setText("Not installed. Switching one on installs a small system service.")
         elif stale:
-            self.system_note.setText("Installed by another version of the app: Update installs this one.")
+            self.system_note.setText("Installed by another version of the app. Update installs this one.")
         else:
             searching = bluez.unit_state(boot.PAIR_UNIT, self.bt_run) == "active"
             self.system_note.setText(f"Searching now ({boot.PAIR_UNIT})." if searching else "")
@@ -306,7 +308,7 @@ class MainWindow(QMainWindow):
         self.login_check.setChecked(state == plasma.ENABLE)
         self.login_check.blockSignals(False)
         if not self.kde:
-            self.login_box.set_value("—", "Not Plasma's desktop: its Bluetooth settings do not apply")
+            self.login_box.set_value("—", "Not Plasma's desktop. Its Bluetooth settings do not apply")
             self.login_box.set_colour(GREY)
             return
         text = {plasma.ENABLE: "On", plasma.DISABLE: "Off", plasma.REMEMBER: "Restored"}[state]
@@ -325,7 +327,7 @@ class MainWindow(QMainWindow):
             return
         on = adapter.powered and not adapter.blocked
         self.bluetooth_box.set_value("On" if on else "Off", "The adapter is on" if on else
-                                     "The adapter is switched off (Plasma's Bluetooth switch, or airplane mode)")
+                                     "The adapter is off, through Plasma's Bluetooth switch or airplane mode")
         self.bluetooth_box.set_colour(GREEN if on else RED)
         if not on:
             self.state.set_status("Bluetooth is off", "bad")
@@ -408,7 +410,7 @@ class MainWindow(QMainWindow):
     def choose_pair(self, on: bool) -> None:
         if on and not self.names:
             QMessageBox.information(self, window_title("Pair after boot"),
-                                    "Add the devices to pair first: Add… picks one Bluetooth knows or finds one in "
+                                    "Add the devices to pair first. Add… picks one Bluetooth knows or finds one in "
                                     "pairing mode.")
         else:
             battery = self.installed is not None and self.installed.battery
@@ -429,15 +431,15 @@ class MainWindow(QMainWindow):
 
     def search_now(self) -> None:
         if self.as_root(["start"], "Search now"):
-            self.list_note.setText("Searching for 5 minutes: put the device in pairing mode now.")
+            self.list_note.setText("Searching for 5 minutes. Put the device in pairing mode now.")
         self.show_system()
 
     # --- At login ---------------------------------------------------------------------------------------------
 
     def choose_login(self, on: bool) -> None:
         if not plasma.set_enable(on, self.kde_run):
-            QMessageBox.warning(self, window_title("At login"), "Plasma's Bluetooth setting could not be written "
-                                                                "(kwriteconfig6 failed).")
+            QMessageBox.warning(self, window_title("At login"), "The app could not write Plasma's Bluetooth "
+                                                                "setting (kwriteconfig6 failed).")
         self.show_login()
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)

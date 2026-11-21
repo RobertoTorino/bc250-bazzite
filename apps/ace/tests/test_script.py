@@ -81,7 +81,7 @@ def test_install_copies_the_build_and_links_drirc(board):
 
 def test_install_needs_root_a_build_and_its_libraries(board):
     assert "Run as root" in board.run("--install-driver").stderr
-    assert "build it first" in board.run("--install-driver", uid=0).stderr
+    assert "Build it first" in board.run("--install-driver", uid=0).stderr
     board.make_build()
     board.env["FAKE_LDD"] = "libdisplay-info.so.2 => not found"
     r = board.run("--install-driver", uid=0)
@@ -223,8 +223,8 @@ def test_wrapper_uses_the_driver_only_after_a_passed_test(board, tmp_path):
     board.make_build()
     board.install()
     got, log = run_game(board, tmp_path)
-    assert got == "" and log.endswith("AppId=1091500: system Mesa (the ACE queue test has not passed on kernel "
-                                      f"{KERNEL} with this driver)")
+    assert got == "" and log.endswith("AppId=1091500: system Mesa. The ACE queue test has not passed on kernel "
+                                      f"{KERNEL} with this driver.")
     board.pass_test()
     got, log = run_game(board, tmp_path)
     assert got.startswith(f"{board.root}/{PREFIX}/share/vulkan/icd.d/radeon_icd.x86_64.json:")

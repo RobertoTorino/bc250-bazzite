@@ -6,11 +6,11 @@
 
 # BC-250 Persistent ACPI
 
-Safe alternative to BIOS flashing: a **persistent** ACPI fix for the AMD BC-250 that gives the
-board CPU C-states (idle) and frequency scaling (800 MHz – 3.2 GHz, 8 steps) on Linux —
-without the P3.00 MeiMeiDXE v3 modded BIOS.
+Gives the CPU of the **AMD BC-250** its idle states (C-states) and frequency scaling on Linux. The frequency scales
+from 800 MHz to 3.2 GHz in 8 steps. The fix is **persistent**, so it stays across restarts and updates. It is a safe
+alternative to BIOS flashing. You don't need the P3.00 MeiMeiDXE v3 modded BIOS.
 
-How to install and use it: [BC-250 Persistent ACPI in the manual](https://robertotorino.github.io/bc250-bazzite/apps/acpi/).
+How to install and use it: [BC-250 Persistent ACPI in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/acpi/).
 
 ## License
 

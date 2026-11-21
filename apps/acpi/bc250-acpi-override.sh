@@ -8,13 +8,13 @@
 # including kernels installed later.
 #
 # Usage:
-#   sudo ./bc250-acpi-override.sh --install          # install, then reboot
+#   sudo ./bc250-acpi-override.sh --install          # install, then restart
 #   sudo ./bc250-acpi-override.sh --install --yes    # also answer "yes" to the warnings
-#   sudo ./bc250-acpi-override.sh --uninstall        # fully reverses --install, then reboot
+#   sudo ./bc250-acpi-override.sh --uninstall        # fully reverses --install, then restart
 #   ./bc250-acpi-override.sh --status                # with sudo it also reads the kernel log
 #
 # Without a terminal (from the app), a warning that would ask "Continue anyway?" stops the
-# install with exit code 3 instead; the app shows the warning and runs again with --yes.
+# install with exit code 3 instead. The app shows the warning and runs again with --yes.
 set -euo pipefail
 
 # BC250_ACPI_ROOT is for testing only: a folder that stands in for / (boot, etc and sys).
@@ -55,7 +55,7 @@ regenerate_grub() {
         info "Regenerating GRUB config (grub2-mkconfig)..."
         grub2-mkconfig -o /boot/grub2/grub.cfg
     else
-        error "Neither ujust nor grub2-mkconfig found; regenerate your GRUB config manually."
+        error "Neither ujust nor grub2-mkconfig found. Regenerate your GRUB config by hand."
     fi
 }
 
@@ -80,36 +80,36 @@ do_install() {
     for cfg in "$ROOT_DIR/boot/config-$(uname -r)" "$ROOT_DIR/usr/lib/modules/$(uname -r)/config"; do
         if [ -r "$cfg" ]; then
             grep -q '^CONFIG_ACPI_TABLE_UPGRADE=y' "$cfg" \
-                || error "Kernel lacks CONFIG_ACPI_TABLE_UPGRADE; the override cannot load."
+                || error "Kernel lacks CONFIG_ACPI_TABLE_UPGRADE. The override cannot load."
             break
         fi
     done
 
     # Already loaded from a previous install or another method?
     if journalctl -b -k --no-pager -q 2>/dev/null | grep -qiE 'ACPI: Table Upgrade'; then
-        info "An ACPI table override is already active this boot; reinstalling the files anyway."
+        info "An ACPI table override is already active this boot. Reinstalling the files anyway."
     fi
 
     install -m 0644 "$CPIO_SRC" "$CPIO_DST"
     info "Installed $CPIO_DST"
 
     if grep -qxF "$GRUB_LINE" "$GRUB_DEFAULT" 2>/dev/null; then
-        info "Early-initrd line already in $GRUB_DEFAULT"
+        info "Early initrd line already in $GRUB_DEFAULT"
     elif grep -q '^GRUB_EARLY_INITRD_LINUX_CUSTOM=' "$GRUB_DEFAULT" 2>/dev/null; then
         if grep -qF "$GRUB_PREVIOUS" "$GRUB_DEFAULT"; then
             sed -i "s|^GRUB_EARLY_INITRD_LINUX_CUSTOM=.*|$GRUB_LINE|" "$GRUB_DEFAULT"
         else
             sed -i "s|^GRUB_EARLY_INITRD_LINUX_CUSTOM=.*|$GRUB_PREVIOUS&\n$GRUB_LINE|" "$GRUB_DEFAULT"
         fi
-        info "Replaced another GRUB_EARLY_INITRD_LINUX_CUSTOM in $GRUB_DEFAULT (kept as a comment; --uninstall puts it back)"
+        info "Replaced another GRUB_EARLY_INITRD_LINUX_CUSTOM in $GRUB_DEFAULT. It is kept as a comment, and --uninstall puts it back."
     else
         printf '%s\n' "$GRUB_LINE" >> "$GRUB_DEFAULT"
-        info "Appended early-initrd line to $GRUB_DEFAULT"
+        info "Appended early initrd line to $GRUB_DEFAULT"
     fi
 
     regenerate_grub
 
-    info "Done. Reboot, then verify with:"
+    info "Done. Restart, then verify with:"
     info "  sudo dmesg | grep -iE 'ACPI.*(SSDT|Table Upgrade)'"
     info "  cpupower frequency-info   # 8 steps, 800 MHz - 3.2 GHz"
     info "  cpupower idle-info        # POLL, C1, C2"
@@ -122,15 +122,15 @@ do_uninstall() {
     info "Removed $CPIO_DST"
 
     sed -i '/^GRUB_EARLY_INITRD_LINUX_CUSTOM=/d' "$GRUB_DEFAULT"
-    info "Removed early-initrd line from $GRUB_DEFAULT"
+    info "Removed early initrd line from $GRUB_DEFAULT"
     if grep -qF "$GRUB_PREVIOUS" "$GRUB_DEFAULT"; then
         sed -i "s|^$GRUB_PREVIOUS||" "$GRUB_DEFAULT"
-        info "Put back the early-initrd line that was there before"
+        info "Put back the early initrd line that was there before"
     fi
 
     regenerate_grub
 
-    info "Done. Reboot to return to the BIOS-provided ACPI tables."
+    info "Done. Restart to return to the BIOS-provided ACPI tables."
 }
 
 # One "Name: value" line each; the app reads the Override line.

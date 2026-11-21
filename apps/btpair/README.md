@@ -8,9 +8,9 @@
 
 Pair your Bluetooth keyboard, mouse and controllers at boot, with no USB keyboard or mouse needed.
 
-After every boot a small system service searches for the devices you listed and pairs the ones in pairing mode, on
-the login screen. The app can also show PlayStation controller batteries in the Bluetooth icon, and have Plasma switch
-Bluetooth on at every login.
+After every boot a small system service searches for the devices you listed. It pairs the ones in pairing mode, on
+the login screen. The app can also show PlayStation controller batteries in the Bluetooth icon. And it can have Plasma
+switch Bluetooth on at every login.
 
 How to install and use it: [BC-250 Bluetooth Pairing in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/btpair/).
 

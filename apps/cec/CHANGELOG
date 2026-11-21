@@ -1,3 +1,17 @@
+Changelog: 21-11-2026 14:27:25
+
+Fixed. The app's text is rewritten to the writing standard: the wiki chapter, the README, the hints, tooltips, notes,
+dialogs and result lines in the window, the boot helper's messages and the installer's own messages. Sentences are short
+and hold one fact, and lists replace the long sums. The README's link says wiki. The link under the automatic switches
+says Wiki, where it said Manual. No button or field label is renamed. The questions before "Display settings to the
+login screen…" and "Use Valve's CEC daemon…" now hold one fact per line and end with "You will be asked for your
+password." Three facts are corrected. The wiki's introduction and the line at the bottom of the window said the app asks
+the TV's power only while Restart the picture is on. It also asks while Pause videos and music is on, since both use the
+same background service. The note for a mode that needs the handshake at 8 bits said "colour" and is now "color". The
+texts said CEC "tunnelling" and now say "tunneling". The installer's shared messages stay as they are.
+tools/text_check/words.txt gains cec-ctl and kscreen-doctor. Nothing the app does has changed. In
+tests/test_main_window.py the boot note's test now looks for "On." where it looked for "On:".
+
 Changelog: 21-11-2026 12:24:43
 
 Release 4.5.0.

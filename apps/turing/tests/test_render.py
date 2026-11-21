@@ -184,3 +184,17 @@ def test_a_long_header_text_leaves_room_for_the_time(qapp):
     long = render.draw(BOARD, [], 320, 480, QColor("#4a90d9"), title="W" * 40, clock=0)
     right = range(270, 310)                                         # the time, at the right
     assert [short.pixelColor(x, 30) for x in right] == [long.pixelColor(x, 30) for x in right]
+
+
+def test_rail_tiles_show_power_with_voltage_and_current():
+    """The VRM's values (Quickfix's VRM Sensors): a tile per supply and one for the 12 V input; a dash without them."""
+    from bc250_core.sensors import Rail
+    reading = Reading(cpu_rail=Rail(mv=824, amps=1.3, temp=41.0), gpu_rail=Rail(mv=915, amps=32.0, temp=45.0),
+                      vin_mv=11850)
+    tiles = {key: render.tiles(reading, (key,))[0] for key in ("cpu_rail", "gpu_rail", "vin")}
+    assert (tiles["cpu_rail"].caption, tiles["cpu_rail"].value, tiles["cpu_rail"].detail) == ("CPU power", "1 W", "0.82 V · 1.3 A")
+    assert (tiles["gpu_rail"].value, tiles["gpu_rail"].detail) == ("29 W", "0.92 V · 32.0 A")
+    assert (tiles["vin"].caption, tiles["vin"].value) == ("12 V input", "11.85 V")
+    empty = {key: render.tiles(Reading(), (key,))[0].value for key in ("cpu_rail", "gpu_rail", "vin")}
+    assert set(empty.values()) == {render.DASH}
+    assert all(key in render.TILE_HINTS for key in ("cpu_rail", "gpu_rail", "vin"))

@@ -115,7 +115,7 @@ def name_problem(name: str) -> str:
     if not name.isprintable():
         return "The name holds a character that is not printable."
     if len(name.encode()) > NAME_BYTES:
-        return f"At most {NAME_BYTES} bytes: no Bluetooth device has a longer name."
+        return f"The name is over {NAME_BYTES} bytes long. No Bluetooth device has a name that long."
     return ""
 
 
@@ -559,7 +559,7 @@ def main(argv: list[str]) -> int:
     add.add_argument("--pair", action="store_true", help="search and pair them after every boot")
     add.add_argument("--battery", action="store_true", help="show controller batteries in the Bluetooth icon")
     actions.add_parser("uninstall", help="remove the system part")
-    actions.add_parser("start", help="search again now, without a reboot")
+    actions.add_parser("start", help="search again now, without a restart")
     args = parser.parse_args(argv)
     paths = Paths(Path(os.environ.get("BC250_SYSTEM_ROOT", "/")) / "etc")      # another root only for testing
     if args.action == "pair":

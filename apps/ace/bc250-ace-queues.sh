@@ -150,7 +150,7 @@ do_build() {
     command -v podman >/dev/null 2>&1 || error "podman is not installed (Bazzite ships it)."
     command -v curl >/dev/null 2>&1 || error "curl is not installed."
     [ -n "$mesa" ] || mesa=$(system_mesa)
-    [[ $mesa =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || error "Could not tell the system's Mesa version; give it: --mesa X.Y.Z"
+    [[ $mesa =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || error "Could not tell the system's Mesa version. Give it with --mesa X.Y.Z"
     fedora=$(. /etc/os-release && echo "${VERSION_ID:-}")
     [ -n "$fedora" ] || error "Could not read the Fedora version from /etc/os-release."
 
@@ -166,7 +166,7 @@ do_build() {
         -v "$HERE:/app:ro" -v "$CACHE/src:/src:ro" -v "$CACHE/work:/work" \
         -e MESA_VER="$mesa" -e PREFIX="$PREFIX" \
         "registry.fedoraproject.org/fedora:$fedora" bash /app/mesa/build-in-container.sh &
-    wait $! || error "The build failed; see above. Its logs are in $CACHE/work/logs."
+    wait $! || error "The build failed. See above. Its logs are in $CACHE/work/logs."
     trap - TERM INT HUP
     rm -rf "$CACHE/stage"
     mv "$CACHE/work/stage" "$CACHE/stage"
@@ -179,15 +179,15 @@ do_install_driver() {
     need_root --install-driver
     local f missing
     for f in lib64/libvulkan_radeon.so share/vulkan/icd.d/radeon_icd.x86_64.json libexec/bc250-ace-test BUILD-INFO; do
-        [ -f "$STAGE_DRIVER/$f" ] || error "No complete build in $STAGE_DRIVER ($f is missing): build it first."
+        [ -f "$STAGE_DRIVER/$f" ] || error "No complete build in $STAGE_DRIVER ($f is missing). Build it first."
     done
     grep -qF "\"$PREFIX/lib64/libvulkan_radeon.so\"" "$STAGE_DRIVER/share/vulkan/icd.d/radeon_icd.x86_64.json" ||
-        error "The build was made for another folder than $PREFIX: build it again."
+        error "The build is for another folder than $PREFIX. Build it again."
     missing=$(ldd "$STAGE_DRIVER/lib64/libvulkan_radeon.so" 2>/dev/null | awk '/not found/ {print $1}' || true)
     [ -z "$missing" ] || error "The driver needs libraries this system does not have: $(echo "$missing" | tr '\n' ' ')"
 
     if all_apps_on; then
-        warn "Switching \"all apps\" off: the new driver has not been tested yet."
+        warn "Switching \"all apps\" off, because the new driver has not been tested yet."
         all_apps_off
     fi
     info "Installing the driver in $DRIVER_DIR (Mesa $(field mesa "$STAGE_DRIVER/BUILD-INFO"))"
@@ -211,7 +211,7 @@ do_install_driver() {
     rm -f "$ALL_APPS_OFF"
     install -D -m 755 "$HERE/$RUNNER_NAME" "$RUNNER"
     command -v restorecon >/dev/null 2>&1 && [ -z "$ROOT_DIR" ] && restorecon -R "$DRIVER_DIR" "$RUNNER" 2>/dev/null
-    info "Installed. Nothing uses it yet: run the test next ($0 --test)."
+    info "Installed. Nothing uses it yet. Run the test next ($0 --test)."
 }
 
 do_remove_driver() {
@@ -219,8 +219,8 @@ do_remove_driver() {
     all_apps_on && all_apps_off
     rm -rf "$DRIVER_DIR" "$DRIVER_DIR.new"
     rm -f "$RUNNER"
-    info "The driver is removed; every app uses the system Mesa again."
-    info "Remove \"$(launch_options)\" from the launch options of your games: without the driver they do not start."
+    info "Removed the driver. Every app uses the system Mesa again."
+    info "Remove \"$(launch_options)\" from the launch options of your games. Without the driver they do not start."
 }
 
 # --- test ----------------------------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ do_test() {
         echo "FAIL: the kernel log shows a GPU ring timeout or reset during the test" | tee -a "$STATE/test.log"
         rc=5
     fi
-    [ "$before" = "?" ] && warn "The kernel log could not be read, so it was not checked for GPU resets."
+    [ "$before" = "?" ] && warn "Could not read the kernel log, so the test did not check it for GPU resets."
     {
         echo "kernel=$(kernel)"
         echo "driver=$sum"
@@ -266,7 +266,7 @@ do_test() {
     else
         mv "$STATE/result.new" "$TEST_FAILED"
         [ "$rc" -eq 124 ] && echo "FAIL: the test did not finish in 10 minutes" | tee -a "$STATE/test.log"
-        error "The test failed (exit code $rc). Don't use the driver on this kernel; the log is $STATE/test.log."
+        error "The test failed (exit code $rc). Don't use the driver on this kernel. The log is $STATE/test.log."
     fi
 }
 
@@ -294,7 +294,7 @@ EOF
 all_apps_on_cmd() {
     need_root "--all-apps on"
     [ -f "$DRIVER_LIB" ] || error "The driver is not installed."
-    tested_now || error "The ACE queue test has not passed with this driver on kernel $(kernel): run it first."
+    tested_now || error "The ACE queue test has not passed with this driver on kernel $(kernel). Run it first."
     local files
     files=$(driver_files)
     {
@@ -303,13 +303,13 @@ all_apps_on_cmd() {
     } >"$ALL_APPS_RECORD"
     mkdir -p "$(dirname "$ENV_CONF")" "$(dirname "$PROFILE_CONF")" "$(dirname "$GUARD_UNIT")"
     {
-        echo "# BC-250 ACE Queues: every app uses the patched RADV. Remove this file to go back to the system Mesa."
+        echo "# Written by BC-250 ACE Queues. Every app uses the patched RADV. Remove this file to go back to the system Mesa."
         echo "VK_DRIVER_FILES=$files"
         echo "VK_ICD_FILENAMES=$files"
     } >"$ENV_CONF"
     # environment.d reaches the desktop session; login shells (a text console, ssh) read profile.d.
     {
-        echo "# BC-250 ACE Queues: see $ENV_CONF"
+        echo "# Written by BC-250 ACE Queues. See $ENV_CONF"
         echo "export VK_DRIVER_FILES=$files"
         echo "export VK_ICD_FILENAMES=$files"
     } >"$PROFILE_CONF"
@@ -335,8 +335,8 @@ EOF
         systemctl daemon-reload
         systemctl enable "$GUARD_NAME" >/dev/null 2>&1 || warn "Could not enable $GUARD_NAME."
     fi
-    info "Every app uses the patched driver after you log out and back in (Flatpak apps keep their own)."
-    info "If the desktop does not come back: Ctrl+Alt+F3, log in, run: sudo rm $ENV_CONF, and reboot."
+    info "Every app uses the patched driver after you log out and back in. Flatpak apps keep their own."
+    info "If the desktop does not come back, press Ctrl+Alt+F3, log in and run \"sudo rm $ENV_CONF\". Then restart the board."
 }
 
 all_apps_off() {
@@ -346,7 +346,8 @@ all_apps_off() {
         rm -f "$GUARD_UNIT"
         [ -z "$ROOT_DIR" ] && systemctl daemon-reload || true
     fi
-    info "Apps use the system Mesa again after you log out and back in; games with the launch options still use the patched driver."
+    info "Apps use the system Mesa again after you log out and back in."
+    info "Games with the launch options still use the patched driver."
 }
 
 all_apps_off_cmd() {

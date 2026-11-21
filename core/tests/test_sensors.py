@@ -131,7 +131,7 @@ def test_one_network_interface(board, tmp_path):
 def test_rails_need_the_vrm_module(board):
     s = sensors(board)
     assert s.rail("CPU") is None and s.rail("GPU") is None
-    assert s.read().cpu_rail is None
+    assert s.read().cpu_rail is None and s.read().vin_mv is None
 
 
 def test_rails_from_the_vrm_module(board):
@@ -141,6 +141,7 @@ def test_rails_from_the_vrm_module(board):
     assert reading.gpu_rail == Rail(mv=950, amps=61.2, temp=55.0)
     assert reading.cpu_rail.watts == pytest.approx(34.125)       # the module's own power file says the same
     assert reading.vrm_temp == 58.0                               # still the Super I/O's "VRM MOS"
+    assert reading.vin_mv == 12050                                # the 12 V input, by its label
 
 
 def test_the_super_io_keeps_the_vrm_temperature_when_the_module_sorts_first(board):

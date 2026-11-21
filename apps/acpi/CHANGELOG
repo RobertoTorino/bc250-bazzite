@@ -1,3 +1,19 @@
+Changelog: 21-11-2026 14:05:27
+
+Fixed. The app's text is rewritten to the suite's writing standard in .claude/writing.md. The sentences are short, hold
+one fact each and say the purpose first. This covers the wiki chapter, the README, the messages of install.sh and
+bc250-acpi-override.sh, and the window's introduction, tooltips, dialogs and About text. The "Changes the board" box in
+the wiki chapter is not rewritten. The README links to the wiki and no longer calls it the manual. The texts say
+"restart" where they said "reboot", and "early initrd line" where they said "early-initrd line". The two questions
+before Install and Uninstall give one fact per line. They now end with a line the old questions did not have: "You will
+be asked for your sudo password if sudo needs it." No label was renamed and no fact was corrected. The status lines
+the window reads ("Override: ...", "Frequency steps: ...", "Idle states: ...") and "... is not installed: nothing to
+remove." keep their wording. Nothing the app does has changed. Tests changed: test_install_asks_first in
+tests/test_main_window.py expects "Restart to load it.", and test_install_copies_the_tables_and_adds_the_grub_line in
+tests/test_override.py looks for "Restart" in the script's output. tools/text_check/words.txt gained "e-tho" and
+"vendored". The installer's messages that every app shares keep their old wording, and so does "Not authorized: the password
+dialog was canceled or refused." (owner, 21-11-2026: those are reworded once, in all installers together).
+
 Changelog: 15-11-2026 04:52:06
 
 Release 0.5.2.

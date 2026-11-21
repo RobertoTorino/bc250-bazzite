@@ -55,6 +55,7 @@ class Reading:
     vrm_temp: float | None = None
     cpu_rail: Rail | None = None            # None without the bc250_vrm module
     gpu_rail: Rail | None = None
+    vin_mv: int | None = None               # the board's 12 V input, as the VRM measures it; None without the module
     nvme_temp: float | None = None
     net: tuple[float, float] | None = None  # download, upload bytes/s since the previous reading
     disk: tuple[float, float] | None = None     # read, write bytes/s since the previous reading
@@ -270,6 +271,16 @@ class Sensors:
         mv, ma, temp = channel("in"), channel("curr"), channel("temp")
         return Rail(mv=mv, amps=ma / 1000 if ma is not None else None, temp=temp / 1000 if temp is not None else None)
 
+    def vin_mv(self) -> int | None:
+        """The board's 12 V input: the VRM's voltage channel whose label names VIN."""
+        folder = self._hwmon(VRM_DRIVER)
+        if folder is None:
+            return None
+        for label_file in sorted(folder.glob("in[0-9]*_label")):
+            if "vin" in (_read(label_file) or "").lower():
+                return _read_int(folder / label_file.name.replace("_label", "_input"))
+        return None
+
     # --------------------------------------------------------------- activity
     def _net_lines(self) -> list[tuple[str, list[str]]]:
         found = []
@@ -336,4 +347,5 @@ class Sensors:
                        gpu_load=self.gpu_load(), gpu_mhz=self.gpu_mhz(), gpu_watts=self.gpu_watts(),
                        gpu_mv=self.gpu_mv(), gpu_temp=self.gpu_temp(), governor=self.governor(), vram=self.vram(),
                        ram=self.ram(), vrm_temp=self.vrm_temp(), cpu_rail=self.rail("CPU"), gpu_rail=self.rail("GPU"),
+                       vin_mv=self.vin_mv(),
                        nvme_temp=self.nvme_temp(), net=self.net(self.interface), disk=self.disk(), fans=self.fans())

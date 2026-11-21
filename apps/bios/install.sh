@@ -7,8 +7,8 @@
 #   ./install.sh --uninstall             # remove the app; keeps its settings and BIOS dumps
 #   ./install.sh --uninstall --purge     # also remove its settings and BIOS dumps
 #
-# Run it as your own user; nothing here needs root. The app itself only reads: the UEFI variables without root, the
-# BIOS chip (when you ask for it) through flashrom and a password prompt.
+# Run it as your own user. Nothing here needs root. The app itself only reads. It reads the UEFI variables without
+# root. It reads the BIOS chip only when you ask, through flashrom and a password prompt.
 #  * ~/.local/share/bc250-bios-reader/app: the app, with the bc250_core it was tested with (bundled in the
 #    release; taken from the suite checkout when run from there).
 #  * ~/.local/share/bc250-bazzite-suite/venv, the BC250 Bazzite Suite's shared venv with PyQt6 (the wheels bundle

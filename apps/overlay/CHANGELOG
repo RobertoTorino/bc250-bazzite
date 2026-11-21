@@ -1,3 +1,8 @@
+Changelog: 21-11-2026 14:24:02
+
+Added. A row 12 V input: the board's 12 V input as the voltage regulator measures it, with Quickfix's VRM Sensors on.
+It is a dash without the module, as the other rows of the regulator are.
+
 Changelog: 21-11-2026 12:24:43
 
 Release 4.5.0.

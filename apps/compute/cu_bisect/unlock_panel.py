@@ -25,11 +25,13 @@ from .widgets import InfoButton, MetricBox, Pill, SudoDialog, same_width
 
 ROWS = ("SE0.SH0", "SE0.SH1", "SE1.SH0", "SE1.SH1")
 
-PREVIEW = ("A mask is four numbers, one per shader-array row (SE0.SH0, SE0.SH1, SE1.SH0, SE1.SH1), as "
-           "<code>--baseline</code> and the README write them: <code>0x0f,0x0f,0x0f,0x0f</code>. Each bit is one "
-           "WGP (2 CUs): bit 0 is WGP0, bit 4 is WGP4. Type one to see it on the rows above; it does not have to be "
-           "an accepted result, and nothing is written. Only even masks can be installed: 3 WGPs on every row "
-           "(<code>0x07</code>, 24 CUs, stock), 4 (<code>0x0f</code>, 32 CUs) or 5 (<code>0x1f</code>, 40 CUs). "
+PREVIEW = ("A mask is four numbers, one per shader-array row (SE0.SH0, SE0.SH1, SE1.SH0, SE1.SH1). "
+           "<code>--baseline</code> and the wiki write them like this: <code>0x0f,0x0f,0x0f,0x0f</code>. Each bit is "
+           "one WGP (2 CUs). Bit 0 is WGP0, bit 4 is WGP4.<br><br>Type a mask to see it on the rows above. It does not "
+           "have to be an accepted result, and nothing is written.<br><br>You can install only even masks:<br>"
+           "3 WGPs on every row: <code>0x07</code>, 24 CUs, stock<br>"
+           "4 WGPs on every row: <code>0x0f</code>, 32 CUs<br>"
+           "5 WGPs on every row: <code>0x1f</code>, 40 CUs<br><br>"
            "Clear the field to see the accepted mask again.")
 
 
@@ -148,10 +150,10 @@ class UnlockPanel(QWidget):
         """The verdict, then Install, Uninstall, Refresh and Re-check (owner, 19-11-2026)."""
         self.gate_box = MetricBox("Bisect results")
         self.install_pill = Pill("Install", "Apply and keep", "Applies the accepted mask now and again at every "
-                                 "boot (the unlock service). Needs the results to accept a mask.")
+                                 "boot (the unlock service). The results must accept a mask first.")
         self.install_pill.clicked.connect(self._on_install)
-        self.uninstall_pill = Pill("Uninstall", "Stock next boot", "Disables the unlock service and removes its "
-                                   "files; the board is back to the stock 24 CUs from the next reboot.", RED)
+        self.uninstall_pill = Pill("Uninstall", "Stock next boot", "Turns the unlock service off and removes its "
+                                   "files. The board is back to the stock 24 CUs from the next reboot.", RED)
         self.uninstall_pill.clicked.connect(self._on_uninstall)
         self.status_pill = Pill("Refresh", "Service and masks", "Shows the installed masks, the service's state and "
                                 "the live masks (--status, no root needed), in the log.")
@@ -284,7 +286,7 @@ class UnlockPanel(QWidget):
             self._append_line("({0} finished, exit code {1})".format(action, code))
             self._refresh_status()
         if code != 0 and action:
-            self.failed_label.setToolTip("{0} failed (exit code {1}): the log says why.".format(action.capitalize(),
+            self.failed_label.setToolTip("{0} failed (exit code {1}). The log says why.".format(action.capitalize(),
                                                                                               code))
             self.failed_label.setVisible(self.output.isHidden())
 
@@ -314,7 +316,8 @@ class UnlockPanel(QWidget):
             return
         answer = QMessageBox.question(
             self, APP_NAME,
-            "Apply {0} ({1} CUs) now and keep it enabled on every boot?"
+            "Apply {0} ({1} CUs) now and keep it on at every boot?\n\n"
+            "You will be asked for your password, unless sudo still has it."
             .format(result.masks, result.cu_total),
         )
         if answer != QMessageBox.StandardButton.Yes:
@@ -326,8 +329,8 @@ class UnlockPanel(QWidget):
             return
         answer = QMessageBox.question(
             self, APP_NAME,
-            ("Disable the unlock service? The board goes back to the stock 24 CUs from the "
-             "next reboot."),
+            ("Turn the unlock service off?\n\nThe board goes back to the stock 24 CUs from the next reboot.\n"
+             "You will be asked for your password, unless sudo still has it."),
         )
         if answer != QMessageBox.StandardButton.Yes:
             return

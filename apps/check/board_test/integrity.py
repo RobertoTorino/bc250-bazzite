@@ -91,7 +91,7 @@ def check_engine(script: str | Path, expected_sha256: str | None = None, release
         else:
             if actual != expected.lower():
                 v.problems.append(f"Test engine {path} does not match this release (SHA-256 {actual[:16]}…, "
-                                  f"expected {expected[:16]}…): it was changed or replaced.")
+                                  f"expected {expected[:16]}…). It was changed or replaced.")
     elif v.release:
         v.problems.append("No checksum of the test engine was recorded for this release.")
     return v

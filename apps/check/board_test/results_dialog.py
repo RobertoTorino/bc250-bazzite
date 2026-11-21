@@ -135,7 +135,7 @@ class ResultsCardDialog(QDialog):
             return self._say("The mail app opens with the results card attached." if code == 0 else
                              f"No mail app opened: {out or code}. The card is at {path}.", error=code != 0)
         if self.show_in_files(path):
-            return self._say(f"The file manager shows the card ({path}): right-click it, then Share.")
+            return self._say(f"The file manager shows the card ({path}). Right-click it, then Share.")
         return self._say(f"The file manager did not open. The card is at {path}.", error=True)
 
     def show_in_files(self, path: Path) -> bool:

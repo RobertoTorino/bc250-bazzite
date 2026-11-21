@@ -140,8 +140,8 @@ class StatsBar(QWidget):
                                    "which scores 100. Never more than 100.", clickable=True,
                                    text_color=SYSTEM_TEXT)
         self.ext_system = StatBox("Extended System", GREY,
-                                  "Extended System score: the Base score plus what upgrades add "
-                                  "(more CUs or cores, a bigger or faster drive, a faster link).", clickable=True,
+                                  "Extended System score: the Base score plus what upgrades add. Upgrades are "
+                                  "more CUs or cores, a bigger or faster drive, or a faster link.", clickable=True,
                                   text_color=SYSTEM_TEXT)
         self.base_system.clicked.connect(lambda: self.system_score_requested.emit(False))
         self.ext_system.clicked.connect(lambda: self.system_score_requested.emit(True))

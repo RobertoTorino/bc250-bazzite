@@ -20,7 +20,7 @@ def test_format_reading():
         cpu_load=12.4, cpu_mhz=3000, cpu_temp=72.1, gpu_load=45.5, gpu_mhz=2000, gpu_watts=95.3, gpu_mv=1056,
         gpu_temp=91.0, governor=(1000, 1850), vram=(900_000_000, 6_000_000_000), ram=(4_700_000_000, 9_400_000_000),
         vrm_temp=85.0, cpu_rail=Rail(mv=1050, amps=32.5, temp=47.0), gpu_rail=Rail(mv=950, amps=None, temp=90.0),
-        nvme_temp=40.0, net=(2_100_000.0, 80_000.0), disk=(150_000_000.0, 0.0),
+        vin_mv=11850, nvme_temp=40.0, net=(2_100_000.0, 80_000.0), disk=(150_000_000.0, 0.0),
         fans=(Fan("Pump Fan", 1169),)), 60.0)
     assert rows == {
         "cpu": ("12 % · 3000 MHz", ""),
@@ -29,6 +29,7 @@ def test_format_reading():
         "gpu_volt": ("1056 mV", ""),
         "cpu_rail": ("1050 mV · 32.5 A · 34 W", ""),
         "gpu_rail": ("950 mV", ""),                                # no current, so no power either
+        "vin": ("11.85 V", ""),
         "vram": ("0.9 / 6.0 GB", ""),
         "ram": ("4.7 / 9.4 GB", ""),
         "refresh": ("60 Hz", ""),

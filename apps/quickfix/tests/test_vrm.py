@@ -94,14 +94,16 @@ def test_window(qapp, tmp_path):
     assert calls == [["vrm", "on"]]
     put(root, f"etc/systemd/system/{system.VRM_UNIT}")
     window.refresh()
-    assert not window.on_button.isEnabled() and window.off_button.isEnabled()          # on already: not once more
+    assert window.on_button.isEnabled() and window.off_button.isEnabled()              # on, not loaded: try again
     assert f"journalctl -b -u {system.VRM_UNIT}" in window.note.text() and window.state.kind == "warn"
+    assert "Turn on tries again" in window.note.text()
     (root / "sys/module/bc250_vrm").mkdir(parents=True)
     window.refresh()
     assert "did not answer" in window.note.text()
     put(root, "sys/class/hwmon/hwmon4/name", "bc250_vrm\n")
     window.refresh()
     assert window.note.text() == "" and window.state.kind == "ok"
+    assert not window.on_button.isEnabled()                                            # loaded: not once more
     assert [window.boxes[c].value.text() for c in ("Module", "At boot", "Sensors")] == ["Loaded", "Yes", "bc250_vrm"]
     window.off_button.click()
     assert calls[-1] == ["vrm", "off"]

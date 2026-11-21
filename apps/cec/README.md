@@ -6,11 +6,11 @@
 
 # BC-250 CEC Manager
 
-HDMI-CEC for the **AMD BC-250** on **Bazzite**: turn the TV on and off from the board, switch it to the board's
-input, set the volume, and let Valve's CEC daemon wake and suspend the TV with the board and turn the TV remote into
-key presses.
+HDMI-CEC for the **AMD BC-250** on **Bazzite**. From the board you turn the TV on and off, switch it to the board's
+input and set the volume. Valve's CEC daemon can wake and suspend the TV with the board. It can also turn the TV
+remote into key presses.
 
-How to install and use it: [BC-250 CEC Manager in the manual](https://robertotorino.github.io/bc250-bazzite/apps/cec/).
+How to install and use it: [BC-250 CEC Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/cec/).
 
 ## License
 

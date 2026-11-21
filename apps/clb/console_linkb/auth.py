@@ -208,7 +208,7 @@ def wait_for_sign_in(client: Client, code: DeviceCode, cancelled: Callable[[], b
         if cancelled():
             raise AuthError("signing in was canceled")
         if clock() >= end:
-            raise AuthError("the code expired before it was entered: sign in again for a new one")
+            raise AuthError("the code expired before you entered it. Sign in again for a new one.")
         try:
             response = client.post(f"{LOGIN}/token", form=form)
         except HttpError as error:
@@ -218,7 +218,7 @@ def wait_for_sign_in(client: Client, code: DeviceCode, cancelled: Callable[[], b
             elif reason == "slow_down":
                 interval += 5
             elif reason == "expired_token":
-                raise AuthError("the code expired before it was entered: sign in again for a new one") from error
+                raise AuthError("the code expired before you entered it. Sign in again for a new one.") from error
             elif reason in ("authorization_declined", "access_denied"):
                 raise AuthError("signing in was declined on Microsoft's page") from error
             else:
@@ -235,7 +235,7 @@ def refresh_user_token(client: Client, refresh_token: str, now: float) -> UserTo
                                      "refresh_token": refresh_token, "scope": SCOPE})
     except HttpError as error:
         if error.status in (400, 401):
-            raise SignedOut("Microsoft no longer accepts the saved sign-in: sign in again") from error
+            raise SignedOut("Microsoft no longer accepts the saved sign-in. Sign in again.") from error
         raise
     return UserToken.from_json(response.data if isinstance(response.data, dict) else {}, now)
 
@@ -249,11 +249,11 @@ def xbox_user_token(client: Client, access_token: str) -> XBOXToken:
 
 
 XSTS_ERRORS = {                             # XErr codes of xsts.auth.xboxlive.com
-    2148916233: "this Microsoft account has no XBOX profile yet: sign in once on xbox.com to create one",
+    2148916233: "this Microsoft account has no XBOX profile yet. Sign in once on xbox.com to create one.",
     2148916235: "XBOX Live is not available in this account's country",
     2148916236: "this account needs adult verification on xbox.com first",
     2148916237: "this account needs adult verification on xbox.com first",
-    2148916238: "this is a child account: an adult has to add it to a Microsoft family first",
+    2148916238: "this is a child account. An adult has to add it to a Microsoft family first.",
 }
 
 

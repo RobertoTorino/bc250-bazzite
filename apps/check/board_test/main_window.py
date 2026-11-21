@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
             answer = QMessageBox.question(
                 self, "Tests are running",
                 f"A test run ({req.scope if req else 'tests'}) is still in progress.\n\nStop it and quit? The tests "
-                "first end their CPU/GPU load and remove their temporary files; that takes a few seconds.",
+                "first end their CPU/GPU load and remove their temporary files. That takes a few seconds.",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
             if answer != QMessageBox.StandardButton.Yes:
                 return
@@ -543,12 +543,13 @@ class MainWindow(QMainWindow):
 
     def _confirm_disk(self) -> bool:
         d = self.disk
-        text = ("The disk speed test reads 4 GiB from the system disk (and runs 2 × 10 s of random reads when "
-                "fio is installed). Reading changes nothing. Close games and downloads first, they skew the result.")
+        text = ("The disk speed test reads 4 GiB from the system disk. It also runs 2 × 10 s of random reads when "
+                "fio is installed. Reading changes nothing. Close games and downloads first, because they skew "
+                "the result.")
         if d.write:
             text += (f"\n\nIt then WRITES {d.write_gib} GiB to a temporary file in /var/tmp to measure write speed "
-                     f"and the SLC cache; the file is deleted afterwards. This needs {d.write_gib + 5} GiB free and "
-                     f"adds {d.write_gib} GiB of wear to the drive (a tiny share of its rated endurance).")
+                     f"and the SLC cache. The file is deleted afterward. This needs {d.write_gib + 5} GiB free and "
+                     f"adds {d.write_gib} GiB of wear to the drive. That is a tiny share of its rated endurance.")
         answer = QMessageBox.question(self, "Disk speed test", text + "\n\nContinue?")
         return answer == QMessageBox.StandardButton.Yes
 
@@ -562,7 +563,7 @@ class MainWindow(QMainWindow):
     def _confirm_speedtest(self) -> bool:
         text = ("The internet speed test downloads and uploads for about 30 s. On a fast connection that is "
                 "about 1 GB of data, so skip it on a metered or mobile connection. Pause Steam downloads and "
-                "streams first, they skew the result.\n\nWith Ookla's speedtest, running it accepts Ookla's "
+                "streams first, because they skew the result.\n\nWith Ookla's speedtest, running it accepts Ookla's "
                 "license and GDPR terms (https://www.speedtest.net/about/eula).")
         answer = QMessageBox.question(self, "Internet speed test", text + "\n\nContinue?")
         return answer == QMessageBox.StandardButton.Yes
@@ -627,7 +628,7 @@ class MainWindow(QMainWindow):
             text = "Tests are blocked: the test engine failed its integrity check. Reinstall the app."
             colour = RED
         else:
-            text = "Development mode: the test engine is not protected; its integrity is not enforced."
+            text = "Development mode. The test engine is not protected, and its integrity is not enforced."
             colour = ORANGE
         self.integrity_banner.setText(f"⚠  {text}  (hover for details)")
         self.integrity_banner.setToolTip(plain_tooltip(problems))

@@ -60,6 +60,9 @@ date if you want them (the **Clock** tab). Hover a value on the Values tab to se
 | RAM | used / total, with a bar |
 | Fan | the fastest spinning fan and its name |
 | VRM temp | the temperature of the VRM (voltage regulator module): the regulators beside the chip that feed it its power |
+| CPU power | what the CPU's supply delivers, with its voltage and current. It needs Quickfix's **VRM Sensors** |
+| GPU power | what the GPU's supply delivers, with its voltage and current. It needs Quickfix's **VRM Sensors** |
+| 12 V input | the board's 12 V input, as the voltage regulator measures it. It needs Quickfix's **VRM Sensors** |
 | NVMe temp | the SSD's temperature |
 | Network | download, and upload beside it: all network interfaces, or the one chosen on the Values tab |
 | Disk | read, and write beside it |

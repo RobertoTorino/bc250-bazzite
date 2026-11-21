@@ -16,8 +16,8 @@ from __future__ import annotations
 import html
 import re
 
-WINDOW = ("This window starts <code>bc250-cu-bisect.sh</code> for you: choose the options, then click <b>Start</b>. "
-          "The window closes and the run continues in a terminal, exactly as if you typed the command yourself. "
+WINDOW = ("This window starts <code>bc250-cu-bisect.sh</code> for you. Choose the options, then click <b>Start</b>. "
+          "The window closes, and the run continues in a terminal, exactly as if you typed the command yourself. "
           "Hover a field or a pill to see what it does.")
 
 _TERM = re.compile(r"^  (\S(?:.*?\S)?)\s{2,}(\S.*)$")             # "  control   the same register writes"
@@ -79,7 +79,7 @@ def help_html(text: str, window: str = "") -> str:
             parts.append(_table(_entries(block[1:], _OPTION), code=True))
         elif len(block) == 1 and re.match(r"^https?://\S+$", block[0]):
             url = html.escape(block[0], quote=True)
-            parts.append(f"<p class='more'>More in the manual and the code: <a href='{url}'>{url}</a></p>")
+            parts.append(f"<p class='more'>More in the wiki and the code: <a href='{url}'>{url}</a></p>")
         else:
             if not heading:
                 parts.append("<h2>How it works</h2>")

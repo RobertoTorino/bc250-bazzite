@@ -8,10 +8,10 @@
 #   ./install.sh --uninstall             # remove the app; the ACPI override stays as it is
 #   ./install.sh --uninstall --purge     # also remove the app's settings
 #
-# Installing the app changes nothing on the board: the override itself is installed from the app, or
-# from a terminal with: sudo ./bc250-acpi-override.sh --install
+# Installing the app changes nothing on the board. Install the override itself from the app, or from a
+# terminal with sudo ./bc250-acpi-override.sh --install
 #
-# Run it as your own user, not with sudo: only the copy to /opt asks for the sudo password.
+# Run it as your own user, not with sudo. Only the copy to /opt asks for the sudo password.
 #  * /opt/bc250-persistent-acpi-v<version>, root-owned (so the script that runs under sudo cannot be
 #    changed by a normal user), with /opt/bc250-persistent-acpi pointing at it; older versions go.
 #  * ~/.local/share/bc250-persistent-acpi-app/venv with PyQt6 (the wheels bundle Qt; nothing is layered).
@@ -81,8 +81,8 @@ if $UNINSTALL; then
     if ! $found; then
         info "$APP_NAME is not installed: nothing to remove."
         if [ -f /boot/acpi_override.cpio ]; then
-            info "The ACPI override is still installed. To remove it as well: install the app again and use"
-            info "Uninstall in its window, or run: sudo $SRC/bc250-acpi-override.sh --uninstall"
+            info "The ACPI override is still installed. To remove it as well, install the app again and use"
+            info "Uninstall in its window, or run sudo $SRC/bc250-acpi-override.sh --uninstall"
         fi
         exit 0
     fi
@@ -99,8 +99,8 @@ if $UNINSTALL; then
     fi
     info "$APP_NAME is uninstalled."
     if [ -f /boot/acpi_override.cpio ]; then
-        info "The ACPI override is still installed. To remove it as well: install the app again and use"
-        info "Uninstall in its window, or run: sudo $SRC/bc250-acpi-override.sh --uninstall"
+        info "The ACPI override is still installed. To remove it as well, install the app again and use"
+        info "Uninstall in its window, or run sudo $SRC/bc250-acpi-override.sh --uninstall"
     fi
     exit 0
 fi
@@ -200,6 +200,6 @@ else
 fi
 refresh_menu
 
-info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run: $APP_ID-gui"
-info "Installing the app changed nothing on the board; install the override from its window."
+info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run $APP_ID-gui"
+info "Installing the app changed nothing on the board. Install the override from its window."
 case ":$PATH:" in *":$BIN_DIR:"*) ;; *) info "Note: $BIN_DIR is not on your PATH, so the terminal command needs the full path." ;; esac

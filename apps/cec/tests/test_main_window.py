@@ -450,7 +450,7 @@ def test_boot_on_with_wake_asks_once(make, etc_root):
     w.boot_box.setChecked(True)
     assert w.run_root.calls == [["install", "--name", "BC-250", "--wake"]]
     assert boot.installed(boot.Paths(etc_root)) == boot.Config("BC-250", True)
-    assert w.boot_box.isChecked() and "On:" in w.boot_note.text() and "turns it on" in w.boot_note.text()
+    assert w.boot_box.isChecked() and "On." in w.boot_note.text() and "turns it on" in w.boot_note.text()
     w.wake_box.setChecked(False)
     assert w.run_root.calls[-1] == ["install", "--name", "BC-250"]
     assert boot.installed(boot.Paths(etc_root)) == boot.Config("BC-250", False)

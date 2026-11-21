@@ -169,20 +169,20 @@ def swap_rating(layout: SwapLayout) -> tuple[float, str, str]:
     """(share of the points, short value, note). zswap in front of a disk swapfile is the default:
     it keeps a game alive under memory pressure, where zram alone fills up and ends in the OOM killer."""
     if layout.zram and layout.zswap:
-        return 0.4, "zram + zswap", "zram and zswap both compress the same pages: disable zram (test 14)."
+        return 0.4, "zram + zswap", "zram and zswap both compress the same pages. Turn off zram (test 14)."
     if layout.zswap and layout.disk:
         return 1.0, "zswap + disk", "zswap backed by a disk swapfile, the recommended layout."
     if layout.zram and layout.disk:
         return 0.6, "zram + disk", ("zram with a disk backstop works, but zswap in front of the swapfile is "
-                                    "more stable for gaming: disable zram and enable zswap (test 14).")
+                                    "more stable for gaming. Turn off zram and turn on zswap (test 14).")
     if layout.disk:
-        return 0.6, "disk only", "Disk swap without zswap: enable zswap (zswap.enabled=1) in front of it (test 14)."
+        return 0.6, "disk only", "Disk swap has no zswap in front of it. Turn on zswap with zswap.enabled=1 (test 14)."
     if layout.zram:
-        return 0.4, "zram only", ("zram alone has no overflow, so a full zram ends in the OOM killer: "
-                                  "switch to zswap with a disk swapfile (test 14).")
+        return 0.4, "zram only", ("zram alone has no overflow, so a full zram ends in the OOM killer. "
+                                  "Switch to zswap with a disk swapfile (test 14).")
     if layout.zswap:
-        return 0.0, "zswap, no disk", "zswap is a cache in front of disk swap and does nothing without it: add a swapfile (test 14)."
-    return 0.0, "none", "No swap at all: add a disk swapfile with zswap in front of it (test 14)."
+        return 0.0, "zswap, no disk", "zswap is a cache in front of disk swap and does nothing without it. Add a swapfile (test 14)."
+    return 0.0, "none", "There is no swap at all. Add a disk swapfile with zswap in front of it (test 14)."
 
 
 def vram_split_mib(sys_root: Path = Path("/sys")) -> int | None:
@@ -207,7 +207,7 @@ def _cu_factor(history: History | None) -> Factor:
     if counted != total:
         spread = (" (per shader array: " + ", ".join(map(str, per_array)) + ")") if per_array else ""
         warning = (f"CUs are not evenly assigned: {total} CUs{spread}. Every shader array should have the same "
-                   f"number (24, 32 or 40 in total). Scored as {counted} CUs; redo the CU unlock.")
+                   f"number. That gives 24, 32 or 40 in total. Scored as {counted} CUs. Redo the CU unlock.")
         note += f" Counted as {counted}: the evenly distributed configuration below {total}."
     value = f"{total} CUs" + (f" → {counted}" if counted != total else "")
     return _factor("GPU compute units", 20, value, f"{DEFAULT_CUS} CUs", counted / DEFAULT_CUS, "linear",
@@ -253,13 +253,13 @@ def compute(history: History | None, health: int | None, sys_root: Path = Path("
         _factor("ACPI fix", 10, ("applied" if acpi else "missing") if acpi is not None else "", "applied",
                 None if acpi is None else float(acpi), "none",
                 "cpufreq scaling and CPU idle states are available (test 26)." if acpi else
-                "Without it the BC-250 has no frequency scaling or C-states: apply bc250-acpi-fix (test 26).",
+                "Without it the BC-250 has no frequency scaling or C-states. Apply bc250-acpi-fix (test 26).",
                 CONFIGURATION),
         _factor("VRAM split", 10, f"{vram / 1024:.1f} GB" if vram else "", f"{RECOMMENDED_VRAM_MIB // 1024} GB",
                 None if vram is None else 1.0 if vram_ok else OTHER_VRAM_SHARE, "none",
                 "The recommended split." if vram_ok else
-                "6 GB is the split with a documented fix for framebuffer pin failures: "
-                "sudo ./bc250memcfg UMA_SIZE 6144 (see test 37 and the manual).", CONFIGURATION),
+                "6 GB is the split with a documented fix for framebuffer pin failures. Set it with "
+                "sudo ./bc250memcfg UMA_SIZE 6144. See test 37 and the wiki.", CONFIGURATION),
         _factor("CPU mitigations", 5, ("off" if mitig else "on") if mitig is not None else "", "off",
                 None if mitig is None else float(mitig), "none",
                 "mitigations=off is on the kernel command line (test 24)." if mitig else
@@ -267,7 +267,7 @@ def compute(history: History | None, health: int | None, sys_root: Path = Path("
         _factor("IOMMU", 5, ("disabled" if groups == 0 else f"enabled ({groups} groups)") if groups is not None
                 else "", "disabled", None if groups is None else float(groups == 0), "none",
                 "No IOMMU groups (test 23)." if groups == 0 else
-                "The IOMMU is broken on the BC-250: disable it in the BIOS or with amd_iommu=off (test 23).",
+                "The IOMMU is broken on the BC-250. Turn it off in the BIOS or with amd_iommu=off (test 23).",
                 CONFIGURATION),
         _factor("Swap", 5, swap[1] if swap else "", "zswap + disk", swap[0] if swap else None, "none",
                 swap[2] if swap else "Not on Linux.", CONFIGURATION),
@@ -362,10 +362,10 @@ class SystemScoreDialog(QDialog):
         text = QVBoxLayout()
         title = QLabel(name)
         title.setStyleSheet(header_font() + "font-size:22px; font-weight:800;")
-        sub = QLabel("Your hardware on top of the stock board: more CUs, cores, a faster or bigger drive and a "
+        sub = QLabel("Your hardware on top of the stock board. More CUs, cores, a faster or bigger drive and a "
                      "faster network link add points. Equal to the Base score on a stock board." if extended else
-                     "Your board against a stock BC-250 on BIOS 5.00, set up as recommended: meeting every default "
-                     "gives 100. Below a default costs points; anything above it counts in the Extended score.")
+                     "Your board against a stock BC-250 on BIOS 5.00, set up as recommended. Meeting every default "
+                     "gives 100. Below a default costs points. Anything above it counts in the Extended score.")
         sub.setWordWrap(True)
         sub.setStyleSheet(f"color:{TEXT_GREY};")
         text.addStretch(1)

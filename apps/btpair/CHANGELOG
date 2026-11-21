@@ -1,3 +1,14 @@
+Changelog: 21-11-2026 14:06:03
+
+Fixed. The app's text is rewritten to the writing standard: short sentences with one fact each, and lists where a
+sentence named three or more parts. This covers the wiki chapter, the README, the tooltips, notes, messages and info
+text in the window, the name and password messages of the system part, and the installer's messages. The info text now
+ends with a link to the wiki. No label is renamed. Two facts in the wiki chapter are corrected. The chapter said the
+small round i repeats the header in short. It says in short what the app does. The chapter also said the header shows
+the controller batteries. Its Batteries box shows whether the batteries go to the Bluetooth icon, not their levels.
+Nothing the app does has changed. No test changed. The installer's messages that every app shares keep their old wording, and so does "Not authorized: the password
+dialog was canceled or refused." (owner, 21-11-2026: those are reworded once, in all installers together).
+
 Changelog: 21-11-2026 12:24:43
 
 Release 2.5.0.

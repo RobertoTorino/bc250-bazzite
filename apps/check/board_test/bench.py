@@ -62,8 +62,8 @@ def load_baseline(path: Path) -> dict | None:
 
 def describe_baseline(base: dict | None) -> str:
     if not base:
-        return ("No baseline yet. Put the board in its stock configuration (24 CUs, 6C/12T, governor "
-                "max 1850 MHz), tick \"Save as baseline\" and run the benchmark once.")
+        return ("No baseline yet. Put the board in its stock configuration. That is 24 CUs, 6C/12T and governor "
+                "max 1850 MHz. Then check \"Save as baseline\" and run the benchmark once.")
     return (f"Baseline (= 100): {base.get('cores', '?')}C/{base.get('threads', '?')}T, {base.get('cus', '?')} CUs, "
             f"~{base.get('gpu_mhz', '?')} MHz, measured {base.get('date', '?')}. "
             f"CPU {base.get('cpu_multi', '?')} ops/s, GPU {base.get('gpu_fp32', '?')} GFLOPS.")
@@ -131,7 +131,7 @@ class BenchControls(QWidget):
         self.seconds.valueChanged.connect(lambda v: settings.set(seconds=v))
         row.addWidget(self.seconds)
         self.save = QCheckBox("Save as baseline (stock board only)")
-        self.save.setToolTip(f"Writes the result to {settings.baseline_path}; later runs score against it.")
+        self.save.setToolTip(f"Writes the result to {settings.baseline_path}. Later runs score against it.")
         self.save.toggled.connect(lambda v: settings.set(save_baseline=v))
         row.addWidget(self.save)
         row.addStretch(1)
@@ -171,9 +171,9 @@ class BenchControls(QWidget):
         self.save.setEnabled(not has_base)
         self.save.setChecked(self.settings.save_baseline)
         self.save.setToolTip(
-            f"A baseline already exists ({self.settings.baseline_path}); delete that file to save a new one."
+            f"A baseline already exists ({self.settings.baseline_path}). Delete that file to save a new one."
             if has_base else
-            f"Writes the result to {self.settings.baseline_path}; later runs score against it.")
+            f"Writes the result to {self.settings.baseline_path}. Later runs score against it.")
         self.save.blockSignals(False)
 
 

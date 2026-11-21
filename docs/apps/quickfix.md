@@ -139,6 +139,10 @@ After a kernel update the first boot builds the module again.
 SELinux loads only a file labeled as a kernel module, so the service gives its build that label.
 
 The boxes show whether the module is loaded, whether the service loads it at boot, and whether its sensors are there.
+
+When the service is there but the module is not loaded, **Turn on** is available again.
+It copies the module's source and the service's script anew and starts the service once more.
+Use it after an update of the quickfix when an earlier load failed.
 **Turn on** is offered when the module is not loaded and the kernel's build files are on the image.
 When the service is on and the module is not loaded, the window names the command that shows why.
 **Turn off** unloads the module and removes the service and its folder.

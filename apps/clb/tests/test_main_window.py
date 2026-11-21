@@ -217,5 +217,5 @@ def test_a_refused_sign_in_signs_out(qapp, tmp_path):
     window = MainWindow(Account(Client(FakeTransport(found)), tmp_path / "a.json"), stream_window=FakeView)
     wait(qapp, window)
     assert not window.account.signed_in and window.pill.text() == "Signed out"
-    assert "sign in again" in window.running.text()
+    assert "Sign in again" in window.running.text()
     window.close()

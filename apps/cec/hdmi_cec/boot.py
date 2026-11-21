@@ -116,7 +116,7 @@ def name_problem(name: str) -> str:
     if not name.strip():
         return "The name is empty."
     if not name.isascii() or not name.isprintable():
-        return "Use plain letters, digits and punctuation: many TVs show nothing else."
+        return "Use plain letters, digits and punctuation. Many TVs show nothing else."
     if len(name.encode()) > OSD_NAME_BYTES:
         return f"At most {OSD_NAME_BYTES} characters."
     return ""
@@ -231,7 +231,7 @@ def greeter_display(paths: Paths, source: Path, run: Runner = run, getpwnam: Cal
         getpwnam = pwd.getpwnam
     user = greeter_user(paths)
     if not user:
-        raise ValueError("The login screen is not KDE's (Plasma Login or SDDM): it keeps its display settings "
+        raise ValueError("The login screen is not KDE's (Plasma Login or SDDM). It keeps its display settings "
                          "elsewhere.")
     data = source.read_bytes()
     if not isinstance(json.loads(data), list):
@@ -380,7 +380,7 @@ class Boot:
         ready = done = False
         while True:
             if self.cecd():
-                log("Valve's CEC daemon runs: it names the adapter itself")
+                log("Valve's CEC daemon runs. It names the adapter itself")
                 done = True
                 break
             adapter = self.find()

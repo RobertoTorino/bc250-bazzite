@@ -266,18 +266,20 @@ class InGamePage(QWidget):
         head.addWidget(intro, 1)
         self.style_btn = QPushButton("Set MangoHud overlay style")
         self.style_btn.setToolTip(plain_tooltip(
-            "Writes the app's own MangoHud config (~/.config/bc250-board-test/MangoHud.conf) in the\n"
-            "overlay's look: narrow box, rounded corners, purple FPS, muted labels, no clutter, and\n"
-            "FPS logging on. The wrapper passes it to MangoHud directly, so your own MangoHud.conf\n"
-            "and distribution presets are untouched and cannot mix into the look. It only applies to\n"
-            "the launch lines here. (MangoHud has no border option, so no purple border.)"))
+            "Writes the app's own MangoHud config in the overlay's look. The file is\n"
+            "~/.config/bc250-board-test/MangoHud.conf. The look is a narrow box, rounded corners,\n"
+            "purple FPS, muted labels and no clutter, with FPS logging on. The wrapper passes it to\n"
+            "MangoHud directly. Your own MangoHud.conf and distribution presets are untouched and\n"
+            "cannot mix into the look. It only applies to the launch lines here.\n"
+            "MangoHud has no border option, so there is no purple border."))
         self.style_btn.clicked.connect(self._style_mango)
         head.addWidget(self.style_btn, 0, Qt.AlignmentFlag.AlignTop)
         self.fps_btn = QPushButton("Enable FPS logging")
         self.fps_btn.setToolTip(plain_tooltip(
-            "Adds output_folder and autostart_log=1 to ~/.config/MangoHud/MangoHud.conf (and Steam's\n"
-            "Flatpak copy when present); nothing else in the file is changed. The game must still run\n"
-            "with MangoHud: put `mangohud` in front of the launch line, or set MANGOHUD=1 (Vulkan)."))
+            "Adds output_folder and autostart_log=1 to ~/.config/MangoHud/MangoHud.conf.\n"
+            "Steam's Flatpak copy gets them too when present. Nothing else in the file is changed.\n"
+            "The game must still run with MangoHud. Put `mangohud` in front of the launch line,\n"
+            "or set MANGOHUD=1 (Vulkan)."))
         self.fps_btn.clicked.connect(self._enable_fps)
         head.addWidget(self.fps_btn, 0, Qt.AlignmentFlag.AlignTop)
         sv.addLayout(head)
@@ -286,7 +288,7 @@ class InGamePage(QWidget):
         self.cmd = QLineEdit(launch_line())
         self.cmd.setReadOnly(True)
         self.cmd.setToolTip(plain_tooltip(
-            "The game starts unchanged; while it runs, a CSV is written to\n"
+            "The game starts unchanged. While it runs, a CSV is written to\n"
             f"{gamecfg.LOG_DIR}\nNo root is needed and the game is never slowed down noticeably."))
         copy = QPushButton("Copy")
         copy.clicked.connect(lambda: self._copy(self.cmd))
@@ -299,7 +301,7 @@ class InGamePage(QWidget):
         self.cmd_fps.setReadOnly(True)
         self.cmd_fps.setToolTip(plain_tooltip(
             "Same, but the game starts under MangoHud so FPS is recorded too. Click \"Enable FPS\n"
-            "logging\" once; if mangohud is not installed the wrapper skips it and the game\n"
+            "logging\" once. If mangohud is not installed, the wrapper skips it and the game\n"
             "still starts."))
         copy_fps = QPushButton("Copy")
         copy_fps.clicked.connect(lambda: self._copy(self.cmd_fps))
@@ -316,7 +318,7 @@ class InGamePage(QWidget):
             checkout = QLabel(
                 f"<span style='color:{CHECK_COLORS['warn']}'>{CHECK_MARKS['warn']}</span> This app runs from a "
                 "checkout, so these lines name the checkout and its python. They stop working when that folder "
-                "moves or its python goes; copy them from the installed app instead.")
+                "moves or its python goes. Copy them from the installed app instead.")
             checkout.setWordWrap(True)
             checkout.setStyleSheet("background:transparent;")
             sv.addWidget(checkout)
@@ -361,7 +363,7 @@ class InGamePage(QWidget):
         shot_col.addWidget(self.shot)
         self.reshoot = QPushButton("New screenshot")
         self.reshoot.setToolTip(plain_tooltip(
-            "Removes the current screenshot; the wrapper takes a fresh one about 45 s into the next\n"
+            "Removes the current screenshot. The wrapper takes a fresh one about 45 s into the next\n"
             "recorded session of this game."))
         self.reshoot.clicked.connect(self._new_shot)
         shot_col.addWidget(self.reshoot)
@@ -385,11 +387,12 @@ class InGamePage(QWidget):
         info_col.addWidget(self.enabled)
         self.overlay = QCheckBox("Show overlay")
         self.overlay.setToolTip(plain_tooltip(
-            "A small translucent box (rounded corners, thin purple border) on the screen with\n"
-            "the live FPS, CPU/GPU load, clock, temperature, power and VRAM. It never takes focus and\n"
-            "lets all mouse input through. Use \"Test overlay\" to drag it to where it should sit.\n"
-            "Works over windowed and borderless-fullscreen games on the\n"
-            "desktop; gamescope's game mode and exclusive fullscreen can cover it."))
+            "A small translucent box on the screen with the live FPS, CPU/GPU load, clock,\n"
+            "temperature, power and VRAM. It has rounded corners and a thin purple border.\n"
+            "It never takes focus, and all mouse input passes through it.\n"
+            "Use \"Test overlay\" to drag it to where it should sit.\n"
+            "It works over windowed and borderless full-screen games on the desktop.\n"
+            "Gamescope's game mode and exclusive full screen can cover it."))
         self.overlay.toggled.connect(self._save)
         ov_row = QHBoxLayout()
         ov_row.addWidget(self.overlay)
@@ -466,8 +469,8 @@ class InGamePage(QWidget):
         split.addWidget(right)
         split.setSizes([230, 640])
 
-        self.empty = QLabel("No games recorded yet. Add the launch line to a game in Steam and play; "
-                            "the game appears here after the first session.")
+        self.empty = QLabel("No games recorded yet. Add the launch line to a game in Steam and play. "
+                            "The game appears here after the first session.")
         self.empty.setWordWrap(True)
         self.empty.setStyleSheet(f"color:{MUTED};")
         layout.addWidget(self.empty)
@@ -617,9 +620,9 @@ class InGamePage(QWidget):
             return
         head = QLabel(
             f"<span style='color:{CHECK_COLORS['error']}'>{CHECK_MARKS['error']}</span> <b>"
-            f"{len(stale)} game{'s' if len(stale) != 1 else ''} in Steam will not start</b>: "
-            "their launch options start the game monitor from a place that is gone. Put the line below in the "
-            "game's <i>Properties → Launch options</i> instead, or clear them; Refresh checks again.")
+            f"{len(stale)} game{'s' if len(stale) != 1 else ''} in Steam will not start</b>. "
+            "Their launch options start the game monitor from a place that is gone. Put the line below in the "
+            "game's <i>Properties → Launch options</i> instead, or clear them. Refresh checks again.")
         head.setWordWrap(True)
         head.setStyleSheet("background:transparent;")
         self.stale_box.addWidget(head)
@@ -646,7 +649,7 @@ class InGamePage(QWidget):
         on = mango_logging_enabled()
         self.fps_btn.setVisible(not on)
         self.fps_note.setText(
-            "FPS logging is on; FPS appears in the overlay and the graphs." if on else
+            "FPS logging is on. FPS appears in the overlay and the graphs." if on else
             "FPS comes from MangoHud's log (off by default) — the button turns it on.")
 
     def _enable_fps(self) -> None:
@@ -663,7 +666,7 @@ class InGamePage(QWidget):
         except OSError as exc:
             self.fps_note.setText(f"Could not update MangoHud.conf: {html.escape(private(str(exc)))}")
             return
-        self.fps_note.setText("MangoHud is styled like the overlay (takes effect at the next game start).")
+        self.fps_note.setText("MangoHud is styled like the overlay. This takes effect at the next game start.")
 
     def _test_overlay(self) -> None:
         env = dict(os.environ)

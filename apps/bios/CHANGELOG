@@ -1,3 +1,17 @@
+Changelog: 21-11-2026 14:04:52
+
+Fixed. The text of BC-250 BIOS Reader is rewritten to the writing standard: its wiki chapter, its README, the notes,
+the stock or modded reasons, the question before reading the BIOS chip, the lines of the read window and the
+installer's messages. Sentences are short and hold one fact each. The question before reading the chip lists what
+happens one fact per line and ends with the password line. The window and the README say "wiki" where they said
+"manual". No label is renamed. Three facts are corrected. The note under the header said the options of the main
+Setup variable show their defaults on the running board. They show [?], and their help shows the default, as the
+wiki already said. The wiki's example of where a setting is stored was `AmdSetup + 0x25F, 4 bytes`. The window shows
+`AmdSetup + 0x25F (4 bytes)`. The wiki named the window's first view **this board**. The button is **This board**.
+Nothing the app does has changed. Tests changed: `tests/test_bios.py` (`test_running_stock` looks for "Read the BIOS
+chip" with a capital). Winbond is added to `tools/text_check/words.txt`. The installer's messages that every app shares keep their old wording, and so does "Not authorized: the password
+dialog was canceled or refused." (owner, 21-11-2026: those are reworded once, in all installers together).
+
 Changelog: 21-11-2026 12:24:43
 
 Release 4.5.0.

@@ -1,3 +1,8 @@
+Changelog: 21-11-2026 14:24:02
+
+Added. Three tiles to choose on the Values tab, for a board with Quickfix's VRM Sensors on: CPU power and GPU power,
+each with its voltage and current under it, and 12 V input. Without the module they show a dash.
+
 Changelog: 21-11-2026 12:24:43
 
 Release 2.5.0.

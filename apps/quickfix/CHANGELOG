@@ -1,3 +1,9 @@
+Changelog: 21-11-2026 13:50:55
+
+Fixed. VRM Sensors offers Turn on again while its service is there and the module is not loaded. After a load that
+failed, an updated quickfix could not be applied: Turn on was off, and the old script stayed in
+/var/lib/bc250-quickfix/vrm. Turn on copies the source and the script anew and starts the service.
+
 Changelog: 21-11-2026 12:24:43
 
 Release 1.6.0.

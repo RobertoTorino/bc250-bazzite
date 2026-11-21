@@ -13,13 +13,13 @@ class SpeedtestControls(QWidget):
         super().__init__(parent)
         row = QHBoxLayout(self)
         row.setContentsMargins(0, 0, 0, 0)
-        note = QLabel("Internet speed test (44): not part of Run all; uses ~1 GB of data. Needs Ookla's "
+        note = QLabel("Internet speed test (44) is not part of Run all. It uses ~1 GB of data. Needs Ookla's "
                       "<a href='https://www.speedtest.net/apps/cli'>speedtest CLI</a> or speedtest-cli.")
         note.setOpenExternalLinks(True)
         note.setWordWrap(True)
         row.addWidget(note, 1)
         graph = QPushButton("Show graph")
-        graph.setToolTip("Compare all speed test runs: download/upload, idle vs loaded latency, jitter, packet loss.")
+        graph.setToolTip("Compare all speed test runs on download/upload, idle vs. loaded latency, jitter and packet loss.")
         graph.clicked.connect(self._show_graph)
         row.addWidget(graph)
         calc = QPushButton("Open CSV")

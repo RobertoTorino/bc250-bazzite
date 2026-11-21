@@ -30,6 +30,6 @@ def test_install_writes_and_enables_the_unit_without_starting_it(monkeypatch):
 
 def test_without_systemctl_the_unit_is_written_and_the_error_says_so(monkeypatch):
     monkeypatch.setattr(service.shutil, "which", lambda name: None)
-    with pytest.raises(RuntimeError, match="install the unit manually"):
+    with pytest.raises(RuntimeError, match="Install the unit by hand"):
         service.install("/opt/x/bc250-cu-bisect.sh", 180, 3)
     assert service.is_installed()

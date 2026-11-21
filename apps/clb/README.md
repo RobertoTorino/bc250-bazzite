@@ -6,10 +6,11 @@
 
 # BC-250 XB Remote Play
 
-BC-250 XB Remote Play streams XBOX games to the **AMD BC-250** on **Bazzite**: sign in with your Microsoft account, wake
-your XBOX and play it on the board (Remote Play), or play games from XBOX Cloud Gaming.
+BC-250 XB Remote Play streams XBOX games to the **AMD BC-250** on **Bazzite**. Sign in with your Microsoft account,
+wake your XBOX and play it on the board. Microsoft calls that Remote Play. You can also play games from XBOX Cloud
+Gaming.
 
-How to install and use it: [BC-250 XB Remote Play in the manual](https://robertotorino.github.io/bc250-bazzite/apps/clb/).
+How to install and use it: [BC-250 XB Remote Play in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/clb/).
 
 ## Disclaimer
 
@@ -22,11 +23,12 @@ Vita3K, Xenia) and of Decky Loader, HelixSR and DirectMesh belong to their owner
 
 ## License
 
-GPL-3.0-or-later, see [LICENSE](LICENSE). The protocol code is ported from [Greenlight](https://github.com/unknownskl/greenlight)
-and [xal-node](https://github.com/unknownskl/xal-node), both MIT, Copyright (c) 2019 and 2023 UnknownSKL (Jim Kroon);
-the files ported from them say so in their header and keep the MIT notice below. The stream uses
-[aiortc](https://github.com/aiortc/aiortc) (BSD-3-Clause) and [PyAV](https://github.com/PyAV-Org/PyAV) (BSD-3-Clause,
-its wheels bring FFmpeg, LGPL-2.1-or-later), installed from PyPI.
+GPL-3.0-or-later, see [LICENSE](LICENSE). The protocol code comes from
+[Greenlight](https://github.com/unknownskl/greenlight) and [xal-node](https://github.com/unknownskl/xal-node). Both are
+MIT, Copyright (c) 2019 and 2023 UnknownSKL (Jim Kroon). The files ported from them say so in their header and keep
+the MIT notice below. The stream uses [aiortc](https://github.com/aiortc/aiortc) (BSD-3-Clause) and
+[PyAV](https://github.com/PyAV-Org/PyAV) (BSD-3-Clause), installed from PyPI. PyAV's wheels bring FFmpeg
+(LGPL-2.1-or-later).
 
 ```
 The MIT License (MIT)

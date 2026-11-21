@@ -20,7 +20,7 @@ def test_install_copies_the_tables_and_adds_the_grub_line(board):
     assert board.cpio.read_bytes() == (APP / "tables" / "acpi_override.cpio").read_bytes()
     assert grub_lines(board) == ["GRUB_TIMEOUT=5", 'GRUB_CMDLINE_LINUX="rhgb quiet"', GRUB_LINE]
     assert board.grub_runs == 1
-    assert "Reboot" in r.stdout
+    assert "Restart" in r.stdout
 
 
 def test_install_twice_keeps_one_grub_line(board):

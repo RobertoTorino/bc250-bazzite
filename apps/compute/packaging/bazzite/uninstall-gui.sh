@@ -22,4 +22,4 @@ rm -f "$LAUNCHER" "$DESKTOP_FILE" "$ICON_FILE" "$OLD_ICON" "$DESKTOP_DIR/bc250-c
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$DATA_HOME/applications" >/dev/null 2>&1 || true
 command -v gtk-update-icon-cache >/dev/null 2>&1 && gtk-update-icon-cache -f -t "$DATA_HOME/icons/hicolor" >/dev/null 2>&1 || true
 
-echo "Removed BC-250 CU Unlock GUI (app, venv, launcher, menu entry, icon, Desktop icon)."
+echo "Removed BC-250 CU Unlock GUI with its app, venv, launcher, menu entry, icon and Desktop icon."

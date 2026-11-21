@@ -25,7 +25,8 @@ TITLE = "BC-250"
 
 # key, caption; the order on the screen
 TILES = (("cpu", "CPU"), ("gpu", "GPU"), ("cpu_temp", "CPU temp"), ("gpu_temp", "GPU temp"), ("vram", "VRAM"),
-         ("ram", "RAM"), ("fan", "Fan"), ("vrm", "VRM temp"), ("nvme", "NVMe temp"), ("net", "Network"),
+         ("ram", "RAM"), ("fan", "Fan"), ("vrm", "VRM temp"), ("cpu_rail", "CPU power"), ("gpu_rail", "GPU power"),
+         ("vin", "12 V input"), ("nvme", "NVMe temp"), ("net", "Network"),
          ("disk", "Disk"), ("weather", "Weather"))
 DEFAULT_TILES = ("cpu", "gpu", "vram", "ram", "fan", "net")
 # What each tile shows, for the Values tab's tooltips.
@@ -38,6 +39,9 @@ TILE_HINTS = {
     "ram": "The memory: used and total.",
     "fan": "The fastest spinning fan.",
     "vrm": "The temperature of the VRM, the voltage regulators beside the chip that feed it its power.",
+    "cpu_rail": "What the CPU draws, with its voltage and current. It needs Quickfix's VRM Sensors.",
+    "gpu_rail": "What the GPU draws, with its voltage and current. It needs Quickfix's VRM Sensors.",
+    "vin": "The board's 12 V input, as the voltage regulator measures it. It needs Quickfix's VRM Sensors.",
     "nvme": "The SSD's temperature.",
     "net": "Download and upload, of the interface chosen below.",
     "disk": "Reads and writes of the disks.",
@@ -152,6 +156,13 @@ def _temp(value: float | None) -> str | None:
     return f"{value:.0f} °C" if value is not None else None
 
 
+def _rail_tile(caption: str, rail) -> "Tile":
+    """A supply rail of the VRM: its power in large, its voltage and current under it."""
+    if rail is None or rail.watts is None:
+        return Tile(caption, DASH)
+    return Tile(caption, f"{rail.watts:.0f} W", _join(f"{rail.mv / 1000:.2f} V", f"{rail.amps:.1f} A"))
+
+
 def _temp_tile(caption: str, value: float | None) -> Tile:
     """A temperature on its own: the bar runs from 0 to 100 °C."""
     return Tile(caption, _temp(value) or DASH, fraction=max(0.0, min(1.0, value / 100)) if value is not None else None,
@@ -205,6 +216,9 @@ def tiles(r: Reading, keys: tuple[str, ...] | list[str], weather: Weather | None
         "ram": lambda: Tile("RAM", _gb(r.ram), fraction=_share(r.ram)),
         "fan": lambda: Tile("Fan", f"{r.fan.rpm} RPM" if r.fan else DASH, r.fan.label if r.fan else ""),
         "vrm": lambda: Tile("VRM temp", _temp(r.vrm_temp) or DASH, alert=_temp_alert(r.vrm_temp)),
+        "cpu_rail": lambda: _rail_tile("CPU power", r.cpu_rail),
+        "gpu_rail": lambda: _rail_tile("GPU power", r.gpu_rail),
+        "vin": lambda: Tile("12 V input", f"{r.vin_mv / 1000:.2f} V" if r.vin_mv else DASH),
         "nvme": lambda: Tile("NVMe temp", _temp(r.nvme_temp) or DASH, alert=_temp_alert(r.nvme_temp)),
         "net": lambda: Tile("Network", f"↓ {_rate(r.net[0])}" if r.net else DASH,
                             f"↑ {_rate(r.net[1])}" if r.net else ""),

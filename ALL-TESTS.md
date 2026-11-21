@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3384 test functions (3959 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3386 test functions (3961 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -33,7 +33,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/sftp](#appssftp) | 11 | 84 | 0.9 s |
 | [apps/shadps4](#appsshadps4) | 17 | 151 | 8.0 s |
 | [apps/ssd](#appsssd) | 4 | 49 | 0.9 s |
-| [apps/turing](#appsturing) | 9 | 75 | 1.4 s |
+| [apps/turing](#appsturing) | 9 | 76 | 1.4 s |
 | [apps/upscaler](#appsupscaler) | 11 | 119 | 1.6 s |
 | [apps/vita3k](#appsvita3k) | 9 | 78 | 5.3 s |
 | [apps/vram](#appsvram) | 7 | 58 | 0.6 s |
@@ -49,8 +49,8 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/studio](#devstudio) | 6 | 65 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 16 | 210 | 29.0 s |
-| [tools](#tools) | 38 | 232 | 11.1 s |
-| **All** | | **3384** | **182 s** |
+| [tools](#tools) | 38 | 233 | 11.1 s |
+| **All** | | **3386** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -2014,7 +2014,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/turing
 
-75 tests in 9 files, 1.4 s in a local run.
+76 tests in 9 files, 1.4 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2078,6 +2078,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_render.py` | `test_report_has_every_value` |  |  | Report has every value. |
 | `test_render.py` | `test_every_theme_and_a_picture` |  |  | Every theme and a picture. |
 | `test_render.py` | `test_a_long_header_text_leaves_room_for_the_time` |  |  | A long header text leaves room for the time. |
+| `test_render.py` | `test_rail_tiles_show_power_with_voltage_and_current` |  |  | The VRM's values (Quickfix's VRM Sensors): a tile per supply and one for the 12 V input; a dash without them. |
 | `test_screen.py` | `test_command_packs_four_10_bit_values` |  |  | Command packs four 10 bit values. |
 | `test_screen.py` | `test_brightness_runs_from_255_darkest_to_0_brightest` | 5 |  | Brightness runs from 255 darkest to 0 brightest. |
 | `test_screen.py` | `test_orientation_command_names_the_screen_size` |  |  | Orientation command names the screen size. |
@@ -3545,7 +3546,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## tools
 
-232 tests in 38 files, 11.1 s in a local run.
+233 tests in 38 files, 11.1 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3711,6 +3712,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_new_app.py` | `test_a_folder_without_a_portal_is_refused` |  |  | A folder without a portal is refused. |
 | `test_new_app.py` | `test_the_help_names_the_steps` |  | 0.1 s | The help names the steps. |
 | `test_new_app.py` | `test_a_nav_by_category_gets_the_app_under_its_category_by_name` |  |  | The BC250 wiki lists the apps by category, by name in each: a new app's line goes where its name belongs. |
+| `test_new_app.py` | `test_a_quote_mark_in_the_summary_is_escaped_between_quotes` |  |  | A summary with a quote mark (3.5") left apps.toml unreadable; in the wiki's text it stays as written. |
 | `test_pin_app.py` | `test_pin_changes_only_that_app` |  |  | Pin changes only that app. |
 | `test_pin_app.py` | `test_pin_last_table_and_missing_app` |  |  | Pin last table and missing app. |
 | `test_pin_app.py` | `test_pin_adds_the_sha256_line_a_new_app_lacks` |  |  | A new app is listed with its first tag and no sha256 line until that release exists (apps.toml allows it): the pin adds the line after the tag, in its place, and leaves the rest alone. |

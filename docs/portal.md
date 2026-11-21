@@ -293,8 +293,8 @@ synthesized background), the video tours and the icons. Start it from the checko
   driver, VRAM, shared memory, clock levels, VBIOS, PCIe link), the memory, the drives with the free space in your
   home folder, the displays (each output, the monitor's name and its preferred mode), the sound cards, the network
   adapters and Bluetooth controllers (driver and link), the USB devices, the input devices (keyboards, mice and
-  controllers, each with the bus it is on: USB, Bluetooth, PS/2), the sensors (temperatures, fan speeds and
-  the GPU's power at that moment) and the OS (version, Bazzite image, kernel, desktop). It is read each time the
+  controllers, each with the bus it is on: USB, Bluetooth, PS/2), the sensors (temperatures, fan speeds,
+  power, voltages and currents at that moment) and the OS (version, Bazzite image, kernel, desktop). It is read each time the
   window opens; what a system does not report is left out. **Copy** puts it all on the clipboard as text, for an
   issue or a forum post. It holds nothing personal: no host or user name, no serial numbers, no MAC or IP
   addresses.

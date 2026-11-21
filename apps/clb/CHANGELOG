@@ -1,3 +1,17 @@
+Changelog: 21-11-2026 14:26:18
+
+Fixed. The app's text is rewritten to the writing standard: the wiki chapter, the README, and the window's hints,
+tooltips and messages. Sentences are short, hold one fact each and no longer chain facts with a colon, a semicolon or
+long parentheses. The link under the title row is labeled Wiki, no longer Manual. Messages reworded: the introduction,
+the Sign in and Wake tooltips, the text beside Microsoft account, "Off. Switch it on in the XBOX's settings" in the
+Remote play column, the note under the cloud games, the waking, signed-out and remote-play-is-off messages, the
+games' names note, the queue's "In the queue for a cloud server. About 2 minutes to wait…", and the sign-in errors
+(saved sign-in no longer accepted, code expired, no XBOX profile, child account). The README names the wiki, not the
+manual. One fact corrected in the wiki's Privacy section: the log shows the last part of an IPv4 address only, and hides
+an IPv6 address whole (the chapter said every network address keeps its last part). The installer's messages stay as
+they are. Nothing the app does has changed. Tests changed: test_stream.py (the queue text) and test_main_window.py
+("Sign in again").
+
 Changelog: 21-11-2026 12:24:43
 
 Release 4.5.0.

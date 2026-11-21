@@ -149,23 +149,23 @@ class PrivacyPage(QWidget):
         layout.addWidget(self.system_details)
         layout.addWidget(_note("Off by default: together they show which known vulnerabilities a system may be "
                                "open to. Turning this off also removes them from earlier runs. The number of "
-                               "CUs and CPU cores is always stored, it is needed to compare runs."))
+                               "CUs and CPU cores is always stored. Comparing runs needs it."))
         self.mask_logs = QCheckBox("Mask personal data in saved GUI logs")
         layout.addWidget(self.mask_logs)
-        layout.addWidget(_note("Host and user name, home folder, drive serial numbers, MAC and IP addresses, "
-                               "machine id, and the speed test's ISP and result URL are replaced by &lt;name&gt;, "
-                               "&lt;serial&gt;, &lt;ip&gt;... in the log files, so they are safer to share. The "
-                               "terminal still shows everything. The full reports are not masked; check "
-                               "them before posting them anywhere."))
+        layout.addWidget(_note("The log files show &lt;name&gt;, &lt;serial&gt;, &lt;ip&gt;... in place of personal "
+                               "data, so they are safer to share. That covers host and username, home folder, drive "
+                               "serial numbers, MAC and IP addresses and machine id. It also covers the speed "
+                               "test's ISP and result URL. The terminal still shows everything. The full reports "
+                               "are not masked. Check them before posting them anywhere."))
 
         layout.addWidget(_heading("Admin privileges", top=12))
         layout.addWidget(_text(
             "Most checks read root-only logs and hardware information, so the tests run through "
-            "<code>sudo</code>. All tests are read-only: they install, change or delete nothing (the disk "
-            "speed test writes one temporary file and removes it)."))
+            "<code>sudo</code>. All tests are read-only. They install, change or delete nothing. The one "
+            "exception is the disk speed test, which writes one temporary file and removes it."))
         layout.addWidget(_text(
             "<b>Your password is never shown, saved or logged.</b> When sudo needs it, a masked prompt "
-            "appears; the password is handed straight to sudo and dropped from memory. sudo itself then "
+            "appears. The password is handed straight to sudo and dropped from memory. sudo itself then "
             "remembers that you authenticated for its usual timeout (5 minutes on Bazzite), so you are not "
             "asked for every test."))
         self.use_sudo = QCheckBox("Run the tests with admin privileges (sudo)")
@@ -174,9 +174,9 @@ class PrivacyPage(QWidget):
         layout.addWidget(self.sudo_note)
         if sudo_locked:
             self.use_sudo.setEnabled(False)
-            self.sudo_note.setText("Turned off for this session (the app runs as root, or in developer mode).")
+            self.sudo_note.setText("Turned off for this session, because the app runs as root or in developer mode.")
         forget = QPushButton("Forget sudo authentication now")
-        forget.setToolTip("Runs sudo -k: the next test that needs root asks for the password again.")
+        forget.setToolTip("Runs sudo -k. The next test that needs root asks for the password again.")
         forget.clicked.connect(self.forget_sudo_requested)
         row = QHBoxLayout()
         row.addWidget(forget)
@@ -217,10 +217,10 @@ class PrintResultsPage(QWidget):
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.addWidget(_heading("Print results"))
-        layout.addWidget(_note("Shows a compact \"BC-250 Board Test Results\" card — Base and Extended System "
-                               "scores on top and the other header boxes below — then Save… (a PNG), Copy (to paste "
-                               "it in a chat or a forum post) or Share (to your phone, by email, or from the file "
-                               "manager), easy to compare with other users."))
+        layout.addWidget(_note("Shows a compact \"BC-250 Board Test Results\" card. The Base and Extended System "
+                               "scores are on top and the other header boxes below. Save… writes a PNG. Copy lets "
+                               "you paste it in a chat or a forum post. Share sends it to your phone, by email, or "
+                               "from the file manager. The card is easy to compare with other users."))
         row = QHBoxLayout()
         print_btn = QPushButton("Print results")
         print_btn.clicked.connect(self.print_results_requested)
@@ -276,10 +276,10 @@ class LogsPage(QWidget):
         layout.addWidget(_heading("Logs & history"))
         layout.addWidget(_text(
             "Every run leaves a log, and the stress, disk and speed tests also write CSV and JSON files. "
-            "Clean them up to prevent clutter:<ul>"
-            "<li><b>Older than N days</b> (default 30): removes old run logs and their history entries.</li>"
-            "<li><b>Everything</b>: removes all logs and the whole test history, to start fresh.</li></ul>"
-            "The dialog lists what will be removed before anything happens. Always kept: "
+            "Clean them up to prevent clutter.<ul>"
+            "<li><b>Older than N days</b> removes old run logs and their history entries. The default is 30.</li>"
+            "<li><b>Everything</b> removes all logs and the whole test history, to start fresh.</li></ul>"
+            "The dialog lists what will be removed before anything happens. It always keeps "
             "<code>bench-baseline.json</code> and the benchmark and speed test history CSVs. The full "
             "reports in <code>/var/log/bc250-board-test</code> belong to root, so removing those asks for "
             "the administrator password."))

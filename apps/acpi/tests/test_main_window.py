@@ -112,7 +112,7 @@ def test_install_asks_first(window, monkeypatch):
     window.install_btn.click()
     assert window.runner.runs == [(["--install"], None)]
     window.runner.finish(0)
-    assert window.shown == [("info", "The override is installed. Reboot to load it.")]
+    assert window.shown == [("info", "The override is installed. Restart to load it.")]
 
 
 def test_install_warning_is_confirmed_then_rerun_with_yes(window, monkeypatch):

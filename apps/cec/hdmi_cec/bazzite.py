@@ -134,7 +134,7 @@ def osd_name_problem(name: str) -> str:
     if not name.strip():
         return "The name is empty."
     if not name.isascii() or not name.isprintable():
-        return "Use plain letters, digits and punctuation: many TVs show nothing else."
+        return "Use plain letters, digits and punctuation. Many TVs show nothing else."
     if len(name.encode()) > OSD_NAME_BYTES:
         return f"At most {OSD_NAME_BYTES} characters."
     return ""

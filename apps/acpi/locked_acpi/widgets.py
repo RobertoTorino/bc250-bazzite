@@ -21,8 +21,8 @@ class SudoDialog(QDialog):
         self.setModal(True)
         layout = QVBoxLayout(self)
         text = QLabel(
-            "Changing /boot and the GRUB configuration needs root, so this runs bc250-acpi-override.sh "
-            "through sudo.\nYour password is passed to sudo only and is never stored."
+            "Changing /boot and the GRUB configuration needs root. This runs bc250-acpi-override.sh "
+            "through sudo.\nYour password goes to sudo only and is never stored."
         )
         text.setWordWrap(True)
         layout.addWidget(text)
@@ -77,8 +77,8 @@ class AboutDialog(QDialog):
         layout.addLayout(top)
 
         desc = QLabel(
-            "A PyQt6 front-end for bc250-acpi-override.sh: installs the ACPI tables from e-tho/bc250-acpi-fix "
-            "as a GRUB early initrd, which gives the BC-250 CPU idle states and frequency scaling."
+            "A PyQt6 front-end for bc250-acpi-override.sh. It installs the ACPI tables from e-tho/bc250-acpi-fix "
+            "as a GRUB early initrd. That gives the BC-250 CPU idle states and frequency scaling."
         )
         desc.setWordWrap(True)
         layout.addWidget(desc)

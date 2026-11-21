@@ -159,12 +159,12 @@ def load_running(sys_root: Path = Path("/sys"), tables_dir: Path = table.TABLES_
     values = read_efivars(sys_root)
     path = table.table_path(dmi.version, tables_dir) if dmi.version else None
     if path is None or not path.is_file():
-        note = (f"There is no built-in table for BIOS {dmi.version or '(unknown)'}. Read the BIOS chip or open a "
+        note = (f"This app has no built-in table for BIOS {dmi.version or '(unknown)'}. Read the BIOS chip or open a "
                 "dump to see its setup screens.")
         return Bios([], values, {}, "running", dmi.version, dmi.date, dmi.vendor, dmi=dmi, note=note)
     version, date, formsets, defaults = table.load_table(path)
-    note = ("The main Setup variable is not readable while the system runs: its options show their defaults. "
-            "Read the BIOS chip to see the values stored in it.")
+    note = ("The main Setup variable is not readable while the system runs. Its options show [?], and their help "
+            "shows the default. Read the BIOS chip to see the values stored in it.")
     return Bios(formsets, values, defaults, "running", version, date, dmi.vendor, dmi=dmi, note=note)
 
 
@@ -429,7 +429,7 @@ def _dump_verdict(bios: Bios, stock_screens: Screens | None) -> Verdict:
     version = bios.version or "(no version in the dump)"
     reasons = []
     if bios.dmi.version and bios.version and bios.dmi.version != bios.version:
-        reasons.append(f"The dump is BIOS {bios.version}; the running board reports {bios.dmi.version}.")
+        reasons.append(f"The dump is BIOS {bios.version}. The running board reports {bios.dmi.version}.")
     stock = STOCK.get(bios.version)
     if stock is None:
         reasons.append(f"This app knows the setup screens of stock {', '.join(STOCK)} only.")
@@ -478,15 +478,15 @@ def _running_verdict(bios: Bios) -> Verdict:
         amd = bios.values.get(AMD_SETUP)
         if amd is not None and len(amd) != stock["amdsetup_size"]:
             return Verdict("modded", f"Modded BIOS (reports {version})", False, [
-                f"The AMD CBS settings take {len(amd)} bytes; in stock {version} they take {stock['amdsetup_size']}. "
-                "The BIOS's AMD CBS screens are changed."])
+                f"The AMD CBS settings take {len(amd)} bytes. In stock {version} they take {stock['amdsetup_size']}. "
+                "The AMD CBS screens of this BIOS are changed."])
         reasons = [f"The version string is that of stock {version}" +
                    (" and the AMD CBS settings have the stock layout." if amd is not None else ".")]
         if bios.dmi.date and bios.dmi.date != stock["date"]:
             reasons.append(f"Its date {bios.dmi.date} differs from stock {version} ({stock['date']}).")
-        reasons.append("Many modded BIOSes keep the stock version string: read the BIOS chip to be sure.")
+        reasons.append("Many modded BIOSes keep the stock version string. Read the BIOS chip to be sure.")
         return Verdict("stock", f"Stock BIOS {version}", False, reasons)
     if STOCK_VERSION.match(version):
         return Verdict("stock", f"Stock BIOS {version}", False, [
-            f"The version string is that of a stock release; this app has no setup screens for {version}."])
+            f"The version string is that of a stock release. This app has no setup screens for {version}."])
     return Verdict("unknown", f"BIOS {version}", False, ["The version string matches no stock release."])

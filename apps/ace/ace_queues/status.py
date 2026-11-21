@@ -83,17 +83,17 @@ def parse(text: str) -> Status:
 def verdict(status: Status) -> tuple[str, str, str]:
     """(text, kind, tooltip) of the status next to the title (StatusText)."""
     if not status.fields:
-        return "Unknown", "neutral", "The status could not be read."
+        return "Unknown", "neutral", "The app could not read the status."
     if not status.is_bc250:
         return "No BC-250", "bad", "This app is for the AMD BC-250 (GPU 1002:13fe) only."
     if status.all_apps:
-        return "On for all apps", "info", "Every app uses the patched driver (Flatpak apps keep their own)."
+        return "On for all apps", "info", "Every app uses the patched driver. Flatpak apps keep their own."
     if status.tested:
-        return "Ready", "ok", "The test passed on this kernel: games with the launch options use the patched driver."
+        return "Ready", "ok", "The test passed on this kernel. Games with the launch options use the patched driver."
     if status.test_failed:
         return "Test failed", "bad", "Don't use the driver on this kernel."
     if status.installed:
-        return "Test needed", "warn", "Run the test: games only use the driver after it passed on this kernel."
+        return "Test needed", "warn", "Run the test. Games only use the driver after it passed on this kernel."
     if status.built:
-        return "Not installed", "warn", "The driver is built; install it next."
+        return "Not installed", "warn", "The build is ready. Install it next."
     return "Not built", "warn", "Build the driver first."

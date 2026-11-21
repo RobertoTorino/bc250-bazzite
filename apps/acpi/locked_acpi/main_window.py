@@ -97,9 +97,9 @@ class MainWindow(QWidget):
         header.addLayout(right, 1)
         root.addLayout(header)
         sub = QLabel(
-            "Gives the BC-250 CPU idle states (C-states) and frequency scaling (800 MHz - 3.2 GHz, 8 steps) "
-            "through an ACPI override that GRUB loads at every boot. It survives kernel and image updates, "
-            "and Uninstall reverses it completely.")
+            "Gives the BC-250 CPU idle states (C-states) and frequency scaling, from 800 MHz to 3.2 GHz in 8 steps. "
+            "GRUB loads an ACPI override for this at every boot. It survives kernel and image updates, "
+            "and Uninstall reverses it.")
         sub.setWordWrap(True)
         sub.setStyleSheet(f"color:{muted()};")
         root.addWidget(sub)
@@ -117,8 +117,8 @@ class MainWindow(QWidget):
                                    "idle states.")
         self.status_btn.clicked.connect(self._refresh_status)
         self.sudo_status_btn = QPushButton("Status with sudo")
-        self.sudo_status_btn.setToolTip("Run the status as root (asks for the sudo password), so it also checks "
-                                        "the kernel log for the override tables.")
+        self.sudo_status_btn.setToolTip("Run the status as root, so it also checks the kernel log for the "
+                                        "override tables. It asks for the sudo password.")
         self.sudo_status_btn.clicked.connect(self._on_sudo_status)
         self._buttons = (self.install_btn, self.uninstall_btn, self.status_btn, self.sudo_status_btn)
         for btn in self._buttons:
@@ -177,8 +177,8 @@ class MainWindow(QWidget):
         if busy:
             QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
             label = {
-                "install": "Working — installing (regenerating GRUB takes a moment)…",
-                "uninstall": "Working — uninstalling (regenerating GRUB takes a moment)…",
+                "install": "Working — installing. Regenerating GRUB takes a moment…",
+                "uninstall": "Working — uninstalling. Regenerating GRUB takes a moment…",
             }.get(self._pending_action, "Working…")
             self.busy_label.setText(label)
         else:
@@ -211,8 +211,8 @@ class MainWindow(QWidget):
             self._refresh_status()
             if code == 0:
                 QMessageBox.information(self, APP_NAME, {
-                    "install": "The override is installed. Reboot to load it.",
-                    "uninstall": "The override is removed. Reboot to return to the BIOS-provided ACPI tables.",
+                    "install": "The override is installed. Restart to load it.",
+                    "uninstall": "The override is removed. Restart to return to the BIOS-provided ACPI tables.",
                 }[action])
         if code != 0 and action:
             QMessageBox.warning(self, APP_NAME, f"{action} failed (exit code {code}). See the output above.")
@@ -223,7 +223,7 @@ class MainWindow(QWidget):
                     if line.startswith("[WARN] ") and "--yes" not in line]
         answer = QMessageBox.warning(
             self, APP_NAME,
-            "\n\n".join(warnings or ["The installer stopped on a warning; see the output."])
+            "\n\n".join(warnings or ["The installer stopped on a warning. See the output."])
             + "\n\nContinue anyway?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
         if answer != QMessageBox.StandardButton.Yes:
@@ -260,9 +260,13 @@ class MainWindow(QWidget):
         answer = QMessageBox.question(
             self, APP_NAME,
             "Install the ACPI override?\n\n"
-            "This copies acpi_override.cpio to /boot, adds one line to /etc/default/grub and regenerates the "
-            "GRUB configuration. The new tables load after a reboot. Uninstall reverses all three.\n\n"
-            "Don't combine it with a modded BIOS that already brings its own ACPI fixes.",
+            "This copies acpi_override.cpio to /boot.\n"
+            "It adds one line to /etc/default/grub.\n"
+            "It regenerates the GRUB configuration.\n"
+            "Uninstall reverses all three.\n"
+            "The new tables load after a restart.\n\n"
+            "Don't combine it with a modded BIOS that already brings its own ACPI fixes.\n\n"
+            "You will be asked for your sudo password if sudo needs it.",
         )
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -271,8 +275,10 @@ class MainWindow(QWidget):
     def _on_uninstall(self) -> None:
         answer = QMessageBox.question(
             self, APP_NAME,
-            "Remove the ACPI override? After the next reboot the board uses the BIOS-provided ACPI tables "
-            "again: no C-states and no frequency scaling.",
+            "Remove the ACPI override?\n\n"
+            "After the next restart the board uses the BIOS-provided ACPI tables again.\n"
+            "It then has no C-states and no frequency scaling.\n\n"
+            "You will be asked for your sudo password if sudo needs it.",
         )
         if answer != QMessageBox.StandardButton.Yes:
             return

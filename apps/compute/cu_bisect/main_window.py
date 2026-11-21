@@ -75,17 +75,16 @@ class MainWindow(QWidget):
         title_row.addStretch(1)
         header_right.addLayout(title_row)
         # The window's actions as pills under the title (owner, 19-11-2026): Help, Start, Show status, Reset.
-        self.help_pill = Pill("Help", "How it works", "The script's help, as a page: what it does and every option.")
+        self.help_pill = Pill("Help", "How it works", "The script's help as a page. It says what the script does and lists every option.")
         self.help_pill.clicked.connect(lambda: HelpDialog(self.script, self).exec())
-        self.start_pill = Pill("Start", "Run in a terminal", "Starts bc250-cu-bisect.sh with these options in a "
-                               "terminal, after a summary; this window closes.", ACCENT)
+        self.start_pill = Pill("Start", "Run in a terminal", "Shows a summary first. Then starts "
+                               "bc250-cu-bisect.sh with these options in a terminal, and this window closes.", ACCENT)
         self.start_pill.clicked.connect(self._on_start)
         self.status_pill = Pill("Show status", "Results so far", "Shows the results so far and writes the report "
                                 "(--status), in a terminal. Starts nothing.")
         self.status_pill.clicked.connect(self._on_status)
-        self.reset_pill = Pill("Reset", "Delete results", "Deletes every saved result and log in "
-                               "~/.local/share/bc250-cu-bisect (--reset), after a question; the next run starts "
-                               "from scratch.", RED)
+        self.reset_pill = Pill("Reset", "Delete results", "Asks first. Then deletes every saved result and log "
+                               "in ~/.local/share/bc250-cu-bisect (--reset). The next run starts from scratch.", RED)
         self.reset_pill.clicked.connect(self._on_reset)
         pills = QHBoxLayout()
         pills.setSpacing(8)
@@ -107,12 +106,12 @@ class MainWindow(QWidget):
         self.time_spin.setSingleStep(30)
         self.time_spin.setValue(180)
         self.time_spin.setSuffix(" s")
-        self.time_spin.setToolTip("How long the GPU is loaded in each attempt (-t): at least 60 s, 180 s by default.")
+        self.time_spin.setToolTip("How long the load runs on the GPU in each attempt (-t). At least 60 s, 180 s by default.")
         self.rounds_spin = QSpinBox()
         self.rounds_spin.setRange(2, 9)
         self.rounds_spin.setValue(3)
         self.rounds_spin.setToolTip("Attempts per item (-r), interleaved so heat and the time of day favor none. "
-                                    "At least 2; 1 with Control only.")
+                                    "At least 2, or 1 with Control only.")
         self.baseline_combo = QComboBox()
         for index, label in enumerate(BASELINE_PRESETS):
             self.baseline_combo.addItem(label)
@@ -229,8 +228,8 @@ class MainWindow(QWidget):
         confirm.setWindowTitle(APP_NAME)
         confirm.setText("Delete all bc250-cu-bisect results?")
         confirm.setInformativeText(("This permanently deletes every saved result and log in "
-                                    "~/.local/share/bc250-cu-bisect (--reset). This cannot be undone and there is no "
-                                    "backup. The script will still ask you to confirm once more in the terminal."))
+                                    "~/.local/share/bc250-cu-bisect (--reset).\nThis cannot be undone, and there is "
+                                    "no backup.\nThe script asks you once more in the terminal."))
         confirm.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel)
         confirm.setDefaultButton(QMessageBox.StandardButton.Cancel)
         if confirm.exec() != QMessageBox.StandardButton.Yes:
@@ -251,7 +250,7 @@ class MainWindow(QWidget):
             "Start bc250-cu-bisect.sh with:\n\n"
             "  load time: {t}s\n  rounds: {r}\n  baseline: {b}\n"
             "  control-only: {co}\n  same-boot: {sb}\n  unattended: {au}\n  no-watch: {nw}\n\n"
-            "This window will close and the run continues in a terminal."
+            "This window will close, and the run continues in a terminal."
         ).format(t=opts.time_secs, r=opts.rounds, b=opts.baseline or "auto-detect",
                   co=opts.control_only, sb=opts.same_boot, au=opts.unattended, nw=opts.no_watch)
         if QMessageBox.question(self, APP_NAME, summary) != QMessageBox.StandardButton.Yes:
@@ -264,7 +263,7 @@ class MainWindow(QWidget):
             except Exception as exc:  # noqa: BLE001 - surfaced to the user, not fatal to starting
                 QMessageBox.warning(self, APP_NAME, (
                     "Could not install the auto-resume login service:\n{0}\n\n"
-                    "The run will still start now; see the manual's --auto checklist to set it up "
+                    "The run will still start now. See the wiki's --auto checklist to set it up "
                     "by hand.").format(exc))
 
         try:

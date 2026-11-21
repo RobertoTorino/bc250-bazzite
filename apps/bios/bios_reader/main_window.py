@@ -153,8 +153,8 @@ class MainWindow(QMainWindow):
                               "flashrom is not installed in a form that can read the board's own chip.", parent=self)
             box.setTextFormat(Qt.TextFormat.RichText)
             box.setInformativeText(
-                "Homebrew's flashrom cannot (it has no <i>internal</i> programmer). Unpack Fedora's flashrom into "
-                f"~/flashrom as the <a href='{MANUAL_URL}'>manual</a> describes, then try again.")
+                "Homebrew's flashrom cannot, because it lacks the <i>internal</i> programmer. Unpack Fedora's flashrom "
+                f"into ~/flashrom as the <a href='{MANUAL_URL}'>wiki</a> describes, then try again.")
             box.exec()
             return
         folder = dumps_dir()
@@ -162,10 +162,12 @@ class MainWindow(QMainWindow):
         answer = QMessageBox.question(
             self, window_title("Read BIOS chip"),
             "Read the BIOS flash chip?\n\n"
-            "flashrom reads the chip twice (read-only, nothing is written) and the two reads are compared. "
-            "It needs your password and takes about a minute.\n\n"
+            "flashrom reads the chip twice and writes nothing.\n"
+            "The app compares the two reads.\n"
+            "It takes about a minute.\n\n"
             f"flashrom: {flashrom.binary}\nThe dump goes to: {first}\n\n"
-            "A dump is this board's own firmware with its settings. Keep it to yourself.")
+            "A dump is this board's own firmware with its settings. Keep it to yourself.\n\n"
+            "You will be asked for your password.")
         if answer != QMessageBox.StandardButton.Yes:
             return
         folder.mkdir(parents=True, exist_ok=True)
@@ -218,12 +220,12 @@ class ReadDialog(QDialog):
     def _finished(self, code: int, _status) -> None:
         self.buttons.setEnabled(True)
         if code == 0:
-            self.status.setText("Done: both reads finished.")
+            self.status.setText("Done. Both reads finished.")
             self.accept()
         elif code in (126, 127):
             self.status.setText("Not authorized: the password dialog was canceled or refused.")
         else:
-            self.status.setText(f"flashrom stopped with exit code {code}; see its output above.")
+            self.status.setText(f"flashrom stopped with exit code {code}. See its output above.")
 
     def _error(self, _error) -> None:
         self.buttons.setEnabled(True)
