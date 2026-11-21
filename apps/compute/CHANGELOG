@@ -1,3 +1,21 @@
+Changelog: 21-11-2026 19:37:41
+
+Fixed. The wiki's note on a low GPU load reading called the BC-250 a Van Gogh (Steam Deck) chip with a laptop's
+firmware. The board's chip is Cyan Skillfish, as the chapter's first line says. The note now keeps only what the
+script shows: the load sensor can stay near 0% while the GPU is under load.
+
+Changelog: 21-11-2026 18:46:07
+
+Fixed. The text of BC-250 CU Tools is rewritten to the writing standard: short sentences, one fact each, lists where
+a sentence named three or more parts, and "restart" where the text said "reboot". This covers the wiki chapter, the
+--help text of bc250-cu-bisect.sh and bc250-cu-unlock.sh, the messages both scripts print, the tooltips and dialogs of
+the window, install.sh's usage and the comment in bc250-cu-bisect-auto.service.example. The answer to the script's
+question after an attempt reads [r]estart, and its key is still r. No label is renamed. Three facts are corrected.
+The wiki said that reading the stock row from left to right gives 00111. It is read from right to left, WGP4 first.
+The wiki and the Refresh tooltip said that --status shows the live masks without root. It shows them only with sudo,
+or when sudo needs no password. The example unit's comment pointed to the README for passwordless sudo, and now
+points to the wiki. Nothing the app does has changed. No test changed.
+
 Changelog: 21-11-2026 15:13:54
 
 Release 1.0.2.

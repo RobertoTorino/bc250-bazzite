@@ -1,3 +1,9 @@
+Changelog: 21-11-2026 18:45:01
+
+Fixed. The GPU tile showed the whole chip's power as the GPU's. It now shows the GPU's own power, from the voltage
+regulator, with Quickfix's VRM Sensors on, and none without. A new tile Chip power holds the GPU driver's value: CPU,
+GPU and the rest together.
+
 Changelog: 21-11-2026 15:13:54
 
 Release 2.6.0.

@@ -15,7 +15,8 @@
 #    Qt; nothing is layered). It is removed with the last suite app that uses it.
 #  * ~/.config/cecd/config.d/99-bc250-hdmi-cec.toml: the CEC daemon settings, once you change one in the app.
 #  * ~/.config/systemd/user/bc250-hdmi-cec-watch.service: the background part of "Restart the picture when the TV
-#    turns on", only while that is chosen in the app. It starts the app's own files, so uninstalling removes it.
+#    turns on" and "Pause videos and music while the TV is off", only while one of them is on in the app. It starts
+#    the app's own files, so uninstalling removes it.
 #  * /etc/bc250-hdmi-cec (boot.py, boot.json), /etc/systemd/system/bc250-hdmi-cec-boot.service and
 #    /etc/udev/rules.d/99-bc250-hdmi-cec-boot.rules: the board's name on the TV at boot, only while it is switched
 #    on in the app, which installs it with your password (pkexec). Uninstalling removes it (sudo); an update says

@@ -21,7 +21,7 @@ DASH = "—"
 DOT = " · "
 WARM, HOT = 80, 90                       # °C: a temperature turns orange, then red
 BACKGROUNDS = {"Solid": 95, "Light see-through": 75, "See-through": 55, "Very see-through": 35}   # % opacity
-ROWS = (("cpu", "CPU"), ("gpu", "GPU"), ("governor", "Governor"), ("gpu_volt", "GPU volt"), ("cpu_rail", "CPU rail"),
+ROWS = (("cpu", "CPU"), ("gpu", "GPU"), ("chip", "Chip power"), ("governor", "Governor"), ("gpu_volt", "GPU volt"), ("cpu_rail", "CPU rail"),
         ("gpu_rail", "GPU rail"), ("vin", "12 V input"), ("vram", "VRAM"), ("ram", "RAM"), ("refresh", "Refresh"), ("fan", "Fan"),
         ("cpu_temp", "CPU temp"), ("gpu_temp", "GPU temp"), ("vrm_temp", "VRM temp"), ("cpu_vrm_temp", "CPU VRM temp"),
         ("gpu_vrm_temp", "GPU VRM temp"), ("nvme_temp", "NVMe temp"), ("net", "Network"), ("disk", "Disk"))
@@ -71,7 +71,9 @@ def format_reading(reading: Reading, refresh_hz: float | None) -> dict[str, tupl
                       f"{r.cpu_mhz} MHz" if r.cpu_mhz else None), ""),
         "gpu": (_join(f"{r.gpu_load:.0f} %" if r.gpu_load is not None else None,
                       f"{r.gpu_mhz} MHz" if r.gpu_mhz else None,
-                      f"{r.gpu_watts:.0f} W" if r.gpu_watts is not None else None), ""),
+                      f"{r.gpu_rail.watts:.0f} W" if r.gpu_rail and r.gpu_rail.watts is not None else None), ""),
+        # The GPU driver's own power value is the whole chip's (its label is PPT): CPU, GPU and the rest together.
+        "chip": (f"{r.chip_watts:.0f} W" if r.chip_watts is not None else DASH, ""),
         "governor": (f"{r.governor[0]}–{r.governor[1]} MHz" if r.governor else DASH, ""),
         "gpu_volt": (f"{r.gpu_mv} mV" if r.gpu_mv else DASH, ""),
         "cpu_rail": (_rail(r.cpu_rail), ""),

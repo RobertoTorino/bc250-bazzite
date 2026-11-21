@@ -1,3 +1,14 @@
+Changelog: 21-11-2026 18:42:07
+
+Fixed. The lines the background service writes to the journal are rewritten to the writing standard. A line that
+joined two facts with a semicolon or a colon is now two short sentences, for example "The TV is off. Paused ..." and
+"The TV is on again. Continued ...". The start line names its jobs after "Jobs:", or "none". No label is renamed. One
+fact is corrected. A comment at the top of install.sh said the background service exists only while "Restart the
+picture when the TV turns on" is chosen. It also exists while "Pause videos and music while the TV is off" is on, since
+both use that service. The wiki chapter, the README, the window's texts and the boot helper's messages were checked
+against the code and stay as they are. The installer's shared messages stay as they are. Nothing the app does has
+changed. No test changed.
+
 Changelog: 21-11-2026 15:13:54
 
 Release 4.6.0.

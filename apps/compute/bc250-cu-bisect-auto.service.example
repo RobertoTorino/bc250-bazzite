@@ -11,7 +11,7 @@
 #   systemctl --user disable --now bc250-cu-bisect-auto.service
 #
 # --auto skips every interactive prompt (assumes a crash on an unfinished attempt, continues past
-# warnings, and reboots on its own) and needs passwordless sudo for umr and journalctl, see README.
+# warnings, and reboots on its own) and needs passwordless sudo for umr and journalctl, see the wiki.
 #
 # Optional: live output on screen at every login. The unit below only appends to auto.log; to also
 # get a terminal window that follows it, add a desktop autostart entry (KDE example):

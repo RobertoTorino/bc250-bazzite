@@ -22,7 +22,7 @@ def test_values_from_a_bc250(board):
     assert s.cpu_temp() == 72.125
     assert s.gpu_load() == 45.5                                   # 4550 hundredths of a percent
     assert s.gpu_mhz() == 2000
-    assert s.gpu_watts() == 95.25
+    assert s.chip_watts() == 95.25
     assert s.gpu_mv() == 1056
     assert s.gpu_temp() == 61.0
     assert s.governor() == (1000, 1850)
@@ -84,7 +84,7 @@ def test_power_average_when_there_is_no_power_input(board):
     gpu = board / "sys/class/hwmon/hwmon2"
     (gpu / "power1_input").unlink()
     write(gpu / "power1_average", "40000000")
-    assert sensors(board).gpu_watts() == 40.0
+    assert sensors(board).chip_watts() == 40.0
 
 
 def test_governor_errors_give_none(board):
@@ -98,7 +98,7 @@ def test_missing_sources_give_none(board):
     shutil.rmtree(board / "proc")
     reading = sensors(board, governor=None).read()
     assert reading.cpu_load is reading.cpu_mhz is reading.cpu_temp is None
-    assert reading.gpu_load is reading.gpu_mhz is reading.gpu_watts is reading.gpu_mv is reading.gpu_temp is None
+    assert reading.gpu_load is reading.gpu_mhz is reading.chip_watts is reading.gpu_mv is reading.gpu_temp is None
     assert reading.governor is reading.vram is reading.ram is None
     assert reading.vrm_temp is reading.nvme_temp is reading.net is reading.disk is None
     assert reading.fans == () and reading.fan is None

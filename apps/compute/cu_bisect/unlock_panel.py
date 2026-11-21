@@ -153,10 +153,10 @@ class UnlockPanel(QWidget):
                                  "boot (the unlock service). The results must accept a mask first.")
         self.install_pill.clicked.connect(self._on_install)
         self.uninstall_pill = Pill("Uninstall", "Stock next boot", "Turns the unlock service off and removes its "
-                                   "files. The board is back to the stock 24 CUs from the next reboot.", RED)
+                                   "files. The board is back to the stock 24 CUs from the next restart.", RED)
         self.uninstall_pill.clicked.connect(self._on_uninstall)
-        self.status_pill = Pill("Refresh", "Service and masks", "Shows the installed masks, the service's state and "
-                                "the live masks (--status, no root needed), in the log.")
+        self.status_pill = Pill("Refresh", "Service and masks", "Shows the installed masks and the service's state "
+                                "in the log (--status). It shows the live masks too when sudo needs no password.")
         self.status_pill.clicked.connect(self._refresh_status)
         self.recheck_pill = Pill("Re-check", "Bisect results", "Reads bc250-cu-bisect.sh's recorded results again, "
                                  "for example after another retest, and writes the verdict in the log.")
@@ -329,7 +329,7 @@ class UnlockPanel(QWidget):
             return
         answer = QMessageBox.question(
             self, APP_NAME,
-            ("Turn the unlock service off?\n\nThe board goes back to the stock 24 CUs from the next reboot.\n"
+            ("Turn the unlock service off?\n\nThe board goes back to the stock 24 CUs from the next restart.\n"
              "You will be asked for your password, unless sudo still has it."),
         )
         if answer != QMessageBox.StandardButton.Yes:

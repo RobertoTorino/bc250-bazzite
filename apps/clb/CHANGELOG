@@ -1,3 +1,14 @@
+Changelog: 21-11-2026 18:40:15
+
+Fixed. The wiki chapter and the installer's own messages are checked once more against the code and the writing
+standard. Three sentences in the wiki chapter are now active. They are about the paired XBOX controller, the picture
+that scales to fit and the hidden IPv6 address. The installer's message after --uninstall --purge is now two
+sentences. No labels are renamed. Two facts are corrected in the wiki chapter. The chapter named only On, Sleep and
+Off as power states. The app also shows Updating and Unknown. The chapter said the app talks to Microsoft's XBOX
+services only when you sign in, refresh, wake a console or stream. The app also refreshes by itself when it starts
+signed in. The installers' shared messages and the disclaimer stay as they are. Nothing the app does has changed. No
+tests changed.
+
 Changelog: 21-11-2026 15:13:54
 
 Release 4.6.0.

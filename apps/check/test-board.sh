@@ -50,8 +50,8 @@ Usage: sudo ./test-board.sh [options]
                        sequential read, and random 4K read when fio is
                        installed. Read-only, nothing is written.
   --disk-write=GiB     Also write GiB (1-256) to a temporary file in /var/tmp
-                       to measure write speed and the SLC cache size; the file
-                       is removed afterwards. Implies --disk-bench.
+                       to measure write speed and the SLC cache size. The file
+                       is removed afterward. Implies --disk-bench.
   --speedtest          Run the internet speed test (test 44): download, upload,
                        idle and loaded latency, packet loss (Ookla speedtest or
                        speedtest-cli). Uses about 1 GB of data.
@@ -112,7 +112,7 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 if [ -n "$ONLY" ]; then
     if ! [[ "$ONLY" =~ ^[0-9]{1,2}(,[0-9]{1,2})*$ ]]; then
-        echo "--only must be a comma-separated list of test numbers, e.g. --only=04,17."
+        echo "--only must be a comma-separated list of test numbers, for example --only=04,17."
         exit 1
     fi
     # Normalize to two digits (10# avoids 08/09 being read as octal).
@@ -245,54 +245,54 @@ filter_logs() {
 LOG_ADVICE=(
   # --- Real faults ---
   "ring [a-z0-9_.]+ timed? ?out|amdgpu_job_timedout|GPU reset|gpu_recover|Waiting for fences timed out|MES failed"
-  "GPU hang or reset: usually an unstable CU unlock, GPU overclock or governor setting. Go back to the last stable one (cu-bisect, gpu-oc-bisect, governor) and check test 35."
+  "GPU hang or reset. The usual cause is an unstable CU unlock, GPU overclock or governor setting. Go back to the last stable one (cu-bisect, gpu-oc-bisect, governor) and check test 35."
   "VM_L2_PROTECTION_FAULT|GPU fault detected|page fault \(src_id"
-  "GPU page fault: a game or the driver used invalid GPU memory. Once is usually a game bug; if it repeats, update Bazzite (Mesa) and undo any GPU overclock."
+  "GPU page fault. A game or the driver used invalid GPU memory. Once is usually a game bug. If it repeats, update Bazzite (Mesa) and undo any GPU overclock."
   "flip_done timed out|commit wait timed out"
-  "Display update timed out: try another cable, port or refresh rate. A GPU hang (test 35) causes it too."
+  "Display update timed out. Try another cable, port or refresh rate. A GPU hang (test 35) causes it too."
   "Direct firmware load for .* failed|failed to load firmware"
-  "Missing firmware file: harmless if the device it names works; otherwise update Bazzite (rpm-ostree upgrade)."
+  "Missing firmware file. It is harmless if the device it names works. Otherwise, update Bazzite (rpm-ostree upgrade)."
   "nvme.*(timeout|I/O error|resetting controller|controller is down)"
-  "NVMe timeout or reset, often the drive's power saving (APST): sudo rpm-ostree kargs --append-if-missing=nvme_core.default_ps_max_latency_us=0, reboot, and check test 10."
+  "NVMe timeout or reset. The drive's power saving (APST) is often the cause. Run sudo rpm-ostree kargs --append-if-missing=nvme_core.default_ps_max_latency_us=0, restart, then check test 10."
   "I/O error, dev|Buffer I/O error|EXT4-fs error|BTRFS (error|critical)|critical medium error"
-  "Disk read or write errors: back up your data now and check the drive health (test 10, sudo smartctl -a /dev/nvme0n1)."
+  "Disk read or write errors. Back up your data now. Then check the drive's health with test 10 and sudo smartctl -a /dev/nvme0n1."
   "Machine check|mce: \[Hardware Error\]"
-  "CPU hardware error (MCE): usually an unstable core unlock, undervolt or overheating. Go back to stock settings and check the cooling (tests 22, 36 and 46)."
+  "CPU hardware error (MCE). The usual cause is an unstable core unlock, an undervolt or overheating. Go back to stock settings and check the cooling with tests 22, 36 and 46."
   "Out of memory: Killed process|oom-kill|invoked oom-killer"
-  "Out of memory, the kernel killed a program: close programs, check the swap layout (test 14) or move RAM from VRAM to the CPU with memory-manager."
+  "Out of memory, so the kernel killed a program. Close programs, check the swap layout (test 14) or move RAM from VRAM to the CPU with memory-manager."
   "segfault at|dumped core|Failed with result 'core-dump'|coredump|__stack_chk_fail|__fortify_fail"
-  "A program crashed: coredumpctl list shows which, coredumpctl info <name> shows why. If it repeats, update Bazzite or the app."
+  "A program crashed. Run coredumpctl list to see which one, and coredumpctl info <name> to see why. If it repeats, update Bazzite or the app."
   "Failed at step EXEC spawning (/var)?/home/"
-  "systemd cannot run a script from a home folder (SELinux blocks it), so that service never starts. Reinstall the app from the portal, or remove the old service: sudo systemctl disable <name>.service."
+  "systemd cannot run a script from a home folder, because SELinux blocks it. That service never starts. Reinstall the app from the portal, or remove the old service with sudo systemctl disable <name>.service."
   "usb .*(device descriptor read|unable to enumerate|not accepting address|over-current)"
-  "A USB device failed to connect: try another port or cable, or a powered hub for power-hungry devices."
+  "A USB device failed to connect. Try another port or cable. A power-hungry device may need a powered hub."
   "app-.*@autostart\.service"
-  "An autostart entry failed: check it in System Settings > Autostart, and remove it if the program is gone."
+  "An autostart entry failed. Check it in System Settings > Autostart, and remove it if the program is gone."
   # --- Known noise ---
   "Transaction for .* is destructive"
-  "Logged while shutting down or rebooting; harmless."
+  "Logged while shutting down or restarting. Harmless."
   "kwallet"
-  "KDE Wallet is off or not set up, so apps that store passwords may ask again. Harmless; set it up in System Settings > KDE Wallet if you want it."
+  "KDE Wallet is off or not set up, so apps that store passwords may ask again. It is harmless. Set it up in System Settings > KDE Wallet if you want it."
   "org\.bluez|bluetoothd|Bluetooth:"
   "Bluetooth: the BC-250 has no radio, and with a USB dongle bluez reports profiles it cannot start. Harmless if your Bluetooth devices work."
   "Activation request for '[^']+' failed|Could not activate remote peer"
-  "A D-Bus service (UDisks2, UPower, RealtimeKit, a portal) was asked for while it was stopping, usually at logout or shutdown. Harmless if disks, power and sound work."
+  "A D-Bus service was asked for while it was stopping, usually at logout or shutdown. Examples are UDisks2, UPower, RealtimeKit and a portal. Harmless if disks, power and sound work."
   "pam_unix.*(auth|conversation failed)|Authentication failure|ERROR_AUTHENTICATION"
-  "A wrong or canceled password at the login screen or sudo; harmless unless it was not you."
+  "A wrong or canceled password at the login screen or sudo. Harmless unless it was not you."
   "plasmalogin.*(Process crashed|ERROR_INTERNAL)"
   "The login screen process ended with an error, usually when it closes at login or shutdown. Look into it only if the login screen fails to appear."
   "\.qml(:[0-9]+)?:|TypeError: Cannot read property"
-  "Plasma widget script messages; harmless, Plasma updates clear them."
+  "Plasma widget script messages. They are harmless, and Plasma updates clear them."
   "wireplumber|pipewire"
-  "PipeWire / WirePlumber (sound) messages; harmless if sound works. Otherwise: systemctl --user restart pipewire wireplumber."
+  "PipeWire / WirePlumber (sound) messages. Harmless if sound works. Otherwise, run systemctl --user restart pipewire wireplumber."
   "kwin_wayland"
-  "KWin (the desktop compositor): logged when switching to Game Mode or a TTY, or probing sensors the BC-250 lacks. Harmless if the screen works."
+  "KWin, the desktop compositor, logs these when switching to Game Mode or a TTY, or when probing sensors the BC-250 lacks. Harmless if the screen works."
   "IPP_INTERNAL_ERROR|Failed to reconnect Invalid argument"
-  "The printer status (CUPS) reconnecting, also without a printer; harmless."
+  "The printer status (CUPS) reconnecting, also without a printer. Harmless."
   "xdg-desktop-portal"
-  "Desktop portal messages (file dialogs and screen sharing for Flatpak apps); harmless if those work."
+  "Desktop portal messages. The portal gives Flatpak apps their file dialogs and screen sharing. Harmless if those work."
   "kded[0-9]*(\[[0-9]+\])?:|kioworker|dolphin"
-  "KDE desktop and file manager messages; harmless."
+  "KDE desktop and file manager messages. Harmless."
 )
 
 # explain_log_lines LINES SCOPE: after a test's journal lines, a HINT per known kind of line,
@@ -313,13 +313,13 @@ explain_log_lines() {
         | grep -oE "[A-Za-z0-9@_.:\\-]+\.(service|socket|mount|timer)" | sort | uniq -c | sort -rn | head -5)
     while read -r n unit; do
         [ -n "$unit" ] || continue
-        log_result "HINT: [$n line$( [ "$n" = 1 ] || echo s)] ${unit} failed. Read why with: journalctl ${scope} -u ${unit}; if you no longer use it: sudo systemctl disable ${unit}."
+        log_result "HINT: [$n line$( [ "$n" = 1 ] || echo s)] ${unit} failed. To read why, run journalctl ${scope} -u ${unit}. If you no longer use it, run sudo systemctl disable ${unit}."
         rest=$(grep -vF -- "$unit" <<<"$rest")
     done <<<"$units"
     # Everything else: the programs that logged it, and how to read their lines.
     while read -r n ident; do
         [ -n "$ident" ] || continue
-        log_result "HINT: [$n line$( [ "$n" = 1 ] || echo s)] from ${ident}, no known explanation. Read them with: journalctl ${scope} -p warning -t ${ident}; search the message online if it repeats."
+        log_result "HINT: [$n line$( [ "$n" = 1 ] || echo s)] from ${ident}, no known explanation. To read them, run journalctl ${scope} -p warning -t ${ident}. Search the message online if it repeats."
     done < <(awk '/^[A-Z][a-z][a-z] +[0-9]+ [0-9:]+ / { t = $5; sub(/\[[0-9]+\]/, "", t); sub(/:$/, "", t); if (t != "") print t }' <<<"$rest" \
         | sort | uniq -c | sort -rn | head -3)
 }
@@ -423,7 +423,7 @@ find_tool() {
     if [ "$(id -u)" = 0 ] && ! root_safe "$TOOL"; then
         TOOL_AS_USER=true
         if [ -z "$GAME_USER" ] || [ "$GAME_USER" = root ]; then
-            log_result "INFO: Not running $TOOL as root: it is writable by a non-root user."
+            log_result "INFO: Not running $TOOL as root, because a non-root user can write to it."
             return 1
         fi
         TOOL_CMD=(sudo -u "$GAME_USER" -H -- "$TOOL")
@@ -468,22 +468,22 @@ BIOS_RELEASE=$(cat /sys/class/dmi/id/bios_release 2>/dev/null)
 log_result "INFO: BIOS: ${BIOS_VENDOR:-unknown} version '${BIOS_VERSION:-unknown}' (date: ${BIOS_DATE:-unknown}, release: ${BIOS_RELEASE:-unknown})"
 case "$BIOS_VERSION" in
     *[Mm]ei[Mm]ei*|*[Mm]od*|*unlock*|*UNLOCK*)
-        log_result "INFO: BIOS version string suggests a modded BIOS (core unlock / ACPI fix built in)."
-        log_result "HINT: Do not combine a modded BIOS with the initrd ACPI override; duplicate tables fail to load."
-        log_result "HINT: A modded BIOS is no longer needed: bc250_memcfg (VRAM split), bc250-persistent-acpi"
-        log_result "HINT: (ACPI fix) and the cores/CU unlock tools give the same benefits on stock 5.00."
+        log_result "INFO: The BIOS version string suggests a modded BIOS, with a core unlock or ACPI fix built in."
+        log_result "HINT: Do not combine a modded BIOS with the initrd ACPI override. Duplicate tables fail to load."
+        log_result "HINT: You no longer need a modded BIOS. On stock 5.00 the same benefits come from bc250_memcfg (VRAM split),"
+        log_result "HINT: bc250-persistent-acpi (ACPI fix) and the cores/CU unlock tools."
         ;;
     [LP]5.00|5.00)
         log_result "SUCCESS: Latest stock ASRock BIOS ($BIOS_VERSION)."
-        log_result "NOTE: Menu-unlock mods (e.g. the P3.00 'Chipset Menu' BIOS) keep the stock"
+        log_result "NOTE: Menu-unlock mods such as the P3.00 'Chipset Menu' BIOS keep the stock"
         log_result "NOTE: version string, so DMI cannot distinguish them from a factory BIOS."
         ;;
     [LP][1-4].00|[1-4].00)
-        log_result "WARNING: Older stock ASRock BIOS version string ($BIOS_VERSION); the latest is 5.00."
-        log_result "HINT: Update to stock 5.00 — no performance is lost: bc250_memcfg (VRAM split),"
+        log_result "WARNING: Older stock ASRock BIOS version string ($BIOS_VERSION). The latest is 5.00."
+        log_result "HINT: Update to stock 5.00. No performance is lost, because bc250_memcfg (VRAM split),"
         log_result "HINT: bc250-persistent-acpi (ACPI fix) and the cores/CU unlock tools replace every"
         log_result "HINT: modded-BIOS benefit in software."
-        log_result "NOTE: Menu-unlock mods (e.g. the P3.00 'Chipset Menu' BIOS) keep the stock"
+        log_result "NOTE: Menu-unlock mods such as the P3.00 'Chipset Menu' BIOS keep the stock"
         log_result "NOTE: version string, so DMI cannot distinguish them from a factory BIOS."
         WARN_FOUND=true
         ;;
@@ -492,7 +492,7 @@ case "$BIOS_VERSION" in
         WARN_FOUND=true
         ;;
     *)
-        log_result "INFO: Unrecognized BIOS version string; stock releases are 1.00/2.00/3.00/5.00."
+        log_result "INFO: Unrecognized BIOS version string. Stock releases are 1.00/2.00/3.00/5.00."
         ;;
 esac
 if [ -r /etc/os-release ]; then
@@ -512,8 +512,8 @@ log_result "INFO: Kernel: $(uname -r)"
 KVER=$(uname -r | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
 case "$KVER" in
     6.15.[0-6]|6.17.[89]|6.17.10)
-        log_result "ERROR: Kernel $KVER is a known-bad release for the BC-250 (random GPU crashes under load)."
-        log_result "HINT: Roll back with: rpm-ostree rollback, or update past the affected range."
+        log_result "ERROR: Kernel $KVER is a known-bad release for the BC-250. It causes random GPU crashes under load."
+        log_result "HINT: Roll back with rpm-ostree rollback, or update past the affected range."
         ERROR_FOUND=true ;;
     *)
         log_result "SUCCESS: Kernel $KVER is outside the known-bad BC-250 ranges (6.15.0-6.15.6, 6.17.8-6.17.10)." ;;
@@ -633,7 +633,7 @@ log_result "Check NVMe devices: detection, PCIe link, DRAM cache or host memory 
 NVME_CTRLS=()
 for c in /sys/class/nvme/nvme*; do [ -e "$c" ] && NVME_CTRLS+=("$c"); done
 if [ ${#NVME_CTRLS[@]} -eq 0 ]; then
-    log_result "INFO: No NVMe devices present (BC-250 may be booting from USB/SATA)."
+    log_result "INFO: No NVMe devices present. The BC-250 may be booting from USB or SATA."
 else
     log_result "SUCCESS: ${#NVME_CTRLS[@]} NVMe controller(s) recognized."
     ls -l /dev/nvme?n? 2>/dev/null | tee -a "$LOG_FILE"
@@ -671,7 +671,7 @@ else
                 OK)   log_result "SUCCESS: Link: $LINK_TEXT." ;;
                 SLOT) log_result "INFO: Link: $LINK_TEXT. The slot, not the drive, sets the speed limit." ;;
                 LOW)  log_result "WARNING: Link: $LINK_TEXT. It trained below what both the drive and the slot support."
-                      log_result "HINT: Reseat the drive (and check any M.2 adapter or riser); a poor contact makes the link fall back to a lower speed or width."
+                      log_result "HINT: Reseat the drive, and check any M.2 adapter or riser. A poor contact makes the link fall back to a lower speed or width."
                       WARN_FOUND=true ;;
             esac
         else
@@ -704,22 +704,22 @@ for k in ("hmpre", "hmmin", "wctemp", "cctemp"):
         fi
         HMB_ALLOC=$(grep -E "\b$n\b.*allocated [0-9]+ MiB host memory buffer" <<<"$NVME_KLOG" | grep -oE "[0-9]+ MiB" | tail -1)
         if [ -n "$HMPRE" ] && [ "$HMPRE" -gt 0 ] 2>/dev/null; then
-            log_result "INFO: DRAM cache: none. /dev/$n is DRAM-less and uses a Host Memory Buffer (wants ${HMPRE} MiB of system RAM, minimum ${HMMIN:-?} MiB)."
+            log_result "INFO: DRAM cache: none. /dev/$n is DRAM-less and uses a Host Memory Buffer. It wants ${HMPRE} MiB of system RAM, at least ${HMMIN:-?} MiB."
             if [ -n "$HMB_ALLOC" ]; then
                 log_result "SUCCESS: The kernel gave it a ${HMB_ALLOC} host memory buffer."
-                log_result "HINT: Fine for game loading. Expect slower sustained and random writes than a drive with DRAM; the buffer comes out of the RAM the BC-250 shares with the GPU."
+                log_result "HINT: Fine for game loading. Expect slower sustained and random writes than a drive with DRAM. The buffer comes out of the RAM the BC-250 shares with the GPU."
             else
-                log_result "WARNING: No host memory buffer allocation found in this boot's kernel log; the drive may be running without any mapping cache (slow random I/O)."
-                log_result "HINT: Check for nvme.max_host_mem_size_mb=0 on the kernel command line: cat /proc/cmdline"
+                log_result "WARNING: No host memory buffer allocation found in this boot's kernel log. The drive may be running without any mapping cache, which makes random I/O slow."
+                log_result "HINT: Check for nvme.max_host_mem_size_mb=0 on the kernel command line with cat /proc/cmdline"
                 WARN_FOUND=true
             fi
         elif [ -n "$HMPRE" ]; then
-            log_result "SUCCESS: DRAM cache: /dev/$n does not ask for a host memory buffer, so it has its own DRAM cache (DRAM-less NVMe drives without HMB are rare)."
+            log_result "SUCCESS: DRAM cache: /dev/$n does not ask for a host memory buffer, so it has its own DRAM cache. DRAM-less NVMe drives without HMB are rare."
         elif [ -n "$HMB_ALLOC" ]; then
             log_result "INFO: DRAM cache: none. The kernel gave /dev/$n a ${HMB_ALLOC} host memory buffer, so it is a DRAM-less drive."
         else
             log_result "INFO: DRAM cache: probably yes. No host memory buffer was allocated for /dev/$n in this boot (install nvme-cli to confirm)."
-            log_result "HINT: rpm-ostree install nvme-cli   (then reboot)"
+            log_result "HINT: rpm-ostree install nvme-cli   (then restart)"
         fi
 
         # ---- SMART / health log ----
@@ -774,7 +774,7 @@ for out, names in keys.items():
         fi
         if [ ${#SM[@]} -eq 0 ]; then
             log_result "INFO: No SMART data for /dev/$n (needs nvme-cli or smartctl)."
-            log_result "HINT: rpm-ostree install nvme-cli   (then reboot)"
+            log_result "HINT: rpm-ostree install nvme-cli   (then restart)"
         else
             HEALTH_OK=true
             if [ -n "${SM[warn]:-}" ] && [ "${SM[warn]}" -ne 0 ]; then
@@ -807,11 +807,11 @@ for out, names in keys.items():
             if [ -n "${SM[temp]:-}" ]; then
                 T_WARN=${WCTEMP:-70}; [ "$T_WARN" -gt 0 ] 2>/dev/null || T_WARN=70
                 if [ "${SM[temp]}" -ge "$T_WARN" ]; then
-                    log_result "WARNING: /dev/$n is at ${SM[temp]} °C (its warning threshold is ${T_WARN} °C)."
-                    log_result "HINT: Fit an M.2 heatsink or add airflow over the drive; hot NVMe drives throttle hard."
+                    log_result "WARNING: /dev/$n is at ${SM[temp]} °C. Its warning threshold is ${T_WARN} °C."
+                    log_result "HINT: Fit an M.2 heatsink or add airflow over the drive. Hot NVMe drives throttle hard."
                     WARN_FOUND=true; HEALTH_OK=false
                 else
-                    log_result "INFO: Temperature: ${SM[temp]} °C (warning threshold ${T_WARN} °C${CCTEMP:+, critical ${CCTEMP} °C})."
+                    log_result "INFO: Temperature: ${SM[temp]} °C. The warning threshold is ${T_WARN} °C${CCTEMP:+, the critical one ${CCTEMP} °C}."
                 fi
             fi
             if [ "${SM[wtime]:-0}" -gt 0 ] || [ "${SM[ctime]:-0}" -gt 0 ]; then
@@ -819,13 +819,13 @@ for out, names in keys.items():
                 log_result "HINT: Fit an M.2 heatsink or add airflow over the drive."
                 WARN_FOUND=true; HEALTH_OK=false
             fi
-            [ -n "${SM[unsafe]:-}" ] && log_result "INFO: ${SM[unsafe]} unsafe shutdowns recorded (every hard lockup or power cut counts, see test 34)."
-            [ "${SM[errlog]:-0}" -gt 0 ] && log_result "INFO: ${SM[errlog]} entries in the drive's error log (usually harmless command errors, not data loss)."
+            [ -n "${SM[unsafe]:-}" ] && log_result "INFO: ${SM[unsafe]} unsafe shutdowns recorded. Every hard lockup or power cut counts, see test 34."
+            [ "${SM[errlog]:-0}" -gt 0 ] && log_result "INFO: ${SM[errlog]} entries in the drive's error log. These are usually harmless command errors, not data loss."
             [ "$HEALTH_OK" = true ] && [ -n "${SM[warn]:-}" ] && log_result "SUCCESS: SMART health of /dev/$n is good (source: $SMART_SRC)."
         fi
     done
     log_howto "INFO: Measure read/write speed and the SLC cache size with the disk speed test (43): --disk-bench" \
-              "INFO: Measure read/write speed and the SLC cache size with the disk speed test (43, Storage and memory page)."
+              "INFO: Measure read/write speed and the SLC cache size with the disk speed test (43) on the Storage and memory page."
 fi
 echo
 
@@ -846,7 +846,7 @@ SLOW_UNITS=$(systemd-analyze blame --no-pager 2>/dev/null | awk '$1 ~ /min/ {pri
 if [ -n "$SLOW_UNITS" ]; then
     log_result "WARNING: Units taking over a minute at boot:"
     echo "$SLOW_UNITS" | while read -r line; do log_result "  $line"; done
-    log_result "INFO: uupd.service is the Bazzite updater and is expected to be slow; it does not block the desktop."
+    log_result "INFO: uupd.service is the Bazzite updater and is expected to be slow. It does not block the desktop."
     WARN_FOUND=true
 fi
 echo
@@ -966,8 +966,8 @@ if [ "$ZRAM_ACTIVE" = true ] && [ "$ZSWAP_ACTIVE" = true ]; then
     log_result "HINT: Pick one: zswap plus a disk swapfile (recommended), or zram alone."
     WARN_FOUND=true
 elif [ "$ZSWAP_ACTIVE" = true ] && [ "$DISK_SWAP_ACTIVE" = false ]; then
-    log_result "WARNING: zswap is enabled but there is no disk swap behind it, so it does nothing."
-    log_result "HINT: zswap is a cache in front of real swap; add a swapfile."
+    log_result "WARNING: zswap is enabled with no disk swap behind it, so it does nothing."
+    log_result "HINT: zswap is a cache in front of real swap. Add a swapfile."
     WARN_FOUND=true
 elif [ "$ZSWAP_ACTIVE" = true ] && [ "$DISK_SWAP_ACTIVE" = true ]; then
     log_result "SUCCESS: zswap is backed by disk swap, which is the recommended layout for this board."
@@ -982,7 +982,7 @@ elif [ "$ZRAM_ACTIVE" = true ] && [ "$DISK_SWAP_ACTIVE" = true ]; then
             log_result "SUCCESS: zram (priority $ZRAM_PRIO) is used before disk swap (priority $DISK_PRIO)."
         else
             log_result "WARNING: Disk swap (priority $DISK_PRIO) is not below zram (priority $ZRAM_PRIO), so the NVMe is used before zram."
-            log_result "HINT: Give the swapfile a lower priority, e.g. pri=10 in its /etc/fstab line (zram defaults to 100)."
+            log_result "HINT: Give the swapfile a lower priority, for example pri=10 in its /etc/fstab line. zram defaults to 100."
             WARN_FOUND=true
         fi
     fi
@@ -995,9 +995,9 @@ fi
 SWAPPINESS=$(sysctl -n vm.swappiness 2>/dev/null)
 log_result "INFO: vm.swappiness = ${SWAPPINESS:-unknown}"
 if [ "$ZRAM_ACTIVE" = true ] && [ "$DISK_SWAP_ACTIVE" = false ] && [ -n "$SWAPPINESS" ] && [ "$SWAPPINESS" -lt 100 ]; then
-    log_result "INFO: A zram-only setup usually wants a higher swappiness (150-180); swapping to RAM is cheap."
+    log_result "INFO: A zram-only setup usually wants a higher swappiness (150-180), because swapping to RAM is cheap."
 elif [ "$DISK_SWAP_ACTIVE" = true ] && [ -n "$SWAPPINESS" ] && [ "$SWAPPINESS" -gt 100 ]; then
-    log_result "WARNING: swappiness ${SWAPPINESS} is tuned for zram-only but this system swaps to disk."
+    log_result "WARNING: swappiness ${SWAPPINESS} is tuned for zram-only, but this system swaps to disk."
     log_result "HINT: Around 60 avoids unnecessary NVMe writes."
     WARN_FOUND=true
 fi
@@ -1022,7 +1022,7 @@ echo
 fi  # TEST 15
 if want 16; then
 log_result "[TEST 16] System Journal Test"
-log_result "Check the journal for errors from the last 7 days (Fedora Atomic has no /var/log/syslog)"
+log_result "Check the journal for errors from the last 7 days. Fedora Atomic has no /var/log/syslog."
 if [ ! -d /var/log/journal ]; then
     log_result "WARNING: Persistent journal storage (/var/log/journal) is not enabled."
     WARN_FOUND=true
@@ -1068,7 +1068,7 @@ if want 18; then
 log_result "[TEST 18] GPU Governor Test (SMU / Oberon)"
 log_result "The BC-250 GPU is locked at 1500MHz without a governor"
 if [ -z "$GOV_FOUND" ]; then
-    log_result "ERROR: No BC-250 GPU governor installed (looked for: ${GOVERNORS[*]})."
+    log_result "ERROR: No BC-250 GPU governor installed. Looked for ${GOVERNORS[*]}."
     log_result "HINT: sudo dnf copr enable filippor/bazzite && rpm-ostree install cyan-skillfish-governor-smu"
     ERROR_FOUND=true
 else
@@ -1086,12 +1086,12 @@ else
             --no-pager 2>/dev/null | tee -a "$LOG_FILE"
         systemctl status "${GOV_FOUND}.service" --no-pager -l 2>/dev/null | tail -15 | tee -a "$LOG_FILE"
         if [ "$(systemctl show "${GOV_FOUND}.service" -p ConditionResult --value 2>/dev/null)" = "no" ]; then
-            log_result "HINT: A start condition failed; the service never ran, so 'enable --now' has no effect."
-            log_result "HINT: Check the Condition*= lines: systemctl cat ${GOV_FOUND}.service"
+            log_result "HINT: A start condition failed, so the service never ran. That is why 'enable --now' has no effect."
+            log_result "HINT: Check the Condition*= lines with systemctl cat ${GOV_FOUND}.service"
         elif [ "$(systemctl show "${GOV_FOUND}.service" -p UnitFileState --value 2>/dev/null)" != "enabled" ]; then
-            log_result "HINT: The service is not enabled: sudo systemctl enable --now ${GOV_FOUND}"
+            log_result "HINT: The service is not enabled. Run sudo systemctl enable --now ${GOV_FOUND}"
         else
-            log_result "HINT: The service is enabled but failed; see the status output above and:"
+            log_result "HINT: The service is enabled but failed. See the status output above and run this command:"
             log_result "HINT: journalctl -u ${GOV_FOUND}.service -b --no-pager"
         fi
     fi
@@ -1202,30 +1202,30 @@ read_live_cus() {
 
 if want 21; then
 log_result "[TEST 21] Compute Unit (CU) Count Test"
-log_result "BC-250 ships with 24 of 40 RDNA2 CUs active; the 40CU unlock re-enables the rest"
+log_result "The BC-250 ships with 24 of 40 RDNA2 CUs active. The 40CU unlock re-enables the rest."
 CU_COUNT=""
 CU_SOURCE=""
 CU_LIVE=""
 
 if [ "$(id -u)" != 0 ]; then
-    log_howto "INFO: Live CU masks not read: reading the GPU registers needs root (sudo)." \
-              "INFO: Live CU masks not read: this needs admin privileges (Settings › Privacy)."
+    log_howto "INFO: Live CU masks not read, because reading the GPU registers needs root (sudo)." \
+              "INFO: Live CU masks not read, because this needs admin privileges (Settings › Privacy)."
 elif [ -z "$CU_UMR" ]; then
     log_result "INFO: umr is not installed, so the live CU masks can't be read."
-    log_result "HINT: sudo rpm-ostree install umr (then reboot) to see a CU unlock made at runtime."
+    log_result "HINT: sudo rpm-ostree install umr (then restart) to see a CU unlock made at runtime."
 elif ! root_safe "$CU_UMR"; then
-    log_result "WARNING: $CU_UMR is not owned by root or is writable by others; not running it as root."
+    log_result "WARNING: $CU_UMR is not owned by root or is writable by others, so it is not run as root."
     WARN_FOUND=true
 else
     if read_live_cus; then
         CU_COUNT="$CU_LIVE"
-        CU_SOURCE="GPU registers (live WGP masks via umr)"
+        CU_SOURCE="GPU registers, live WGP masks via umr"
         log_result "INFO: Live WGP masks per shader array: ${CU_ROWS%, } CUs."
         CU_MIN=$(printf '%s\n' "${CU_ARRAYS[@]}" | sort -n | head -1)
         CU_MAX=$(printf '%s\n' "${CU_ARRAYS[@]}" | sort -n | tail -1)
         if [ "$CU_MIN" != "$CU_MAX" ]; then
             log_result "WARNING: CUs are not evenly distributed over the shader arrays (${CU_ARRAYS[*]} CUs per array)."
-            log_result "HINT: The slowest shader array sets the pace; this behaves like $((CU_MIN * 4)) CUs. Redo the CU unlock so every array has the same count."
+            log_result "HINT: The slowest shader array sets the pace, so this behaves like $((CU_MIN * 4)) CUs. Redo the CU unlock, so every array has the same count."
             WARN_FOUND=true
         fi
     else
@@ -1262,7 +1262,7 @@ if command -v vulkaninfo >/dev/null 2>&1; then
         elif [ "$CU_RADV" != "$CU_COUNT" ]; then
             log_result "INFO: RADV sees $CU_RADV while $CU_COUNT CUs are active. This is expected and harmless:"
             log_result "INFO: RADV queries the kernel's probe-time CU snapshot, which the runtime WGP unlock"
-            log_result "INFO: does not update. Shaders still dispatch across all $CU_COUNT active CUs; only the"
+            log_result "INFO: does not update. Shaders still dispatch across all $CU_COUNT active CUs, and only the"
             log_result "INFO: reported number is stale. It stays $CU_RADV until amdgpu itself probes more CUs."
         fi
     fi
@@ -1280,15 +1280,15 @@ fi
 
 if [ -z "$CU_COUNT" ]; then
     log_result "WARNING: Could not determine the active CU count."
-    log_result "HINT: sudo dmesg | grep active_cu_number  (or install vulkan-tools for RADV_DEBUG=info vulkaninfo)"
+    log_result "HINT: Run sudo dmesg | grep active_cu_number, or install vulkan-tools for RADV_DEBUG=info vulkaninfo."
     WARN_FOUND=true
 else
-    log_result "INFO: Active Compute Units: $CU_COUNT of 40 (source: $CU_SOURCE)"
+    log_result "INFO: Active Compute Units: $CU_COUNT of 40, read from $CU_SOURCE."
     if [ "$CU_COUNT" -eq 40 ]; then
         log_result "SUCCESS: All 40 CUs are unlocked."
         log_result "REMINDER: 40 CU at 2GHz throttles on stock cooling. Cap the governor at 1500MHz."
     elif [ "$CU_COUNT" -eq 24 ]; then
-        log_result "SUCCESS: 24 CUs active (stock BC-250 configuration, not unlocked)."
+        log_result "SUCCESS: 24 CUs active. This is the stock BC-250 configuration, not unlocked."
         if [ -z "$CU_LIVE" ]; then
             log_result "NOTE: This is the driver's probe-time value. A CU unlock made at runtime changes"
             log_result "NOTE: the WGP masks after the driver probes, so the kernel and RADV keep reporting 24."
@@ -1296,8 +1296,8 @@ else
                       "HINT: Run the tests with admin privileges (Settings › Privacy) and umr installed to read the live masks."
         fi
     elif [ "$CU_COUNT" -gt 24 ] && [ "$CU_COUNT" -lt 40 ]; then
-        log_result "SUCCESS: $CU_COUNT CUs active: a partial CU unlock."
-        log_result "INFO: Partial unlocks are normal; WGPs that fail routing or stability are left"
+        log_result "SUCCESS: $CU_COUNT CUs active, a partial CU unlock."
+        log_result "INFO: Partial unlocks are normal. WGPs that fail routing or stability are left"
         log_result "INFO: masked, and fewer CUs also means less heat on stock cooling."
     elif [ "$CU_COUNT" -lt 24 ]; then
         log_result "ERROR: Only $CU_COUNT CUs active, below the stock 24. CUs may be masked or failing."
@@ -1413,7 +1413,7 @@ if [ -n "$VRM_HWMON" ]; then
         esac
     done
 else
-    log_result "INFO: bc250_vrm is not loaded: no voltage, current or power of the CPU and GPU rails."
+    log_result "INFO: bc250_vrm is not loaded, so there is no voltage, current or power reading of the CPU and GPU rails."
     log_result "HINT: BC-250 Quickfix's VRM Sensors builds and loads it."
 fi
 
@@ -1426,7 +1426,7 @@ for f in /sys/class/hwmon/hwmon*/fan?_input; do
 done
 if [ "$FAN_MAX" -gt 0 ]; then
     log_result "SUCCESS: Highest fan reading is ${FAN_MAX} RPM."
-    log_result "NOTE: On the BC-250 the main fan usually reports on the 'Pump Fan' header; a 0 RPM 'CPU Fan' is normal."
+    log_result "NOTE: On the BC-250 the main fan usually reports on the 'Pump Fan' header. A 0 RPM 'CPU Fan' is normal."
 else
     log_result "ERROR: No fan is reporting any RPM. Verify cooling before applying load."
     ERROR_FOUND=true
@@ -1443,7 +1443,7 @@ IOMMU_GROUPS=$(find /sys/kernel/iommu_groups -maxdepth 1 -mindepth 1 -type d 2>/
 IOMMU_EVIDENCE=$(journalctl -b -k --no-pager 2>/dev/null \
     | grep -iE "AMD-Vi: (Interrupt remapping enabled|Virtual APIC enabled)|iommu: Default domain type:|AMD-Vi: Found IOMMU")
 if [ "${IOMMU_GROUPS:-0}" -gt 0 ]; then
-    log_result "ERROR: IOMMU is ENABLED ($IOMMU_GROUPS IOMMU groups). Disable it in the BIOS or run: rpm-ostree kargs --append=amd_iommu=off"
+    log_result "ERROR: IOMMU is ENABLED ($IOMMU_GROUPS IOMMU groups). Turn it off in the BIOS or run rpm-ostree kargs --append=amd_iommu=off"
     ERROR_FOUND=true
 else
     log_result "SUCCESS: IOMMU is not active (no IOMMU groups)."
@@ -1498,7 +1498,7 @@ echo
 fi  # TEST 24
 if want 25; then
 log_result "[TEST 25] CPU Core and Thread Count Test"
-log_result "BC-250 ships down-cored to 6C/12T; the 8-core unlock enables the full 8C/16T die"
+log_result "The BC-250 ships down-cored to 6C/12T. The 8-core unlock enables the full 8C/16T die."
 THREADS_ONLINE=$(nproc 2>/dev/null)
 THREADS_TOTAL=$(nproc --all 2>/dev/null)
 PHYS_CORES=""
@@ -1530,13 +1530,13 @@ else
         8)
             log_result "SUCCESS: 8 cores active. The 8-core unlock is applied (full die)."
             log_result "REMINDER: The Linux unlock is cleared by a cold boot and must be re-applied."
-            log_result "REMINDER: Known side effect of the core unlock: pp_dpm_sclk and hwmon freq1_input report nonsense values."
+            log_result "REMINDER: A known side effect of the core unlock is that pp_dpm_sclk and hwmon freq1_input report nonsense values."
             ;;
         6)
             log_result "SUCCESS: 6 cores active (stock BC-250 down-cored configuration)."
             ;;
         7)
-            log_result "INFO: 7 cores active: partial unlock, or one core is offline/masked."
+            log_result "INFO: 7 cores active. This is a partial unlock, or one core is offline or masked."
             ;;
         *)
             if [ "$PHYS_CORES" -lt 6 ]; then
@@ -1553,7 +1553,7 @@ fi
 if [ -n "$PHYS_CORES" ] && [ -n "$THREADS_ONLINE" ]; then
     EXPECTED_THREADS=$(( PHYS_CORES * 2 ))
     if [ "$THREADS_ONLINE" -eq "$EXPECTED_THREADS" ]; then
-        log_result "SUCCESS: SMT is enabled ($THREADS_ONLINE threads for $PHYS_CORES cores)."
+        log_result "SUCCESS: SMT is enabled, with $THREADS_ONLINE threads for $PHYS_CORES cores."
     else
         log_result "WARNING: Expected $EXPECTED_THREADS threads for $PHYS_CORES cores but found $THREADS_ONLINE. SMT may be disabled."
         WARN_FOUND=true
@@ -1595,7 +1595,7 @@ if [ -n "$ACPI_UPGRADE" ]; then
     log_result "INFO: ACPI table override loaded from initrd (bc250-acpi-fix):"
     echo "$ACPI_UPGRADE" | tee -a "$LOG_FILE"
 else
-    log_result "INFO: No initrd ACPI table override detected; ACPI tables come from the BIOS."
+    log_result "INFO: No initrd ACPI table override detected. The ACPI tables come from the BIOS."
 fi
 if [ -d /sys/devices/system/cpu/cpu0/cpuidle ]; then
     log_result "SUCCESS: CPU idle states are available."
@@ -1627,7 +1627,7 @@ for h in /sys/class/hwmon/hwmon*; do
         log_result "INFO: $HW_NAME ${V_LABEL:-$(basename "${v%_input}")}: ${V_MV} mV"
         RAILS_FOUND=true
         if [ "$V_MV" -gt 1450 ]; then
-            log_result "WARNING: ${V_LABEL:-$(basename "${v%_input}")} reads above 1.45 V — unusually high for this APU."
+            log_result "WARNING: ${V_LABEL:-$(basename "${v%_input}")} reads above 1.45 V, which is unusually high for this APU."
             WARN_FOUND=true
         fi
     done
@@ -1636,7 +1636,7 @@ done
 log_result "NOTE: k10temp no longer reports Vcore/Vsoc on modern kernels, and the read-only nct6683"
 log_result "NOTE: shows most board rails as 0.00V, so the amdgpu rails above are the usable readings."
 
-log_result "Check the voltage each core requests (current P-state VID via MSR)"
+log_result "Check the voltage each core requests now (P-state VID via MSR)"
 modprobe msr 2>/dev/null
 # read_msr <cpu> <reg>: 64-bit MSR value as hex, empty on failure.
 read_msr() { dd if=/dev/cpu/"$1"/msr bs=8 count=1 skip="$2" iflag=skip_bytes 2>/dev/null | od -An -tx8 | tr -d ' \n'; }
@@ -1670,19 +1670,19 @@ if [ -r /dev/cpu/0/msr ] && [ -n "$(read_msr 0 $((0xC0010063)))" ]; then
     unset VID_SEEN_CORE
     if [ "$MAX_REQ_MV" -gt 0 ]; then
         if [ "$MAX_REQ_MV" -gt 1450 ]; then
-            log_result "WARNING: Highest core request is ${MAX_REQ_MV} mV — above the usual Zen 2 range."
+            log_result "WARNING: Highest core request is ${MAX_REQ_MV} mV, above the usual Zen 2 range."
             WARN_FOUND=true
         else
             log_result "SUCCESS: Highest core request is ${MAX_REQ_MV} mV, within the usual Zen 2 range."
         fi
     else
-        log_result "INFO: All cores were idle during the read; rerun under load for the boost voltage."
+        log_result "INFO: All cores were idle during the read. Run it again under load for the boost voltage."
     fi
-    log_result "NOTE: All Zen 2 cores share one VDDCR_CPU rail — the rail follows the highest request,"
-    log_result "NOTE: so these are per-core requests, not separate supplies. Values move with load;"
+    log_result "NOTE: All Zen 2 cores share one VDDCR_CPU rail, and the rail follows the highest request,"
+    log_result "NOTE: so these are per-core requests, not separate supplies. Values move with load, and"
     log_result "NOTE: an idle core parked in a low P-state reporting ~700-900 mV is normal."
 else
-    log_result "INFO: Cannot read MSRs (/dev/cpu/*/msr); per-core VID skipped."
+    log_result "INFO: Cannot read MSRs (/dev/cpu/*/msr), so the per-core VID is skipped."
     log_result "HINT: The msr module could not be loaded, or kernel lockdown (secure boot) blocks MSR access."
 fi
 echo
@@ -1708,23 +1708,23 @@ if grep -qw freeze <<<"$SLEEP_STATES"; then
         log_result "INFO: The firmware also offers a deep sleep (S3)."
     else
         # Measured on a board with BIOS P5.00 (18-11-2026): about the same draw asleep as awake, the fan kept running
-        log_result "NOTE: Suspend-to-idle is the only sleep here. The screen goes to no signal, but the board stays powered: the fan keeps running and it draws about as much power as awake."
+        log_result "NOTE: Suspend-to-idle is the only sleep here. The screen goes to no signal, but the board stays powered. The fan keeps running, and the board draws about as much power as awake."
         log_result "INFO: Only the power button wakes it."
     fi
     if [ "$SUSPEND_UNIT" = masked ]; then
-        log_result "NOTE: Suspend is masked in systemd: sleep from the menu or a power button does nothing."
+        log_result "NOTE: Suspend is masked in systemd, so sleep from the menu or a power button does nothing."
     fi
     LAST_FAIL=$(cat /sys/power/suspend_stats/last_failed_dev 2>/dev/null)
     SUSPEND_FAILS=$(cat /sys/power/suspend_stats/fail 2>/dev/null)
     log_result "INFO: Suspends since boot: $(cat /sys/power/suspend_stats/success 2>/dev/null || echo ?) good, ${SUSPEND_FAILS:-?} failed${LAST_FAIL:+ (last failed device: $LAST_FAIL)}"
     if [ "${SUSPEND_FAILS:-0}" -gt 0 ] 2>/dev/null; then
-        log_result "WARNING: A suspend failed since boot. See: journalctl -k -b -g 'PM: '"
+        log_result "WARNING: A suspend attempt failed since boot. See journalctl -k -b -g 'PM: '"
         WARN_FOUND=true
     fi
 else
     log_result "INFO: This kernel cannot suspend (no 'freeze' in /sys/power/state)."
     if [ "$SUSPEND_UNIT" != masked ]; then
-        log_result "WARNING: suspend.target is not masked although the kernel cannot suspend: a sleep request fails."
+        log_result "WARNING: suspend.target is not masked although the kernel cannot suspend, so a sleep request fails."
         log_result "HINT: sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target"
         WARN_FOUND=true
     else
@@ -1741,7 +1741,7 @@ if systemctl cat display-manager.service >/dev/null 2>&1; then
     DM_UNIT=$(basename "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" 2>/dev/null)
     log_result "INFO: display-manager.service -> ${DM_UNIT:-unknown}, state: $(systemctl is-active display-manager.service 2>/dev/null)"
 else
-    log_result "INFO: No display-manager.service (Deck/Game Mode images use an autologin session instead)."
+    log_result "INFO: No display-manager.service. Deck/Game Mode images use an autologin session instead."
 fi
 for dm in sddm.service gdm.service greetd.service; do
     if systemctl cat "$dm" >/dev/null 2>&1; then
@@ -1770,8 +1770,8 @@ if systemctl is-active --quiet sshd.service; then
 elif systemctl is-active --quiet sshd.socket; then
     log_result "SUCCESS: sshd.socket is active (socket-activated SSH)."
 else
-    log_result "INFO: SSH is not running. This is the Bazzite default; enable it only if you need remote access."
-    log_result "NOTE: To enable remote access: sudo systemctl enable --now sshd"
+    log_result "INFO: SSH is not running. This is the Bazzite default. Turn it on only if you need remote access."
+    log_result "NOTE: To turn on remote access, run sudo systemctl enable --now sshd"
 fi
 echo
 
@@ -1849,7 +1849,7 @@ fi  # TEST 33
 # counts are reported: no paths, user names, container names or settings.
 if want 45; then
 log_result "[TEST 45] Installed Packages Test"
-log_result "Count installed software per source (names and versions only, nothing personal)"
+log_result "Count installed software per source. Only names and versions, nothing personal."
 PKG_TOTAL=0
 PKG_SOURCES=0
 pkg_count() { # pkg_count LABEL COUNT [LIST]: one source line, LIST (one name per line) goes to the log only
@@ -1890,7 +1890,7 @@ for key, tag in (("requested-packages", "L"), ("requested-local-packages", "L"),
         echo "$OVERRIDES" | sed 's/^/    /' | tee -a "$LOG_FILE"
     fi
     if [ $((LAYERED_N + OVERRIDE_N)) -ge 10 ]; then
-        log_result "HINT: Every layered or overridden package is re-applied on each update, makes updates slower and can block one when it conflicts with a new image. Prefer Flatpak, Homebrew or Distrobox where possible."
+        log_result "HINT: Every layered or overridden package is re-applied on each update. That makes updates slower, and a package can block an update when it conflicts with a new image. Prefer Flatpak, Homebrew or Distrobox where possible."
     fi
 fi
 if command -v flatpak >/dev/null 2>&1; then
@@ -1919,7 +1919,7 @@ if command -v podman >/dev/null 2>&1; then
     BOXES=$(run_as_user podman ps -a --filter label=manager=distrobox --format '{{.ID}}' 2>/dev/null | grep -c .)
     TOOLBOXES=$(run_as_user podman ps -a --filter label=com.github.containers.toolbox=true --format '{{.ID}}' 2>/dev/null | grep -c .)
     [ $((BOXES + TOOLBOXES)) -gt 0 ] && \
-        log_result "INFO: Distrobox/Toolbox containers: $((BOXES + TOOLBOXES)) (the packages inside them are not counted)"
+        log_result "INFO: Distrobox/Toolbox containers: $((BOXES + TOOLBOXES)). The packages inside them are not counted."
 fi
 log_result "SUCCESS: $PKG_TOTAL packages and apps installed, from $PKG_SOURCES source(s)."
 echo
@@ -1933,7 +1933,7 @@ fi  # TEST 45
 # ----------------------------------------------------------------------------
 if want 34; then
 log_result "[TEST 34] Previous Boot Shutdown Integrity Test"
-log_result "A hard lockup leaves no shutdown record; this finds boots that ended abnormally"
+log_result "A hard lockup leaves no shutdown record. This finds boots that ended abnormally."
 BOOT_COUNT=$(journalctl --list-boots --no-pager -q 2>/dev/null | grep -cE "^\s*-?[0-9]+")
 log_result "INFO: Journal holds $BOOT_COUNT boot(s). Persistent journal: $( [ -d /var/log/journal ] && echo yes || echo NO )"
 if [ ! -d /var/log/journal ]; then
@@ -1975,7 +1975,7 @@ if [ -d /sys/fs/pstore ]; then
         log_result "INFO: pstore is mounted and empty (no firmware-captured panic)."
     fi
 else
-    log_result "INFO: /sys/fs/pstore is not mounted; firmware crash capture is unavailable."
+    log_result "INFO: /sys/fs/pstore is not mounted, so firmware crash capture is unavailable."
 fi
 echo
 
@@ -2049,16 +2049,16 @@ if [ -n "$PANICS" ]; then
 else
     log_result "SUCCESS: No kernel panics or lockup traces in the retained boots."
 fi
-log_result "Check the NMI watchdog (it can turn a silent freeze into a logged panic)"
+log_result "Check the NMI watchdog. It can turn a silent freeze into a logged panic."
 NMI_WD=$(sysctl -n kernel.nmi_watchdog 2>/dev/null)
 if [ "$NMI_WD" = "1" ]; then
     log_result "SUCCESS: kernel.nmi_watchdog is enabled, hard lockups will be logged."
 else
     log_result "WARNING: kernel.nmi_watchdog is '${NMI_WD:-unavailable}', so a hard freeze leaves no trace."
-    log_result "HINT: sudo sysctl -w kernel.nmi_watchdog=1 (add nowatchdog removal to kargs to persist)."
+    log_result "HINT: sudo sysctl -w kernel.nmi_watchdog=1. To keep it after a restart, remove nowatchdog from the kargs."
     WARN_FOUND=true
 fi
-log_result "Check recent application coredumps (crashed games leave records here)"
+log_result "Check recent application coredumps. Crashed games leave records here."
 if command -v coredumpctl >/dev/null 2>&1; then
     DUMPS=$(coredumpctl list --since "-14 days" --no-pager 2>/dev/null | tail -20)
     if [ -n "$DUMPS" ] && ! grep -qi "no coredumps" <<<"$DUMPS"; then
@@ -2113,8 +2113,8 @@ done
 if [ -n "$PINFAIL" ]; then
     log_result "ERROR: Framebuffer pin failures detected - the VRAM carve is too small for your games:"
     echo "$PINFAIL" | tee -a "$LOG_FILE"
-    log_result "HINT: ttm.pages_limit does NOT fix this; only a larger minimum split does."
-    log_result "HINT: sudo ./bc250memcfg UMA_SIZE 6144   (from fanoush/bc250_memcfg), then reboot."
+    log_result "HINT: ttm.pages_limit does NOT fix this. Only a larger minimum split does."
+    log_result "HINT: sudo ./bc250memcfg UMA_SIZE 6144   (from fanoush/bc250_memcfg), then restart."
     ERROR_FOUND=true
 else
     log_result "SUCCESS: No framebuffer pin failures in the retained boots."
@@ -2131,20 +2131,20 @@ done
 # so the GTT total is the real dynamic ceiling, not the parameter.
 TTM_LIMIT=$(cat /sys/module/ttm/parameters/pages_limit 2>/dev/null)
 if [ "$GTT_MIB" -gt 0 ]; then
-    log_result "INFO: VRAM split is ${VRAM_SPLIT_MIB} MiB; the GPU can borrow up to ${GTT_MIB} MiB of system RAM on top (GTT)."
+    log_result "INFO: VRAM split is ${VRAM_SPLIT_MIB} MiB. The GPU can borrow up to ${GTT_MIB} MiB of system RAM on top (GTT)."
 fi
 if [ -n "$TTM_LIMIT" ] && [ "$TTM_LIMIT" -gt 0 ] && [ "$GTT_MIB" -gt 0 ] && [ $((TTM_LIMIT / 256)) -gt "$GTT_MIB" ]; then
-    log_result "INFO: ttm.pages_limit is $((TTM_LIMIT / 256)) MiB, more than the RAM: amdgpu caps GTT at the RAM, so a higher limit has no effect."
+    log_result "INFO: ttm.pages_limit is $((TTM_LIMIT / 256)) MiB, more than the RAM. amdgpu caps GTT at the RAM, so a higher limit has no effect."
 fi
 if [ "$VRAM_SPLIT_MIB" -le 1024 ]; then
     log_result "INFO: This is a small (dynamic-friendly) split, which maximizes regular RAM."
     if ! grep -q "ttm.pages_limit" /proc/cmdline 2>/dev/null; then
-        log_result "WARNING: A small split without ttm.pages_limit caps total VRAM at $((VRAM_SPLIT_MIB + GTT_MIB)) MiB (the split plus half the RAM)."
+        log_result "WARNING: A small split without ttm.pages_limit caps total VRAM at $((VRAM_SPLIT_MIB + GTT_MIB)) MiB, the split plus half the RAM."
         log_result "HINT: rpm-ostree kargs --append-if-missing=ttm.pages_limit=3014656   # ~11.5 GiB"
         WARN_FOUND=true
     fi
 fi
-log_result "Check vm.max_map_count (several modern games need a very high value)"
+log_result "Check vm.max_map_count. Several modern games need a very high value."
 MMC=$(sysctl -n vm.max_map_count 2>/dev/null)
 if [ -n "$MMC" ] && [ "$MMC" -ge 1048576 ]; then
     log_result "SUCCESS: vm.max_map_count is $MMC."
@@ -2229,7 +2229,7 @@ if [ -r "$GOV_CONF" ]; then
     if [ -n "$GOV_MAX" ] && [ "$GOV_MAX" -gt 1900 ]; then
         log_result "WARNING: The governor may drive the GPU up to ${GOV_MAX} MHz."
         log_result "HINT: Many BC-250 boards are unstable above ~1850 MHz and hard-lock under load."
-        log_result "HINT: Lower the maximum in $GOV_CONF, then: sudo systemctl restart cyan-skillfish-governor-smu"
+        log_result "HINT: Lower the maximum in $GOV_CONF, then run sudo systemctl restart cyan-skillfish-governor-smu"
         WARN_FOUND=true
     elif [ -n "$GOV_MAX" ]; then
         log_result "SUCCESS: The governor ceiling (${GOV_MAX} MHz) is within the commonly stable range."
@@ -2253,16 +2253,16 @@ if [ -r "$GOV_CONF" ]; then
     fi
     if [ "$GOV_FIX_METRICS" = "true" ]; then
         if grep -q 'gpu_metrics' /proc/self/mountinfo 2>/dev/null; then
-            log_result "SUCCESS: fix-metrics is on and the patched gpu_metrics is mounted; overlays show a real GPU load."
+            log_result "SUCCESS: fix-metrics is on and the patched gpu_metrics is mounted, so overlays show a real GPU load."
         else
             log_result "WARNING: fix-metrics is on, but no patched gpu_metrics is mounted. Overlays will show 0% or 655% GPU load."
-            log_result "HINT: sudo systemctl restart $GOV_FOUND   # then check: mount | grep gpu_metrics"
+            log_result "HINT: sudo systemctl restart $GOV_FOUND   # then check with mount | grep gpu_metrics"
             WARN_FOUND=true
         fi
     else
         log_result "INFO: fix-metrics is off, so MangoHud / the Steam overlay show 0% (or 655%) GPU load."
         log_result "NOTE: To show the real load, set fix-metrics = true under [gpu-usage] in $GOV_CONF,"
-        log_result "NOTE: then: sudo systemctl restart $GOV_FOUND   (see the manual: \"Fix: GPU load shows 0%\")."
+        log_result "NOTE: then run sudo systemctl restart $GOV_FOUND. See \"Fix: GPU load shows 0%\" in the wiki."
     fi
 else
     log_result "INFO: $GOV_CONF not present."
@@ -2377,7 +2377,7 @@ else
         run_low_prio bash -c 'while :; do :; done'
     done
 fi
-log_result "INFO: CPU load: $CPU_WORKER across $NPROC threads ($CPU_PRIO, so the GPU load is not starved)."
+log_result "INFO: CPU load: $CPU_WORKER across $NPROC threads. They run at $CPU_PRIO, so the GPU load is not starved."
 
 GPU_WORKER="none"
 GPU_WORKER_PID=""
@@ -2407,7 +2407,7 @@ grab_session_env() {
             return 0
         fi
     done
-    log_result "WARNING: No running compositor found; falling back to guessed session variables."
+    log_result "WARNING: No running compositor found, so the session variables are guessed."
     SESSION_ENV=("XDG_RUNTIME_DIR=/run/user/$(id -u "$GAME_USER")"
                  "WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}"
                  "DISPLAY=${DISPLAY:-:0}")
@@ -2430,7 +2430,7 @@ elif command -v systemd-inhibit >/dev/null 2>&1; then
     setsid systemd-inhibit --what=idle:sleep --who="bc250-board-test" --why="stress test running" \
         sleep "$INHIBIT_SECS" >/dev/null 2>&1 &
     STRESS_PIDS+=($!)
-    log_result "INFO: Idle and sleep are inhibited for the run (systemd-inhibit); some desktops still lock the screen."
+    log_result "INFO: Idle and sleep are inhibited for the run (systemd-inhibit). Some desktops still lock the screen."
 fi
 
 start_gpu_worker() {
@@ -2488,9 +2488,9 @@ elif command -v vkcube >/dev/null 2>&1; then
     GPU_WORKER="vkcube (light load)"
     start_gpu_worker vkcube
 else
-    log_result "WARNING: No GPU load tool found; only the CPU will be stressed."
-    log_result "HINT: Layer one with: rpm-ostree install glmark2 (vulkan-tools provides vkcube)."
-    log_result "HINT: A Flatpak will NOT be detected here; the tool must be on PATH."
+    log_result "WARNING: No GPU load tool found, so only the CPU will be stressed."
+    log_result "HINT: Layer one with rpm-ostree install glmark2 (vulkan-tools provides vkcube)."
+    log_result "HINT: A Flatpak will NOT be detected here. The tool must be on PATH."
     WARN_FOUND=true
 fi
 
@@ -2500,7 +2500,7 @@ if [ -n "$GPU_WORKER_PID" ]; then
     if kill -0 "$GPU_WORKER_PID" 2>/dev/null; then
         log_result "INFO: GPU load: $GPU_WORKER running as $GAME_USER (pid $GPU_WORKER_PID)."
     else
-        log_result "ERROR: The GPU load tool ($GPU_WORKER) exited immediately; this run is CPU-only."
+        log_result "ERROR: The GPU load tool ($GPU_WORKER) exited immediately, so this run is CPU-only."
         [ -s "$GPU_WORKER_LOG" ] && { log_result "INFO: Its output was:"; head -20 "$GPU_WORKER_LOG" | tee -a "$LOG_FILE"; }
         log_result "HINT: Run it by hand from the desktop session first: $GPU_WORKER"
         ERROR_FOUND=true
@@ -2562,9 +2562,9 @@ else
     fi
 fi
 case "$BUSY_SRC" in
-    gpu_busy_percent) log_result "INFO: GPU busy source: gpu_busy_percent (kernel load sensor)." ;;
-    fdinfo)           log_result "INFO: GPU busy source: gfx/compute engine time from /proc/*/fdinfo (this kernel has no GPU load sensor)." ;;
-    none)             log_result "WARNING: GPU busy cannot be measured: no load sensor and no amdgpu clients in fdinfo."
+    gpu_busy_percent) log_result "INFO: GPU busy is read from gpu_busy_percent, the kernel's load sensor." ;;
+    fdinfo)           log_result "INFO: GPU busy is read from the gfx/compute engine time in /proc/*/fdinfo, because this kernel has no GPU load sensor." ;;
+    none)             log_result "WARNING: GPU busy cannot be measured. There is no load sensor and no amdgpu client in fdinfo."
                       WARN_FOUND=true ;;
 esac
 
@@ -2615,7 +2615,7 @@ while [ "$(date +%s)" -lt "$END" ]; do
     fi
 
     if [ "$GTEMP" -ge 95 ] || [ "$CTEMP" -ge 95 ]; then
-        log_result "ERROR: Thermal abort at ${ELAPSED}s (GPU ${GTEMP}C / CPU ${CTEMP}C). Stopping the load."
+        log_result "ERROR: Thermal abort at ${ELAPSED}s, with the GPU at ${GTEMP}C and the CPU at ${CTEMP}C. Stopping the load."
         ERROR_FOUND=true
         STRESS_ABORT=true
         STRESS_ABORT_REASON="thermal guard"
@@ -2623,7 +2623,7 @@ while [ "$(date +%s)" -lt "$END" ]; do
     fi
     MEM_AVAIL_NOW=$(( $(awk '/^MemAvailable:/ {print $2}' /proc/meminfo) / 1024 ))
     if [ "$MEM_AVAIL_NOW" -lt "$MEM_GUARD_MIB" ]; then
-        log_result "WARNING: Memory guard at ${ELAPSED}s: only ${MEM_AVAIL_NOW} MiB RAM left (gtt=${GTT_U}M). Stopping the load before the OOM killer hits the desktop."
+        log_result "WARNING: Memory guard at ${ELAPSED}s. Only ${MEM_AVAIL_NOW} MiB RAM left (gtt=${GTT_U}M). Stopping the load before the OOM killer hits the desktop."
         WARN_FOUND=true
         STRESS_ABORT=true
         STRESS_ABORT_REASON="memory guard"
@@ -2651,18 +2651,18 @@ if [ "$SAMPLES" -gt 0 ]; then
     log_result "INFO: VRAM peak ${MAX_VRAM} MiB of ${VRAM_TOTAL_MIB} MiB ($((MAX_VRAM * 100 / VRAM_TOTAL_MIB))%)"
     log_result "INFO: GTT  peak ${MAX_GTT} MiB of ${GTT_TOTAL_MIB} MiB ($((MAX_GTT * 100 / GTT_TOTAL_MIB))%)"
     if [ "$((MAX_VRAM * 100 / VRAM_TOTAL_MIB))" -ge 90 ]; then
-        log_result "WARNING: The VRAM carveout was saturated; allocations are spilling into GTT."
-        log_result "HINT: Raise the VRAM split with bc250_memcfg (UMA_SIZE, see test 37), then reboot."
+        log_result "WARNING: The VRAM carveout was saturated, so allocations are spilling into GTT."
+        log_result "HINT: Raise the VRAM split with bc250_memcfg (UMA_SIZE, see test 37), then restart."
         WARN_FOUND=true
     fi
     if [ "$((MAX_GTT * 100 / GTT_TOTAL_MIB))" -ge 85 ]; then
-        log_result "WARNING: GTT peaked at $((MAX_GTT * 100 / GTT_TOTAL_MIB))% of its limit; the GPU is close to running out of memory."
+        log_result "WARNING: GTT peaked at $((MAX_GTT * 100 / GTT_TOTAL_MIB))% of its limit. The GPU is close to running out of memory."
         # GTT is capped at the RAM (test 37): once it is there, or the limit is already the recommended one,
         # a higher ttm.pages_limit only takes RAM away from the system.
         RAM_MIB=$(( $(awk '/^MemTotal:/ {print $2}' /proc/meminfo 2>/dev/null || echo 0) / 1024 ))
         TTM_NOW=$(read_num /sys/module/ttm/parameters/pages_limit)
         if [ "$GTT_TOTAL_MIB" -ge $((RAM_MIB * 95 / 100)) ] || [ "$TTM_NOW" -ge 3014656 ]; then
-            log_result "HINT: GTT is already at its practical maximum (${GTT_TOTAL_MIB} MiB, RAM ${RAM_MIB} MiB); a higher ttm.pages_limit will not help."
+            log_result "HINT: GTT is already at its practical maximum of ${GTT_TOTAL_MIB} MiB, with ${RAM_MIB} MiB of RAM. A higher ttm.pages_limit will not help."
             log_result "HINT: Lower texture/resolution settings, close other programs, or check the swap layout (test 14)."
         elif grep -q "ttm.pages_limit=" /proc/cmdline 2>/dev/null; then
             log_result "HINT: rpm-ostree kargs --replace=ttm.pages_limit=3014656   # ~11.5 GiB, capped at the RAM"
@@ -2685,7 +2685,7 @@ if [ "$SAMPLES" -gt 0 ]; then
     # Validate the GPU was genuinely loaded before judging the governor at all.
     if [ "$BUSY_SRC" = "none" ]; then
         if [ "$MAX_SCLK" -le "$((MIN_SCLK + 100))" ]; then
-            log_result "WARNING: GPU load is unknown and the clock stayed at ~${MAX_SCLK} MHz; the GPU may not have been loaded."
+            log_result "WARNING: GPU load is unknown, and the clock stayed at ~${MAX_SCLK} MHz. The GPU may not have been loaded."
             WARN_FOUND=true
         else
             log_result "SUCCESS: The GPU clock responded to the load (${MIN_SCLK} -> ${MAX_SCLK} MHz)."
@@ -2696,16 +2696,16 @@ if [ "$SAMPLES" -gt 0 ]; then
         log_result "HINT: frame-capped by vsync. Start it by hand in the desktop session and re-run."
         case "$GPU_WORKER" in memtest_vulkan|vkpeak) ;; *)
             log_result "HINT: $GPU_WORKER renders one light frame at a time and can't keep this GPU busy."
-            log_result "HINT: Put memtest_vulkan (github.com/GpuZelenograd/memtest_vulkan) on PATH, e.g. in ~/.local/bin;"
-            log_result "HINT: it is preferred automatically and also checks the VRAM for errors." ;;
+            log_result "HINT: Put memtest_vulkan (github.com/GpuZelenograd/memtest_vulkan) on PATH, for example in ~/.local/bin, and"
+            log_result "HINT: the test prefers it automatically. It also checks the VRAM for errors." ;;
         esac
-        log_result "HINT: The CPU results above are still valid; the GPU verdict is not."
+        log_result "HINT: The CPU results above are still valid. The GPU verdict is not."
         WARN_FOUND=true
     elif [ "$MAX_SCLK" -le "$((MIN_SCLK + 100))" ] && [ -n "$GOV_TOP" ] && [ "$MAX_SCLK" -ge "$((GOV_TOP - 100))" ]; then
         # A clock pinned at the governor's ceiling for the whole run is the right response to full load.
         log_result "SUCCESS: The GPU was ${AVG_BUSY}% busy and held the governor maximum (~${MAX_SCLK} of ${GOV_TOP} MHz) throughout."
     elif [ "$MAX_SCLK" -le "$((MIN_SCLK + 100))" ]; then
-        log_result "WARNING: The GPU was ${AVG_BUSY}% busy but the clock stayed at ~${MAX_SCLK} MHz."
+        log_result "WARNING: The GPU was ${AVG_BUSY}% busy, but the clock stayed at ~${MAX_SCLK} MHz."
         log_result "HINT: The governor is not reacting to load. Check cyan-skillfish-governor-smu."
         WARN_FOUND=true
     else
@@ -2721,12 +2721,12 @@ if [ "$SAMPLES" -gt 0 ]; then
         if [ "${SUST_EARLY:-0}" -gt 0 ] && [ "${SUST_LATE:-0}" -gt 0 ]; then
             SUST_PCT=$((SUST_LATE * 100 / SUST_EARLY))
             if [ "$SUST_PCT" -ge 97 ]; then
-                log_result "SUCCESS: Sustained performance: the clock held ${SUST_PCT}% of its first-minute average (${SUST_EARLY} -> ${SUST_LATE} MHz); no thermal sag."
+                log_result "SUCCESS: Sustained performance: the clock held ${SUST_PCT}% of its first-minute average (${SUST_EARLY} -> ${SUST_LATE} MHz), with no thermal sag."
             elif [ "$SUST_PCT" -ge 90 ]; then
                 log_result "NOTE: Sustained performance: the clock sagged to ${SUST_PCT}% of its first-minute average (${SUST_EARLY} -> ${SUST_LATE} MHz) as heat built up."
             else
                 log_result "WARNING: Sustained performance: the clock dropped to ${SUST_PCT}% of its first-minute average (${SUST_EARLY} -> ${SUST_LATE} MHz)."
-                log_result "HINT: That is thermal or power throttling under sustained load: long game sessions will run slower"
+                log_result "HINT: That is thermal or power throttling under sustained load, so long game sessions will run slower"
                 log_result "HINT: than benchmarks suggest. Check airflow, the heatsink mount and the fan curve (tests 22, 40)."
                 WARN_FOUND=true
             fi
@@ -2746,11 +2746,11 @@ if [ "$SAMPLES" -gt 0 ]; then
                 # for the endless test; seen at t=274-286 s in every 36-CU run. Not a fault.
                 if [ "$GPU_WORKER" = "memtest_vulkan" ] && [ "$S_FROM" -ge 250 ] && [ "$S_FROM" -le 320 ] \
                    && [ $((S_TO - S_FROM)) -le 30 ]; then
-                    log_result "INFO: The GPU load paused from t=${S_FROM}s to t=${S_TO}s: memtest_vulkan switching from its standard 5-minute test to its extended test (expected, not a fault)."
+                    log_result "INFO: The GPU load paused from t=${S_FROM}s to t=${S_TO}s. memtest_vulkan was switching from its standard 5-minute test to its extended test. This is expected, not a fault."
                     continue
                 fi
                 S_REAL=true
-                log_result "WARNING: The GPU load stopped from t=${S_FROM}s to t=${S_TO}s ($(date -d "@$((START + S_FROM))" '+%H:%M:%S')-$(date -d "@$((START + S_TO))" '+%H:%M:%S')): the GPU went idle and the clock dropped, but nothing hung."
+                log_result "WARNING: The GPU load stopped from t=${S_FROM}s to t=${S_TO}s ($(date -d "@$((START + S_FROM))" '+%H:%M:%S')-$(date -d "@$((START + S_TO))" '+%H:%M:%S')). The GPU went idle and the clock dropped, but nothing hung."
                 S_LOG=$(journalctl --no-pager -q -o short-precise --since "@$((START + S_FROM - 10))" --until "@$((START + S_TO + 5))" 2>/dev/null | \
                     grep -Ev "sudo|pam_unix|bc250|test-bazzite" | tail -15)
                 if [ -n "$S_LOG" ]; then
@@ -2778,7 +2778,7 @@ if [ "$GPU_WORKER" = "memtest_vulkan" ]; then
     if grep -q 'Error found' "$GPU_WORKER_LOG" 2>/dev/null; then
         log_result "ERROR: memtest_vulkan found VRAM errors under load:"
         grep -A1 'Error found' "$GPU_WORKER_LOG" | head -10 | tee -a "$LOG_FILE"
-        log_result "HINT: Lower the GPU maximum clock (and any CU unlock) and retest; see $GPU_WORKER_LOG."
+        log_result "HINT: Lower the GPU maximum clock and any CU unlock, then test again. See $GPU_WORKER_LOG."
         ERROR_FOUND=true
     else
         log_result "SUCCESS: memtest_vulkan found no VRAM errors during the run."
@@ -2821,8 +2821,8 @@ if [ "$BENCH_MODE" != true ]; then
     log_result "INFO: against a stock BC-250 (6C/12T, 24 CUs)."
     echo
 else
-log_result "Measuring fixed CPU and GPU workloads; compare runs before and after a CU or core unlock"
-log_result "NOTE: Close games and other heavy apps first; background load lowers the scores."
+log_result "Measuring fixed CPU and GPU workloads. Compare runs before and after a CU or core unlock."
+log_result "NOTE: Close games and other heavy apps first. Background load lowers the scores."
 BENCH_JSON="$LOG_DIR/bc250-bench-${TIMESTAMP}.json"
 BENCH_HISTORY="$LOG_DIR/bc250-bench-history.csv"
 BENCH_VKPEAK_LOG="$LOG_DIR/bc250-bench-vkpeak-${TIMESTAMP}.log"
@@ -2850,7 +2850,7 @@ grep -qw "mitigations=off" /proc/cmdline && B_MITIGATIONS="off"
 log_result "INFO: Configuration: $B_CPU_MODEL, ${B_CORES}C/${B_THREADS}T, ${B_CUS:-unknown} CUs, governor max ${B_GOV_MAX:-unknown} MHz, mitigations $B_MITIGATIONS, kernel $(uname -r)"
 B_LOAD=$(awk '{print $1}' /proc/loadavg)
 if awk -v l="$B_LOAD" 'BEGIN {exit !(l > 1.5)}'; then
-    log_result "WARNING: The system is not idle (load average $B_LOAD); scores will be lower than they should be."
+    log_result "WARNING: The system is not idle (load average $B_LOAD), so scores will be lower than they should be."
     WARN_FOUND=true
 fi
 
@@ -2881,12 +2881,12 @@ if find_tool stress-ng; then
     if [ -n "$B_CPU_SINGLE" ] && [ -n "$B_CPU_MULTI" ]; then
         log_result "INFO: CPU single-thread: $B_CPU_SINGLE ops/s | multi-thread: $B_CPU_MULTI ops/s ($(awk -v m="$B_CPU_MULTI" -v s="$B_CPU_SINGLE" 'BEGIN {printf "%.1f", m/s}')x)"
     else
-        log_result "WARNING: stress-ng ran but reported no metrics; no CPU score."
+        log_result "WARNING: stress-ng ran but reported no metrics, so there is no CPU score."
         WARN_FOUND=true
     fi
 else
-    log_result "WARNING: stress-ng is not installed; no CPU score."
-    log_result "HINT: rpm-ostree install stress-ng   (then reboot), or: brew install stress-ng"
+    log_result "WARNING: stress-ng is not installed, so there is no CPU score."
+    log_result "HINT: rpm-ostree install stress-ng   (then restart), or brew install stress-ng"
     WARN_FOUND=true
 fi
 
@@ -2916,19 +2916,19 @@ if find_tool vkpeak; then
             # RDNA: 64 lanes x 2 FLOP (FMA) per CU per clock.
             B_GPU_PEAK=$(awk -v c="$B_CUS" -v f="$B_GPU_MHZ" 'BEGIN {printf "%.0f", c * 128 * f / 1000}')
             B_GPU_EFF=$(awk -v m="$B_GPU_FP32" -v p="$B_GPU_PEAK" 'BEGIN {printf "%.0f", 100 * m / p}')
-            log_result "INFO: Theoretical FP32 for $B_CUS CUs at $B_GPU_MHZ MHz: $B_GPU_PEAK GFLOPS; measured $B_GPU_EFF% of it."
+            log_result "INFO: Theoretical FP32 for $B_CUS CUs at $B_GPU_MHZ MHz is $B_GPU_PEAK GFLOPS. The board measured $B_GPU_EFF% of it."
             if [ "$B_GPU_EFF" -lt 75 ]; then
-                log_result "NOTE: Well below the theoretical peak: unlocked CUs that are not routed do no work,"
+                log_result "NOTE: This is well below the theoretical peak. Unlocked CUs that are not routed do no work,"
                 log_result "NOTE: and a clock that drops during the run lowers the result too."
             fi
         fi
     else
-        log_result "WARNING: vkpeak ran but reported no FP32 result; no GPU score. See $BENCH_VKPEAK_LOG."
+        log_result "WARNING: vkpeak ran but reported no FP32 result, so there is no GPU score. See $BENCH_VKPEAK_LOG."
         head -10 "$BENCH_VKPEAK_LOG" | tee -a "$LOG_FILE"
         WARN_FOUND=true
     fi
 else
-    log_result "WARNING: vkpeak is not installed; no GPU score."
+    log_result "WARNING: vkpeak is not installed, so there is no GPU score."
     log_result "HINT: Download the Linux build from https://github.com/nihui/vkpeak/releases,"
     log_result "HINT: unzip it and copy vkpeak to ~/.local/bin (chmod +x ~/.local/bin/vkpeak)."
     WARN_FOUND=true
@@ -2960,13 +2960,13 @@ d = {k: (v[:120] if isinstance(v, str) else v) for k, v in d.items()}
 if not all(isinstance(d.get(k), (int, float)) and d[k] > 0 for k in ("cpu_multi", "gpu_fp32")):
     sys.exit(1)
 print(json.dumps(d, indent=2))' <<<"$raw" 2>/dev/null) || {
-        log_result "WARNING: $BENCH_BASELINE_OLD is not a valid benchmark baseline; ignored."
+        log_result "WARNING: $BENCH_BASELINE_OLD is not a valid benchmark baseline, so it is ignored."
         WARN_FOUND=true
         return
     }
     if (umask 022; printf '%s\n' "$clean" > "$BENCH_BASELINE"); then
-        log_howto "INFO: Baseline moved to $BENCH_BASELINE (was $BENCH_BASELINE_OLD); every copy of the script now uses it." \
-                  "INFO: Baseline moved to $BENCH_BASELINE (was $BENCH_BASELINE_OLD); every run now uses it."
+        log_howto "INFO: Baseline moved to $BENCH_BASELINE (was $BENCH_BASELINE_OLD). Every copy of the script now uses it." \
+                  "INFO: Baseline moved to $BENCH_BASELINE (was $BENCH_BASELINE_OLD). Every run now uses it."
     fi
 }
 bench_load_legacy_baseline
@@ -2979,12 +2979,12 @@ if [ "$BENCH_SAVE_BASELINE" != true ] && [ -r "$BENCH_BASELINE" ]; then
     B_GPU_SCORE=$(ratio "$B_GPU_FP32" "$(json_num gpu_fp32)")
     BASE_DESC="$(json_num cores)C/$(json_num threads)T, $(json_num cus) CUs, $(json_num gpu_mhz) MHz"
     log_result "INFO: Baseline: $BASE_DESC ($BENCH_BASELINE = 100)"
-    [ -n "$B_CPU_SCORE" ] && log_result "SUCCESS: CPU score: $B_CPU_SCORE (multi-thread; single-thread: ${B_CPU1_SCORE:-n/a})"
+    [ -n "$B_CPU_SCORE" ] && log_result "SUCCESS: CPU score: $B_CPU_SCORE for multi-thread, ${B_CPU1_SCORE:-n/a} for single-thread."
     [ -n "$B_GPU_SCORE" ] && log_result "SUCCESS: GPU score: $B_GPU_SCORE (FP32 compute)"
 elif [ "$BENCH_SAVE_BASELINE" != true ]; then
-    log_result "INFO: No baseline yet ($BENCH_BASELINE), so no scores; the raw results are saved."
+    log_result "INFO: No baseline yet ($BENCH_BASELINE), so there are no scores. The raw results are saved."
     log_howto "NOTE: Run the benchmark once with --save-baseline on a stock board (24 CUs, 6C/12T," \
-              "NOTE: Tick 'Save as baseline' and run the benchmark once on a stock board (24 CUs, 6C/12T,"
+              "NOTE: Check 'Save as baseline' and run the benchmark once on a stock board (24 CUs, 6C/12T,"
     log_result "NOTE: governor max 1850 MHz). Every later run is then scored against it (stock = 100)."
 fi
 
@@ -2995,7 +2995,7 @@ fi
 # drivers, the Vulkan feature set (test 47) and the CPU decide actual game performance.
 if [ -n "$B_GPU_FP32" ]; then
     B_GPU_TF=$(awk -v g="$B_GPU_FP32" 'BEGIN {printf "%.2f", g / 1000}')
-    log_result "INFO: GPU compute ladder: this board measured $B_GPU_FP32 GFLOPS (${B_GPU_TF} TFLOPS) FP32."
+    log_result "INFO: GPU compute ladder. This board measured $B_GPU_FP32 GFLOPS (${B_GPU_TF} TFLOPS) FP32."
     while IFS='|' read -r REF_NAME REF_GF; do
         [ -n "$REF_GF" ] || continue
         PCT=$(awk -v m="$B_GPU_FP32" -v r="$REF_GF" 'BEGIN {printf "%.0f", 100 * m / r}')
@@ -3010,9 +3010,9 @@ GeForce RTX 4060 (desktop)|15100
 GeForce RTX 4090 (desktop)|82600
 LADDER
     log_result "NOTE: FP32 ranks raw shader compute only. The BC-250 is a cut-down PS5 SoC with console-class"
-    log_result "NOTE: GDDR6 bandwidth; the Vulkan feature matrix (test 47) and the UMA memory split set the real"
-    log_result "NOTE: game limit. RDNA3 dual-issue peaks (Steam Machine, RTX-class marketing numbers) overstate"
-    log_result "NOTE: per-CU game performance, so treat those rungs as optimistic for the reference system."
+    log_result "NOTE: GDDR6 bandwidth. The Vulkan feature matrix (test 47) and the UMA memory split set the real"
+    log_result "NOTE: game limit. RDNA3 dual-issue peaks overstate per-CU game performance. That holds for the Steam Machine"
+    log_result "NOTE: and RTX-class marketing numbers, so treat those rungs as optimistic for the reference system."
 fi
 
 # ---- save ------------------------------------------------------------------
@@ -3039,24 +3039,24 @@ JSON
 [ -f "$BENCH_HISTORY" ] || echo "date,cores,threads,cus,gpu_max_mhz,gpu_mhz,mitigations,cpu_single,cpu_multi,gpu_fp32,gpu_copy_gbps,cpu_score,gpu_score,kernel" >"$BENCH_HISTORY"
 echo "$B_DATE,${B_CORES},${B_THREADS},${B_CUS},${B_GOV_MAX},${B_GPU_MHZ},$B_MITIGATIONS,${B_CPU_SINGLE},${B_CPU_MULTI},${B_GPU_FP32},${B_GPU_BW},${B_CPU_SCORE},${B_GPU_SCORE},$B_KERNEL" >>"$BENCH_HISTORY"
 chmod 644 "$BENCH_JSON" "$BENCH_HISTORY" "$BENCH_VKPEAK_LOG" 2>/dev/null
-log_result "INFO: Result saved to $BENCH_JSON; all runs are listed in $BENCH_HISTORY."
+log_result "INFO: Result saved to $BENCH_JSON. All runs are listed in $BENCH_HISTORY."
 # One machine-readable line for the GUI.
 log_result "BENCH: cpu_single=${B_CPU_SINGLE} cpu_multi=${B_CPU_MULTI} gpu_fp32=${B_GPU_FP32} gpu_copy=${B_GPU_BW} cpu_score=${B_CPU_SCORE} cpu1_score=${B_CPU1_SCORE} gpu_score=${B_GPU_SCORE} cores=${B_CORES} threads=${B_THREADS} cus=${B_CUS} gpu_mhz=${B_GPU_MHZ}"
 
 if [ "$BENCH_SAVE_BASELINE" = true ]; then
     if [ -z "$B_CPU_MULTI" ] || [ -z "$B_GPU_FP32" ]; then
-        log_result "ERROR: Baseline NOT saved: both a CPU and a GPU result are needed."
+        log_result "ERROR: Baseline NOT saved. It needs both a CPU and a GPU result."
         ERROR_FOUND=true
     else
         if [ "$B_CUS" != 24 ] || [ "$B_THREADS" != 12 ]; then
-            log_result "WARNING: This board is not in the stock configuration (${B_CUS:-?} CUs, $B_THREADS threads);"
-            log_result "WARNING: the baseline is saved anyway, but scores will be relative to this setup."
+            log_result "WARNING: This board is not in the stock configuration (${B_CUS:-?} CUs, $B_THREADS threads)."
+            log_result "WARNING: The baseline is saved anyway, but scores will be relative to this setup."
             WARN_FOUND=true
         fi
         # Root-owned log folder: no chown, and nothing is written into the user's folders as root.
         rm -f -- "$BENCH_BASELINE"
         (umask 022; cp -- "$BENCH_JSON" "$BENCH_BASELINE")
-        log_result "SUCCESS: Saved as the baseline: $BENCH_BASELINE (scores of later runs are relative to this = 100)."
+        log_result "SUCCESS: Saved as the baseline: $BENCH_BASELINE. Scores of later runs are relative to this, which counts as 100."
     fi
 fi
 rm -rf "$BENCH_TMP"
@@ -3065,13 +3065,13 @@ fi
 fi  # TEST 42
 if want 60; then
 log_result "[TEST 60] VKCube Test (Vulkan on the screen)"
-log_result "Draws the Vulkan tools' spinning cube in a window for a few seconds: proof that Vulkan reaches the display"
+log_result "Draws the Vulkan tools' spinning cube in a window for a few seconds. That proves Vulkan reaches the display."
 VKCUBE_SECS=5
 if ! find_tool vkcube; then
-    log_result "INFO: vkcube is not installed; nothing was drawn."
-    log_result "HINT: It is part of vulkan-tools, which comes with Bazzite. A Flatpak is not detected; it must be on PATH."
+    log_result "INFO: vkcube is not installed, so nothing was drawn."
+    log_result "HINT: It is part of vulkan-tools, which comes with Bazzite. A Flatpak is not detected. It must be on PATH."
 elif [ -z "$GAME_USER" ] || [ "$GAME_USER" = root ]; then
-    log_result "INFO: No desktop user to draw for (the run was started as root itself); skipped."
+    log_result "INFO: Skipped. The run was started as root itself, so there is no desktop user to draw for."
 else
     VKCUBE_BIN="$TOOL"
     # The session of the desktop user's running compositor, the way test 41 takes it for its GPU load.
@@ -3090,7 +3090,7 @@ else
         [ "${#VKCUBE_ENV[@]}" -gt 0 ] && { VKCUBE_SESSION="$comm"; break; }
     done
     if [ -z "$VKCUBE_SESSION" ]; then
-        log_result "INFO: No graphical session of $GAME_USER is running (a run over SSH, or before login); skipped."
+        log_result "INFO: Skipped. No graphical session of $GAME_USER is running. This is a run over SSH, or before login."
         log_result "HINT: Run this test from the desktop or from Game Mode to see the cube."
     else
         VKCUBE_LOG=$(mktemp)
@@ -3102,16 +3102,16 @@ else
             setsid env "${VKCUBE_ENV[@]}" timeout -k 5 "$((VKCUBE_SECS + 15))" "$VKCUBE_BIN" >"$VKCUBE_LOG" 2>&1 &
         fi
         VKCUBE_PID=$!
-        log_result "INFO: vkcube started as $GAME_USER in the session of $VKCUBE_SESSION; the cube shows for ${VKCUBE_SECS} s."
+        log_result "INFO: vkcube started as $GAME_USER in the session of $VKCUBE_SESSION. The cube shows for ${VKCUBE_SECS} s."
         sleep "$VKCUBE_SECS"
         VKCUBE_GPU=$(grep -m1 -oE "Selected GPU [0-9]+: .*" "$VKCUBE_LOG" 2>/dev/null | sed 's/, type:.*//')
         if kill -0 "$VKCUBE_PID" 2>/dev/null; then
             [ -n "$VKCUBE_GPU" ] && log_result "INFO: $VKCUBE_GPU"
-            log_result "SUCCESS: vkcube drew for ${VKCUBE_SECS} s without an error: Vulkan presents to the screen."
+            log_result "SUCCESS: vkcube drew for ${VKCUBE_SECS} s without an error. Vulkan presents to the screen."
         else
-            log_result "ERROR: vkcube ended by itself within ${VKCUBE_SECS} s; no cube was shown."
+            log_result "ERROR: vkcube ended by itself within ${VKCUBE_SECS} s, so no cube was shown."
             [ -s "$VKCUBE_LOG" ] && { log_result "INFO: Its output was:"; head -20 "$VKCUBE_LOG" | tee -a "$LOG_FILE"; }
-            log_result "HINT: Run it by hand from the desktop session to see the message: vkcube"
+            log_result "HINT: Run vkcube by hand from the desktop session to see the message."
             ERROR_FOUND=true
         fi
         kill "$VKCUBE_PID" 2>/dev/null
@@ -3127,7 +3127,7 @@ if want 43; then
 log_result "[TEST 43] Disk Speed Test (read, write, SLC cache)"
 if [ "$DISK_MODE" != true ]; then
     log_howto "INFO: Skipped. Re-run with --disk-bench to measure read speed (nothing is written), or with" \
-              "INFO: Skipped. Start test 43 (Storage and memory page) to measure read speed (nothing is written); tick"
+              "INFO: Skipped. Start test 43 (Storage and memory page) to measure read speed. Nothing is written. Check"
     log_howto "INFO: --disk-write=GiB to also write GiB to a temporary file and measure write speed and the SLC cache." \
               "INFO: 'also test writes' to also write a temporary file and measure write speed and the SLC cache."
     echo
@@ -3139,7 +3139,7 @@ D_FSTYPE=$(findmnt -no FSTYPE -T "$DISK_TMPDIR" 2>/dev/null)
 D_PARTNAME=$(lsblk -snlo NAME,TYPE "$D_SRC" 2>/dev/null | awk '$2=="part" {print $1; exit}')
 D_NAME=$(lsblk -snlo NAME,TYPE "$D_SRC" 2>/dev/null | awk '$2=="disk" {print $1; exit}')
 if [ -z "$D_NAME" ]; then
-    log_result "ERROR: Could not find the disk that holds $DISK_TMPDIR (source: ${D_SRC:-unknown})."
+    log_result "ERROR: Could not find the disk that holds $DISK_TMPDIR. Its source is ${D_SRC:-unknown}."
     ERROR_FOUND=true
     echo
 else
@@ -3147,7 +3147,7 @@ D_DISK="/dev/$D_NAME"
 D_PART="/dev/${D_PARTNAME:-$D_NAME}"
 D_MODEL=$(lsblk -dno MODEL "$D_DISK" 2>/dev/null | sed 's/[[:space:]]*$//')
 D_CTRL=""; [[ "$D_NAME" == nvme* ]] && D_CTRL="${D_NAME%n[0-9]*}"
-log_result "Testing $D_DISK (${D_MODEL:-unknown model}), the disk that holds the system; reading from $D_PART."
+log_result "Testing $D_DISK (${D_MODEL:-unknown model}), the disk that holds the system. Reading from $D_PART."
 
 disk_temp() {
     local h
@@ -3194,7 +3194,7 @@ if dd if="$D_PART" of=/dev/null bs=4M count=$((READ_MIB / 4)) iflag=direct statu
         WARN_FOUND=true
     fi
 else
-    log_result "ERROR: Reading $D_PART failed (see the dd error above)."
+    log_result "ERROR: Reading $D_PART failed. See the dd error above."
     ERROR_FOUND=true
 fi
 
@@ -3204,7 +3204,7 @@ fi
 FIO_FOUND=false; find_tool fio && FIO_FOUND=true
 if $FIO_FOUND && $TOOL_AS_USER; then
     log_result "INFO: Random 4K read skipped: $TOOL is user-installed, and it is never run as root."
-    log_result "HINT: For this test install fio system-wide: rpm-ostree install fio   (then reboot)"
+    log_result "HINT: For this test, install fio system-wide with rpm-ostree install fio   (then restart)"
 elif $FIO_FOUND; then
     FIO_BIN=$TOOL
     for qd in 1 32; do
@@ -3226,11 +3226,11 @@ except Exception:
         fi
     done
     if [ -n "${RAND_QD1_LAT:-}" ] && [ "$RAND_QD1_LAT" -gt 150 ]; then
-        log_result "NOTE: Random reads across the whole partition average ${RAND_QD1_LAT} µs; DRAM-less drives without a host memory buffer are typically this slow (drives with DRAM or HMB: ~50-100 µs)."
+        log_result "NOTE: Random reads across the whole partition average ${RAND_QD1_LAT} µs. DRAM-less drives without a host memory buffer are typically this slow. Drives with DRAM or HMB take about 50-100 µs."
     fi
 else
-    log_result "INFO: Random 4K read skipped: fio is not installed."
-    log_result "HINT: rpm-ostree install fio   (then reboot). A Homebrew fio is not used: it would have to run as root."
+    log_result "INFO: Random 4K read skipped, because fio is not installed."
+    log_result "HINT: rpm-ostree install fio   (then restart). A Homebrew fio is not used, because it would have to run as root."
 fi
 
 # ---- sequential write + SLC cache: temporary file, removed afterwards -------
@@ -3239,7 +3239,7 @@ if [ "${DISK_WRITE_GIB:-0}" -gt 0 ]; then
     DISK_CSV="$LOG_DIR/bc250-disk-${TIMESTAMP}.csv"
     AVAIL=$(df -B1 --output=avail "$DISK_TMPDIR" 2>/dev/null | tail -1 | tr -dc '0-9')
     if [ "${AVAIL:-0}" -lt $(( (DISK_WRITE_GIB + 5) * 1073741824 )) ]; then
-        log_result "WARNING: Write test skipped: it needs ${DISK_WRITE_GIB} GiB plus 5 GiB spare in $DISK_TMPDIR, only $(( ${AVAIL:-0} / 1073741824 )) GiB is free."
+        log_result "WARNING: Write test skipped. It needs ${DISK_WRITE_GIB} GiB plus 5 GiB spare in $DISK_TMPDIR, and only $(( ${AVAIL:-0} / 1073741824 )) GiB is free."
         WARN_FOUND=true
     else
         : > "$D_FILE"
@@ -3247,19 +3247,19 @@ if [ "${DISK_WRITE_GIB:-0}" -gt 0 ]; then
         # file, otherwise the zeros written below would shrink to nothing and the result would be fake.
         chattr +C "$D_FILE" 2>/dev/null
         if [ "$D_FSTYPE" = btrfs ] && ! lsattr "$D_FILE" 2>/dev/null | awk '{print $1}' | grep -q C; then
-            log_result "WARNING: Write test skipped: could not disable btrfs compression on the test file (chattr +C)."
+            log_result "WARNING: Write test skipped. btrfs compression could not be turned off for the test file (chattr +C)."
             WARN_FOUND=true
             rm -f "$D_FILE"
         else
-            log_result "Writing ${DISK_WRITE_GIB} GiB to $D_FILE in 256 MiB chunks (direct I/O, flushed); telemetry in $DISK_CSV"
-            trap 'rm -f "$D_FILE"; log_result "Disk test interrupted; removed $D_FILE."; exit 130' INT TERM
+            log_result "Writing ${DISK_WRITE_GIB} GiB to $D_FILE in 256 MiB chunks (direct I/O, flushed). The telemetry goes to $DISK_CSV"
+            trap 'rm -f "$D_FILE"; log_result "Disk test interrupted. Removed $D_FILE."; exit 130' INT TERM
             echo "elapsed_s,written_gib,write_mbps,drive_temp_c" > "$DISK_CSV"
             CHUNKS=$(( DISK_WRITE_GIB * 4 )); STEP=4; [ "$CHUNKS" -gt 64 ] && STEP=16
             W_START=$(date +%s%N); W_STOP=""
             for ((i = 0; i < CHUNKS; i++)); do
                 t0=$(date +%s%N)
                 if ! dd if=/dev/zero of="$D_FILE" bs=4M count=64 seek=$((i * 64)) oflag=direct conv=notrunc,fdatasync status=none 2>>"$LOG_FILE"; then
-                    W_STOP="the write failed (see the dd error above)"; break
+                    W_STOP="the write failed, see the dd error above"; break
                 fi
                 t1=$(date +%s%N)
                 T=$(disk_temp)
@@ -3299,17 +3299,17 @@ if [ "${DISK_WRITE_GIB:-0}" -gt 0 ]; then
                 log_result "SUCCESS: Sequential write: ${W_BURST} MB/s at the start, ${W_SUS} MB/s at the end, ${W_AVG} MB/s average (peak drive temperature ${W_MAX_T/-/?} °C)."
                 if [ "$W_SLC" != "-" ] && [ $(( W_SUS * 10 )) -lt $(( W_BURST * 6 )) ]; then
                     if [ "$W_DROP_T" != "-" ] && [ "$W_DROP_T" -ge "$D_WARN_T" ]; then
-                        log_result "WARNING: Write speed fell after ~${W_SLC} GiB while the drive was at ${W_DROP_T} °C: that is thermal throttling, not the end of the SLC cache."
+                        log_result "WARNING: Write speed fell after ~${W_SLC} GiB while the drive was at ${W_DROP_T} °C. That is thermal throttling, not the end of the SLC cache."
                         log_result "HINT: Fit an M.2 heatsink or add airflow over the drive, then run the test again."
                         WARN_FOUND=true
                     else
                         log_result "INFO: SLC cache: about ${W_SLC} GiB. Writes run at ~${W_BURST} MB/s until it is full and at ~${W_SUS} MB/s after that."
                         if [ "$W_SUS" -lt 500 ]; then
-                            log_result "NOTE: ${W_SUS} MB/s after the cache is typical of QLC or DRAM-less TLC drives; game installs and updates larger than ~${W_SLC} GiB slow down to this speed."
+                            log_result "NOTE: ${W_SUS} MB/s after the cache is typical of QLC or DRAM-less TLC drives. Game installs and updates larger than ~${W_SLC} GiB slow down to this speed."
                         fi
                     fi
                 else
-                    log_result "INFO: No slowdown within ${DISK_WRITE_GIB} GiB: the SLC cache is larger than that (or the drive writes at full speed without one). Use a larger ${DISK_SIZE_WORD} to find its end."
+                    log_result "INFO: No slowdown within ${DISK_WRITE_GIB} GiB. The SLC cache is larger than that, or the drive writes at full speed without one. Use a larger ${DISK_SIZE_WORD} to find its end."
                 fi
                 if [ "$W_BURST" -lt 200 ]; then
                     log_result "WARNING: Write speed is very low from the start. Check the PCIe link in test 10, the drive temperature and free space."
@@ -3319,8 +3319,8 @@ if [ "${DISK_WRITE_GIB:-0}" -gt 0 ]; then
         fi
     fi
 else
-    log_howto "INFO: Write test not requested (--disk-write=GiB); nothing was written." \
-              "INFO: Write test not requested ('also test writes' not ticked); nothing was written."
+    log_howto "INFO: Write test not requested (--disk-write=GiB), so nothing was written." \
+              "INFO: Write test not requested, because 'also test writes' is not checked. Nothing was written."
 fi
 echo
 fi
@@ -3329,9 +3329,9 @@ fi  # TEST 43
 if want 44; then
 log_result "[TEST 44] Internet Speed Test (download, upload, latency under load)"
 if [ "$SPEEDTEST_MODE" != true ]; then
-    log_howto "INFO: Skipped. Re-run with --speedtest to measure download and upload speed and latency" \
-              "INFO: Skipped. Start test 44 (Network page) to measure download and upload speed and latency"
-    log_result "INFO: (uses about 1 GB of data on a fast connection)."
+    log_howto "INFO: Skipped. Re-run with --speedtest to measure download and upload speed and latency." \
+              "INFO: Skipped. Start test 44 (Network page) to measure download and upload speed and latency."
+    log_result "INFO: It uses about 1 GB of data on a fast connection."
     echo
 else
 ST_BIN=""
@@ -3360,7 +3360,7 @@ st_run() {
 }
 if st_run "$ST_BIN" --version 2>/dev/null | grep -qi ookla; then
     ST_KINDTOOL=ookla
-    log_result "Running Ookla speedtest (about 30 s; by running it you accept Ookla's license and GDPR terms)"
+    log_result "Running Ookla speedtest, about 30 s. By running it you accept Ookla's license and GDPR terms."
     ST_OUT=$(st_run timeout 180 "$ST_BIN" --accept-license --accept-gdpr -f json 2>>"$LOG_FILE")
 else
     ST_KINDTOOL=speedtest-cli
@@ -3407,7 +3407,7 @@ for k, v in out.items():
     print("%s=%s" % (k, str(v).replace("\n", " ").replace(",", " ")))
 ' "$ST_KINDTOOL" <<<"$ST_OUT" 2>/dev/null)
 if [ -z "${ST[down]:-}" ] || [ -z "${ST[up]:-}" ]; then
-    log_result "ERROR: The speed test did not produce a result (no connection, or the servers are unreachable)."
+    log_result "ERROR: The speed test did not produce a result. There is no connection, or the servers are unreachable."
     ERROR_FOUND=true
 else
     printf '%s\n' "$ST_OUT" > "$ST_JSON"; chmod 644 "$ST_JSON" 2>/dev/null
@@ -3415,40 +3415,40 @@ else
     log_result "SUCCESS: Download: ${ST[down]} Mbps (${ST[down_mb]:-?} MB used)${ST[down_lat]:+, latency while downloading ${ST[down_lat]} ms}"
     log_result "SUCCESS: Upload: ${ST[up]} Mbps (${ST[up_mb]:-?} MB used)${ST[up_lat]:+, latency while uploading ${ST[up_lat]} ms}"
     log_result "INFO: Idle latency: ${ST[ping]:-?} ms${ST[jitter]:+ (jitter ${ST[jitter]} ms)}"
-    [ "${ST[vpn]:-}" = yes ] && log_result "NOTE: The test ran through a VPN; the results reflect the VPN, not the line itself."
+    [ "${ST[vpn]:-}" = yes ] && log_result "NOTE: The test ran through a VPN. The results reflect the VPN, not the line itself."
     # Latency under load vs. idle ("bufferbloat") is what makes online games lag while something downloads.
     BLOAT=$(awk -v i="${ST[ping]:-0}" -v d="${ST[down_lat]:-0}" -v u="${ST[up_lat]:-0}" 'BEGIN { m = (d > u ? d : u); if (i > 0 && m > 0) printf "%d", m - i }')
     if [ -n "$BLOAT" ]; then
         if [ "$BLOAT" -gt 100 ]; then
             log_result "WARNING: Latency rises by ${BLOAT} ms while the line is busy (bufferbloat). Online games lag whenever something else downloads or uploads."
-            log_result "HINT: Enable SQM / Smart Queue Management (fq_codel or CAKE) in your router, set to ~90% of these speeds."
+            log_result "HINT: Turn on SQM / Smart Queue Management (fq_codel or CAKE) in your router, set to ~90% of these speeds."
             WARN_FOUND=true
         elif [ "$BLOAT" -gt 30 ]; then
-            log_result "INFO: Latency rises by ${BLOAT} ms under load (mild bufferbloat; SQM in the router would reduce it)."
+            log_result "INFO: Latency rises by ${BLOAT} ms under load, which is mild bufferbloat. SQM in the router would reduce it."
         else
             log_result "SUCCESS: Latency stays low under load (+${BLOAT} ms)."
         fi
     fi
     if [ -n "${ST[loss]:-}" ]; then
         if awk -v l="${ST[loss]}" 'BEGIN { exit !(l > 1) }'; then
-            log_result "WARNING: Packet loss: ${ST[loss]}%. Expect rubber-banding in online games; check the cable, Wi-Fi signal or router."
+            log_result "WARNING: Packet loss: ${ST[loss]}%. Expect rubber-banding in online games. Check the cable, Wi-Fi signal or router."
             WARN_FOUND=true
         else
             log_result "SUCCESS: Packet loss: ${ST[loss]}%"
         fi
     fi
     if [ -n "$ST_LINK" ] && awk -v d="${ST[down]}" -v l="$ST_LINK" 'BEGIN { exit !(d > 0.85 * l) }'; then
-        log_result "NOTE: The download is close to the ${ST_LINK} Mbit/s link speed of $ST_IFACE; the port, not the internet connection, is the limit."
+        log_result "NOTE: The download is close to the ${ST_LINK} Mbit/s link speed of $ST_IFACE. The port, not the internet connection, is the limit."
     elif [ "$ST_LINK" = 100 ] || [ "$ST_LINK" = 10 ]; then
         log_result "WARNING: $ST_IFACE is linked at only ${ST_LINK} Mbit/s. A damaged cable or a 2-pair cable limits gigabit ports to 100 Mbit/s."
         WARN_FOUND=true
     fi
-    [ "$ST_KIND" = "Wi-Fi" ] && log_result "HINT: Wi-Fi adds latency and jitter; a cable gives more stable online gaming and faster Steam downloads."
+    [ "$ST_KIND" = "Wi-Fi" ] && log_result "HINT: Wi-Fi adds latency and jitter. A cable gives more stable online gaming and faster Steam downloads."
     [ -n "${ST[url]:-}" ] && log_result "INFO: Result URL: ${ST[url]}"
     [ -f "$ST_HISTORY" ] || echo "date,iface,link_mbps,server,isp,ping_ms,jitter_ms,down_mbps,up_mbps,down_latency_ms,up_latency_ms,packet_loss_pct" > "$ST_HISTORY"
     echo "$(date '+%Y-%m-%d %H:%M:%S'),${ST_IFACE},${ST_LINK},${ST[server]:-},${ST[isp]:-},${ST[ping]:-},${ST[jitter]:-},${ST[down]},${ST[up]},${ST[down_lat]:-},${ST[up_lat]:-},${ST[loss]:-}" >> "$ST_HISTORY"
     chmod 644 "$ST_HISTORY" 2>/dev/null
-    log_result "INFO: Result saved to $ST_JSON; all runs are listed in $ST_HISTORY."
+    log_result "INFO: Result saved to $ST_JSON. All runs are listed in $ST_HISTORY."
 fi
 echo
 fi
@@ -3464,7 +3464,7 @@ if command -v vulkaninfo >/dev/null 2>&1; then
     VK_HW=$(awk '/^GPU[0-9]+:/ {i++} i {blk[i] = blk[i] $0 "\n"}
         END {for (k = 1; k <= i; k++) if (blk[k] ~ /deviceName/ && blk[k] !~ /llvmpipe/) {printf "%s", blk[k]; exit}}' <<<"$VK_FULL")
     if [ -z "$VK_HW" ]; then
-        log_result "WARNING: No hardware Vulkan device (llvmpipe only, or no output); the matrix below would"
+        log_result "WARNING: No hardware Vulkan device, only llvmpipe or no output. The matrix below would"
         log_result "WARNING: describe the software fallback, not the GPU. Fix test 20 first."
         WARN_FOUND=true
     else
@@ -3474,10 +3474,10 @@ if command -v vulkaninfo >/dev/null 2>&1; then
         log_result "INFO: Vulkan API version: ${VK_API:-unknown}"
         VK_MAJMIN=$(cut -d. -f1-2 <<<"${VK_API:-0.0}")
         if awk -v v="$VK_MAJMIN" 'BEGIN {exit !(v >= 1.3)}'; then
-            log_result "SUCCESS: Vulkan ${VK_MAJMIN} meets what DXVK 2.x and vkd3d-proton (DX12) require; current"
+            log_result "SUCCESS: Vulkan ${VK_MAJMIN} meets what DXVK 2.x and vkd3d-proton (DX12) require. Current"
             log_result "SUCCESS: Proton versions run on this driver."
         else
-            log_result "WARNING: Vulkan ${VK_MAJMIN:-?} is below 1.3; recent DXVK/vkd3d-proton need 1.3. Update Mesa (Bazzite update)."
+            log_result "WARNING: Vulkan ${VK_MAJMIN:-?} is below 1.3, and recent DXVK/vkd3d-proton need 1.3. Update Mesa (Bazzite update)."
             WARN_FOUND=true
         fi
         vk_has() { grep -q "$1" <<<"$VK_HW"; }
@@ -3486,18 +3486,18 @@ if command -v vulkaninfo >/dev/null 2>&1; then
                    VK_EXT_mesh_shader VK_KHR_fragment_shading_rate VK_EXT_graphics_pipeline_library; do
             if vk_has "$ext"; then VK_MATRIX+="yes  $ext"$'\n'; else VK_MATRIX+="no   $ext"$'\n'; fi
         done
-        log_result "INFO: Feature matrix (yes = the driver exposes it on this GPU):"
+        log_result "INFO: Feature matrix, where yes means the driver exposes it on this GPU:"
         printf '%s' "$VK_MATRIX" | tee -a "$LOG_FILE"
         if vk_has VK_KHR_ray_query || vk_has VK_KHR_ray_tracing_pipeline; then
             log_result "SUCCESS: Hardware ray tracing is exposed. RT-required titles (Indiana Jones: The Great Circle,"
-            log_result "SUCCESS: Doom: The Dark Ages) can start; whether they are playable is a performance question (test 48)."
+            log_result "SUCCESS: Doom: The Dark Ages) can start. Whether they are playable is a performance question (test 48)."
         else
             log_result "NOTE: No ray tracing extensions. Games that REQUIRE hardware RT will refuse to run on this"
             log_result "NOTE: system no matter how it is tuned — that is a hard limit of the silicon/driver, examples:"
             log_result "NOTE: Indiana Jones: The Great Circle, Doom: The Dark Ages, and future idTech/UE5-Lumen-HW titles."
         fi
         if ! vk_has VK_EXT_mesh_shader; then
-            log_result "NOTE: No mesh shaders. Current engines (UE5 Nanite, Alan Wake 2) carry a slower fallback path;"
+            log_result "NOTE: No mesh shaders. Current engines such as UE5 Nanite and Alan Wake 2 carry a slower fallback path, and"
             log_result "NOTE: titles that drop the fallback in the future will not run."
         fi
         if ! vk_has VK_EXT_graphics_pipeline_library; then
@@ -3506,17 +3506,17 @@ if command -v vulkaninfo >/dev/null 2>&1; then
         fi
     fi
 else
-    log_result "WARNING: vulkaninfo is not installed; the feature matrix needs it."
-    log_result "HINT: rpm-ostree install vulkan-tools   (then reboot)"
+    log_result "WARNING: vulkaninfo is not installed, and the feature matrix needs it."
+    log_result "HINT: rpm-ostree install vulkan-tools   (then restart)"
     WARN_FOUND=true
 fi
 VRAM_B=$(read_num_g "$GPU_DEV/mem_info_vram_total")
 if [ "$VRAM_B" -gt 0 ]; then
     VRAM_G=$((VRAM_B / 1073741824))
-    log_result "INFO: VRAM carveout: ${VRAM_G} GiB (plus GTT spill from shared memory)."
+    log_result "INFO: VRAM carveout: ${VRAM_G} GiB, plus GTT spill from shared memory."
     if [ "$VRAM_G" -lt 8 ]; then
         log_result "NOTE: Modern AAA titles recommend 8 GiB+ of VRAM. On this unified-memory board the carveout is"
-        log_result "NOTE: adjustable: see the manual section on bc250_memcfg (a larger split also fixes pin failures)."
+        log_result "NOTE: adjustable. See the wiki section on bc250_memcfg. A larger split also fixes pin failures."
     else
         log_result "SUCCESS: The ${VRAM_G} GiB carveout meets the common 8 GiB recommendation of current AAA titles."
     fi
@@ -3525,7 +3525,7 @@ echo
 fi  # TEST 47
 if want 48; then
 log_result "[TEST 48] Real-Game Frametime Analysis Test (MangoHud logs)"
-log_result "Synthetic scores (test 42) rank compute; this reads real play sessions: FPS, 1%/0.1% lows, stutter"
+log_result "Synthetic scores (test 42) rank compute. This reads real play sessions for FPS, 1%/0.1% lows and stutter."
 mh_user() { if [ "$(id -u)" = 0 ] && [ -n "$GAME_USER" ] && [ "$GAME_USER" != root ]; then sudo -u "$GAME_USER" -H -- "$@"; else "$@"; fi; }
 MH_DIRS=()
 MH_CONF_DIR=$(mh_user cat -- "$GAME_HOME/.config/MangoHud/MangoHud.conf" 2>/dev/null \
@@ -3535,12 +3535,12 @@ MH_DIRS+=("$GAME_HOME/mangohud-logs" "$GAME_HOME/.local/share/MangoHud")
 MH_FILES=$(mh_user find "${MH_DIRS[@]}" -maxdepth 1 -type f -name '*.csv' -printf '%T@ %p\n' 2>/dev/null \
     | sort -rn | head -5 | cut -d' ' -f2-)
 if [ -z "$MH_FILES" ]; then
-    log_result "INFO: No MangoHud logs found (looked in: ${MH_DIRS[*]})."
-    log_result "INFO: To collect real-game evidence, enable logging once in ~/.config/MangoHud/MangoHud.conf:"
+    log_result "INFO: No MangoHud logs found. Looked in ${MH_DIRS[*]}."
+    log_result "INFO: To collect real-game evidence, turn on logging once in ~/.config/MangoHud/MangoHud.conf:"
     log_result "INFO:   output_folder=$GAME_HOME/mangohud-logs"
     log_result "INFO:   autostart_log=1"
     log_result "INFO:   log_interval=0"
-    log_result "INFO: start games with 'mangohud %command%', play, then rerun this test."
+    log_result "INFO: Start games with 'mangohud %command%', play, then run this test again."
 else
     MH_ANALYSED=0
     while IFS= read -r MH_F; do
@@ -3574,18 +3574,18 @@ else
                 # Judge smoothness, not speed: lows far under the average are stutter the average hides.
                 MH_RATIO=$(awk -v a="$MH_AVG" -v l="$MH_P1" 'BEGIN {if (a > 0) printf "%.0f", 100 * l / a}')
                 if [ -n "$MH_RATIO" ] && [ "$MH_RATIO" -lt 50 ]; then
-                    log_result "WARNING:   The 1% low is only ${MH_RATIO}% of the average: noticeable stutter in this session."
-                    log_result "HINT:   Common causes here: first-run shader compilation, the VRAM carveout filling up"
+                    log_result "WARNING:   The 1% low is only ${MH_RATIO}% of the average, which is noticeable stutter in this session."
+                    log_result "HINT:   Common causes here are first-run shader compilation, the VRAM carveout filling up"
                     log_result "HINT:   (test 37), or hhd running (test 27). A second session of the same game that keeps"
                     log_result "HINT:   this ratio points at memory pressure rather than shader compilation."
                     WARN_FOUND=true
                 elif [ -n "$MH_RATIO" ]; then
-                    log_result "SUCCESS:   Frametimes are consistent (1% low is ${MH_RATIO}% of the average)."
+                    log_result "SUCCESS:   Frametimes are consistent. The 1% low is ${MH_RATIO}% of the average."
                 fi ;;
             SHORT*)
-                log_result "INFO: $(basename "$MH_F"): too short to judge ($(cut -d' ' -f2 <<<"$MH_RES") frames); skipped." ;;
+                log_result "INFO: $(basename "$MH_F"): skipped, too short to judge ($(cut -d' ' -f2 <<<"$MH_RES") frames)." ;;
             *)
-                log_result "INFO: $(basename "$MH_F"): no frametime column found; skipped." ;;
+                log_result "INFO: $(basename "$MH_F"): skipped, no frametime column found." ;;
         esac
         [ "$MH_ANALYSED" -ge 3 ] && break
     done <<<"$MH_FILES"
@@ -3595,7 +3595,7 @@ echo
 fi  # TEST 48
 if want 49; then
 log_result "[TEST 49] CPU Memory Bandwidth Test"
-log_result "The GDDR6 gives the GPU console-class bandwidth, but the CPU pays latency for it; this measures the CPU side"
+log_result "The GDDR6 gives the GPU console-class bandwidth, but the CPU pays latency for it. This measures the CPU side."
 if find_tool stress-ng; then
     STREAM_CMD=("${TOOL_CMD[@]}")
     MEMBW_TMP=$(mktemp -d)
@@ -3620,31 +3620,31 @@ if find_tool stress-ng; then
         log_result "NOTE: work: it explains why single-thread-bound games lose more on this board than compute"
         log_result "NOTE: benchmarks (test 42) suggest."
         if awk -v n="$MEMBW_N" -v s="$MEMBW_1" 'BEGIN {exit !(s > 0 && n < s * 1.5)}'; then
-            log_result "WARNING: All-thread bandwidth barely scales over one thread; memory is the bottleneck under load."
+            log_result "WARNING: All-thread bandwidth barely scales over one thread, so memory is the bottleneck under load."
             WARN_FOUND=true
         else
             log_result "SUCCESS: Bandwidth scales with threads ($(awk -v n="$MEMBW_N" -v s="$MEMBW_1" 'BEGIN {printf "%.1f", n / s}')x)."
         fi
     else
-        log_result "WARNING: stress-ng ran but reported no bandwidth figure; no result."
+        log_result "WARNING: stress-ng ran but reported no bandwidth figure, so there is no result."
         WARN_FOUND=true
     fi
 else
-    log_result "INFO: stress-ng is not installed; skipping the bandwidth measurement."
-    log_result "HINT: rpm-ostree install stress-ng   (then reboot), or: brew install stress-ng"
+    log_result "INFO: stress-ng is not installed, so the bandwidth measurement is skipped."
+    log_result "HINT: rpm-ostree install stress-ng   (then restart), or brew install stress-ng"
 fi
 echo
 fi  # TEST 49
 if want 50; then
 log_result "[TEST 50] Video Decode and Encode Matrix Test (VCN)"
-log_result "What the media block accelerates: matters for streaming, recording (OBS) and video playback while gaming"
+log_result "What the media block accelerates. It matters for streaming, recording (OBS) and video playback while gaming."
 VCN_BOOT=$(journalctl -b -k --no-pager -q 2>/dev/null | grep -iE "\[drm\].*vcn|vcn.*(enabled|initialized|firmware)" | tail -3)
 if [ -n "$VCN_BOOT" ]; then
     log_result "INFO: Kernel VCN messages:"
     echo "$VCN_BOOT" | tee -a "$LOG_FILE"
 else
-    log_result "NOTE: The kernel logged nothing about VCN this boot: amdgpu did not initialize a media block"
-    log_result "NOTE: on this board. Then there is no hardware video decode or encode at all — a hardware fact,"
+    log_result "NOTE: The kernel logged nothing about VCN this boot, so amdgpu did not initialize a media block"
+    log_result "NOTE: on this board. Then there is no hardware video decode or encode at all, which is a hardware fact,"
     log_result "NOTE: not a configuration problem. Video plays fine but decodes on the CPU."
 fi
 if command -v vainfo >/dev/null 2>&1; then
@@ -3665,45 +3665,45 @@ if command -v vainfo >/dev/null 2>&1; then
         done
         if ! va_has "AV1" "VLD"; then
             log_result "NOTE: No AV1 decode: AV1 streams (YouTube increasingly serves them) fall back to the CPU."
-            log_result "NOTE: Playable, but it costs CPU headroom while gaming; forcing H.264/VP9 in the browser avoids it."
+            log_result "NOTE: Playable, but it costs CPU headroom while gaming. Forcing H.264/VP9 in the browser avoids it."
         fi
         if va_has "H264" "EncSlice|EncSliceLP" || va_has "HEVC" "EncSlice|EncSliceLP"; then
-            log_result "SUCCESS: Hardware encoding is available: OBS/recording can use VA-API (H.264/HEVC) at near-zero CPU cost."
+            log_result "SUCCESS: Hardware encoding is available. OBS and recording can use VA-API (H.264/HEVC) at near-zero CPU cost."
         else
-            log_result "NOTE: No hardware encoder exposed: recording and streaming will encode on the CPU."
+            log_result "NOTE: No hardware encoder exposed, so recording and streaming will encode on the CPU."
         fi
     elif [ -z "$VCN_BOOT" ]; then
-        log_result "INFO: vainfo exposes no profiles, consistent with the kernel initializing no VCN block (above):"
-        log_result "INFO: this board simply has no hardware video engine to talk to. Nothing to fix."
+        log_result "INFO: vainfo exposes no profiles, consistent with the kernel initializing no VCN block (above)."
+        log_result "INFO: This board has no hardware video engine to talk to. Nothing to fix."
     else
-        log_result "WARNING: The kernel initialized VCN, but vainfo exposes no profiles; the VA-API userspace is broken."
+        log_result "WARNING: The kernel initialized VCN, but vainfo exposes no profiles, so the VA-API userspace is broken."
         log_result "INFO: vainfo said:"
         echo "$VA_OUT" | grep -vE "^$" | head -6 | tee -a "$LOG_FILE"
         VA_DRV_FOUND=$(ls /usr/lib64/dri/radeonsi_drv_video.so 2>/dev/null)
         if [ -z "$VA_DRV_FOUND" ]; then
             log_result "HINT: /usr/lib64/dri/radeonsi_drv_video.so is missing. Fedora strips H.264/HEVC from its Mesa"
-            log_result "HINT: VA-API driver; install the freeworld build: rpm-ostree install mesa-va-drivers-freeworld"
+            log_result "HINT: VA-API driver. Install the freeworld build with rpm-ostree install mesa-va-drivers-freeworld"
         fi
         WARN_FOUND=true
     fi
 else
-    log_result "INFO: vainfo is not installed; the codec matrix needs it."
-    log_result "HINT: rpm-ostree install libva-utils   (then reboot)"
+    log_result "INFO: vainfo is not installed, and the codec matrix needs it."
+    log_result "HINT: rpm-ostree install libva-utils   (then restart)"
 fi
 echo
 fi  # TEST 50
 if want 51; then
 log_result "[TEST 51] HDMI-CEC Test"
-log_result "Whether the board can control the TV over HDMI: on and off, its input and its remote (BC-250 CEC Manager)"
+log_result "Whether the board can control the TV over HDMI. That covers on and off, its input and its remote (BC-250 CEC Manager)."
 CEC_DEVS=$(ls /dev/cec* 2>/dev/null)
 if [ -z "$CEC_DEVS" ]; then
     log_result "INFO: No CEC adapter (/dev/cec*). On the BC-250 amdgpu adds one for a DisplayPort output only when the"
-    log_result "INFO: DP-to-HDMI cable or adapter reports CEC tunnelling; this one does not, so the board cannot control"
-    log_result "INFO: the TV. Not a fault: the picture and sound do not need CEC."
+    log_result "INFO: DP-to-HDMI cable or adapter reports CEC tunneling. This one does not, so the board cannot control"
+    log_result "INFO: the TV. This is not a fault. The picture and sound do not need CEC."
     log_result "HINT: A DP-to-HDMI adapter that passes CEC, or a USB CEC adapter (Pulse-Eight), adds it."
 elif ! command -v cec-ctl >/dev/null 2>&1; then
     log_result "INFO: CEC adapter: $(echo $CEC_DEVS), but cec-ctl is not installed to read it."
-    log_result "HINT: rpm-ostree install v4l-utils   (then reboot)"
+    log_result "HINT: rpm-ostree install v4l-utils   (then restart)"
 else
     # cec-ctl -d DEV with no message only prints the adapter's state; the poll below is the one message sent.
     cec_field() { sed -n "s/^[[:space:]]*$1[[:space:]]*: //p" <<<"$CEC_INFO" | head -1; }
@@ -3713,18 +3713,18 @@ else
         CEC_LA=$(cec_field "Logical Address")
         log_result "INFO: $CEC_DEV: driver $(cec_field "Driver Name"), adapter $(cec_field "Adapter Name"), physical address ${CEC_PA:-unknown}"
         if [ -z "$CEC_PA" ] || [ "$CEC_PA" = "f.f.f.f" ]; then
-            log_result "NOTE: The adapter sees no display: the TV is off or its EDID was not read. CEC needs both."
+            log_result "NOTE: The adapter sees no display. The TV is off or its EDID was not read. CEC needs both."
         elif [ -z "$CEC_LA" ]; then
             log_result "NOTE: Nothing has configured the adapter yet (no logical address), so the TV was not asked."
             log_result "HINT: BC-250 CEC Manager configures it with its first message, Valve's CEC daemon when it starts."
         # cec-ctl exits 0 either way; a "Tx, ..." status line without "Tx, OK" means the transmit failed.
         elif CEC_POLL=$(cec-ctl -d "$CEC_DEV" -s --poll --to 0 2>&1) && grep -q 'Sequence:' <<<"$CEC_POLL" &&
              ! grep -qE '^[[:space:]]*Tx, ([^O]|O[^K])' <<<"$CEC_POLL"; then
-            log_result "SUCCESS: The TV answers on $CEC_DEV ($CEC_LA): the board can turn it on and off and switch its input."
+            log_result "SUCCESS: The TV answers on $CEC_DEV ($CEC_LA). The board can turn it on and off and switch its input."
         else
             log_result "NOTE: The TV does not answer a poll on $CEC_DEV. Check that CEC is switched on in the TV's settings"
-            log_result "NOTE: (Anynet+, SimpLink, Bravia Sync, HDMI control, ...) and that the TV is on. Some DP-to-HDMI"
-            log_result "NOTE: converters report CEC tunnelling but do not connect the CEC wire; then no setting helps."
+            log_result "NOTE: and that the TV is on. TVs call it Anynet+, SimpLink, Bravia Sync, HDMI control or another name. Some DP-to-HDMI"
+            log_result "NOTE: converters report CEC tunneling but do not connect the CEC wire. Then no setting helps."
         fi
     done
     if [ -f /etc/default/cec-control ] || command -v cecd >/dev/null 2>&1; then
@@ -3736,8 +3736,8 @@ else
         else
             CEC_MODE_NOW="disabled"
         fi
-        log_result "INFO: Bazzite CEC mode: $CEC_MODE_NOW. The automatic part (TV on and off with the board, the"
-        log_result "INFO: remote as a keyboard) is Valve's CEC daemon: ujust cec-mode native, or BC-250 CEC Manager."
+        log_result "INFO: Bazzite CEC mode: $CEC_MODE_NOW. Valve's CEC daemon does the automatic part, which is the TV on and off"
+        log_result "INFO: with the board and the remote as a keyboard. Turn it on with ujust cec-mode native, or in BC-250 CEC Manager."
     fi
 fi
 echo
@@ -3768,15 +3768,15 @@ else
     if [ "$CEC_STATE" = active ]; then
         log_result "SUCCESS: cecd.service runs for $GAME_USER: TV on and off with sleep and wake, and the remote as a keyboard, as its settings say."
     elif [ "$CEC_ENABLED" = false ]; then
-        log_result "INFO: cecd.service is not enabled (Bazzite's CEC mode is not native): nothing turns the TV on and off with the board."
+        log_result "INFO: cecd.service is not enabled, because Bazzite's CEC mode is not native. Nothing turns the TV on and off with the board."
         log_result "HINT: ujust cec-mode native, or Use Valve's CEC daemon... in BC-250 CEC Manager."
     elif [ -z "$CEC_STATE" ]; then
         cec_no_session cecd.service
     elif [ -z "$CEC_ADAPTER" ]; then
-        log_result "NOTE: cecd.service is enabled but '$CEC_STATE': there is no CEC adapter (/dev/cec*) for it to use."
+        log_result "NOTE: cecd.service is enabled but '$CEC_STATE'. There is no CEC adapter (/dev/cec*) for it to use."
     else
-        log_result "WARNING: cecd.service is enabled but '$CEC_STATE' for $GAME_USER: the TV does not follow the board and the remote does nothing."
-        log_result "HINT: Read why with: journalctl --user -b -u cecd; start it again with: systemctl --user restart cecd"
+        log_result "WARNING: cecd.service is enabled but '$CEC_STATE' for $GAME_USER. The TV does not follow the board and the remote does nothing."
+        log_result "HINT: To read why, run journalctl --user -b -u cecd. To start it again, run systemctl --user restart cecd"
         WARN_FOUND=true
     fi
 fi
@@ -3785,7 +3785,7 @@ fi
 CEC_WATCH="bc250-hdmi-cec-watch.service"
 CEC_WATCH_FILE="$CEC_HOME/.config/systemd/user/$CEC_WATCH"
 if [ -z "$CEC_HOME" ] || [ ! -f "$CEC_WATCH_FILE" ]; then
-    log_result "INFO: $CEC_WATCH is not installed: BC-250 CEC Manager adds it for Restart the picture or Pause videos and music."
+    log_result "INFO: $CEC_WATCH is not installed. BC-250 CEC Manager adds it for Restart the picture or Pause videos and music."
 else
     CEC_JOBS_TEXT=""
     grep -q -- '--restart-picture' "$CEC_WATCH_FILE" && CEC_JOBS_TEXT="restart the picture"
@@ -3793,12 +3793,12 @@ else
     CEC_JOBS_TEXT=${CEC_JOBS_TEXT:-do nothing}
     CEC_STATE=$(cec_user_state "$CEC_WATCH")
     if [ "$CEC_STATE" = active ]; then
-        log_result "SUCCESS: $CEC_WATCH runs for $GAME_USER: when the TV turns off and on, it will $CEC_JOBS_TEXT."
+        log_result "SUCCESS: $CEC_WATCH runs for $GAME_USER. When the TV turns off and on, it will $CEC_JOBS_TEXT."
     elif [ -z "$CEC_STATE" ]; then
         cec_no_session "$CEC_WATCH"
     else
-        log_result "WARNING: $CEC_WATCH is installed but '$CEC_STATE': nothing happens when the TV turns off and on."
-        log_result "HINT: Read why with: journalctl --user -b -u bc250-hdmi-cec-watch; start it again with: systemctl --user restart bc250-hdmi-cec-watch"
+        log_result "WARNING: $CEC_WATCH is installed but '$CEC_STATE', so nothing happens when the TV turns off and on."
+        log_result "HINT: To read why, run journalctl --user -b -u bc250-hdmi-cec-watch. To start it again, run systemctl --user restart bc250-hdmi-cec-watch"
         WARN_FOUND=true
     fi
 fi
@@ -3806,7 +3806,7 @@ fi
 # BC-250 CEC Manager's boot service: a system service that udev starts once per boot when a CEC adapter appears.
 CEC_BOOT="bc250-hdmi-cec-boot.service"
 if [ ! -f "/etc/systemd/system/$CEC_BOOT" ]; then
-    log_result "INFO: $CEC_BOOT is not installed: BC-250 CEC Manager adds it for At boot (the board's name, and the TV on, before login)."
+    log_result "INFO: $CEC_BOOT is not installed. BC-250 CEC Manager adds it for At boot. That covers the board's name, and the TV on, before login."
 else
     CEC_STATE=$(systemctl is-active "$CEC_BOOT" 2>/dev/null)
     if [ ! -f /etc/udev/rules.d/99-bc250-hdmi-cec-boot.rules ]; then
@@ -3816,13 +3816,13 @@ else
     elif [ "$CEC_STATE" = active ]; then
         log_result "SUCCESS: $CEC_BOOT ran at this boot. What it did: journalctl -b -u bc250-hdmi-cec-boot"
     elif [ "$CEC_STATE" = activating ]; then
-        log_result "NOTE: $CEC_BOOT is still running: it waits until the adapter sees the TV."
+        log_result "NOTE: $CEC_BOOT is still running. It waits until the adapter sees the TV."
     elif [ "$CEC_STATE" = failed ]; then
-        log_result "WARNING: $CEC_BOOT failed at this boot: the TV did not get the board's name."
-        log_result "HINT: Read why with: journalctl -b -u bc250-hdmi-cec-boot"
+        log_result "WARNING: $CEC_BOOT failed at this boot, so the TV did not get the board's name."
+        log_result "HINT: To read why, run journalctl -b -u bc250-hdmi-cec-boot"
         WARN_FOUND=true
     elif [ -z "$CEC_ADAPTER" ]; then
-        log_result "INFO: $CEC_BOOT has not run: it starts when a CEC adapter appears, and there is none (/dev/cec*)."
+        log_result "INFO: $CEC_BOOT has not run. It starts when a CEC adapter appears, and there is none (/dev/cec*)."
     else
         log_result "NOTE: $CEC_BOOT is '${CEC_STATE:-unknown}' although $CEC_ADAPTER is there. What happened: journalctl -b -u bc250-hdmi-cec-boot"
     fi
@@ -3833,7 +3833,7 @@ for CEC_UNIT in cec-onboot.service cec-onsleep.service cec-onpoweroff.service; d
     [ -n "$(systemctl list-unit-files --no-legend "$CEC_UNIT" 2>/dev/null)" ] || continue
     CEC_STATE=$(systemctl is-active "$CEC_UNIT" 2>/dev/null)
     if [ "$CEC_STATE" = failed ]; then
-        log_result "WARNING: $CEC_UNIT (Bazzite's dGPU CEC mode) failed. Read why with: journalctl -b -u ${CEC_UNIT%.service}"
+        log_result "WARNING: $CEC_UNIT (Bazzite's dGPU CEC mode) failed. To read why, run journalctl -b -u ${CEC_UNIT%.service}"
         WARN_FOUND=true
     elif systemctl is-enabled --quiet "$CEC_UNIT" 2>/dev/null; then
         log_result "INFO: $CEC_UNIT (Bazzite's dGPU CEC mode) is enabled / ${CEC_STATE:-unknown}."

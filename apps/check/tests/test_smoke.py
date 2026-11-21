@@ -85,7 +85,7 @@ def test_other_chapters_open_online():
 def test_manual_view_shows_the_chapter(qapp):
     from board_test.readme import ReadmeView
     view = ReadmeView()
-    assert "Read-only diagnostics" in view.browser.toPlainText() and "{ .app-logo }" not in view.browser.toPlainText()
+    assert "BC-250 Board Test checks" in view.browser.toPlainText() and "{ .app-logo }" not in view.browser.toPlainText()
     view.close()
 
 

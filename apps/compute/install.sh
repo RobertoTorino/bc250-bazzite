@@ -5,7 +5,7 @@
 #
 #   ./install.sh                         # install or update the app
 #   ./install.sh --no-desktop-shortcut   # app menu entry only, no icon on the Desktop
-#   ./install.sh --uninstall             # remove the app; keeps results, settings and logs
+#   ./install.sh --uninstall             # remove the app. Results, settings and logs stay
 #   ./install.sh --uninstall --purge     # also remove results, settings, logs and the autostart entries
 #
 # Run it as your own user, not with sudo; nothing here needs root. The app gets a venv with PyQt6 under

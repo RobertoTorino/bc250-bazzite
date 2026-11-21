@@ -17,14 +17,15 @@ def make(board) -> overlay.OverlayWindow:
 
 def test_format_reading():
     rows = overlay.format_reading(Reading(
-        cpu_load=12.4, cpu_mhz=3000, cpu_temp=72.1, gpu_load=45.5, gpu_mhz=2000, gpu_watts=95.3, gpu_mv=1056,
+        cpu_load=12.4, cpu_mhz=3000, cpu_temp=72.1, gpu_load=45.5, gpu_mhz=2000, chip_watts=95.3, gpu_mv=1056,
         gpu_temp=91.0, governor=(1000, 1850), vram=(900_000_000, 6_000_000_000), ram=(4_700_000_000, 9_400_000_000),
         vrm_temp=85.0, cpu_rail=Rail(mv=1050, amps=32.5, temp=47.0), gpu_rail=Rail(mv=950, amps=None, temp=90.0),
         vin_mv=11850, nvme_temp=40.0, net=(2_100_000.0, 80_000.0), disk=(150_000_000.0, 0.0),
         fans=(Fan("Pump Fan", 1169),)), 60.0)
     assert rows == {
         "cpu": ("12 % · 3000 MHz", ""),
-        "gpu": ("46 % · 2000 MHz · 95 W", ""),
+        "gpu": ("46 % · 2000 MHz", ""),                             # no current from the VRM: no GPU power
+        "chip": ("95 W", ""),                                       # the driver's value is the whole chip's
         "governor": ("1000–1850 MHz", ""),
         "gpu_volt": ("1056 mV", ""),
         "cpu_rail": ("1050 mV · 32.5 A · 34 W", ""),
@@ -60,7 +61,8 @@ def test_warm_is_orange():
 def test_window_shows_the_board(qapp, board):
     w = make(board)
     texts = {k: label.text() for k, label in w.values.items()}
-    assert texts["gpu"] == "46 % · 2000 MHz · 95 W" and texts["fan"] == "1169 RPM"
+    assert texts["gpu"] == "46 % · 2000 MHz" and texts["fan"] == "1169 RPM"       # no VRM module: no GPU power
+    assert texts["chip"] == "95 W"                                                # the driver's value: the whole chip
     assert texts["governor"] == "1000–1850 MHz" and texts["vram"] == "0.9 / 6.0 GB"
     assert texts["cpu_temp"] == "72 °C" and texts["vrm_temp"] == "58 °C"
     assert texts["cpu"] == "3000 MHz" and texts["net"] == overlay.DASH      # these need a second reading
@@ -85,6 +87,7 @@ def test_rail_rows_need_the_vrm_module(qapp, board):
     w.refresh()
     assert w.values["cpu_rail"].text() == "1050 mV · 32.5 A · 34 W"
     assert w.values["gpu_rail"].text() == "950 mV · 61.2 A · 58 W"
+    assert w.values["gpu"].text().endswith("· 58 W") and w.values["chip"].text() == "95 W"   # the GPU's own power
     assert w.values["cpu_vrm_temp"].text() == "47 °C" and w.values["gpu_vrm_temp"].text() == "55 °C"
     assert w.values["vrm_temp"].text() == "58 °C"                  # the Super I/O's own sensor stays
     assert all(w.values[key].toolTip() == "" for key in overlay.RAIL_ROWS)
@@ -94,7 +97,7 @@ def test_rail_rows_need_the_vrm_module(qapp, board):
 def test_gpu_without_the_governors_patch(qapp, board):
     (board / "sys/class/hwmon/hwmon2/device/gpu_metrics").write_bytes(gpu_metrics(0xFFFF))
     w = make(board)
-    assert w.values["gpu"].text() == "2000 MHz · 95 W"
+    assert w.values["gpu"].text() == "2000 MHz"
     assert "fix-metrics" in w.values["gpu"].toolTip()
     w.close()
 

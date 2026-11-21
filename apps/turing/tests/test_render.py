@@ -12,7 +12,7 @@ from PyQt6.QtGui import QColor, QImage
 from bc250_core.sensors import Fan, Reading
 from turing_screen import render, weather
 
-BOARD = Reading(cpu_load=12.4, cpu_mhz=3200, cpu_temp=72.1, gpu_load=None, gpu_mhz=2000, gpu_watts=95.3,
+BOARD = Reading(cpu_load=12.4, cpu_mhz=3200, cpu_temp=72.1, gpu_load=None, gpu_mhz=2000, chip_watts=95.3,
                 gpu_temp=91.0, vram=(900_000_000, 6_000_000_000), ram=(5_000_000_000, 10_000_000_000),
                 vrm_temp=58.0, nvme_temp=39.9, net=(1_500_000.0, 50_000.0), disk=(0.0, 2_000.0),
                 fans=(Fan("Pump Fan", 1169),))
@@ -24,7 +24,7 @@ def test_tiles_in_the_screens_order():
     cpu, gpu, net = tiles
     assert (cpu.value, cpu.detail, cpu.fraction, cpu.alert) == ("12 %", "3200 MHz · 72 °C", 0.124, None)
     # No GPU load without the governor's fix-metrics: the clock is the value, and 91 °C is hot.
-    assert (gpu.value, gpu.detail, gpu.fraction, gpu.alert) == ("2000 MHz", "95 W · 91 °C", None, render.RED)
+    assert (gpu.value, gpu.detail, gpu.fraction, gpu.alert) == ("2000 MHz", "91 °C", None, render.RED)
     assert (net.value, net.detail) == ("↓ 1.5 MB/s", "↑ 50.0 KB/s")
 
 
@@ -198,3 +198,14 @@ def test_rail_tiles_show_power_with_voltage_and_current():
     empty = {key: render.tiles(Reading(), (key,))[0].value for key in ("cpu_rail", "gpu_rail", "vin")}
     assert set(empty.values()) == {render.DASH}
     assert all(key in render.TILE_HINTS for key in ("cpu_rail", "gpu_rail", "vin"))
+
+
+def test_gpu_power_is_the_vrms_and_the_drivers_value_is_the_chips():
+    """The GPU driver's power is the whole chip's (PPT), so it has a tile of its own; the GPU tile shows the power
+    of the GPU's supply, and none without the VRM module."""
+    from bc250_core.sensors import Rail
+    reading = Reading(gpu_mhz=1500, gpu_temp=45.0, chip_watts=67.2, gpu_rail=Rail(mv=915, amps=32.0, temp=45.0))
+    assert render.tiles(reading, ("gpu",))[0].detail == "29 W · 45 °C"
+    assert render.tiles(reading, ("chip",))[0].value == "67 W"
+    assert render.tiles(Reading(gpu_mhz=1500, gpu_temp=45.0, chip_watts=67.2), ("gpu",))[0].detail == "45 °C"
+    assert render.tiles(Reading(), ("chip",))[0].value == render.DASH and "chip" in render.TILE_HINTS

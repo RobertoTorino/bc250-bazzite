@@ -6,10 +6,10 @@
 
 # BC-250 Board Test
 
-Read-only diagnostics, stress test and benchmarks for an **AMD BC-250** board (Cyan Skillfish APU,
-`gfx1013`, PCI `1002:13fe`) running **Bazzite** (Fedora Atomic / rpm-ostree).
+Read-only diagnostics, a stress test and benchmarks for an **AMD BC-250** board running **Bazzite**
+(Fedora Atomic / rpm-ostree). The board has the Cyan Skillfish APU, `gfx1013`, PCI `1002:13fe`.
 
-How to install and use it: [BC-250 Board Test in the manual](https://robertotorino.github.io/bc250-bazzite/apps/check/).
+How to install and use it: [BC-250 Board Test in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/check/).
 
 ## License
 

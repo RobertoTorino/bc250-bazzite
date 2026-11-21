@@ -53,7 +53,7 @@ date if you want them (the **Clock** tab). Hover a value on the Values tab to se
 | Tile | What it shows |
 |---|---|
 | CPU | load, with a bar; clock and temperature |
-| GPU | load, with a bar; clock, power and temperature. Without the GPU governor's fix-metrics the BC-250 reports no GPU load, and the tile shows the clock instead |
+| GPU | load, with a bar; clock and temperature, and the GPU's own power with Quickfix's **VRM Sensors** on. Without the GPU governor's fix-metrics the BC-250 reports no GPU load, and the tile shows the clock instead |
 | CPU temp | the CPU's temperature in large, with a bar from 0 to 100 °C |
 | GPU temp | the GPU's temperature in large, with a bar from 0 to 100 °C |
 | VRAM | used / total of the GPU's share of the memory, with a bar |
@@ -62,6 +62,7 @@ date if you want them (the **Clock** tab). Hover a value on the Values tab to se
 | VRM temp | the temperature of the VRM (voltage regulator module): the regulators beside the chip that feed it its power |
 | CPU power | what the CPU's supply delivers, with its voltage and current. It needs Quickfix's **VRM Sensors** |
 | GPU power | what the GPU's supply delivers, with its voltage and current. It needs Quickfix's **VRM Sensors** |
+| Chip power | what the whole chip draws, as the GPU driver reports it: CPU, GPU and the rest together |
 | 12 V input | the board's 12 V input, as the voltage regulator measures it. It needs Quickfix's **VRM Sensors** |
 | NVMe temp | the SSD's temperature |
 | Network | download, and upload beside it: all network interfaces, or the one chosen on the Values tab |

@@ -146,15 +146,15 @@ class MainWindow(QWidget):
         self.control_only_pill = TogglePill("Control only", "--control-only: only the control item, to re-check a "
                                             "combined mask you already bisected. Allows a single round.")
         self.control_only_pill.toggled.connect(self._on_control_only_toggled)
-        self.same_boot_pill = TogglePill("Same boot", "--same-boot: no reboot between attempts. Faster, but every "
+        self.same_boot_pill = TogglePill("Same boot", "--same-boot: no restart between attempts. Faster, but every "
                                          "attempt inherits the one before.")
-        self.auto_pill = TogglePill("Unattended", "--auto: no questions, reboots by itself and goes on after every "
+        self.auto_pill = TogglePill("Unattended", "--auto: no questions, restarts by itself and goes on after every "
                                     "login until every item is done. Needs passwordless sudo for umr and the "
                                     "kernel log.")
         self.auto_pill.toggled.connect(self._on_auto_toggled)
         self.autostart_pill = TogglePill("Auto resume", "Installs and enables "
                                          "~/.config/systemd/user/bc250-cu-bisect-auto.service, which starts the run "
-                                         "again after every reboot and login. Only with Unattended.")
+                                         "again after every restart and login. Only with Unattended.")
         self.autostart_pill.setEnabled(False)
         self.no_watch_pill = TogglePill("No watch", "--no-watch: the registers are not read back during the load.")
         switches = [self.control_only_pill, self.same_boot_pill, self.auto_pill, self.autostart_pill,

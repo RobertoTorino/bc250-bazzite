@@ -90,36 +90,37 @@ class Watcher:
     def restart_picture(self) -> str:
         output = display.read(self.run).get(self.adapter.name)
         if output is None or not output.enabled:
-            return f"no enabled output {self.adapter.name} in kscreen-doctor"
+            return f"No enabled output {self.adapter.name} in kscreen-doctor."
         other = display.other_rate(output)
         if other is None:
-            return f"{self.adapter.name} has no other refresh rate at this size"
+            return f"{self.adapter.name} has no other refresh rate at this size."
         self.run(display.set_mode(output.name, other.id))
         self.sleep(HOLD_S)
         self.run(display.set_mode(output.name, output.current))
-        return f"restarted the picture on {output.name}: {other.rate:g} Hz for {HOLD_S} s, then mode {output.current}"
+        return (f"Restarted the picture on {output.name} with {other.rate:g} Hz for {HOLD_S} s, then mode "
+                f"{output.current}.")
 
     def step(self) -> None:
         change = self.change(self.tv_power())
         if change == "went off" and self.pause:
             self.paused = media.pause_all(self.run)
-            log(f"the TV is off; paused {', '.join(self.paused) or 'nothing (nothing played)'}")
+            log(f"The TV is off. Paused {', '.join(self.paused) or 'nothing (nothing played)'}.")
         elif change == "came on":
             if self.restart:
                 self.sleep(SETTLE_S)
-                log(f"the TV is on again; {self.restart_picture()}")
+                log(f"The TV is on again. {self.restart_picture()}")
             if self.pause and self.paused:
                 media.resume(self.run, self.paused)
-                log(f"the TV is on again; continued {', '.join(self.paused)}")
+                log(f"The TV is on again. Continued {', '.join(self.paused)}.")
                 self.paused = []
 
     def loop(self) -> int:
         self.adapter = self.find_adapter()
         if self.adapter is None:
-            log("no CEC adapter (/dev/cec*); nothing to watch")
+            log("No CEC adapter (/dev/cec*). Nothing to watch.")
             return 1
         jobs = [job for job, on in (("restart the picture", self.restart), ("pause media", self.pause)) if on]
-        log(f"watching the TV on {self.adapter.device} ({self.adapter.name}): {' and '.join(jobs) or 'nothing to do'}")
+        log(f"Watching the TV on {self.adapter.device} ({self.adapter.name}). Jobs: {' and '.join(jobs) or 'none'}.")
         while True:
             self.step()
             self.sleep(POLL_S)

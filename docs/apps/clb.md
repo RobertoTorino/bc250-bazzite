@@ -9,7 +9,7 @@ your XBOX consoles and the games of XBOX Cloud Gaming you may play. Stream your 
 from the cloud. Microsoft calls streaming your own XBOX Remote Play.
 
 The app does not change how the board runs. It talks to Microsoft's XBOX services only when you sign in, refresh,
-wake a console or stream.
+wake a console or stream. When it starts signed in, it refreshes by itself.
 
 ## What you need
 
@@ -25,8 +25,8 @@ wake a console or stream.
   open in every country.
 - **A controller on the board.** Connect it by USB cable, or pair it over Bluetooth with the board, not with the
   XBOX. Any controller the system knows will do, such as an XBOX controller, a DualSense or a Steam Deck's controls.
-  An XBOX controller that is paired with the console connects to the console when you press its XBOX button. So pair
-  it with the board. The keyboard works as a controller too, as [The stream](#the-stream) describes.
+  An XBOX controller paired with the console connects to the console when you press its XBOX button. So pair it
+  with the board. The keyboard works as a controller too, as [The stream](#the-stream) describes.
 - **A good connection.** For the cloud, Microsoft advises at least 20 Mbit/s. A cable or 5 GHz Wi-Fi is best.
 
 ## Using it
@@ -48,7 +48,7 @@ The boxes at the top show three things:
 The app stays signed in after it closes, so you sign in once.
 
 **Consoles** is the first tab. It lists the account's consoles with their model, their power state and whether
-remote play is on. The power state is **On**, **Sleep** or **Off**.
+remote play is on. The power state is **On**, **Sleep**, **Off**, **Updating** or **Unknown**.
 
 - **Wake:** wakes the selected console from sleep. Give it a few seconds, then click the round arrow at the top
   right or **Stream**.
@@ -64,7 +64,7 @@ The round arrow at the top right asks XBOX Live for the consoles and the cloud g
 
 The stream opens full screen. Only one stream runs at a time.
 
-- The picture is scaled to fit the screen
+- The picture scales to fit the screen
 - The sound plays on the board's default output
 - The first controller connected is the XBOX's controller, with its rumble
 
@@ -102,7 +102,7 @@ The app's log masks personal details:
 - It hides your gamertag
 - A console's ID shows only its last four characters
 - An IPv4 network address shows only its last part
-- An IPv6 network address is hidden whole
+- It hides an IPv6 network address whole
 
 The log does not mask the consoles' names, such as Living room. If you gave a console your own name, check the log
 before you share it.

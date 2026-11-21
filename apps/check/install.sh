@@ -120,7 +120,7 @@ CORE_SRC=$(cd "$CORE_SRC" && pwd -P)
 VERSION=$(sed -n 's/^__version__ = "\([0-9.]*\)"$/\1/p' "$SRC/board_test/__init__.py")
 [ -n "$VERSION" ] || die "Could not read the version from board_test/__init__.py."
 [ -f "$SRC/board_test/_build_info.py" ] ||
-    info "Note: this is not a release build (no board_test/_build_info.py); the engine is not hash-checked."
+    info "Note: this is not a release build, because board_test/_build_info.py is missing. The engine is not hash-checked."
 command -v python3 >/dev/null 2>&1 || die "python3 is not installed."
 python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || die "Python 3.10 or newer is needed."
 python3 -c 'import venv, ensurepip' 2>/dev/null || die "python3 has no venv/ensurepip module."
@@ -226,4 +226,4 @@ fi
 
 info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run: $APP_ID"
 case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) info "Note: ~/.local/bin is not on your PATH, so the terminal command needs the full path: $LAUNCHER" ;; esac
-info "Optional tools some tests use: $LINK/development/tools/install-requirements.sh"
+info "Some tests use optional tools. Install them with $LINK/development/tools/install-requirements.sh"

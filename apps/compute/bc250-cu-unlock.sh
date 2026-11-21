@@ -1,29 +1,30 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# bc250-cu-unlock.sh - persists a validated BC-250 CU unlock across reboots.
+# bc250-cu-unlock.sh - keeps a validated BC-250 CU unlock across restarts.
 #
-# Run bc250-cu-bisect.sh first and only use masks that:
-#   - passed with the control (no crashes with just the baseline masks), and
-#   - came back GOOD for every WGP in the combined mask, on its own, and
-#   - were then tested together as the combined mask itself (WGPs that pass alone can still fail
-#     combined - more power at the same voltage; see the CU Tools wiki chapter), and
-#   - unlock the same number of WGPs on all 4 shader arrays (SE0.SH0, SE0.SH1, SE1.SH0, SE1.SH1):
-#     the GPU splits work across all 4 in lockstep, so an uneven unlock only ever runs as fast as
-#     its smallest row while still drawing the extra power - this script refuses to install one.
+# Run bc250-cu-bisect.sh first, and only use masks that:
+#   - passed with the control, so no crashes with just the baseline masks
+#   - came back GOOD for every WGP in the combined mask, on its own
+#   - were then tested together as the combined mask itself
+#   - unlock the same number of WGPs on all 4 shader arrays (SE0.SH0, SE0.SH1, SE1.SH0, SE1.SH1)
 #
-# Because of that lockstep, this script only accepts the three even levels and refuses anything else:
+# WGPs that pass alone can still fail combined, because they draw more power at the same voltage.
+# The CU Tools wiki chapter says more. The GPU splits work across all 4 shader arrays in lockstep.
+# So an uneven unlock only ever runs as fast as its smallest row, while still drawing the extra
+# power. This script refuses to install one. It only accepts the three even levels:
 #   3 WGPs per row = 24 CUs (stock/default)   4 per row = 32 CUs   5 per row = 40 CUs (max)
 #
-# This repeats the exact register writes bc250-cu-bisect.sh uses (umr: CC_GC_SHADER_ARRAY_CONFIG,
-# SPI_PG_ENABLE_STATIC_WGP_MASK, RLC_PG_ALWAYS_ON_WGP_MASK), every boot, as a root systemd service, as
-# early as the unit ordering below allows - before the display manager starts using the GPU. It is not
-# a diagnostic: it does not retest anything, it trusts the masks you give it.
+# This repeats the exact register writes bc250-cu-bisect.sh uses, with umr, at every boot. The
+# registers are CC_GC_SHADER_ARRAY_CONFIG, SPI_PG_ENABLE_STATIC_WGP_MASK and RLC_PG_ALWAYS_ON_WGP_MASK.
+# A root systemd service writes them as early as its unit ordering allows. That is before the
+# display manager starts using the GPU. It is not a diagnostic. It does not retest anything, and
+# it trusts the masks you give it.
 #
 # Usage:
 #   sudo ./bc250-cu-unlock.sh 0x0f,0x0f,0x0f,0x0f        apply the masks once, right now (not persisted)
 #   sudo ./bc250-cu-unlock.sh --install 0x0f,0x0f,0x0f,0x0f   save + apply now + enable at every boot
-#   sudo ./bc250-cu-unlock.sh --uninstall                 disable the service; stock 24 CUs from next boot
+#   sudo ./bc250-cu-unlock.sh --uninstall                 disable the service. Stock 24 CUs from next boot
 #        ./bc250-cu-unlock.sh --status                    show the installed masks, service and live state
 #        ./bc250-cu-unlock.sh --help
 #
@@ -98,7 +99,7 @@ apply_masks() { # masks (must run as root)
   [[ $1 =~ $MASK_RE ]] || die "masks must look like 0x0f,0x0f,0x0f,0x0f, with the same number of WGPs on every row."
   validate_even "$1"
   lspci -nn 2>/dev/null | grep -qi '1002:13fe' || die "no BC-250 GPU (1002:13fe) found. Refusing to write GPU registers."
-  local UMR; UMR=$(find_umr) || die "umr not found. Install it: rpm-ostree install umr, then reboot."
+  local UMR; UMR=$(find_umr) || die "umr not found. Install it: rpm-ostree install umr, then restart."
   root_safe "$UMR" || die "$UMR is not owned by root, or others can write to it."
 
   local UMR_I=() BDF INST
@@ -135,7 +136,7 @@ apply_masks() { # masks (must run as root)
     now=$(reg_read_rc "$REG_SPI" $((i / 2)) $((i % 2))) || { ok=0; continue; }
     [[ $(hex2 "$now") == $(hex2 "${m[$i]}") ]] || ok=0
   done
-  (( ok )) || die "masks did not read back as written. The unlock may be partially applied. Reboot."
+  (( ok )) || die "masks did not read back as written. The CU unlock may be partially applied. Restart."
   say "CU unlock applied: $1 ($(cu_count "$1") CUs)"
 }
 
@@ -168,8 +169,8 @@ EOF
   chmod 644 "$UNIT_PATH"
   systemctl daemon-reload || die "systemctl daemon-reload failed. The service was not enabled. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME, and that /etc/systemd/system is writable."
   apply_masks "$1"
-  systemctl enable "$UNIT_NAME" || die "systemctl enable $UNIT_NAME failed, see the error above. The unlock is applied right now, but it will NOT survive a reboot. Common causes: SELinux, or /etc/systemd/system not writable on this image. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME."
-  systemctl is-enabled --quiet "$UNIT_NAME" || die "systemctl enable reported success, but $UNIT_NAME is still not enabled. The unlock will NOT survive a reboot. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME."
+  systemctl enable "$UNIT_NAME" || die "systemctl enable $UNIT_NAME failed, see the error above. The CU unlock is applied right now, but it will NOT survive a restart. Common causes: SELinux, or /etc/systemd/system not writable on this image. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME."
+  systemctl is-enabled --quiet "$UNIT_NAME" || die "systemctl enable reported success, but $UNIT_NAME is still not enabled. The CU unlock will NOT survive a restart. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME."
   say "Installed and enabled. $1 is applied now and on every future boot."
   say "Remove with: sudo $0 --uninstall"
 }
@@ -179,7 +180,7 @@ uninstall_service() {
   systemctl disable "$UNIT_NAME" 2>/dev/null || true
   rm -f "$UNIT_PATH" "$CONF_FILE" "$INSTALL_PATH"
   systemctl daemon-reload
-  say "Removed. The unlock is still active in this boot. Reboot to go back to the stock 24 CUs."
+  say "Removed. The CU unlock is still active in this boot. Restart to go back to the stock 24 CUs."
 }
 
 status() {

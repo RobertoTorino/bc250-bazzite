@@ -70,10 +70,10 @@ for t in $TESTS; do
             log "INFO: CPU single-thread: 615.3 ops/s | multi-thread: 4432.8 ops/s (7.2x)"
             log "INFO: GPU FP32: 7310.4 GFLOPS | VRAM copy: 198.2 GB/s | clock under load: ~1850 MHz"
             if [ "$SAVE_BASELINE" = true ]; then
-                log "SUCCESS: Saved as the baseline: $(pwd)/bench-baseline.json"
+                log "SUCCESS: Saved as the baseline: $(pwd)/bench-baseline.json. Scores of later runs are relative to this, which counts as 100."
                 log "BENCH: cpu_single=615.3 cpu_multi=4432.8 gpu_fp32=7310.4 gpu_copy=198.2 cores=6 threads=12 cus=32 gpu_mhz=1850"
             else
-                log "SUCCESS: CPU score: 101 (multi-thread; single-thread: 101)"
+                log "SUCCESS: CPU score: 101 for multi-thread, 101 for single-thread."
                 log "SUCCESS: GPU score: 132 (FP32 compute)"
                 log "BENCH: cpu_single=615.3 cpu_multi=4432.8 gpu_fp32=7310.4 gpu_copy=198.2 cpu_score=101 cpu1_score=101 gpu_score=132 cores=6 threads=12 cus=32 gpu_mhz=1850"
             fi
@@ -84,7 +84,7 @@ for t in $TESTS; do
         if [ "$DISK_MODE" != true ]; then
             log "INFO: Skipped. Re-run with --disk-bench to measure read speed (nothing is written)."
         else
-            log "Testing /dev/nvme0n1 (Simulated NVMe 1TB), the disk that holds the system; reading from /dev/nvme0n1p3."
+            log "Testing /dev/nvme0n1 (Simulated NVMe 1TB), the disk that holds the system. Reading from /dev/nvme0n1p3."
             log "SUCCESS: Sequential read: 3310 MB/s (4096 MiB, 4 MiB blocks, direct I/O)."
             log "INFO: That is 84% of the PCIe link ceiling (~3940 MB/s)."
             log "SUCCESS: Random 4K read, queue depth 1: 14200 IOPS (58 MB/s, 68 µs average latency)."
@@ -93,25 +93,25 @@ for t in $TESTS; do
                 log "SUCCESS: Sequential write: 2950 MB/s at the start, 610 MB/s at the end, 1480 MB/s average (peak drive temperature 61 °C)."
                 log "INFO: SLC cache: about 6.00 GiB. Writes run at ~2950 MB/s until it is full and at ~610 MB/s after that."
             else
-                log "INFO: Write test not requested (--disk-write=GiB); nothing was written."
+                log "INFO: Write test not requested (--disk-write=GiB), so nothing was written."
             fi
         fi
         echo; continue
     fi
     if [ "$t" = 44 ]; then
         if [ "$SPEEDTEST_MODE" != true ]; then
-            log "INFO: Skipped. Re-run with --speedtest to measure download and upload speed and latency"
-            log "INFO: (uses about 1 GB of data on a fast connection)."
+            log "INFO: Skipped. Re-run with --speedtest to measure download and upload speed and latency."
+            log "INFO: It uses about 1 GB of data on a fast connection."
         else
             log "INFO: Traffic goes through enp4s0 (Ethernet, link 1000 Mbit/s)."
-            log "Running Ookla speedtest (about 30 s; by running it you accept Ookla's license and GDPR terms)"
+            log "Running Ookla speedtest, about 30 s. By running it you accept Ookla's license and GDPR terms."
             sleep 1
             log "INFO: Server: MIRHosting - Amsterdam; ISP: Zscaler"
             log "SUCCESS: Download: 611.16 Mbps (603.10 MB used), latency while downloading 42.38 ms"
             log "SUCCESS: Upload: 581.76 Mbps (606.00 MB used), latency while uploading 143.26 ms"
             log "INFO: Idle latency: 6.66 ms (jitter 0.70 ms)"
             log "WARNING: Latency rises by 136 ms while the line is busy (bufferbloat). Online games lag whenever something else downloads or uploads."
-            log "HINT: Enable SQM / Smart Queue Management (fq_codel or CAKE) in your router, set to ~90% of these speeds."
+            log "HINT: Turn on SQM / Smart Queue Management (fq_codel or CAKE) in your router, set to ~90% of these speeds."
             log "SUCCESS: Packet loss: 0%"
             log "INFO: Result URL: https://www.speedtest.net/result/c/e3aba7a5-22c5-4c8d-a27c-935e036e3ce1"
         fi
@@ -128,7 +128,7 @@ for t in $TESTS; do
         log "INFO: Flatpak runtimes and extensions: 24"
         log "INFO: Homebrew formulae: 5"
         printf '    btop\n    fastfetch\n    gh\n    jq\n    ripgrep\n'
-        log "INFO: Distrobox/Toolbox containers: 1 (the packages inside them are not counted)"
+        log "INFO: Distrobox/Toolbox containers: 1. The packages inside them are not counted."
         log "SUCCESS: 1906 packages and apps installed, from 5 source(s)."
         echo; continue
     fi
@@ -136,11 +136,11 @@ for t in $TESTS; do
         log "SUCCESS: 1 NVMe controller(s) recognized."
         log "INFO: /dev/nvme0: Simulated NVMe 1TB, firmware 1.0"
         log "INFO: Link: PCIe Gen3 x4 (8.0 GT/s, ceiling ~3940 MB/s); drive supports Gen4 x4, slot supports Gen3 x4. The slot, not the drive, sets the speed limit."
-        log "INFO: DRAM cache: none. /dev/nvme0 is DRAM-less and uses a Host Memory Buffer (wants 64 MiB of system RAM, minimum 32 MiB)."
+        log "INFO: DRAM cache: none. /dev/nvme0 is DRAM-less and uses a Host Memory Buffer. It wants 64 MiB of system RAM, at least 32 MiB."
         log "SUCCESS: The kernel gave it a 64 MiB host memory buffer."
-        log "HINT: Fine for game loading. Expect slower sustained and random writes than a drive with DRAM; the buffer comes out of the RAM the BC-250 shares with the GPU."
+        log "HINT: Fine for game loading. Expect slower sustained and random writes than a drive with DRAM. The buffer comes out of the RAM the BC-250 shares with the GPU."
         log "INFO: Wear: 3% of the rated endurance used, 12800 GB written, 1200 power-on hours."
-        log "INFO: 37 unsafe shutdowns recorded (every hard lockup or power cut counts, see test 34)."
+        log "INFO: 37 unsafe shutdowns recorded. Every hard lockup or power cut counts, see test 34."
         log "SUCCESS: SMART health of /dev/nvme0 is good (source: nvme)."
         echo; continue
     fi

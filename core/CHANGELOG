@@ -1,3 +1,9 @@
+Changelog: 21-11-2026 18:45:01
+
+Fixed. The GPU driver's power value is named for what it is: Reading.chip_watts and Sensors.chip_watts(), which were
+gpu_watts. The driver labels it PPT, the power of the whole chip. It rose by 28 W under a pure CPU load while the GPU's
+supply stayed flat (measured on a board, 21-11-2026). The GPU's own power is its rail's, from the bc250_vrm module.
+
 Changelog: 21-11-2026 15:13:54
 
 Version 6.6.0.

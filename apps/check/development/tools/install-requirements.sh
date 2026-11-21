@@ -37,7 +37,7 @@ ask() {  # ask "question" -> 0 on yes
 
 # ---------------------------------------------------------------- RPM packages
 install_rpms() {
-    command -v rpm-ostree >/dev/null 2>&1 || die "rpm-ostree not found: this group is for Bazzite/Fedora Atomic."
+    command -v rpm-ostree >/dev/null 2>&1 || die "rpm-ostree not found. This group is for Bazzite/Fedora Atomic."
     local missing=()
     for pkg in "${RPMS[@]}"; do
         rpm -q "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
@@ -46,9 +46,9 @@ install_rpms() {
         say "All RPM packages are already installed: ${RPMS[*]}"
         return
     fi
-    say "Layering: ${missing[*]} (glmark2, vulkan-tools and smartmontools are usually already on Bazzite)"
+    say "Layering: ${missing[*]}. Bazzite usually has glmark2, vulkan-tools and smartmontools already."
     sudo rpm-ostree install "${missing[@]}"
-    warn "Layered packages become active after a reboot: systemctl reboot"
+    warn "Layered packages become active after a restart. Run systemctl reboot"
 }
 
 # ------------------------------------------------- GitHub release binaries
@@ -66,7 +66,7 @@ install_vkpeak() {
     command -v unzip >/dev/null 2>&1 || die "unzip is needed to unpack vkpeak."
     local url tmp
     url=$(latest_asset_url "nihui/vkpeak" "ubuntu") || true
-    [ -n "${url:-}" ] || { warn "Could not find a vkpeak release asset; install it manually from https://github.com/nihui/vkpeak/releases"; return; }
+    [ -n "${url:-}" ] || { warn "Could not find a vkpeak release asset. Install it by hand from https://github.com/nihui/vkpeak/releases"; return; }
     say "Downloading vkpeak: $url"
     tmp=$(mktemp -d)
     curl -fsSL -o "$tmp/vkpeak.zip" "$url"
@@ -83,7 +83,7 @@ install_memtest_vulkan() {
     fi
     local url tmp
     url=$(latest_asset_url "GpuZelenograd/memtest_vulkan" "DesktopLinux_X86_64") || true
-    [ -n "${url:-}" ] || { warn "Could not find a memtest_vulkan release asset; install it manually from https://github.com/GpuZelenograd/memtest_vulkan/releases"; return; }
+    [ -n "${url:-}" ] || { warn "Could not find a memtest_vulkan release asset. Install it by hand from https://github.com/GpuZelenograd/memtest_vulkan/releases"; return; }
     say "Downloading memtest_vulkan: $url"
     tmp=$(mktemp -d)
     curl -fsSL -o "$tmp/memtest_vulkan.tar.xz" "$url"
@@ -99,7 +99,7 @@ install_speedtest() {
         say "speedtest is already on PATH: $(command -v speedtest)"
         return
     fi
-    say "Downloading Ookla speedtest CLI ${SPEEDTEST_VERSION} (running it accepts Ookla's license and GDPR terms)"
+    say "Downloading Ookla speedtest CLI ${SPEEDTEST_VERSION}. Running it accepts Ookla's license and GDPR terms."
     local tmp
     tmp=$(mktemp -d)
     curl -fsSL -o "$tmp/speedtest.tgz" \
@@ -134,7 +134,7 @@ install_mprime() {
     if mprime_latest; then
         say "The release on mersenne.org's download page: $MPRIME_FILE"
     else
-        warn "Could not read $MPRIME_PAGE; using the release this script knows: $MPRIME_FILE"
+        warn "Could not read $MPRIME_PAGE. Using the release this script knows: $MPRIME_FILE"
     fi
     # .release names the download that is unpacked there: the same name is the same release.
     if [ -x "$MPRIME_DIR/mprime" ] && [ "$(cat "$MPRIME_DIR/.release" 2>/dev/null)" = "$MPRIME_FILE" ]; then
@@ -145,7 +145,7 @@ install_mprime() {
         tmp=$(mktemp -d)
         curl -fsSL -o "$tmp/$MPRIME_FILE" "$MPRIME_URL"
         echo "$MPRIME_SHA256  $tmp/$MPRIME_FILE" | sha256sum -c --quiet - \
-            || { rm -rf "$tmp"; die "The download is not the file mersenne.org lists (SHA-256 differs); nothing was installed."; }
+            || { rm -rf "$tmp"; die "The download is not the file mersenne.org lists (SHA-256 differs). Nothing was installed."; }
         mkdir -p "$MPRIME_DIR"
         tar -xzf "$tmp/$MPRIME_FILE" -C "$MPRIME_DIR"
         rm -rf "$tmp"
@@ -154,26 +154,26 @@ install_mprime() {
         say "Installed $MPRIME_DIR/mprime"
     fi
     ln -sfn "$MPRIME_DIR/mprime" "$BIN_DIR/mprime"
-    say "mprime is at $MPRIME_DIR/mprime (link: $BIN_DIR/mprime)"
+    say "mprime is at $MPRIME_DIR/mprime, with a link at $BIN_DIR/mprime"
 }
 
 # --------------------------------------------------------- development extras
 install_dev() {
     if command -v sqlite3 >/dev/null 2>&1; then
-        say "sqlite3 is already installed (view the GUI history: sqlite3 ~/.local/share/bc250-board-test/history.db)"
+        say "sqlite3 is already installed. View the GUI history with sqlite3 ~/.local/share/bc250-board-test/history.db"
         return
     fi
     command -v rpm-ostree >/dev/null 2>&1 || die "rpm-ostree not found."
-    say "Layering sqlite (development only: inspect the GUI's history database)"
+    say "Layering sqlite, for development only. It looks into the GUI's history database."
     sudo rpm-ostree install sqlite
-    warn "Active after a reboot: systemctl reboot"
+    warn "Active after a restart. Run systemctl reboot"
 }
 
 # ------------------------------------------------------------------------ main
 mkdir -p "$BIN_DIR"
 case ":$PATH:" in
     *":$BIN_DIR:"*) ;;
-    *) warn "$BIN_DIR is not on PATH; the test script still finds tools there, but your shell will not." ;;
+    *) warn "$BIN_DIR is not on PATH. The test script still finds tools there, but your shell will not." ;;
 esac
 
 MODE="${1:-interactive}"
@@ -192,7 +192,7 @@ case "$MODE" in
         echo "    vkmark: GPU load in test 41 when memtest_vulkan and vkpeak are missing"
         echo "    nvme-cli: SMART health in test 10"
         echo "    fio: random 4K read in test 43"
-        echo "    Layered with rpm-ostree; active after a reboot."
+        echo "    Layered with rpm-ostree, active after a restart."
         ask "Layer the RPM packages?" && install_rpms
         echo
         say "Binaries: vkpeak and memtest_vulkan, the latest GitHub releases, into $BIN_DIR"
@@ -201,17 +201,17 @@ case "$MODE" in
         ask "Install vkpeak and memtest_vulkan?" && { install_vkpeak; install_memtest_vulkan; }
         echo
         say "Speed test: the Ookla speedtest CLI ${SPEEDTEST_VERSION}, into $BIN_DIR"
-        echo "    speedtest: test 44 (Internet Speed); running it accepts Ookla's license and GDPR terms"
+        echo "    speedtest: test 44 (Internet Speed). Running it accepts Ookla's license and GDPR terms."
         ask "Install the Ookla speedtest CLI?" && install_speedtest
         echo
         say "mprime: the latest Prime95 from mersenne.org, into $MPRIME_DIR, with a link in $BIN_DIR"
-        echo "    mprime: no test uses it; BC-250 CPU Tools' longer burn-in does (its load tool mprime)"
+        echo "    mprime: no test uses it. BC-250 CPU Tools' longer burn-in does, as its load tool mprime."
         ask "Install mprime?" && install_mprime
         echo
         say "Development extras: sqlite"
-        echo "    sqlite3: look into the GUI's history database (no test uses it); layered, active after a reboot"
+        echo "    sqlite3: look into the GUI's history database. No test uses it. Layered, active after a restart."
         ask "Install the development extras?" && install_dev
         ;;
-    *) die "Unknown option: $MODE (use --rpms, --bins, --speedtest, --mprime, --dev, --all or no option)" ;;
+    *) die "Unknown option: $MODE. Use --rpms, --bins, --speedtest, --mprime, --dev, --all or no option." ;;
 esac
 say "Done."

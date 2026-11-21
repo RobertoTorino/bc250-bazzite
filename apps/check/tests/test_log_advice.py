@@ -60,12 +60,12 @@ def test_a_line_counts_for_the_first_pattern_only():
 def test_failed_unit_gets_its_own_commands():
     hints = explain([journal("systemd", "Failed to start foo.service - Foo."),
                      journal("systemd", "foo.service: Failed with result 'exit-code'.")], "--since '7 days ago'")
-    assert hints == ["[2 lines] foo.service failed. Read why with: journalctl --since '7 days ago' -u foo.service; "
-                     "if you no longer use it: sudo systemctl disable foo.service."]
+    assert hints == ["[2 lines] foo.service failed. To read why, run journalctl --since '7 days ago' -u foo.service. "
+                     "If you no longer use it, run sudo systemctl disable foo.service."]
 
 
 def test_unknown_lines_are_grouped_by_program():
     hints = explain([journal("someapp", "error: one"), journal("someapp", "error: two"), journal("other", "fail")])
-    assert hints[0].startswith("[2 lines] from someapp, no known explanation. Read them with: journalctl -b -p "
-                               "warning -t someapp;")
+    assert hints[0].startswith("[2 lines] from someapp, no known explanation. To read them, run journalctl -b -p "
+                               "warning -t someapp.")
     assert hints[1].startswith("[1 line] from other,")

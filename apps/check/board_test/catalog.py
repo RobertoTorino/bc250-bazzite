@@ -40,7 +40,7 @@ CATEGORIES: list[Category] = [
         TestDef("03", "System Uptime", "Reports uptime and load average."),
         TestDef("11", "Resource Consumption", "Top CPU and memory consumers."),
         TestDef("12", "Boot Time", "systemd-analyze breakdown, warns on units taking over a minute."),
-        TestDef("31", "File and Directory Integrity", "Verifies /var/log exists and is writable."),
+        TestDef("31", "File and Directory Integrity", "Lists /var/log and verifies that it exists."),
     ]),
     Category("network", "Network", [
         TestDef("04", "Network Connectivity", "Pings an external host."),
@@ -52,7 +52,7 @@ CATEGORIES: list[Category] = [
         TestDef("53", "Wi-Fi Adapter",
                 "Every Wi-Fi adapter (USB or PCIe), whether the running kernel has a driver and firmware for it, "
                 "rfkill, and the band and signal of its connection. "
-                "It only reads. No module is loaded and no stick is switched."),
+                "It only reads. No module is loaded, and no stick is switched."),
         TestDef(SPEEDTEST_TEST_ID, "Internet Speed",
                 "Opt-in. Ookla speedtest (or speedtest-cli). Measures download, upload, idle and loaded latency "
                 "(bufferbloat) and packet loss. Says whether the network port is the limit. Uses ~1 GB of data "
@@ -84,7 +84,7 @@ CATEGORIES: list[Category] = [
         TestDef("19", "GPU Frequency Scaling", "Reads pp_dpm_sclk / pp_dpm_mclk to confirm the clock actually moves."),
         TestDef("20", "Vulkan / Mesa", "Confirms RADV reports GFX1013 and not the llvmpipe software fallback."),
         TestDef("21", "Compute Unit Count",
-                "Active CUs from the live GPU registers, which needs admin rights and umr. Otherwise the kernel "
+                "Active CUs from the live GPU registers, which needs admin rights and umr. Otherwise, the kernel "
                 "value. Stock is 24, unlocked is up to 40."),
         TestDef("47", "Vulkan Futureproof Matrix",
                 "Vulkan API level and the feature set modern games need. That is ray tracing, mesh shaders, VRS, "

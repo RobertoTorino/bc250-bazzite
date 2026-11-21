@@ -46,7 +46,7 @@ class Reading:
     cpu_temp: float | None = None           # °C
     gpu_load: float | None = None           # percent, from the governor's patched gpu_metrics
     gpu_mhz: int | None = None
-    gpu_watts: float | None = None
+    chip_watts: float | None = None         # the whole chip (the GPU driver's PPT): CPU, GPU and the rest
     gpu_mv: int | None = None               # core voltage (vddgfx)
     gpu_temp: float | None = None           # °C
     governor: tuple[int, int] | None = None     # the governor's current range, MHz
@@ -204,7 +204,9 @@ class Sensors:
         hz = _read_int(folder / "freq1_input") if folder else None
         return round(hz / 1_000_000) if hz else None
 
-    def gpu_watts(self) -> float | None:
+    def chip_watts(self) -> float | None:
+        """The GPU driver's power value. Its label is PPT: the power of the whole chip, not of the GPU alone (it rises
+        with a CPU load while the GPU's supply stays flat, measured 21-11-2026). The GPU's own is Rail.watts."""
         folder = self._hwmon("amdgpu")
         if folder is None:
             return None
@@ -344,7 +346,7 @@ class Sensors:
 
     def read(self) -> Reading:
         return Reading(cpu_load=self.cpu_load(), cpu_mhz=self.cpu_mhz(), cpu_temp=self.cpu_temp(),
-                       gpu_load=self.gpu_load(), gpu_mhz=self.gpu_mhz(), gpu_watts=self.gpu_watts(),
+                       gpu_load=self.gpu_load(), gpu_mhz=self.gpu_mhz(), chip_watts=self.chip_watts(),
                        gpu_mv=self.gpu_mv(), gpu_temp=self.gpu_temp(), governor=self.governor(), vram=self.vram(),
                        ram=self.ram(), vrm_temp=self.vrm_temp(), cpu_rail=self.rail("CPU"), gpu_rail=self.rail("GPU"),
                        vin_mv=self.vin_mv(),

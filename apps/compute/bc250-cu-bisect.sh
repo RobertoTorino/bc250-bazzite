@@ -3,40 +3,42 @@
 
 # bc250-cu-bisect.sh - finds out whether CU-unlock crashes come from bad WGPs or from the unlock itself.
 #
-# The script writes the WGP masks itself with umr: the three GPU registers a runtime CU unlock uses
-# (CC_GC_SHADER_ARRAY_CONFIG, SPI_PG_ENABLE_STATIC_WGP_MASK, RLC_PG_ALWAYS_ON_WGP_MASK).
+# The script writes the WGP masks itself with umr. A runtime CU unlock uses three GPU registers.
+# They are CC_GC_SHADER_ARRAY_CONFIG, SPI_PG_ENABLE_STATIC_WGP_MASK and RLC_PG_ALWAYS_ON_WGP_MASK.
 #
-#   control   the same register writes, but with your baseline masks (no extra CUs). If the
+#   control   the same register writes, but with your baseline masks, so no extra CUs. If the
 #             control crashes, the unlock method, power or heat is at fault, not your CUs.
 #   WGP step  baseline + one locked WGP (2 CUs). Every locked WGP is tested on its own.
-#             Skipped entirely with --control-only (e.g. to re-validate a combined mask whose
-#             WGPs were already bisected, without re-testing already-known-bad ones).
+#             --control-only skips these steps. Use it to test a combined mask again when its
+#             WGPs were bisected already. The WGPs known to be bad are then not tested again.
 #
-# Every item runs several rounds (interleaved, so heat and time of day don't favor one item).
-# By default each attempt gets its own boot, so it starts from the clean driver state. Masks are
-# only written while the GPU is idle, they are read back to check they took, and they are read
-# again during the load to see if they drift. memtest_vulkan checks for wrong results, not only
-# for crashes. After a crash, cold boot and run the script again: it records the crash and resumes.
+# Every item runs several rounds. The rounds are interleaved, so heat and time of day don't favor
+# one item. By default each attempt gets its own boot, so it starts from the clean driver state.
+# Masks are only written while the GPU is idle. They are read back to check they took. They are
+# read again during the load to see if they drift. memtest_vulkan checks for wrong results, not
+# only for crashes. After a crash, cold boot and run the script again. It records the crash and
+# resumes.
 #
 # Verdict per WGP: "fails every time" = likely a bad WGP. "Random" = more likely the unlock
 # method, power or heat. A failing control means the WGP verdicts can't blame your CUs.
 #
-# Run it as your desktop user; sudo is used only for umr and the kernel log.
+# Run it as your desktop user. sudo is used only for umr and the kernel log.
 #
 # Usage: ./bc250-cu-bisect.sh [options]
 #   -t, --time SECS       GPU load per attempt (default 180, minimum 60)
-#   -r, --rounds N        attempts per item (default 3, 1-9; minimum 2 unless --control-only)
-#   -b, --baseline MASKS  baseline SPI masks, e.g. 0x07,0x07,0x07,0x07
+#   -r, --rounds N        attempts per item, from 1 to 9 (default 3). The minimum is 2, or 1
+#                         with --control-only.
+#   -b, --baseline MASKS  baseline SPI masks, for example 0x07,0x07,0x07,0x07
 #                         (default: the live masks of a clean boot = the stock driver state)
-#       --control-only    only run the control item, no per-WGP bisecting. For re-validating a
-#                         combined mask you already bisected (e.g. after a full run found some
-#                         good WGPs and you want to confirm they also hold together), without
-#                         re-testing WGPs already known to be bad.
-#       --same-boot       don't reboot between attempts; restore the baseline live instead
-#                         (faster, but every attempt then inherits the previous one's state)
-#       --auto            don't ask anything; auto-reboot after each attempt and keep going on
-#                         its own after every login (needs the autostart unit, see the wiki) until
-#                         every item is done. Still one attempt per boot: no loss of isolation.
+#       --control-only    only run the control item, no per-WGP bisecting. Use it to test a
+#                         combined mask again after a full run found some good WGPs. It confirms
+#                         that they also hold together. The WGPs known to be bad are not tested
+#                         again.
+#       --same-boot       don't restart between attempts. Restore the baseline live instead.
+#                         This is faster, but every attempt then inherits the previous one's state.
+#       --auto            don't ask anything. Restart after each attempt, and go on after every
+#                         login until every item is done. This needs the autostart unit, see the
+#                         wiki. It is still one attempt per boot, so no isolation is lost.
 #       --no-watch        don't read the registers back during the load
 #       --status          show the results so far and write the report, then exit
 #       --reset           delete the results and start over
@@ -61,7 +63,7 @@ ask()  { # prompt [default-used-in---auto-mode]; only the answer goes to stdout 
 }
 do_reboot() { # --no-ask-password: fail instead of raising a GUI auth popup, then fall back to sudo
   systemctl reboot --no-ask-password 2>/dev/null || sudo -n systemctl reboot 2>/dev/null \
-    || { say "Could not reboot automatically. Reboot WARM by hand (do not power off)."; exit 1; }
+    || { say "Could not restart by itself. Do a WARM restart by hand, and do not power off."; exit 1; }
 }
 usage() { sed -n '4,/^$/{s/^# \{0,1\}//;p;}' "$0"; }   # the header comment, after the SPDX line and the blank
 
@@ -305,7 +307,7 @@ summary() {
     say "  WGPs that pass one by one can still fail together, because they draw more power at the"
     say "  same voltage. So test the combination before you save it to boot:"
     say "  $0 --reset && $0 --baseline $EVEN --control-only --rounds 1"
-    say "  Once the combination also passes, make it survive a reboot:"
+    say "  Once the combination also passes, make it survive a restart:"
     say "  sudo ./bc250-cu-unlock.sh --install $EVEN"
   fi
 }
@@ -353,7 +355,7 @@ lspci -nn 2>/dev/null | grep -qi '1002:13fe' || die "no BC-250 GPU (1002:13fe) f
 
 UMR=""
 for p in /usr/bin/umr /usr/sbin/umr /usr/local/bin/umr; do [[ -x $p ]] && { UMR=$p; break; }; done
-[[ -n $UMR ]] || die "umr not found. Install it: sudo rpm-ostree install umr, then reboot."
+[[ -n $UMR ]] || die "umr not found. Install it: sudo rpm-ostree install umr, then restart."
 root_safe "$UMR" || die "$UMR is not owned by root, or others can write to it. It would run as root."
 
 GPU_DEV=""
@@ -436,7 +438,7 @@ if [[ -s $PENDING ]]; then
     say "Round $P_ROUND, $P_ITEM ($P_MASKS). The system went down while $([[ $P_PHASE == load ]] && echo 'the GPU load was running' || echo 'the masks were being written (GPU idle)')."
     PREV=$(sudo -n journalctl -k -b -1 --no-pager 2>/dev/null | grep -E "$FAULT_RE" | tail -5)
     [[ -n $PREV ]] && { say "Kernel faults in the previous boot:"; say "$PREV"; }
-    if [[ $(ask "Did the system freeze, crash or reboot by itself? [Y/n]" y) =~ ^[Nn]$ ]]; then
+    if [[ $(ask "Did the system freeze, crash or restart by itself? [Y/n]" y) =~ ^[Nn]$ ]]; then
       record "$P_ROUND" "$P_ITEM" "$P_MASKS" ABORTED - - - - - - "rebooted by hand during the attempt"
       say "Recorded as interrupted. This attempt will run again."
     else
@@ -457,12 +459,12 @@ if (( AUTO )); then
     # a finished run disables the unit (auto_cleanup); re-arm it for this run
     if ! systemctl --user is-enabled --quiet "$AUTO_UNIT" 2>/dev/null; then
       systemctl --user enable "$AUTO_UNIT" 2>/dev/null \
-        && say "Re-enabled $AUTO_UNIT, so this run continues after every reboot." \
-        || say "WARNING: could not enable $AUTO_UNIT. The run will stop at the next reboot."
+        && say "Re-enabled $AUTO_UNIT, so this run continues after every restart." \
+        || say "WARNING: could not enable $AUTO_UNIT. The run will stop at the next restart."
     fi
   else
-    say "WARNING: $AUTO_UNIT is not installed. Nothing will restart this script after a"
-    say "reboot, so --auto cannot continue on its own. See bc250-cu-bisect-auto.service.example."
+    say "WARNING: $AUTO_UNIT is not installed. Nothing will start this script again after a"
+    say "restart, so --auto cannot continue on its own. See bc250-cu-bisect-auto.service.example."
   fi
 fi
 
@@ -491,12 +493,12 @@ if [[ $SAME_BOOT == 0 ]]; then
     say ""
     say "An attempt already ran in this boot. Power off, wait 10 seconds, power on, and run"
     say "the script again (or use --same-boot). Next: round ${NEXT% *}, ${NEXT#* }."
-    (( AUTO )) && { say "Auto-rebooting (--auto)..."; do_reboot; }
+    (( AUTO )) && { say "Restarting by itself (--auto)..."; do_reboot; }
     exit 0
   fi
   if [[ -n $CC_NOW ]] && [[ -z $(tr -d '0x ' <<<"$CC_NOW") ]]; then
     die "the unlock is already active in this boot (CC registers are 0). Something applied it at boot.
-       Turn off whatever applies a CU unlock at boot, then reboot and run this again."
+       Turn off whatever applies a CU unlock at boot, then restart and run this again."
   fi
 fi
 [[ $SPI_NOW != "$BASE" && $SAME_BOOT == 0 && $(cfg_get BASE_FROM) == live ]] && WARNINGS+=("The live masks ($SPI_NOW) differ from the baseline ($BASE).")
@@ -512,7 +514,7 @@ if (( ${#WARNINGS[@]} )); then
   [[ $(ask "Continue anyway? [y/N]" y) =~ ^[Yy]$ ]] || exit 0
 fi
 say ""
-say "WARNING: this writes GPU registers. A bad WGP or the unlock itself can freeze the system."
+say "WARNING: this writes GPU registers. A bad WGP or the CU unlock itself can freeze the system."
 say "Save your work. After a freeze, cold boot and run the script again. It then records the crash."
 
 # ---------------------------------------------------------------- attempt --
@@ -523,7 +525,7 @@ on_exit() {
     read -r P_ROUND P_ITEM _ _ P_MASKS <"$PENDING"
     record "$P_ROUND" "$P_ITEM" "$P_MASKS" ABORTED - - - - - - "stopped (Ctrl+C)"
     rm -f "$PENDING"
-    say ""; say "Stopped. The unlock may still be active. Reboot before using the system normally."
+    say ""; say "Stopped. The CU unlock may still be active. Restart before using the system normally."
   fi
   kill "$KEEPALIVE" 2>/dev/null
 }
@@ -622,7 +624,7 @@ run_attempt() { # round item
 revert() {
   say "Restoring the baseline masks live..."
   apply_masks "$BASE" && [[ $(read_spi_all) == "$BASE" ]] && return 0
-  say "The baseline did not read back. Stopping. Reboot, then run the script again."
+  say "The baseline did not read back. Stopping. Restart, then run the script again."
   return 1
 }
 
@@ -651,17 +653,17 @@ else
     say ""
     say "Next: round ${NEXT% *}, ${NEXT#* }. Each attempt needs a fresh boot."
     if (( AUTO )); then
-      say "Auto-rebooting to continue (--auto)..."; do_reboot
+      say "Restarting by itself to continue (--auto)..."; do_reboot
     else
-      case $(ask "[p]ower off (best: cold boot), [r]eboot, or [n]othing? [p/r/N]") in
+      case $(ask "[p]ower off (best: cold boot), [r]estart, or [n]othing? [p/r/N]") in
         [Pp]) systemctl poweroff ;;
         [Rr]) systemctl reboot ;;
-        *) say "Reboot before you use the system normally. The unlock is still active." ;;
+        *) say "Restart before you use the system normally. The CU unlock is still active." ;;
       esac
     fi
   else
     write_report
     auto_cleanup
-    say "Reboot to return to the stock state."
+    say "Restart to return to the stock state."
   fi
 fi

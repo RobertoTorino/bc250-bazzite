@@ -1,3 +1,26 @@
+Changelog: 21-11-2026 19:37:41
+
+Fixed. The wiki chapter's part on the BIOS follows the suite's rule (owner, 21-11-2026): its main heading is The stock
+P5.00 BIOS, with Disabling the IOMMU and Optional: ACPI fix under it. A custom BIOS is named once, as another route
+that is not part of the suite. The Requirements section said the script's --all installs everything: it leaves out the
+development extras, and it also installs mprime.
+
+Changelog: 21-11-2026 18:54:58
+
+Fixed. The app's text is rewritten to the writing standard: short sentences with one fact each, no chains with
+semicolons, colons or long parentheses, plain American English and the purpose first. This covers the wiki chapter
+(docs/apps/check.md), the README, the messages test-board.sh prints (results, hints, notes and the advice on journal
+lines), the fake engine's copies of them, install-requirements.sh, two of install.sh's own messages and three test
+descriptions in catalog.py. Lines the app parses keep their format, and a hint that spans several lines still joins into
+one hint. No label was renamed. The engine's hints for the GUI now say to check a box instead of tick, and "restart"
+instead of "reboot" outside commands. The README and a hint of tests 40 and 47 say wiki instead of manual. Facts
+corrected: the wiki said Run all tests runs tests 00-40, and it runs every test except 42, 43 and 44, with 41 only when
+its box is checked. Test 31 was described as verifying that /var/log exists and is writable, and it lists the folder and
+verifies that it exists. The wiki named the graph button Save as PNG, and the window shows Save as PNG…. Nothing the app
+does has changed. Tests changed: test_log_advice.py asserts the new wording of the two hints on failed units and
+unexplained lines, and test_smoke.py looks for the chapter's new first words. Thirty names of programs and terms
+the texts use were added to tools/text_check/words.txt.
+
 Changelog: 21-11-2026 15:13:54
 
 Release 4.7.0.

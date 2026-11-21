@@ -26,13 +26,13 @@ TITLE = "BC-250"
 # key, caption; the order on the screen
 TILES = (("cpu", "CPU"), ("gpu", "GPU"), ("cpu_temp", "CPU temp"), ("gpu_temp", "GPU temp"), ("vram", "VRAM"),
          ("ram", "RAM"), ("fan", "Fan"), ("vrm", "VRM temp"), ("cpu_rail", "CPU power"), ("gpu_rail", "GPU power"),
-         ("vin", "12 V input"), ("nvme", "NVMe temp"), ("net", "Network"),
+         ("vin", "12 V input"), ("chip", "Chip power"), ("nvme", "NVMe temp"), ("net", "Network"),
          ("disk", "Disk"), ("weather", "Weather"))
 DEFAULT_TILES = ("cpu", "gpu", "vram", "ram", "fan", "net")
 # What each tile shows, for the Values tab's tooltips.
 TILE_HINTS = {
     "cpu": "The CPU's load, with its clock and temperature.",
-    "gpu": "The GPU's load, with its clock, power and temperature.",
+    "gpu": "The GPU's load, with its clock and temperature, and its power with Quickfix's VRM Sensors on.",
     "cpu_temp": "The CPU's temperature in large.",
     "gpu_temp": "The GPU's temperature in large.",
     "vram": "The GPU's share of the memory: used and total.",
@@ -42,6 +42,7 @@ TILE_HINTS = {
     "cpu_rail": "What the CPU draws, with its voltage and current. It needs Quickfix's VRM Sensors.",
     "gpu_rail": "What the GPU draws, with its voltage and current. It needs Quickfix's VRM Sensors.",
     "vin": "The board's 12 V input, as the voltage regulator measures it. It needs Quickfix's VRM Sensors.",
+    "chip": "What the whole chip draws, as the GPU driver reports it: CPU, GPU and the rest together.",
     "nvme": "The SSD's temperature.",
     "net": "Download and upload, of the interface chosen below.",
     "disk": "Reads and writes of the disks.",
@@ -208,7 +209,8 @@ def tiles(r: Reading, keys: tuple[str, ...] | list[str], weather: Weather | None
         "gpu": lambda: Tile("GPU", f"{r.gpu_load:.0f} %" if r.gpu_load is not None
                             else f"{r.gpu_mhz} MHz" if r.gpu_mhz else DASH,
                             _join(f"{r.gpu_mhz} MHz" if r.gpu_mhz and r.gpu_load is not None else None,
-                                  f"{r.gpu_watts:.0f} W" if r.gpu_watts is not None else None, _temp(r.gpu_temp)),
+                                  f"{r.gpu_rail.watts:.0f} W" if r.gpu_rail and r.gpu_rail.watts is not None else None,
+                                  _temp(r.gpu_temp)),
                             r.gpu_load / 100 if r.gpu_load is not None else None, _temp_alert(r.gpu_temp)),
         "cpu_temp": lambda: _temp_tile("CPU temp", r.cpu_temp),
         "gpu_temp": lambda: _temp_tile("GPU temp", r.gpu_temp),
@@ -219,6 +221,7 @@ def tiles(r: Reading, keys: tuple[str, ...] | list[str], weather: Weather | None
         "cpu_rail": lambda: _rail_tile("CPU power", r.cpu_rail),
         "gpu_rail": lambda: _rail_tile("GPU power", r.gpu_rail),
         "vin": lambda: Tile("12 V input", f"{r.vin_mv / 1000:.2f} V" if r.vin_mv else DASH),
+        "chip": lambda: Tile("Chip power", f"{r.chip_watts:.0f} W" if r.chip_watts is not None else DASH),
         "nvme": lambda: Tile("NVMe temp", _temp(r.nvme_temp) or DASH, alert=_temp_alert(r.nvme_temp)),
         "net": lambda: Tile("Network", f"↓ {_rate(r.net[0])}" if r.net else DASH,
                             f"↑ {_rate(r.net[1])}" if r.net else ""),

@@ -88,7 +88,7 @@ def check() -> GateResult:
     if PENDING.is_file():
         return GateResult(False, masks=base, reasons=[
             "An attempt is still marked as in progress, because umr-pending exists. Finish that bisect run, "
-            "or reboot and let it resume. Only then can the results accept this mask."])
+            "or restart and let it resume. Only then can the results accept this mask."])
 
     rows = [int(m, 16) for m in base.split(",")]
     counts = [popcount(m) for m in rows]
