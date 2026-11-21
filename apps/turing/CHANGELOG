@@ -1,3 +1,7 @@
+Changelog: 21-11-2026 19:56:43
+
+Release 2.6.1.
+
 Changelog: 21-11-2026 18:45:01
 
 Fixed. The GPU tile showed the whole chip's power as the GPU's. It now shows the GPU's own power, from the voltage

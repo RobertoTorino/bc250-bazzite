@@ -1,3 +1,7 @@
+Changelog: 21-11-2026 19:56:43
+
+Release 4.6.1.
+
 Changelog: 21-11-2026 18:42:07
 
 Fixed. The lines the background service writes to the journal are rewritten to the writing standard. A line that
