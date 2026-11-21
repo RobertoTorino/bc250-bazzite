@@ -118,7 +118,8 @@ def test_widget_draws_and_explains(qapp, sys_root, proc_root):
 
 
 def test_window_previews_the_picked_split(qapp, sys_root, proc_root):
-    w = MainWindow(sys_root, proc_root, runner=lambda args: None, commands=FakeOstree())
+    w = MainWindow(sys_root, proc_root, runner=lambda args: None, commands=FakeOstree(),
+                   etc_root=sys_root.parent / "etc", var_root=sys_root.parent / "var")
     assert w.map.usage.vram_used_mib == 924 and not w.map.previewing and w.timer.isActive()
     w.combo.setCurrentIndex(w.combo.findData(4096))
     assert w.map.preview == 4096 and w.map.preview_ttm == KEEP

@@ -9,7 +9,8 @@
 #
 # Run it as your own user; nothing here needs root. The app reads the memory figures without root; it reads or
 # writes the CMOS memory block only when you ask, through a password prompt (pkexec) and the system python3, and
-# the kernel arguments of the next boot with rpm-ostree, which asks for the password itself.
+# the kernel arguments of the next boot with rpm-ostree, which asks for the password itself. A swap layout is
+# written the same way as CMOS, through a password prompt, and stays when the app is removed.
 #  * ~/.local/share/bc250-memory-manager/app: the app, with the bc250_core it was tested with (bundled in the
 #    release; taken from the suite checkout when run from there).
 #  * ~/.local/share/bc250-bazzite-suite/venv, the BC250 Bazzite Suite's shared venv with PyQt6 (the wheels bundle

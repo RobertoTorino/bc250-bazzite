@@ -116,11 +116,14 @@ it would at start-up (the shadPS4 Manager opens the package in Extract PKG).
 ## The window
 
 Every window starts with the same header: the app's icon at 96 px on the left, spanning two rows. The first row
-has the name with the version, then the app's states, and its actions on the right. The second row has the status
-boxes or the app's main controls.
+has the name with the version, then the app's states. The second row has the status boxes and the action pills.
+
+A row holds five boxes and pills at most.
+The rest goes on a row under it, which `header.add_row()` gives.
+No action pill stands alone in the first row.
 
 ```
-┌────────┐  BC-250 Example  v0.1.0   ● Ready                              [Refresh]
+┌────────┐  BC-250 Example  v0.1.0   ● Ready
 │  icon  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
 │ 96 px  │  │  6.0 GiB │ │   on     │ │  1.0.0.0 │ │    —     │
 └────────┘  └──────────┘ └──────────┘ └──────────┘ └──────────┘
@@ -134,11 +137,47 @@ from bc250_core.widgets import AppHeader, MetricBox, StatusText
 header = AppHeader(LOGO_PATH, APP_NAME, __version__)
 self.badge = StatusText()
 header.add_state(self.badge)               # beside the title
-header.add_action(self.refresh_button)     # right end of the title row
 for box in (self.vram_box, self.gtt_box):
     header.add_second(box)                 # the second row, left to right
+header.add_second(self.apply_pill)         # the action pills after the boxes
+more = header.add_row()                    # a row under it, when the second holds five already
 layout.addLayout(header)
 ```
+
+### The card
+
+A small window with a few boxes and pills is a card. `CardWindow` in core's `card.py` is its template:
+
+```
+┌────────┐  BC-250 Example  v0.1.0   ● Ready  (i)                          (↻)
+│  icon  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+│ 96 px  │  │  box   │ │  box   │ │  pill  │ │  pill  │ │  pill  │
+└────────┘  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘
+   the page: what the card holds
+```
+
+- **The title row:** the name with the version, the state, the info symbol and the refresh symbol at the right end.
+- **The info symbol:** it says what the app does. Elsewhere it holds a text the window has no room for.
+- **The rows:** five boxes and pills on a row at most, all as wide as the widest.
+- **The width:** exactly a full row, so the fifth place ends at the right border. A place is 120 px at least.
+- **The height:** what the page holds.
+- **Hover texts:** a box or pill takes its tooltip when its value is set.
+
+```python
+from bc250_core.card import CardWindow
+
+class Window(CardWindow):
+    def __init__(self):
+        super().__init__(LOGO_PATH, APP_NAME, __version__, "What the app does.")
+        self.set_rows([self.one_box, self.two_box, self.on_pill, self.off_pill])   # a second list is a second row
+        self.page.addWidget(self.note)
+
+    def refresh(self):                      # the refresh symbol calls it
+        ...
+```
+
+A card that needs another layout or width is an exception, and the owner's decision.
+Quickfix's Tools window is one: its pills stand on the left with the text beside them.
 
 Apps that are not on core yet build the same layout in their own code, with the same sizes: a 96 px icon, a 24 px
 bold title with the version in gray at 14 px, and 6 px between the rows.
@@ -371,7 +410,7 @@ python3 tools/new_app.py fan2 "BC-250 Fan Two" --category sustainable --summary 
 python3 tools/new_app.py --help     # --id, --package: the app id and the package, when the defaults are not yours
 ```
 
-It writes `apps/<name>/` (the package with `__main__.py` and a window on `AppHeader`, `images/`,
+It writes `apps/<name>/` (the package with `__main__.py` and a window on the card, `images/`,
 `tests/`, `install.sh`, the requirements, `VERSION` 0.1.0, `CHANGELOG`, `LICENSE`, `.gitignore`, `README.md`),
 the installer test `tools/installer-tests/<name>.sh` and the chapter `docs/apps/<name>.md`,
 and adds the app to `portal/apps.toml`, `icons/categories.toml` (with the icon copies), `mkdocs.yml`, the apps
@@ -386,7 +425,7 @@ for an app that does not fit the template (the owner's decision):
    (0.1.0) and `__version__`. Clear its `CHANGELOG` and start it with one entry.
 2. Add the app to `icons/categories.toml` with its category and run `python3 tools/sync_icons.py`: it writes the
    icons in `images/` and the portal's tile ([Icons](#icons)).
-3. Build the window on `AppHeader` and core's widgets.
+3. Build the window on the card (`CardWindow`) or, for a larger window, on `AppHeader` and core's widgets.
 4. Write `install.sh` from the copied one, with the same options and launcher.
 5. Write `tests/` and `requirements-dev.txt`, and `tools/installer-tests/<name>.sh`: CI finds both
    by itself (every folder with `tests/`, every script in `installer-tests/`), and shellchecks `install.sh`. Add

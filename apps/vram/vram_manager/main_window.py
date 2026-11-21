@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The main window: the memory the system has now (split, GTT, RAM, swap), a live map of it, the VRAM split in
-CMOS with apply, undo and a read of the CMOS block, and the GTT limit (ttm.pages_limit) in the next boot's kernel
-arguments.
+CMOS with apply, undo and a read of the CMOS block, the GTT limit (ttm.pages_limit) in the next boot's kernel
+arguments, and the swap layout of the next boot.
 
-A split is written to CMOS, a GTT limit to the next boot's kernel arguments with rpm-ostree; both take effect at
-the next boot. The window remembers each change with the boot it was made in, and after a reboot says whether the
+A split is written to CMOS, a GTT limit to the next boot's kernel arguments with rpm-ostree, a swap layout to files
+of the app's own in /etc (swap.py); all take effect at the next boot. The window remembers each change with the boot it was made in, and after a reboot says whether the
 kernel got it."""
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from typing import Callable
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHBoxLayout, QLabel, QMainWindow, QMessageBox,
-                             QPushButton, QVBoxLayout, QWidget)
+                             QPushButton, QSpinBox, QVBoxLayout, QWidget)
 
 from bc250_core import SUITE_MANUAL_URL, window_title
 from bc250_core import __version__ as CORE_VERSION
@@ -28,7 +28,7 @@ from bc250_core.theme import BLUE, GREY, PURPLE
 from bc250_core.widgets import AppHeader, InfoButton, MetricBox, StatusText, TextDialog, accent_button, hint_label
 
 from . import APP_ID, APP_NAME, INFO, LOGO_PATH, __version__
-from . import cmos, kargs, privileged, system
+from . import cmos, kargs, privileged, swap, system
 from .memory_map import MemoryMap, gtt_ceiling
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/vram/"
@@ -49,7 +49,9 @@ PROFILES = {
 class ManagerSettings(SettingsStore):
     DEFAULTS = {"pending_mb": 0, "pending_boot_id": "", "previous_mb": 0, "outcome": "",
                 # the GTT limit written for the next boot: "" none, "default" (the argument removed) or the pages
-                "pending_ttm": "", "pending_ttm_boot_id": "", "ttm_outcome": ""}
+                "pending_ttm": "", "pending_ttm_boot_id": "", "ttm_outcome": "",
+                # the swap layout written for the next boot: "" none, or its key in swap.LAYOUTS
+                "pending_swap": "", "pending_swap_boot_id": "", "swap_outcome": ""}
 
 
 def backups_dir() -> Path:
@@ -77,14 +79,20 @@ def ttm_pages(setting: str) -> int | None:
 class MainWindow(QMainWindow):
     def __init__(self, sys_root: Path = Path("/sys"), proc_root: Path = Path("/proc"),
                  runner: Callable[[list[str]], privileged.Result] = privileged.run,
-                 commands: kargs.Run = privileged.run_command):
+                 commands: kargs.Run = privileged.run_command,
+                 swapper: Callable[[list[str]], privileged.Result] = privileged.run_swap,
+                 etc_root: Path = Path("/etc"), var_root: Path = Path("/var")):
         super().__init__()
         self.resize(900, 940)
         self.sys_root = sys_root
         self.proc_root = proc_root
         self.runner = runner
         self.commands = commands                # runs rpm-ostree for the kernel arguments
+        self.swapper = swapper                  # runs swap.py as root for the swap layout
+        self.etc_root = etc_root
+        self.var_root = var_root
         self.settings = ManagerSettings(INFO, self)
+        self.swap_setup = swap.read_setup(etc_root, var_root)
         self.memory = system.read_memory(sys_root, proc_root)
         self.next_boot = kargs.read_next_boot(commands)
         self.block_problem = ""                 # why CMOS must not be touched on this machine (cmos.board_problem)
@@ -190,6 +198,53 @@ class MainWindow(QMainWindow):
         lay_profiles = QVBoxLayout(profiles)
         lay_profiles.addLayout(row_profiles)
 
+        layout_box = QGroupBox("Swap layout")
+        self.layout_combo = QComboBox()
+        for key, label in swap.LAYOUTS.items():
+            self.layout_combo.addItem(label, key)
+        self.layout_combo.currentIndexChanged.connect(self.on_layout)
+        self.swap_button = accent_button("Apply…", "Write this swap layout; it takes effect after a restart")
+        self.swap_button.clicked.connect(self.apply_swap)
+        self.delete_button = QPushButton("Delete swap file…")
+        self.delete_button.clicked.connect(self.delete_swap_file)
+        self.swap_info = InfoButton(
+            "Swap is where Linux puts pages that do not fit in the RAM. <b>zram</b> keeps them in the RAM, "
+            "compressed, which is fast and is what Bazzite does. <b>zswap</b> keeps them compressed in the RAM "
+            "first and moves the oldest to a swap file on the disk, which holds more than the RAM can. "
+            "<b>vm.swappiness</b> is how readily Linux swaps, from 0 to 200. A layout is a few files of the app's "
+            "own, so Bazzite's own layout comes back when they are removed. "
+            f"<a href='{MANUAL_URL}#the-swap-layout'>Wiki</a>", "About the swap layout")
+        row_swap = QHBoxLayout()
+        row_swap.addWidget(QLabel("Next boot:"))
+        row_swap.addWidget(self.layout_combo, 1)
+        for w in (self.swap_button, self.delete_button, self.swap_info):
+            row_swap.addWidget(w)
+        self.size_label = QLabel("")
+        self.size_combo = QComboBox()
+        self.size_combo.currentIndexChanged.connect(self.on_swap_pick)
+        self.compressor_combo = QComboBox()
+        self.compressor_combo.currentIndexChanged.connect(self.on_swap_pick)
+        self.swappiness_spin = QSpinBox()
+        self.swappiness_spin.setRange(0, 200)
+        self.swappiness_spin.setToolTip("How readily Linux moves pages out of the RAM into swap, 0 to 200")
+        self.swappiness_spin.valueChanged.connect(self.on_swap_pick)
+        self.swap_options = QWidget()
+        row_options = QHBoxLayout(self.swap_options)
+        row_options.setContentsMargins(0, 0, 0, 0)
+        row_options.addWidget(self.size_label)
+        row_options.addWidget(self.size_combo, 1)
+        row_options.addWidget(QLabel("Compressor:"))
+        row_options.addWidget(self.compressor_combo)
+        row_options.addWidget(QLabel("vm.swappiness:"))
+        row_options.addWidget(self.swappiness_spin)
+        self.swap_note = hint_label("")
+        self.swap_reason = hint_label("")
+        lay_swap = QVBoxLayout(layout_box)
+        lay_swap.addLayout(row_swap)
+        lay_swap.addWidget(self.swap_options)
+        lay_swap.addWidget(self.swap_note)
+        lay_swap.addWidget(self.swap_reason)
+
         central = QWidget()
         lay = QVBoxLayout(central)
         lay.addLayout(header)
@@ -198,9 +253,10 @@ class MainWindow(QMainWindow):
         lay.addWidget(split)
         lay.addWidget(limit)
         lay.addWidget(profiles)
+        lay.addWidget(layout_box)
         lay.addStretch(1)
-        version = QLabel(f"{APP_NAME} {__version__} · core {CORE_VERSION} · CMOS and the kernel arguments are written "
-                         "only when you apply")
+        version = QLabel(f"{APP_NAME} {__version__} · core {CORE_VERSION} · CMOS, the kernel arguments and the swap "
+                         "layout are written only when you apply")
         version.setStyleSheet("color:palette(placeholder-text);")
         lay.addWidget(version, 0, Qt.AlignmentFlag.AlignRight)
         self.setCentralWidget(central)
@@ -210,6 +266,7 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(geometry)
         self.check_reboot()
         self.check_ttm_reboot()
+        self.check_swap_reboot()
         self.refresh_usage()
         self.refresh()
 
@@ -245,6 +302,21 @@ class MainWindow(QMainWindow):
                                              "deployment.")
         self.settings.set("pending_ttm", "")
         self.settings.set("pending_ttm_boot_id", "")
+
+    def check_swap_reboot(self) -> None:
+        """The same for a swap layout: does this boot's swap look like it?"""
+        pending = self.settings.get("pending_swap")
+        if not pending or self.settings.get("pending_swap_boot_id") == self.memory.boot_id:
+            return
+        m = self.memory
+        got = {swap.ZRAM: m.zram and not m.zswap, swap.ZSWAP_FILE: m.zswap and m.disk_swap and not m.zram}
+        if got.get(pending, True):
+            self.settings.set("swap_outcome", "The swap layout from the last change is active.")
+        else:
+            self.settings.set("swap_outcome", f"The swap layout was written, but this boot's swap is {m.swap_text}. "
+                                              "Apply it again, or see the wiki for the files to check.")
+        self.settings.set("pending_swap", "")
+        self.settings.set("pending_swap_boot_id", "")
 
     def on_pick(self) -> None:
         """A split or a GTT limit picked: the memory map's next boot with them, where they differ from this boot's,
@@ -285,13 +357,13 @@ class MainWindow(QMainWindow):
         self.details.setText(f"vm.swappiness {m.swappiness}" if m.swappiness is not None else "")
         self.details.setToolTip("How readily Linux moves pages out of the RAM into swap, 0 to 200: 0 only when the RAM "
                                 "is full, 60 the kernel's default, 100 and more preferring swap to the file cache "
-                                "(usual with zram, where swap is RAM). The board's own setting; the app only shows "
-                                "it.")
+                                "(usual with zram, where swap is RAM). Swap layout sets it for the next boot.")
         self.details.setVisible(bool(self.details.text()))
 
         pending = self.settings.get("pending_mb")
         outcome = self.settings.get("outcome")
-        ttm_pending = self.refresh_ttm()
+        swap_pending = self.refresh_swap()
+        ttm_pending = self.refresh_ttm() or swap_pending
         if pending:
             self.badge.set_status("Reboot to apply", "warn", f"{split_label(pending)} is in CMOS; the firmware "
                                                                "reads it at the next boot.")
@@ -358,6 +430,146 @@ class MainWindow(QMainWindow):
         self.ttm_note.setVisible(bool(self.ttm_note.text()))
         self.ttm_reason.setVisible(bool(self.ttm_reason.text()))
         return waiting
+
+    # --- The swap layout --------------------------------------------------------------------------------------
+
+    def zram_compressors(self) -> list[str]:
+        """What the board's zram device offers; the usual three when no device is there to ask."""
+        for path in sorted((self.sys_root / "block").glob("zram*/comp_algorithm")):
+            try:
+                names = path.read_text().replace("[", "").replace("]", "").split()
+            except OSError:
+                continue
+            if names:
+                return names
+        return list(swap.ZRAM_COMPRESSORS)
+
+    def fill_swap_options(self) -> None:
+        """The second row for the layout picked: its sizes, compressors and swappiness, with the written layout's
+        values when it is that one, else the proposal."""
+        key, written = self.layout_combo.currentData(), self.swap_setup
+        same = written.layout == key
+        ram = self.memory.ram_mib or 0
+        for widget in (self.size_combo, self.compressor_combo, self.swappiness_spin):
+            widget.blockSignals(True)
+        self.size_combo.clear()
+        self.compressor_combo.clear()
+        if key == swap.ZRAM:
+            self.size_label.setText("zram size:")
+            for label, size, factor in swap.ZRAM_SIZES:
+                self.size_combo.addItem(f"{label} ({system.mib_text(int(ram * factor))})" if ram else label, size)
+            names, size, first = self.zram_compressors(), written.zram_size if same else "ram / 2", "zstd"
+        else:
+            self.size_label.setText("Swap file:")
+            for gib in swap.FILE_SIZES_GIB:
+                self.size_combo.addItem(f"{gib} GiB", gib * 1024)
+            if ram and self.size_combo.findData(ram) < 0:
+                self.size_combo.addItem(f"As large as the RAM ({system.mib_text(ram)})", ram)
+            running = system._selected(system._read(self.sys_root / "module/zswap/parameters/compressor"))
+            names = list(dict.fromkeys([*swap.ZSWAP_COMPRESSORS, *([running] if running else [])]))
+            size, first = written.file_mib if same and written.file_mib else 8 * 1024, "zstd"
+            if self.size_combo.findData(size) < 0:
+                self.size_combo.addItem(f"{system.mib_text(size)}, as made", size)
+        if same and written.compressor and written.compressor not in names:
+            names.append(written.compressor)
+        self.compressor_combo.addItems(names)
+        self.size_combo.setCurrentIndex(max(self.size_combo.findData(size), 0))
+        wanted = written.compressor if same and written.compressor else first
+        self.compressor_combo.setCurrentIndex(max(self.compressor_combo.findText(wanted), 0))
+        value = written.swappiness if same and written.swappiness is not None else swap.SWAPPINESS.get(key)
+        self.swappiness_spin.setValue(value if value is not None else 0)
+        for widget in (self.size_combo, self.compressor_combo, self.swappiness_spin):
+            widget.blockSignals(False)
+        self.swap_options.setVisible(key != swap.BAZZITE)
+
+    def picked_setup(self) -> swap.Setup:
+        key = self.layout_combo.currentData()
+        if key == swap.BAZZITE:
+            return swap.Setup()
+        return swap.Setup(key, self.size_combo.currentData() if key == swap.ZRAM else "",
+                          self.compressor_combo.currentText(),
+                          self.size_combo.currentData() if key == swap.ZSWAP_FILE else 0, self.swappiness_spin.value())
+
+    def on_layout(self) -> None:
+        self.fill_swap_options()
+        self.on_swap_pick()
+
+    def on_swap_pick(self) -> None:
+        """Apply only for a layout that is not written yet and that can be written; else the reason."""
+        picked = self.picked_setup()
+        problem = ""
+        if picked.layout == swap.ZSWAP_FILE:
+            problem = swap.file_problem(picked.file_mib, self.var_root, self.proc_root)
+        self.swap_button.setEnabled(not problem and picked != self.swap_setup)
+        self.swap_reason.setText(escape(problem))
+        self.swap_reason.setVisible(bool(problem))
+
+    def refresh_swap(self) -> str:
+        """The swap layout box: the written layout in the combos, the note under them, and Delete swap file while
+        a file is left that no layout uses. Returns the note when a layout waits for a restart, else ""."""
+        self.swap_setup = written = swap.read_setup(self.etc_root, self.var_root)
+        self.layout_combo.blockSignals(True)
+        self.layout_combo.setCurrentIndex(self.layout_combo.findData(written.layout))
+        self.layout_combo.blockSignals(False)
+        self.fill_swap_options()
+        waiting = ""
+        if self.settings.get("pending_swap"):
+            waiting = "The swap layout is written. Restart the board to use it."
+            self.swap_note.setText(f"<b>{escape(waiting)}</b>")
+        else:
+            self.swap_note.setText(escape(self.settings.get("swap_outcome"), quote=False))
+        self.swap_note.setVisible(bool(self.swap_note.text()))
+        left = swap.file_mib(self.var_root) if written.layout != swap.ZSWAP_FILE else 0
+        in_use = swap.file_in_use(self.var_root, self.proc_root)
+        self.delete_button.setVisible(bool(left))
+        self.delete_button.setEnabled(not in_use)
+        self.delete_button.setToolTip("The swap file is in use until the board restarts" if in_use else
+                                      f"Delete {self.var_root / swap.SWAP_FILE}, {system.mib_text(left)}")
+        self.on_swap_pick()
+        return waiting
+
+    def apply_swap(self) -> None:
+        setup = self.picked_setup()
+        if setup.layout == swap.BAZZITE:
+            facts = ["It removes the app's own swap files from /etc.", "zram is then as Bazzite sets it."]
+        elif setup.layout == swap.ZRAM:
+            label = self.size_combo.currentText()
+            facts = [f"zram gets the size {label[0].lower() + label[1:]}, with {setup.compressor}.",
+                     f"vm.swappiness becomes {setup.swappiness}."]
+        else:
+            path = self.var_root / swap.SWAP_FILE
+            have = swap.file_mib(self.var_root) == setup.file_mib
+            facts = [f"It {'keeps' if have else 'makes'} the swap file {path} of {system.mib_text(setup.file_mib)}.",
+                     f"zswap is turned on, with {setup.compressor}.", "zram is turned off.",
+                     f"vm.swappiness becomes {setup.swappiness}."]
+        answer = QMessageBox.question(
+            self, window_title("Swap layout"),
+            f"Write the swap layout \"{swap.LAYOUTS[setup.layout]}\" for the next boot?\n\n" + "\n".join(facts)
+            + "\nIt takes effect after you restart the board.\n\nIt needs your password.")
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        result = self.swapper(swap.arguments(setup))
+        if not result.ok:
+            QMessageBox.warning(self, window_title("Swap layout"), result.error or "The write failed.")
+            self.on_swap_pick()
+            return
+        self.settings.set("pending_swap", setup.layout)
+        self.settings.set("pending_swap_boot_id", self.memory.boot_id)
+        self.settings.set("swap_outcome", "")
+        self.refresh()
+
+    def delete_swap_file(self) -> None:
+        path = self.var_root / swap.SWAP_FILE
+        answer = QMessageBox.question(
+            self, window_title("Delete swap file"),
+            f"Delete the swap file {path}?\n\nNo layout uses it anymore.\n"
+            f"It frees {system.mib_text(swap.file_mib(self.var_root))} on the disk.\n\nIt needs your password.")
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        result = self.swapper(["--delete-file"])
+        if not result.ok:
+            QMessageBox.warning(self, window_title("Delete swap file"), result.error or "The file was not deleted.")
+        self.refresh()
 
     # --- Actions ----------------------------------------------------------------------------------------------
 

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The quickfixes' windows. Each is the suite's window: the icon at 96 px, the quickfix's name with the version, its
-state, the info symbol with what it contains and does, and Refresh; its status boxes and controls on the second row.
+state, the info symbol with what it contains and does, and the refresh symbol at the right end; its status boxes
+and pills on the rows under the title, five on a row at most (core's card.py: the card).
 The ones that change the board are switches (SwitchWindow): Turn on when it is off, Turn off when the quickfix turned
 it on, one password each (pkexec, system.py); what is on already cannot be turned on again. The two kernel
 arguments (KargWindow) apply from the next boot, which the window advises."""
@@ -14,14 +15,13 @@ from pathlib import Path
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFontDatabase
-from PyQt6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout, QLabel, QMainWindow, QMessageBox, QPlainTextEdit,
-                             QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import QComboBox, QGridLayout, QLabel, QMessageBox, QPlainTextEdit
 
 from bc250_core import window_title
 from bc250_core.platform import launch_in_terminal, show_in_folder
 from bc250_core.theme import GREEN, GREY, ORANGE
-from bc250_core.widgets import (ActionPill, AppHeader, InfoButton, MetricBox, StatusText, hint_label,
-                                same_width)
+from bc250_core.card import CardWindow
+from bc250_core.widgets import ActionPill, MetricBox, hint_label, same_width
 
 from . import LOGO_PATH, __version__, runner, state, system
 from .catalog import BY_KEY, Quickfix
@@ -31,31 +31,13 @@ BOARD = ("<br><br><b>Changes the board.</b> It asks for your password once (pkex
          "the firmware, and Turn off undoes it.")
 
 
-class QuickfixWindow(QMainWindow):
-    """One quickfix's window: the header, then the page the quickfix fills (self.page)."""
+class QuickfixWindow(CardWindow):
+    """One quickfix's window, a card (core's card.py): the header, then the page the quickfix fills (self.page)."""
 
     def __init__(self, quickfix: Quickfix, info: str, run_root: RootRunner = runner.run_root,
                  root: Path = state.ROOT, home: Path | None = None) -> None:
-        super().__init__()
+        super().__init__(LOGO_PATH, quickfix.name, __version__, info + (BOARD if quickfix.changes_board else ""))
         self.quickfix, self.run_root, self.root, self.home = quickfix, run_root, root, home or Path.home()
-        self.setWindowTitle(quickfix.name)
-        self.resize(820, 420)
-        self.header = AppHeader(LOGO_PATH, quickfix.name, __version__)
-        self.state = StatusText()
-        self.header.add_state(self.state)
-        self.info = InfoButton(info + (BOARD if quickfix.changes_board else ""))
-        self.header.add_state(self.info)
-        self.refresh_button = ActionPill("Refresh", "Click to refresh")
-        self.refresh_button.setToolTip("Read again")
-        self.refresh_button.clicked.connect(self.refresh)
-        self.header.add_action(self.refresh_button)
-        contents = QWidget()
-        self.page = QVBoxLayout(contents)
-        self.page.addLayout(self.header)
-        self.setCentralWidget(contents)
-
-    def refresh(self) -> None:
-        raise NotImplementedError
 
     def as_root(self, args: list[str], title: str) -> bool:
         """Runs system.py as root; a canceled password or a failure shows a message, and the window reads again."""
@@ -88,16 +70,13 @@ class ToolsWindow(QuickfixWindow):
         self.launch, self.board_test = launch, board_test
         self.resize(900, 560)
         self.found_box = MetricBox("Tools found")
-        self.header.add_second(self.found_box)
         self.all_button = ActionPill("Install all", "Every missing tool")
         self.all_button.setToolTip("Every group but the development extras, in a terminal (--all)")
         self.all_button.clicked.connect(lambda: self.install("--all"))
-        self.header.add_second(self.all_button)
-        self.header.title_row.removeWidget(self.refresh_button)         # here beside Install all, not top right
-        self.header.add_second(self.refresh_button)
-        self.header.add_second(QWidget(), 1)
+        self.set_rows([self.found_box, self.all_button])
         self.grid = QGridLayout()
-        self.grid.setColumnStretch(2, 1)
+        self.grid.setColumnStretch(3, 1)
+        self.grid.setHorizontalSpacing(10)
         self.page.addLayout(self.grid)
         self.page.addStretch(1)
         self.rows: dict[str, QLabel] = {}
@@ -107,28 +86,35 @@ class ToolsWindow(QuickfixWindow):
             # The group's heading is its Install pill (owner, 17-11-2026): the name, and what a click does under it.
             button = ActionPill(group.name, "Install")
             button.clicked.connect(lambda _=False, o=group.option: self.install(o))
-            self.grid.addWidget(button, row, 0, 1, 3, Qt.AlignmentFlag.AlignLeft)
             self.buttons[group.option] = button
-            row += 1
-            for tool in group.tools:
-                row = self._tool_row(tool, row)
+            row = self._group(button, group.tools, row)
         self.built_in = ActionPill("With Bazzite", "Included")
         self.built_in.setToolTip("Already on Bazzite: nothing to install.")
         self.built_in.setEnabled(False)
-        self.grid.addWidget(self.built_in, row, 0, 1, 3, Qt.AlignmentFlag.AlignLeft)
-        row += 1
-        for tool in state.BUILT_IN:
-            row = self._tool_row(tool, row)
-        same_width([self.found_box, self.all_button, self.refresh_button, *self.buttons.values(), self.built_in])
+        self._group(self.built_in, state.BUILT_IN, row)
+        # The exception among the cards (owner, 21-11-2026): the pills as wide as the widest group's, and the
+        # window at its own width, which the tools' text fills.
+        same_width([self.found_box, self.all_button, *self.buttons.values(), self.built_in])
+        self.resize(900, 560)
         self.refresh()
+
+    def _group(self, pill: ActionPill, tools, row: int) -> int:
+        """A group: its pill on the left, its tools beside it (owner, 21-11-2026: the text next to the pill, not
+        under it, so the card's width is used). The row after the tools takes the height the pill has left."""
+        self.grid.addWidget(pill, row, 0, len(tools) + 1, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        for tool in tools:
+            row = self._tool_row(tool, row)
+        self.grid.setRowStretch(row, 1)
+        self.grid.setRowMinimumHeight(row, 6)
+        return row + 1
 
     def _tool_row(self, tool: state.Tool, row: int) -> int:
         mark = QLabel()
         self.rows[tool.command] = mark
-        self.grid.addWidget(mark, row, 0)
-        self.grid.addWidget(QLabel(tool.package), row, 1)
+        self.grid.addWidget(mark, row, 1)
+        self.grid.addWidget(QLabel(tool.package), row, 2)
         self.grid.addWidget(hint_label(f"Tests {tool.used_by}" if tool.used_by[0].isdigit() else tool.used_by),
-                            row, 2)
+                            row, 3)
         return row + 1
 
     def refresh(self) -> None:
@@ -175,7 +161,7 @@ MANGOHUD_INFO = ("<b>MangoHud Config</b> opens MangoHud's own settings file, <co
                  "<b>FPS log</b> sets the three lines BC-250 Board Test needs to show a game's FPS: "
                  "<code>output_folder=~/mangohud-logs</code>, <code>autostart_log=1</code> and "
                  "<code>log_interval=500</code>; Save then makes the folder. MangoHud writes a log file per game "
-                 "session while the game runs. Delete old logs removes the ones older than 30 days.<br><br>"
+                 "session while the game runs. Delete logs removes the ones older than 30 days.<br><br>"
                  "MangoHud must be active for the game, for example with the Steam launch option "
                  "<code>mangohud %command%</code>. Without the log, Board Test still shows the game's name and its "
                  "CPU and GPU share.")
@@ -196,25 +182,17 @@ class MangoHudWindow(QuickfixWindow):
         self.log_button.clicked.connect(self.add_logging)
         self.save_button = ActionPill("Save", "Your edits")
         self.save_button.clicked.connect(self.save)
-        self.revert_button = ActionPill("Revert", "Read the file again")
+        self.revert_button = ActionPill("Revert", "Revert changes")
         self.revert_button.setToolTip("Read the file again; your edits go")
         self.revert_button.clicked.connect(self.refresh)
         self.folder_button = ActionPill("Log folder", "Click to open")
         self.folder_button.setToolTip(f"Open {self.folder}")
         self.folder_button.clicked.connect(lambda: show_in_folder(self.folder))
-        self.clean_button = ActionPill("Delete old logs", f"Older than {OLD_LOG_DAYS} days")
+        self.clean_button = ActionPill("Delete logs", f"Older than {OLD_LOG_DAYS} days")
         self.clean_button.setToolTip(f"Remove the log files older than {OLD_LOG_DAYS} days")
         self.clean_button.clicked.connect(self.delete_old_logs)
-        for widget in (self.file_box, self.log_box, self.logs_box):
-            self.header.add_second(widget)
-        self.header.add_second(QWidget(), 1)
-        for widget in (self.revert_button, self.save_button):
-            self.header.add_second(widget)
-        logs = QHBoxLayout()                    # the FPS log's actions on their own row, so no pill is squeezed
-        for widget in (self.log_button, self.folder_button, self.clean_button):
-            logs.addWidget(widget)
-        logs.addStretch(1)
-        self.page.addLayout(logs)
+        self.set_rows([self.file_box, self.log_box, self.logs_box, self.revert_button, self.save_button],
+                      [self.log_button, self.folder_button, self.clean_button])
         self.editor = QPlainTextEdit()
         self.editor.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
         self.editor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
@@ -285,7 +263,7 @@ class MangoHudWindow(QuickfixWindow):
     def delete_old_logs(self) -> None:
         old = self.old_logs()
         if not old or QMessageBox.question(
-                self, window_title("Delete old logs"), f"Delete the {len(old)} log files older than {OLD_LOG_DAYS} "
+                self, window_title("Delete logs"), f"Delete the {len(old)} log files older than {OLD_LOG_DAYS} "
                 f"days in {self.folder}?") != QMessageBox.StandardButton.Yes:
             return
         for path in old:
@@ -303,15 +281,15 @@ class SwitchWindow(QuickfixWindow):
     def __init__(self, quickfix: Quickfix, info: str, boxes: tuple[str, ...], **kwargs) -> None:
         super().__init__(quickfix, info, **kwargs)
         self.boxes = {caption: MetricBox(caption) for caption in boxes}
-        for box in self.boxes.values():
-            self.header.add_second(box)
-        self.header.add_second(QWidget(), 1)
         self.on_button = ActionPill("Turn on", "Click to apply")
         self.on_button.clicked.connect(self.turn_on)
         self.off_button = ActionPill("Turn off", "Click to undo")
         self.off_button.clicked.connect(self.turn_off)
-        self.header.add_second(self.on_button)
-        self.header.add_second(self.off_button)
+        boxes, pills = list(self.boxes.values()), [self.on_button, self.off_button]
+        if len(boxes) + len(pills) <= self.ROW_MAX:
+            self.set_rows(boxes + pills)
+        else:                                   # more than five: the boxes on their row, the pills under them
+            self.set_rows(boxes, pills)
         self.note = hint_label("")
         self.page.addWidget(self.note)
         self.page.addStretch(1)

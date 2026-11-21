@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Running the CMOS helper (cmos.py) as root through polkit, rpm-ostree for the kernel arguments (kargs.py), and
+"""Running the CMOS helper (cmos.py) and the swap layout's helper (swap.py) as root through polkit, rpm-ostree for the kernel arguments (kargs.py), and
 the report of a CMOS read.
 
-The helper runs with the system Python in isolated mode (-I), so nothing from the user's environment or the
+A helper runs with the system Python in isolated mode (-I), so nothing from the user's environment or the
 current folder is imported into the root process; it needs only the standard library. run_command() runs any
 command while the window stays responsive: the password dialog (pkexec's, or the desktop's polkit agent for
 rpm-ostree) is another process's, and the window must keep painting under it."""
@@ -17,9 +17,10 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import cmos
+from . import cmos, swap
 
 CMOS_SCRIPT = Path(cmos.__file__).resolve()
+SWAP_SCRIPT = Path(swap.__file__).resolve()
 SYSTEM_PYTHON = Path("/usr/bin/python3")
 NOT_INSTALLED = -2                      # run_command: the command is not on this system (kargs.py has the same)
 FAILED = -1                             # run_command: it did not start, or did not end in time
@@ -33,9 +34,9 @@ class Result:
     error: str
 
 
-def command(args: list[str]) -> list[str]:
+def command(args: list[str], script: Path = CMOS_SCRIPT) -> list[str]:
     python = str(SYSTEM_PYTHON) if SYSTEM_PYTHON.is_file() else sys.executable
-    return ["pkexec", python, "-I", str(CMOS_SCRIPT), *args]
+    return ["pkexec", python, "-I", str(script), *args]
 
 
 def parse(code: int, stdout: str) -> Result:
@@ -77,13 +78,18 @@ def run_command(cmd: list[str], timeout_ms: int = TIMEOUT_MS) -> tuple[int, str,
     return process.exitCode(), out, err
 
 
-def run(args: list[str]) -> Result:
-    """Runs the helper and waits for it, keeping the window responsive while the password dialog is up."""
-    cmd = command(args)
+def run(args: list[str], script: Path = CMOS_SCRIPT) -> Result:
+    """Runs a helper and waits for it, keeping the window responsive while the password dialog is up."""
+    cmd = command(args, script)
     code, out, err = run_command(cmd)
     if code in (NOT_INSTALLED, FAILED):
         return Result(False, {}, err)
     return parse(code, out + ("\n" + err if err.strip() and not out.strip() else ""))
+
+
+def run_swap(args: list[str]) -> Result:
+    """The swap layout's helper (swap.py)."""
+    return run(args, SWAP_SCRIPT)
 
 
 def report(data: dict, sys_root: Path = Path("/sys"), now: float | None = None) -> str:

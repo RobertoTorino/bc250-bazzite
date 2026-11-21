@@ -12,10 +12,15 @@
     kernel argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself,
     the firmware or the real-time clock, and the app refuses to write when the block's signature or checksum
     does not match or the kernel is locked down. Undo writes the previous split back, and the Default profile
-    writes 512 MB and removes the kernel argument; both take effect after a reboot.
+    writes 512 MB and removes the kernel argument; both take effect after a reboot. The swap layout is a few
+    files of the app's own in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap
+    and a swap unit. The zswap layout also makes the swap file /var/swap/swapfile. They stay across reboots and
+    power offs. Nothing is started or stopped before the next boot. Bazzite's own layout removes the files, and
+    Delete swap file removes the swap file.
 
-Sets the **VRAM split** of the **AMD BC-250** on **Bazzite** and the **GTT limit** on its kernel command line, and
-shows the memory figures that go with them: the GTT, the TTM limit, the system RAM and the swap layout.
+Sets the **VRAM split** of the **AMD BC-250** on **Bazzite**, the **GTT limit** on its kernel command line and the
+**swap layout**.
+It shows the memory figures that go with them, such as the GTT, the TTM limit, the system RAM and the swap.
 
 ## The split, GTT and RAM
 
@@ -37,8 +42,7 @@ marks 6 GB as recommended for games.
 The top row shows what the kernel got at this boot: the **VRAM split**, the **GTT**, the GTT limit
 **ttm.pages_limit** (marked default when it is not on the command line), the **system RAM** and the **swap**
 layout; under it `vm.swappiness`, how readily Linux moves pages out of the RAM into swap (0 to 200; 60 is the
-kernel's default, more prefers swap to the file cache, usual with zram), the board's own setting, which the app only
-shows. When the limit is above the RAM, the GTT box says so: the GTT is all the RAM, and
+kernel's default, more prefers swap to the file cache, usual with zram). **Swap layout** sets it for the next boot. When the limit is above the RAM, the GTT box says so: the GTT is all the RAM, and
 a higher limit has no effect. While a new limit waits for a reboot, the ttm.pages_limit box's caption names it
 ("next boot 16.0 GiB"). Hover a box for the details.
 
@@ -109,6 +113,45 @@ A profile writes only what differs from the board: the split to CMOS, the limit 
 arguments. It asks once, names what it will write, and needs a password prompt for each of the two. A profile the
 board already has is off. Both take effect after you reboot the board, which stays yours to do.
 
+## The swap layout
+
+Swap is where Linux puts pages that do not fit in the RAM.
+Under **Swap layout** you pick how the board swaps from the next boot on.
+There are three layouts, and each is a complete setup:
+
+- **Bazzite's own: zram as the image sets it.** The app's own files are removed.
+- **zram with your size and compressor.** Swapped-out pages stay in the RAM, compressed.
+- **zswap with a swap file on disk, zram off.** Pages are compressed in the RAM first, and the oldest move to a
+  swap file on the disk.
+
+zram is fast, but what it holds still takes RAM.
+zswap with a swap file holds more than the RAM can, at the cost of disk writes.
+
+The second row belongs to the layout you picked:
+
+- **zram size:** half the RAM, the RAM, one and a half times the RAM or twice the RAM. The size follows the RAM at
+  every boot, so it follows a new split by itself.
+- **Swap file:** 4, 8 or 16 GiB, or as large as the RAM. The file is `/var/swap/swapfile`.
+- **Compressor:** for zram, the ones the board's zram device offers. For zswap: zstd, lz4 or lzo.
+- **vm.swappiness:** how readily Linux swaps, from 0 to 200. The app proposes 180 for zram and 60 for zswap.
+
+**Apply…** asks first, names what it will write, and then asks for your password.
+Apply is off while the layout picked is the one already written.
+The status next to the title turns to **Reboot to apply**.
+Nothing changes before you restart the board, and the restart is yours to do.
+After the restart the app says whether the board's swap is the layout you applied.
+
+A swap file needs room on the disk.
+When the size picked does not fit, Apply is off and the line under the row says why.
+The size of a swap file that is in use cannot change.
+Apply another layout and restart first, then apply the new size.
+
+After you leave the zswap layout, the swap file stays on the disk.
+**Delete swap file…** then appears beside Apply and removes it.
+It is off until the board has restarted, because the file is in use until then.
+
+The round **i** at the end of the row explains the terms, with a link to this chapter.
+
 ## When it refuses
 
 The app reads and writes CMOS only when all of these hold. Otherwise the buttons are off, or the write stops before
@@ -142,12 +185,26 @@ The GTT limit:
   and reboot. `rpm-ostree rollback` also undoes it, together with everything else in that deployment. Clearing
   CMOS does not touch it.
 
+The swap layout:
+
+- **In the app:** pick **Bazzite's own: zram as the image sets it**, apply it and restart. Then use
+  **Delete swap file…** when a swap file is left.
+- **Without the app:** remove the files below with `sudo rm`, run `sudo systemctl disable var-swap-swapfile.swap`
+  first when that unit is there, and restart.
+
 ## Files
 
-- `~/.config/bc250-memory-manager/bc250-memory-manager.ini`: the pending changes (the split and the GTT limit)
-  and the split to undo to.
+- `~/.config/bc250-memory-manager/bc250-memory-manager.ini`: the pending changes (the split, the GTT limit and
+  the swap layout) and the split to undo to.
 - `~/.local/share/bc250-memory-manager/backups/`: the CMOS block before and after every change
   (`cmos-<time>.json`) and every CMOS read (`cmos-dump-<time>.txt`).
+
+- `/etc/systemd/zram-generator.conf.d/90-bc250-memory-manager.conf`: zram's size and compressor, or size 0 for
+  the zswap layout.
+- `/etc/sysctl.d/90-bc250-memory-manager.conf`: `vm.swappiness`.
+- `/etc/tmpfiles.d/bc250-memory-manager-zswap.conf`: turns zswap on at boot, with its compressor.
+- `/etc/systemd/system/var-swap-swapfile.swap`: the swap file's unit.
+- `/var/swap/swapfile`: the swap file.
 
 How the app reads and writes CMOS: [Memory Manager internals](../development/memory-manager.md).
 

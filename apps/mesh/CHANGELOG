@@ -1,3 +1,16 @@
+Changelog: 21-11-2026 11:51:00
+
+Added. The window is a card, in Quickfix's design (owner, 21-11-2026). The info symbol stands beside the state and says
+what the app changes. Under the header are the checkbox and the introduction, then two rows of even boxes and pills:
+the Build, Driver and Test boxes with Copy options and Switches, and Build, Install, Remove and Run test. Under them
+the boxes 1. Build to 4. Use name the steps, with each step's text beside its box. Copy launch options is Copy
+options now, and Switches counts the switches that are on under its name instead of turning red.
+
+Changelog: 21-11-2026 10:50:07
+
+Fixed. Refresh is the round refresh symbol at the right end of the title row, of the info symbol's size, and no
+longer a button there (owner, 21-11-2026: no button or pill alone in the title row).
+
 Changelog: 21-11-2026 00:56:48
 
 Release 4.5.0.

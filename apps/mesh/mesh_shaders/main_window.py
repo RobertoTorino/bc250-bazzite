@@ -10,14 +10,15 @@ from pathlib import Path
 
 from PyQt6.QtCore import QProcess, Qt, QUrl
 from PyQt6.QtGui import QCloseEvent, QDesktopServices
-from PyQt6.QtWidgets import (QApplication, QCheckBox, QDialog, QGridLayout, QLabel, QMainWindow, QMessageBox,
-                             QPushButton, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import QApplication, QCheckBox, QDialog, QGridLayout, QHBoxLayout, QLabel, QMessageBox
 
 from bc250_core import SUITE_MANUAL_URL, window_title
 from bc250_core import __version__ as CORE_VERSION
 from bc250_core.settings import SettingsStore
 from bc250_core.updates import Fetch, UpdateChecker
-from bc250_core.widgets import AppHeader, StatusText, Terminal, accent_button, hint_label, set_button_active
+from bc250_core.card import CardWindow
+from bc250_core.theme import GREEN, GREY, ORANGE, RED
+from bc250_core.widgets import ActionPill, MetricBox, Terminal, hint_label, same_width
 
 from . import APP_NAME, INFO, LOGO_PATH, SCRIPT, __version__
 from .status import Status, parse, verdict
@@ -25,6 +26,14 @@ from .switches import SWITCHES, Switch, SwitchesDialog, launch_options
 from .updates import Release, is_newer, latest_release
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/mesh/"
+INTRO = ("Games that need mesh shaders (DirectX 12 Ultimate) get them on the BC-250 through RADV with DirectMesh. "
+         "The driver is built on this board and installed beside the system Mesa, which stays as it is. Games use "
+         "it only with their launch options, and only after the test passed on the running kernel. "
+         f"<a href='{MANUAL_URL}'>Manual</a>")
+ABOUT = ("<b>BC-250 Mesh Shaders</b> builds, installs and tests a second graphics driver that gives games mesh "
+         "shaders.<br><br><b>What it changes.</b> The driver goes in <code>/usr/local/lib/bc250-mesh-shaders</code>, "
+         "after your password. The system Mesa is never changed, and Remove takes the driver out again."
+         f"<br><br><a href='{MANUAL_URL}'>BC-250 Mesh Shaders in the wiki</a>")
 CHECK_AT_START = "updates/check_on_start"
 CHECK_LINK = "#check"
 NOT_AUTHORISED = (126, 127)             # pkexec: the password dialog was canceled or refused
@@ -42,12 +51,12 @@ class MeshSettings(SettingsStore):
     DEFAULTS: dict = {CHECK_AT_START: True, **{switch.setting: False for switch in SWITCHES}}
 
 
-class MainWindow(QMainWindow):
+class MainWindow(CardWindow):
     def __init__(self, script: Path = SCRIPT, check_updates: bool | None = None, fetch: Fetch | None = None):
         """*check_updates*: look for a newer DirectMesh release now (None: as the setting says); *fetch*: the
         GitHub request, for tests."""
-        super().__init__()
-        self.resize(900, 700)
+        super().__init__(LOGO_PATH, APP_NAME, __version__, ABOUT)
+        self.resize(self.width(), 640)
         self.script = script
         self.fetch = fetch
         self.release: Release | None = None          # the newest DirectMesh release, once looked up
@@ -59,98 +68,84 @@ class MainWindow(QMainWindow):
         self._output = ""
         self.process: QProcess | None = None
 
-        header = AppHeader(LOGO_PATH, APP_NAME, __version__)
-        self.pill = StatusText()
-        header.add_state(self.pill)
-        self.refresh_button = QPushButton("Refresh")
+        self.pill = self.state                       # the state beside the title
         self.refresh_button.setToolTip("Read the state again")
-        self.refresh_button.clicked.connect(self.refresh)
-        header.add_action(self.refresh_button)
 
-        self.system = QLabel()
-        self.system.setWordWrap(True)
-        header.add_second(self.system, 1)            # board, kernel and Mesa
-        intro = hint_label(
-            "Games that need mesh shaders (DirectX 12 Ultimate) get them on the BC-250 through RADV with DirectMesh. "
-            "The driver is built on this board and installed beside the system Mesa, which stays as it is. Games use "
-            "it only with their launch options, and only after the test passed on the running kernel. "
-            f"<a href='{MANUAL_URL}'>Manual</a>")
-
-        grid = QGridLayout()
-        grid.setColumnStretch(1, 1)
-        grid.setHorizontalSpacing(14)
-        grid.setVerticalSpacing(10)
-        self.build_state, self.install_state, self.test_state, self.use_state = (self._state_label() for _ in range(4))
-        self.build_state.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse
-                                                 | Qt.TextInteractionFlag.LinksAccessibleByMouse)
-        self.build_state.linkActivated.connect(self._link)
-        self.build_button = accent_button("Build", "Build RADV with DirectMesh in a podman container")
-        self.build_button.clicked.connect(self.on_build)
-        self.install_button = QPushButton("Install")
-        self.install_button.setToolTip("Install the build in /usr/local/lib/bc250-mesh-shaders (asks for your "
-                                       "password)")
-        self.install_button.clicked.connect(self.on_install)
-        self.remove_button = QPushButton("Remove")
-        self.remove_button.setToolTip("Remove the driver; games with the launch options no longer start")
-        self.remove_button.clicked.connect(self.on_remove)
-        self.test_button = QPushButton("Run test")
-        self.test_button.setToolTip("Run the mesh test with the installed driver (a few minutes)")
-        self.test_button.clicked.connect(self.on_test)
-        self.copy_button = QPushButton("Copy launch options")
-        self.copy_button.setToolTip("Copy the Steam launch options for a game to the clipboard")
+        # The first row: where the three steps stand, and the two actions for a game. The second: the steps.
+        self.build_box, self.driver_box, self.test_box = MetricBox("Build"), MetricBox("Driver"), MetricBox("Test")
+        self.copy_button = ActionPill("Copy options", "For Steam",
+                                      "Copy the Steam launch options for a game to the clipboard")
         self.copy_button.clicked.connect(self.copy_launch_options)
-        self.switches_button = QPushButton("Switches…")
-        self.switches_button.setToolTip("The driver's switches, for comparisons in one game")
+        self.switches_button = ActionPill("Switches", "None on", "The driver's switches, for comparisons in one game")
         self.switches_button.clicked.connect(self.on_switches)
-        rows = [("1. Build", self.build_state, [self.build_button]),
-                ("2. Install", self.install_state, [self.install_button, self.remove_button]),
-                ("3. Test", self.test_state, [self.test_button]),
-                ("4. Use", self.use_state, [self.copy_button, self.switches_button])]
-        # One line per step: name, state and its buttons centered on the row. Every button has the size of the
-        # widest plain one (Build too), in two columns on the right (a single button in the right one), so they
-        # line up.
-        everything = [b for _, _, buttons in rows for b in buttons]
-        width = max(b.sizeHint().width() for b in everything)
-        height = max(b.sizeHint().height() for b in everything if b is not self.build_button)
-        centre = Qt.AlignmentFlag.AlignVCenter
-        for row, (name, state, buttons) in enumerate(rows):
-            label = QLabel(name)
-            label.setStyleSheet("font-weight:700;")
-            # The labels fill their cell and center their own text: a word-wrapped label added with an alignment
-            # gets no height for its second line.
-            for text in (label, state):
-                text.setAlignment(Qt.AlignmentFlag.AlignLeft | centre)
-            grid.addWidget(label, row, 0)
-            grid.addWidget(state, row, 1)
-            for column, button in zip((3, 2), reversed(buttons)):
-                button.setFixedSize(width, height)
-                grid.addWidget(button, row, column, centre)
-            grid.setRowMinimumHeight(row, height)
+        self.build_button = ActionPill("Build", "20 to 40 minutes", "Build RADV with DirectMesh in a podman container")
+        self.build_button.clicked.connect(self.on_build)
+        self.install_button = ActionPill("Install", "The build", "Install the build in /usr/local/lib/bc250-mesh-"
+                                         "shaders (asks for your password)")
+        self.install_button.clicked.connect(self.on_install)
+        self.remove_button = ActionPill("Remove", "The driver",
+                                        "Remove the driver; games with the launch options no longer start")
+        self.remove_button.clicked.connect(self.on_remove)
+        self.test_button = ActionPill("Run test", "A few minutes",
+                                      "Run the mesh test with the installed driver (a few minutes)")
+        self.test_button.clicked.connect(self.on_test)
 
+        self.system = QLabel()                       # board, kernel and Mesa, beside the icon
+        self.system.setWordWrap(True)
+        self.header.add_second(self.system, 1)
         self.auto_check = QCheckBox("Look for a newer DirectMesh release at start")
         self.auto_check.setToolTip("One small request to GitHub each time the app starts")
         self.auto_check.setChecked(self.settings.get(CHECK_AT_START))
         self.auto_check.toggled.connect(lambda on: self.settings.set(CHECK_AT_START, on))
+        self.page.addWidget(self.auto_check)
+        self.page.addWidget(hint_label(INTRO))
+
+        # The rows of boxes and pills, under the introduction and from the window's left edge.
+        gap = self.header.second_row.spacing()
+        for widgets in ([self.build_box, self.driver_box, self.test_box, self.copy_button, self.switches_button],
+                        [self.build_button, self.install_button, self.remove_button, self.test_button]):
+            row = QHBoxLayout()
+            row.setSpacing(gap)
+            for widget in widgets:
+                row.addWidget(widget)
+            row.addStretch(1)
+            self.page.addLayout(row)
+
+        # The four steps: a box each on the left, which only names the step, with where the step stands beside it.
+        self.build_state, self.install_state, self.test_state, self.use_state = (self._state_label() for _ in range(4))
+        self.build_state.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse
+                                                 | Qt.TextInteractionFlag.LinksAccessibleByMouse)
+        self.build_state.linkActivated.connect(self._link)
+        steps = QGridLayout()
+        steps.setColumnStretch(1, 1)
+        steps.setHorizontalSpacing(14)
+        self.step_boxes = []
+        for number, (name, what, state) in enumerate((("1. Build", "The driver, on this board", self.build_state),
+                                                      ("2. Install", "Beside the system Mesa", self.install_state),
+                                                      ("3. Test", "On the running kernel", self.test_state),
+                                                      ("4. Use", "Per game, in Steam", self.use_state))):
+            box = MetricBox(what)
+            box.set_value(name)
+            self.step_boxes.append(box)
+            steps.addWidget(box, number, 0)
+            steps.addWidget(state, number, 1)
+        self.page.addLayout(steps)
+        boxes = [self.build_box, self.driver_box, self.test_box, self.copy_button, self.switches_button,
+                 self.build_button, self.install_button, self.remove_button, self.test_button, *self.step_boxes]
+        same_width(boxes)
+        margins = self.page.contentsMargins()
+        self.resize(margins.left() + margins.right() + self.ROW_MAX * boxes[0].minimumWidth()
+                    + (self.ROW_MAX - 1) * gap, 760)
 
         self.running = QLabel()
         self.running.setStyleSheet("font-weight:600;")
         self.output = Terminal()
         self.output.setPlaceholderText("The output of each step appears here.")
-
-        central = QWidget()
-        lay = QVBoxLayout(central)
-        lay.addLayout(header)
-        lay.addWidget(intro)
-        lay.addSpacing(6)
-        lay.addLayout(grid)
-        lay.addWidget(self.auto_check)
-        lay.addSpacing(6)
-        lay.addWidget(self.running)
-        lay.addWidget(self.output, 1)
+        self.page.addWidget(self.running)
+        self.page.addWidget(self.output, 1)
         version = QLabel(f"{APP_NAME} {__version__} · core {CORE_VERSION} · the system Mesa is never changed")
         version.setStyleSheet("color:palette(placeholder-text);")
-        lay.addWidget(version, 0, Qt.AlignmentFlag.AlignRight)
-        self.setCentralWidget(central)
+        self.page.addWidget(version, 0, Qt.AlignmentFlag.AlignRight)
 
         geometry = self.settings.window_state("geometry")
         if geometry is not None:
@@ -200,6 +195,9 @@ class MainWindow(QMainWindow):
                 build += f" <b>This version of the app builds DirectMesh {escape(s.directmesh)}:</b> build again " \
                          "to get it."
         self.build_state.setText(f"{build}<br>{self._release_line()}")
+        self.build_box.set_value("Outdated" if s.built and s.build_outdated else "Built" if s.built else "Not built",
+                                 build)
+        self.build_box.set_colour(GREEN if s.built and not s.build_outdated else ORANGE)
 
         if not s.installed:
             install = "Not installed." if s.built else "Not installed: build it first."
@@ -208,6 +206,9 @@ class MainWindow(QMainWindow):
             if s.install_outdated:
                 install += " <b>A newer build is waiting:</b> install it."
         self.install_state.setText(install)
+        self.driver_box.set_value("Update" if s.installed and s.install_outdated else
+                                  "Installed" if s.installed else "None", install)
+        self.driver_box.set_colour(GREEN if s.installed and not s.install_outdated else ORANGE if s.built else GREY)
 
         if not s.installed:
             test = "Needs the installed driver."
@@ -218,12 +219,17 @@ class MainWindow(QMainWindow):
         else:
             test = f"{escape(s.get('Test')).capitalize()}. Games only use the driver once it passed on this kernel."
         self.test_state.setText(test)
+        self.test_box.set_value("Passed" if s.installed and s.tested else "Failed" if s.installed and s.test_failed
+                                else "Not run" if s.installed else "\u2014", test)
+        self.test_box.set_colour(GREEN if s.installed and s.tested else RED if s.installed and s.test_failed
+                                 else ORANGE if s.installed else GREY)
 
         use = (f"Per game, Steam launch options: <code>{escape(self.launch_options())}</code><br>"
                "Started without a passed test on this kernel, the game uses the system Mesa.")
         chosen = self.chosen_switches()
         if chosen:
             use += f"<br><b>Switches:</b> {escape(', '.join(switch.label for switch in chosen))}."
+        self.switches_button.caption.setText(f"{len(chosen)} on" if chosen else "None on")
         self.use_state.setText(use)
         self._fit_states()
         self._update_buttons()
@@ -263,7 +269,6 @@ class MainWindow(QMainWindow):
         self.test_button.setEnabled(idle and s.installed)
         self.copy_button.setEnabled(s.installed)
         self.switches_button.setEnabled(s.installed)
-        set_button_active(self.switches_button, bool(self.chosen_switches()))
 
     # --- Actions ----------------------------------------------------------------------------------------------
 

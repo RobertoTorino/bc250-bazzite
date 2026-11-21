@@ -38,5 +38,10 @@ if [ ! -f "$MODULE" ]; then
     cp "$BUILD/bc250_vrm.ko" "$MODULE"
 fi
 
+# SELinux lets insmod load only a file labeled as a kernel module, and a file made in /var/lib is not.
+if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
+    chcon -t modules_object_t "$MODULE"
+fi
+
 echo "Loading $MODULE"
 insmod "$MODULE"

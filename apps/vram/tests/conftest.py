@@ -37,6 +37,13 @@ def settings_dir(tmp_path, monkeypatch):
     return tmp_path / "settings"
 
 
+@pytest.fixture(autouse=True)
+def roomy_disk(monkeypatch):
+    """The swap file's disk has 100 GiB free, whatever the temp folder's file system has."""
+    from vram_manager import swap
+    monkeypatch.setattr(swap, "free_mib", lambda _var=None: 100 * 1024)
+
+
 def write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text + "\n")

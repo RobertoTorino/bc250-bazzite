@@ -1,3 +1,14 @@
+Changelog: 21-11-2026 10:00:26
+
+Added. A Swap layout box that sets the swap of the next boot (owner, 21-11-2026: three layouts, after a restart,
+/var/swap with sizes from the hardware, vm.swappiness with the layout). The layouts are Bazzite's own (the app's
+files removed), zram with a size and a compressor, and zswap with a swap file on disk and zram off. A layout is
+files of the app's own: a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit, written
+by a root helper (swap.py) through pkexec. Nothing is started or stopped before the restart. The swap file is
+/var/swap/swapfile, a btrfs subvolume and mkswapfile on btrfs, with the swapfile_t label where SELinux is on. Delete
+swap file removes a file no layout uses anymore, once it is out of use. The vm.swappiness line's tooltip no longer
+says the app only shows it.
+
 Changelog: 21-11-2026 00:56:48
 
 Release 4.4.0.

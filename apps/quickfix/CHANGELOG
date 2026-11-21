@@ -1,3 +1,23 @@
+Changelog: 21-11-2026 11:51:00
+
+Fixed. MangoHud Config's Revert pill says Revert changes under it, which was Read the file again.
+
+Changelog: 21-11-2026 10:40:50
+
+Added. Every quickfix's window is a card now, core's template (owner, 21-11-2026). The Refresh pill is gone: a round
+refresh symbol of the info symbol's size sits at the right end of the title row, and no pill stands in that row. The
+boxes and pills are all as wide as the widest, five on a row at most, and the window is as wide as a full row. A
+switch has its boxes, Turn on and Turn off on one row. A switch with four boxes has Turn on and Turn off on a second
+row. MangoHud Config has its boxes, Revert and Save on the first row and the FPS log's pills on the second, and its
+Delete old logs pill is Delete logs. Tools is the exception: its group pills stay on the left at their own width, with
+each group's tools beside its pill instead of under it.
+
+Changelog: 21-11-2026 09:51:30
+
+Fixed. VRM Sensors' service labels its build as a kernel module (chcon -t modules_object_t) before it loads it, where
+SELinux is on. On the board the load failed with "insmod: Permission denied": SELinux lets insmod load only a file with
+that label, and a file made in /var/lib/bc250-quickfix/vrm has the folder's label.
+
 Changelog: 21-11-2026 00:56:48
 
 Release 1.5.0.

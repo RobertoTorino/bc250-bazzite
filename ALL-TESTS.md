@@ -2,7 +2,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3371 test functions (3946 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3384 test functions (3959 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -22,13 +22,13 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/datstation](#appsdatstation) | 7 | 39 | 2.5 s |
 | [apps/fan](#appsfan) | 2 | 38 | 0.5 s |
 | [apps/gpu](#appsgpu) | 11 | 56 | 5.8 s |
-| [apps/mesh](#appsmesh) | 5 | 47 | 3.1 s |
+| [apps/mesh](#appsmesh) | 5 | 48 | 3.1 s |
 | [apps/oc](#appsoc) | 2 | 14 | 0.3 s |
 | [apps/overlay](#appsoverlay) | 1 | 11 | 0.3 s |
 | [apps/password](#appspassword) | 2 | 22 | 0.6 s |
 | [apps/pcsx2](#appspcsx2) | 14 | 147 | 21.5 s |
 | [apps/ppsspp](#appsppsspp) | 11 | 97 | 4.9 s |
-| [apps/quickfix](#appsquickfix) | 6 | 46 |  |
+| [apps/quickfix](#appsquickfix) | 6 | 47 |  |
 | [apps/rpcs3](#appsrpcs3) | 12 | 119 | 6.4 s |
 | [apps/sftp](#appssftp) | 11 | 84 | 0.9 s |
 | [apps/shadps4](#appsshadps4) | 17 | 151 | 8.0 s |
@@ -36,10 +36,10 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/turing](#appsturing) | 9 | 75 | 1.4 s |
 | [apps/upscaler](#appsupscaler) | 11 | 119 | 1.6 s |
 | [apps/vita3k](#appsvita3k) | 9 | 78 | 5.3 s |
-| [apps/vram](#appsvram) | 6 | 49 | 0.6 s |
+| [apps/vram](#appsvram) | 7 | 58 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
 | [apps/xenia](#appsxenia) | 8 | 72 | 4.5 s |
-| [core](#core) | 29 | 224 | 4.6 s |
+| [core](#core) | 30 | 226 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
@@ -50,7 +50,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 16 | 210 | 29.0 s |
 | [tools](#tools) | 38 | 232 | 11.1 s |
-| **All** | | **3371** | **182 s** |
+| **All** | | **3384** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -1148,7 +1148,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/mesh
 
-47 tests in 5 files, 3.1 s in a local run.
+48 tests in 5 files, 3.1 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -1172,6 +1172,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_the_pinned_directmesh_is_the_newest` |  |  | The pinned directmesh is the newest. |
 | `test_main_window.py` | `test_a_failed_check_says_so` |  |  | A failed check says so. |
 | `test_main_window.py` | `test_no_check_at_start_when_switched_off` |  |  | No check at start when switched off. |
+| `test_main_window.py` | `test_the_window_is_a_card_with_two_rows_of_even_places_and_the_steps_beside_their_boxes` |  |  | The header's two symbols, the board line beside the icon, then the checkbox, the introduction, two rows of boxes and pills, and the four steps: a box that only names the step, with where it stands beside it. |
 | `test_script.py` | `test_status_of_a_fresh_board` |  |  | Status of a fresh board. |
 | `test_script.py` | `test_status_knows_both_board_ids` |  |  | Status knows both board ids. |
 | `test_script.py` | `test_build_downloads_the_pinned_mesa_and_runs_the_container` |  |  | Build downloads the pinned mesa and runs the container. |
@@ -1528,7 +1529,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/quickfix
 
-46 tests in 6 files.
+47 tests in 6 files.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -1566,6 +1567,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_vrm.py` | `test_window` |  |  | Window. |
 | `test_vrm.py` | `test_the_script_builds_for_the_running_kernel_and_keeps_one_build` |  |  | The script builds for the running kernel and keeps one build. |
 | `test_windows.py` | `test_quickfix_lists_and_installs` |  |  | Quickfix lists and installs. |
+| `test_windows.py` | `test_a_switch_is_one_row_of_even_places_with_the_refresh_symbol_in_the_title_row` |  |  | Three boxes, Turn on and Turn off fill the row under the title; Refresh is the symbol at the right end of the title row, not a pill. |
 | `test_windows.py` | `test_mangohud_config_made_and_logging_set` |  |  | Mangohud config made and logging set. |
 | `test_windows.py` | `test_mangohud_deletes_only_old_logs` |  |  | Mangohud deletes only old logs. |
 | `test_windows.py` | `test_fix_gpu_metrics` |  |  | Fix gpu metrics. |
@@ -2305,7 +2307,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/vram
 
-49 tests in 6 files, 0.6 s in a local run.
+58 tests in 7 files, 0.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2341,6 +2343,9 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_ttm_says_writing_while_rpm_ostree_runs` |  |  | rpm-ostree takes a minute or two after the password dialog: the window must show it is busy meanwhile. |
 | `test_main_window.py` | `test_profiles_write_what_differs` |  |  | The board runs the Games profile (6 GB, 11.5 GiB): Games is off, Defaults writes both; then Games again. |
 | `test_main_window.py` | `test_profile_asks_once_and_stops_on_no` |  |  | Profile asks once and stops on no. |
+| `test_main_window.py` | `test_swap_layout_is_written_once_and_waits_for_a_restart` |  |  | Swap layout is written once and waits for a restart. |
+| `test_main_window.py` | `test_zswap_layout_makes_the_file_and_offers_its_deletion_afterward` |  |  | Zswap layout makes the file and offers its deletion afterward. |
+| `test_main_window.py` | `test_a_swap_layout_that_fails_says_why_and_stays_to_apply` |  |  | A swap layout that fails says why and stays to apply. |
 | `test_memory_map.py` | `test_usage_of_the_owner_board` |  |  | Usage of the owner board. |
 | `test_memory_map.py` | `test_usage_with_zswap_and_disk_swap` |  |  | Usage with zswap and disk swap. |
 | `test_memory_map.py` | `test_usage_without_files` |  |  | Usage without files. |
@@ -2355,6 +2360,12 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_privileged.py` | `test_command_runs_the_helper_isolated` |  |  | Command runs the helper isolated. |
 | `test_privileged.py` | `test_parse` |  |  | Parse. |
 | `test_privileged.py` | `test_report` |  |  | Report. |
+| `test_swap.py` | `test_bazzite_is_no_files_and_reads_back` |  |  | Bazzite is no files and reads back. |
+| `test_swap.py` | `test_zswap_makes_the_file_first_and_turns_zram_off` |  |  | Zswap makes the file first and turns zram off. |
+| `test_swap.py` | `test_a_file_that_cannot_be_made_changes_nothing` |  |  | A file that cannot be made changes nothing. |
+| `test_swap.py` | `test_a_file_in_use_keeps_its_size_and_is_not_deleted` |  |  | A file in use keeps its size and is not deleted. |
+| `test_swap.py` | `test_check_refuses_what_is_not_offered` |  |  | Check refuses what is not offered. |
+| `test_swap.py` | `test_the_helper_runs_isolated_as_root_only` |  |  | The helper runs isolated as root only. |
 | `test_system.py` | `test_owner_board` |  |  | Owner board. |
 | `test_system.py` | `test_zswap_with_disk_and_default_limit` |  |  | Zswap with disk and default limit. |
 | `test_system.py` | `test_missing_files` |  |  | Missing files. |
@@ -2560,7 +2571,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## core
 
-224 tests in 29 files, 4.6 s in a local run.
+226 tests in 30 files, 4.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2593,6 +2604,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_builds.py` | `test_the_version_manager` |  |  | The version manager. |
 | `test_builds.py` | `test_the_version_manager_says_what_went_wrong` |  |  | The version manager says what went wrong. |
 | `test_builds.py` | `test_a_custom_build_in_the_version_manager` |  |  | A custom build in the version manager. |
+| `test_card.py` | `test_card_has_the_symbols_in_the_title_row_and_no_pill_there` |  |  | Card has the symbols in the title row and no pill there. |
+| `test_card.py` | `test_card_rows_hold_five_even_places_and_give_the_width` |  |  | Card rows hold five even places and give the width. |
 | `test_covers.py` | `test_the_key_for_the_whole_suite` |  |  | The key for the whole suite. |
 | `test_covers.py` | `test_the_key_dialog` |  |  | The key dialog. |
 | `test_covers.py` | `test_names_and_titles` |  |  | Names and titles. |

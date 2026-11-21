@@ -120,6 +120,8 @@ def test_the_script_builds_for_the_running_kernel_and_keeps_one_build(tmp_path):
     put(folder, "6.0.0-old/bc250_vrm.ko")
     fake = put(tmp_path, "bin/insmod", '#!/bin/sh\necho "$1" > "$(dirname "$0")/loaded"\n')
     os.chmod(fake, 0o755)
+    for name, body in (("selinuxenabled", "exit 0"), ("chcon", 'echo "$@" >> "$(dirname "$0")/labeled"')):
+        os.chmod(put(tmp_path, f"bin/{name}", f"#!/bin/sh\n{body}\n"), 0o755)
     env = {**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ['PATH']}"}
     script = [str(system.VRM_SOURCE / system.VRM_SCRIPT), str(folder)]
     done = subprocess.run(script, env=env, capture_output=True, text=True, timeout=300, check=False)
@@ -133,3 +135,5 @@ def test_the_script_builds_for_the_running_kernel_and_keeps_one_build(tmp_path):
     stamp = module.stat().st_mtime_ns
     assert subprocess.run(script, env=env, capture_output=True, timeout=60, check=False).returncode == 0
     assert module.stat().st_mtime_ns == stamp                                         # built once per kernel
+    labeled = (tmp_path / "bin/labeled").read_text().splitlines()                     # SELinux: before every load
+    assert labeled == [f"-t modules_object_t {module}"] * 2

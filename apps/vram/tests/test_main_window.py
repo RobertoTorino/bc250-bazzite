@@ -4,7 +4,7 @@ import json
 import pytest
 from PyQt6.QtWidgets import QMessageBox
 
-from vram_manager import cmos, main_window, privileged
+from vram_manager import cmos, main_window, privileged, swap
 from vram_manager.main_window import MainWindow
 from conftest import FakeOstree
 from dumps import BOARD_1, FakePort, bank
@@ -46,8 +46,41 @@ def answer(monkeypatch):
     return replies
 
 
-def make(qapp, sys_root, proc_root, board, ostree=None):
-    return MainWindow(sys_root, proc_root, runner=board, commands=ostree or FakeOstree())
+class Swapper:
+    """Runs the swap helper's own code on the temp /etc and /var, as pkexec would run swap.py."""
+
+    def __init__(self, root):
+        self.etc, self.var, self.proc = root / "etc", root / "var", root / "proc"
+        self.var.mkdir(exist_ok=True)
+        self.calls, self.commands = [], []
+
+    def run(self, cmd):
+        self.commands.append(cmd)
+        if cmd[:3] == ["btrfs", "filesystem", "mkswapfile"]:
+            with open(cmd[-1], "wb") as file:
+                file.truncate(int(cmd[4][:-1]) * 1024 * 1024)
+        return 1 if cmd[0] in ("selinuxenabled", "btrfs") and cmd[1:2] != ["filesystem"] else 0
+
+    def __call__(self, args):
+        self.calls.append(args)
+        try:
+            if args == ["--delete-file"]:
+                data = swap.delete_file(self.etc, self.var, self.proc, self.run)
+            else:
+                options = dict(zip(args[::2], args[1::2]))
+                setup = swap.Setup(options["--layout"], options.get("--zram-size", ""), options.get("--compressor", ""),
+                                   int(options.get("--file-mib", 0)),
+                                   int(options["--swappiness"]) if "--swappiness" in options else None)
+                data = swap.apply(setup, self.etc, self.var, self.proc, self.run, btrfs=lambda _p: True)
+        except swap.SwapError as exc:
+            return privileged.Result(False, {}, str(exc))
+        return privileged.Result(True, json.loads(json.dumps(data)), "")
+
+
+def make(qapp, sys_root, proc_root, board, ostree=None, swapper=None):
+    swapper = swapper or Swapper(sys_root.parent)
+    return MainWindow(sys_root, proc_root, runner=board, commands=ostree or FakeOstree(), swapper=swapper,
+                      etc_root=swapper.etc, var_root=swapper.var)
 
 
 def test_shows_the_board(qapp, sys_root, proc_root):
@@ -318,4 +351,84 @@ def test_profile_asks_once_and_stops_on_no(qapp, sys_root, proc_root, answer):
     assert w.profile_steps("defaults") == ["the 512 MB split to CMOS"]
     w.apply_profile("defaults")
     assert board.uma == 512 and "It needs your password." in answer["questions"][-1]
+    w.close()
+
+
+def test_swap_layout_is_written_once_and_waits_for_a_restart(qapp, sys_root, proc_root, answer):
+    swapper = Swapper(sys_root.parent)
+    w = make(qapp, sys_root, proc_root, Board(), swapper=swapper)
+    assert w.layout_combo.currentData() == swap.BAZZITE and not w.swap_button.isEnabled()   # what the board has
+    assert w.swap_options.isHidden() and w.delete_button.isHidden() and w.swap_note.isHidden()
+    w.layout_combo.setCurrentIndex(w.layout_combo.findData(swap.ZRAM))
+    assert not w.swap_options.isHidden() and w.size_label.text() == "zram size:"
+    assert w.size_combo.currentText() == "Half the RAM (4.7 GiB)" and w.swappiness_spin.value() == 180
+    assert [w.compressor_combo.itemText(i) for i in range(w.compressor_combo.count())] == [
+        "lzo-rle", "lzo", "lz4", "lz4hc", "zstd", "deflate", "842"]           # what the board's zram offers
+    assert w.compressor_combo.currentText() == "zstd" and w.swap_button.isEnabled()
+    answer["value"] = QMessageBox.StandardButton.No
+    w.swap_button.click()
+    assert swapper.calls == [] and answer["questions"][-1].splitlines() == [
+        'Write the swap layout "zram with your size and compressor" for the next boot?', "",
+        "zram gets the size half the RAM (4.7 GiB), with zstd.", "vm.swappiness becomes 180.",
+        "It takes effect after you restart the board.", "", "It needs your password."]
+    answer["value"] = QMessageBox.StandardButton.Yes
+    w.swap_button.click()
+    assert swapper.calls == [["--layout", "zram", "--zram-size", "ram / 2", "--compressor", "zstd",
+                              "--swappiness", "180"]]
+    assert not w.swap_button.isEnabled() and w.layout_combo.currentData() == swap.ZRAM      # not once more
+    assert "Restart the board" in w.swap_note.text() and w.badge.text() == "Reboot to apply"
+    w.swappiness_spin.setValue(100)
+    assert w.swap_button.isEnabled()                                          # a new value can be applied
+    w.close()
+    # After the restart: zram is what runs, so the layout is active.
+    (proc_root / "sys/kernel/random/boot_id").write_text("boot-2\n")
+    w = make(qapp, sys_root, proc_root, Board(), swapper=swapper)
+    assert w.swap_note.text() == "The swap layout from the last change is active." and w.badge.text() == "6.0 GiB split"
+    w.close()
+
+
+def test_zswap_layout_makes_the_file_and_offers_its_deletion_afterward(qapp, sys_root, proc_root, answer):
+    swapper = Swapper(sys_root.parent)
+    w = make(qapp, sys_root, proc_root, Board(), swapper=swapper)
+    w.layout_combo.setCurrentIndex(w.layout_combo.findData(swap.ZSWAP_FILE))
+    assert w.size_label.text() == "Swap file:" and w.size_combo.currentData() == 8192
+    assert [w.size_combo.itemText(i) for i in range(w.size_combo.count())] == [
+        "4 GiB", "8 GiB", "16 GiB", "As large as the RAM (9.4 GiB)"]
+    assert w.swappiness_spin.value() == 60 and w.compressor_combo.currentText() == "zstd"
+    w.size_combo.setCurrentIndex(0)
+    w.swap_button.click()
+    assert "It makes the swap file" in answer["questions"][-1] and "zram is turned off." in answer["questions"][-1]
+    assert swap.file_mib(swapper.var) == 4096 and w.layout_combo.currentData() == swap.ZSWAP_FILE
+    assert w.size_combo.currentData() == 4096 and not w.swap_button.isEnabled() and w.delete_button.isHidden()
+    w.close()
+    # The next boot got another swap than asked for: said, not hidden.
+    (proc_root / "sys/kernel/random/boot_id").write_text("boot-2\n")
+    w = make(qapp, sys_root, proc_root, Board(), swapper=swapper)
+    assert "but this boot's swap is zram" in w.swap_note.text()
+    # The file in use: its size cannot change, and after another layout it cannot be deleted yet.
+    (proc_root / "swaps").write_text(f"Filename Type Size Used Priority\n{swapper.var / swap.SWAP_FILE} file 1 0 -2\n")
+    w.size_combo.setCurrentIndex(1)
+    assert not w.swap_button.isEnabled() and "in use" in w.swap_reason.text()
+    w.layout_combo.setCurrentIndex(w.layout_combo.findData(swap.BAZZITE))
+    w.swap_button.click()
+    assert "removes the app's own swap files" in answer["questions"][-1]
+    assert not w.delete_button.isHidden() and not w.delete_button.isEnabled()
+    (proc_root / "swaps").write_text("Filename Type Size Used Priority\n")
+    w.refresh()
+    assert w.delete_button.isEnabled() and "4.0 GiB" in w.delete_button.toolTip()
+    w.delete_button.click()
+    assert "Delete the swap file" in answer["questions"][-1] and swapper.calls[-1] == ["--delete-file"]
+    assert swap.file_mib(swapper.var) == 0 and w.delete_button.isHidden()
+    w.close()
+
+
+def test_a_swap_layout_that_fails_says_why_and_stays_to_apply(qapp, sys_root, proc_root, answer):
+    swapper = Swapper(sys_root.parent)
+    swapper.__class__ = type("Refused", (Swapper,), {
+        "__call__": lambda self, args: privileged.Result(False, {}, "Not authorized")})
+    w = make(qapp, sys_root, proc_root, Board(), swapper=swapper)
+    w.layout_combo.setCurrentIndex(w.layout_combo.findData(swap.ZRAM))
+    w.swap_button.click()
+    assert answer["warnings"] == ["Not authorized"] and w.swap_button.isEnabled() and w.swap_note.isHidden()
+    assert w.layout_combo.currentData() == swap.ZRAM
     w.close()

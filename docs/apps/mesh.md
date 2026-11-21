@@ -45,13 +45,20 @@ as your own user (not with sudo):
 
 Installing the app changes nothing on the board. Open **BC-250 Mesh Shaders** and go through the four steps.
 
+The window has two rows of boxes and pills under its introduction.
+The first row shows where the steps stand, in the **Build**, **Driver** and **Test** boxes, with **Copy options** and
+**Switches** beside them.
+The second row has the steps' pills: **Build**, **Install**, **Remove** and **Run test**.
+Under the rows, the boxes **1. Build** to **4. Use** name the steps, each with where it stands beside it.
+The round arrow in the title row reads the state again, and the round **i** says what the app changes.
+
 1. **Build.** Builds RADV with DirectMesh, as your own user, in a Fedora container. It downloads the Mesa source
    and the build tools (several hundred MB) and takes 20 to 40 minutes. Nothing on the system changes.
 2. **Install.** Copies the driver to `/usr/local/lib/bc250-mesh-shaders` (asks for your password). Nothing uses it
    yet.
 3. **Test.** Runs the mesh test with the installed driver, a few minutes. Games only get the driver once the test
    has passed on the running kernel.
-4. **Use.** **Copy launch options** and paste them into the game's *Properties → Launch options* in Steam:
+4. **Use.** **Copy options** and paste them into the game's *Properties → Launch options* in Steam:
 
     ```
     /usr/local/bin/bc250-mesh-shaders-run %command%
@@ -89,7 +96,7 @@ A failed test means: don't use the driver on this kernel. Its output is in
 
 ## Switches
 
-**Switches…** puts the driver's switches in front of the launch options, for comparisons and for finding the cause of
+**Switches** puts the driver's switches in front of the launch options, for comparisons and for finding the cause of
 a problem in one game. Leave them all off to play, unless the game needs one: off is the driver as DirectMesh ships
 it. After a change, copy the launch options to the game again.
 
@@ -126,7 +133,7 @@ to stop the request; the link in the Build step looks once.
 ## If something goes wrong
 
 - **A game does not start, hangs or shows corruption:** take the launch options out of the game, or try it with
-  **Switches…** to narrow the cause down. If the test passed, please report it with the game, the switches and
+  **Switches** to narrow the cause down. If the test passed, please report it with the game, the switches and
   `run.log`.
 - **The board locks up during a game:** a GPU hang. DirectMesh asks for hang reports with the kernel parameter
   `amdgpu.gpu_recovery=0` (the board then stays reachable over SSH), `dmesg`, the game and its launch options.

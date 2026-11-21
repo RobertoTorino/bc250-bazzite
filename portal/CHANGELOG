@@ -1,3 +1,12 @@
+Changelog: 21-11-2026 12:19:28
+
+Release 26.9.0.
+
+Changelog: 21-11-2026 10:00:55
+
+Added. BC-250 Memory Manager's "Changes the board" text names the swap layout: the app's own files in /etc, the swap
+file /var/swap/swapfile, and how both are removed.
+
 Changelog: 21-11-2026 00:56:48
 
 Release 26.8.0. Pins bc250-check-v4.5.0, bc250-quickfix-v1.5.0, bc250-upscaler-v5.4.0, bc250-overlay-v4.4.0, bc250-bios-v4.4.0, bc250-ace-v4.4.0, bc250-mesh-v4.5.0, bc250-vram-v4.4.0, bc250-fan-v4.4.0, bc250-cec-v4.4.0, bc250-sftp-v4.4.0, bc250-turing-v2.4.0, bc250-webcam-v2.4.0, bc250-controller-v2.4.0, bc250-rpcs3-v7.5.0, bc250-consoles-v5.4.0, bc250-clb-v4.4.0, bc250-shadps4-v7.4.0, bc250-datstation-v6.4.0, bc250-ppsspp-v5.5.0, bc250-pcsx2-v7.5.0, bc250-vita3k-v5.6.0, bc250-xenia-v5.6.0, bc250-ssd-v3.4.0, bc250-btpair-v2.4.0, bc250-password-v1.4.0.

@@ -16,7 +16,8 @@ from PyQt6.QtWidgets import (QApplication, QGridLayout, QLabel, QMainWindow, QMe
 from bc250_core import SUITE_MANUAL_URL, window_title
 from bc250_core import __version__ as CORE_VERSION
 from bc250_core.settings import SettingsStore
-from bc250_core.widgets import AppHeader, StatusText, Terminal, accent_button, hint_label, set_button_active
+from bc250_core.widgets import (AppHeader, RefreshButton, StatusText,
+                                Terminal, accent_button, hint_label, set_button_active)
 
 from . import APP_NAME, INFO, LOGO_PATH, SCRIPT, __version__
 from .status import Status, parse, verdict
@@ -53,9 +54,8 @@ class MainWindow(QMainWindow):
         header = AppHeader(LOGO_PATH, APP_NAME, __version__)
         self.pill = StatusText()
         header.add_state(self.pill)
-        self.refresh_button = QPushButton("Refresh")
-        self.refresh_button.setToolTip("Read the state again")
-        self.refresh_button.clicked.connect(self.refresh)
+        self.refresh_button = RefreshButton("Read the state again")
+        self.refresh_button.clicked.connect(lambda: self.refresh())
         header.add_action(self.refresh_button)
 
         self.system = QLabel()

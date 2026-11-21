@@ -93,6 +93,7 @@ def test_switches_go_into_the_launch_options(window, board, monkeypatch):
     assert window.launch_options() == expected
     assert "RADV_BC250_MESH_IDXPASS=0 RADV_DEBUG=nomeshshader" in window.use_state.text()
     assert "<b>Switches:</b> No indexed mesh draws, Hide mesh shaders." in window.use_state.text()
+    assert window.switches_button.caption.text() == "2 on"
     window.copy_launch_options()
     assert QApplication.clipboard().text() == expected
     assert MainWindow(SCRIPT, check_updates=False).launch_options() == expected     # kept in the settings
@@ -205,3 +206,28 @@ def test_no_check_at_start_when_switched_off(window, monkeypatch):
     monkeypatch.setattr(window, "check_for_updates", lambda: started.append(True))
     window._link("#check")
     assert started == [True]
+
+
+def test_the_window_is_a_card_with_two_rows_of_even_places_and_the_steps_beside_their_boxes(window, board):
+    """The header's two symbols, the board line beside the icon, then the checkbox, the introduction, two rows of
+    boxes and pills, and the four steps: a box that only names the step, with where it stands beside it."""
+    header = window.header
+    title = [header.title_row.itemAt(i).widget() for i in range(header.title_row.count())]
+    assert title == [header.title, window.pill, window.info, None, window.refresh_button]   # None: the stretch
+    assert "What it changes" in window.info.text_ and header.second_row.itemAt(0).widget() is window.system
+    page = [window.page.itemAt(i) for i in range(window.page.count())]
+    assert page[1].widget() is window.auto_check and "mesh shaders" in page[2].widget().text()
+    first = [page[3].layout().itemAt(i).widget() for i in range(5)]
+    second = [page[4].layout().itemAt(i).widget() for i in range(4)]
+    assert first == [window.build_box, window.driver_box, window.test_box, window.copy_button, window.switches_button]
+    assert second == [window.build_button, window.install_button, window.remove_button, window.test_button]
+    assert [pill.caption.text() for pill in second] == ["20 to 40 minutes", "The build", "The driver", "A few minutes"]
+    assert [box.value.text() for box in window.step_boxes] == ["1. Build", "2. Install", "3. Test", "4. Use"]
+    assert len({widget.minimumWidth() for widget in [*first, *second, *window.step_boxes]}) == 1
+    assert [box.value.text() for box in first[:3]] == ["Not built", "None", "\u2014"]
+    assert window.switches_button.caption.text() == "None on"
+    board.make_build()
+    board.install()
+    window.refresh()
+    assert window.build_box.value.text() == "Built" and window.driver_box.value.text() == "Installed"
+    assert window.test_box.value.text() == "Not run" and "Installed:" in window.driver_box.toolTip()

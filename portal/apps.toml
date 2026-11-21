@@ -259,7 +259,11 @@ cleared with the jumper or the battery, which brings the firmware's 512 MB back.
 argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself, the firmware
 or the real-time clock, and the app refuses to write when the block's signature or checksum does not match or
 the kernel is locked down. Undo writes the previous split back, and the Default profile writes 512 MB and
-removes the kernel argument; both take effect after a reboot.
+removes the kernel argument; both take effect after a reboot. The swap layout is a few files of the app's own in
+/etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit. The zswap
+layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started
+or stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap
+file.
 """
 category = "sustainable"
 install = ["bash install.sh"]

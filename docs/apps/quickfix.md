@@ -8,8 +8,10 @@ Small windows for one job each, which come with the suite: the portal installs t
 and keeps them. In the portal's **Utilities** tab each quickfix is a tile of its own; the app's menu entry,
 **BC-250 Quickfix**, lists them all in one window.
 
-Every quickfix's window has the suite's header: the quickfix's name with the version, its state, and **Refresh**. The
-small round **i** beside the state says what the quickfix contains and does. The quickfixes that change the board say so
+Every quickfix's window has the suite's header: the quickfix's name with the version and its state.
+The status boxes and the pills are on the rows under it.
+The round arrow at the right end of the title row reads the state again.
+The small round **i** beside the state says what the quickfix contains and does. The quickfixes that change the board say so
 on their tile; the portal asks before it opens one. Each of those asks for your password (pkexec) for every change,
 turns on only what is off, and turns off only what it turned on itself.
 
@@ -34,7 +36,10 @@ box counts them. It looks where the tests look: on `PATH`, in `~/.local/bin` and
 Each group's heading is a pill: a click on it (**Install**) runs Board Test's own installer for that group in a
 terminal, `/opt/bc250-board-test/development/tools/install-requirements.sh` with the group's option; it reads
 **Installed** and is off when everything in the group is there. **Install all** installs every group but
-the development extras (`--all`), and **Refresh** beside it reads the tools again. The groups and their tools are listed in [BC-250 Board Test](check.md#download-and-install), with the tests that use each one. Layered RPM
+the development extras (`--all`).
+The round arrow in the title row reads the tools again.
+Each group's tools are listed beside its pill.
+The groups and their tools are listed in [BC-250 Board Test](check.md#download-and-install), with the tests that use each one. Layered RPM
 packages are active after a reboot (`systemctl reboot`); until then the tools of that group still show as missing.
 
 The group **Prime95** is `mprime`, which no test uses: [BC-250 CPU Tools](cores.md#longer-burn-in-mprime--rasdaemon)
@@ -59,7 +64,7 @@ log_interval=500
 
 A line that sets one of them already is changed where it is; the others are added at the end. **Save** writes the
 file and makes the log folder. MangoHud must be active for the game, for example with the Steam launch option
-`mangohud %command%`. A log file is written per game session: **Delete old logs** removes the ones older than 30
+`mangohud %command%`. A log file is written per game session: **Delete logs** removes the ones older than 30
 days, and **Log folder** opens the folder. Without the log, Board Test still shows the game's name and its CPU and
 GPU share.
 
@@ -131,6 +136,7 @@ Its source is [Hexxeh/bc250-vrm-dkms](https://github.com/Hexxeh/bc250-vrm-dkms),
 **Turn on** builds it for the running kernel and loads it, which takes a few seconds.
 A service then loads it at every boot.
 After a kernel update the first boot builds the module again.
+SELinux loads only a file labeled as a kernel module, so the service gives its build that label.
 
 The boxes show whether the module is loaded, whether the service loads it at boot, and whether its sensors are there.
 **Turn on** is offered when the module is not loaded and the kernel's build files are on the image.

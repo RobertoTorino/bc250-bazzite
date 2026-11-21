@@ -145,6 +145,31 @@ amdgpu sizes GTT from the TTM limit and caps it at the RAM on this APU (`amdgpu_
 not exceed available system memory"). When the split is smaller than GTT, amdgpu also prefers GTT for the GPU's
 allocations (`apu_prefer_gtt`).
 
+## The swap layout
+
+`vram_manager/swap.py` holds the three layouts and is also the root helper that writes one, run through pkexec with
+the system Python like `cmos.py`. A layout is files of the app's own, so the image's files stay untouched:
+
+| File | What it does |
+|---|---|
+| `/etc/systemd/zram-generator.conf.d/90-bc250-memory-manager.conf` | `[zram0]` with `zram-size` and `compression-algorithm`. Size 0 discards the device, which is the zswap layout. |
+| `/etc/sysctl.d/90-bc250-memory-manager.conf` | `vm.swappiness` |
+| `/etc/tmpfiles.d/bc250-memory-manager-zswap.conf` | `w` lines that write zswap's `compressor` and `enabled` under `/sys/module/zswap/parameters` |
+| `/etc/systemd/system/var-swap-swapfile.swap` | The swap file's unit, enabled for `swap.target` |
+
+The helper starts and stops nothing. zram-generator, sysctl, tmpfiles and the swap unit read the files at the next
+boot. Bazzite's kernel arguments have `zswap.enabled=0`. The tmpfiles line turns zswap on after that, so the layout
+needs no new deployment.
+
+The swap file is made before any file in `/etc` is written, so a failure there changes nothing. On btrfs,
+`/var/swap` is a subvolume and `btrfs filesystem mkswapfile` makes the file, which turns copy-on-write off for
+it. On another file system it is `fallocate` and `mkswap`. With SELinux on, the file gets the `swapfile_t` label,
+by a `semanage fcontext` rule and `chcon`. systemd's `swapon` runs as `fsadm_t` and may not use a file with
+another label. A swap file that is in `/proc/swaps` is never resized or deleted.
+
+`read_setup()` reads the written layout back from the files, without root. The window compares it with the layout
+picked, and Apply is off while they are equal.
+
 ## The GTT limit on the kernel command line
 
 `vram_manager/kargs.py` reads and changes `ttm.pages_limit` in the next boot's kernel arguments with rpm-ostree,
