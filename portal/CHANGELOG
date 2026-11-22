@@ -1,3 +1,7 @@
+Changelog: 22-11-2026 10:31:15
+
+Release 26.10.4. Pins bc250-quickfix-v1.7.2, bc250-ppsspp-v5.7.2, bc250-pcsx2-v7.7.2, bc250-password-v1.6.2.
+
 Changelog: 22-11-2026 10:24:26
 
 Fixed. The line about where apps come from, in the info of the home page, now reads "Apps are installed from the

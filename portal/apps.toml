@@ -431,8 +431,8 @@ launch = [["Open", "~/.local/bin/bazzite-datstation"]]
 [apps.ppsspp]
 name = "PPSSPP Manager"
 summary = "PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Game Mode."
-tag = "bc250-ppsspp-v5.7.1"
-sha256 = "214c942ecae3831d5c0148ffe100ad5f32e8be324fc48b032ac8a30561b8df0e"
+tag = "bc250-ppsspp-v5.7.2"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
@@ -444,8 +444,8 @@ launch = [["Open", "~/.local/bin/bc250-ppsspp-manager"]]
 [apps.pcsx2]
 name = "PCSX2 Manager"
 summary = "PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Game Mode."
-tag = "bc250-pcsx2-v7.7.1"
-sha256 = "20f8dff9b727b6dced512e72fa79ade9a114d9e7b83cda37dae5eb7ddfa08a0a"
+tag = "bc250-pcsx2-v7.7.2"
+sha256 = ""
 required = false
 changes_board = false
 category = "gaming"
@@ -509,8 +509,8 @@ launch = [["Open", "~/.local/bin/bc250-bluetooth-pairing"]]
 [apps.quickfix]
 name = "BC-250 Quickfix"
 summary = "Small quickfixes for one job each: Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the regulator's sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
-tag = "bc250-quickfix-v1.7.1"
-sha256 = "6cecba3d5433985db25caf73e0192708af0b4a66e45083500994b0eac2c4910d"
+tag = "bc250-quickfix-v1.7.2"
+sha256 = ""
 required = true
 changes_board = false
 category = "utilities"
@@ -633,8 +633,8 @@ Both need a reboot, which the quickfix advises and never does.
 [apps.password]
 name = "BC-250 Password Generator"
 summary = "Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere."
-tag = "bc250-password-v1.6.1"
-sha256 = "ecb64f3c6618ce7ed4f5a8c5c7ac373572250d2affa444ce1505df13a96edda8"
+tag = "bc250-password-v1.6.2"
+sha256 = ""
 required = false
 changes_board = false
 category = "utilities"
