@@ -50,7 +50,7 @@
 set -u
 if (( BASH_VERSINFO[0] < 4 )); then echo "This script needs bash 4 or newer." >&2; exit 1; fi
 
-VERSION="0.4.4"
+VERSION="0.5.0"
 STRESS_SECS="" ROUNDS_OPT="" MODE=run SWEEP="" PER_BOOT=0
 MAX_FREQ=2200 MIN_VOLT=850 OC_VOLT_OPT="" FREQ_STEP=50 VOLT_STEP=25
 

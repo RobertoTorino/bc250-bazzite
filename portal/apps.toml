@@ -36,7 +36,7 @@
 [apps.check]
 name = "BC-250 Board Test"
 summary = "Read-only diagnostics, stress test and benchmarks. Always installed."
-tag = "bc250-check-v4.9.0"
+tag = "bc250-check-v4.10.0"
 sha256 = ""
 required = true
 changes_board = false
@@ -49,7 +49,7 @@ launch = [["Open", "~/.local/bin/bc250-board-test"]]
 [apps.gpu]
 name = "BC-250 GPU Manager"
 summary = "Manage the cyan-skillfish GPU governor: tuning, safe points, profiles, backups."
-tag = "bc250-gpu-v0.6.4"
+tag = "bc250-gpu-v0.7.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -72,7 +72,7 @@ launch = [["Open", "~/.local/bin/bc250-governor-manager"]]
 [apps.upscaler]
 name = "BC-250 Upscaler Manager"
 summary = "Deploy HelixSR (FSR 3.1 drop-in upscaler with DLSS-style networks) into games."
-tag = "bc250-upscaler-v5.7.1"
+tag = "bc250-upscaler-v5.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -85,7 +85,7 @@ launch = [["Open", "~/.local/bin/bc250-upscaler"]]
 [apps.compute]
 name = "BC-250 CU Tools"
 summary = "Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock."
-tag = "bc250-compute-v1.0.5"
+tag = "bc250-compute-v1.1.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -108,7 +108,7 @@ launch = [["Open", "~/.local/bin/bc250-bisect-gui"]]
 [apps.cores]
 name = "BC-250 CPU Tools"
 summary = "Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock."
-tag = "bc250-cores-v1.0.3"
+tag = "bc250-cores-v1.1.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -132,7 +132,7 @@ launch = [["Open", "~/.local/bin/bc250-cores-bisect-gui"]]
 [apps.oc]
 name = "BC-250 GPU OC Bisect"
 summary = "Find your board's safe GPU overclock and undervolt, one step at a time."
-tag = "bc250-oc-v0.4.4"
+tag = "bc250-oc-v0.5.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -155,7 +155,7 @@ launch = [["Open", "~/.local/bin/bc250-gpu-oc-bisect-gui"]]
 [apps.acpi]
 name = "BC-250 Persistent ACPI"
 summary = "CPU C-states and frequency scaling through a persistent ACPI override (GRUB early initrd)."
-tag = "bc250-acpi-v0.5.4"
+tag = "bc250-acpi-v0.6.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -176,7 +176,7 @@ launch = [["Open", "~/.local/bin/bc250-persistent-acpi-gui"]]
 [apps.overlay]
 name = "BC-250 System Overlay"
 summary = "CPU, GPU, refresh rate, fan and temperatures in a small window that stays on top."
-tag = "bc250-overlay-v4.7.1"
+tag = "bc250-overlay-v4.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -189,7 +189,7 @@ launch = [["Open", "~/.local/bin/bc250-system-overlay"]]
 [apps.bios]
 name = "BC-250 BIOS Reader"
 summary = "The BIOS settings as the setup screen shows them, hidden menus included. Stock or modded BIOS. Read-only."
-tag = "bc250-bios-v4.7.1"
+tag = "bc250-bios-v4.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -202,7 +202,7 @@ launch = [["Open", "~/.local/bin/bc250-bios-reader"]]
 [apps.ace]
 name = "BC-250 ACE Queues"
 summary = "Async compute for games: a patched RADV beside the system Mesa, built on the board and tested before use."
-tag = "bc250-ace-v4.7.1"
+tag = "bc250-ace-v4.8.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -225,7 +225,7 @@ launch = [["Open", "~/.local/bin/bc250-ace-queues"]]
 [apps.mesh]
 name = "BC-250 Mesh Shaders"
 summary = "Mesh shaders for games: RADV with DirectMesh beside the system Mesa, built on the board and tested before use."
-tag = "bc250-mesh-v4.8.1"
+tag = "bc250-mesh-v4.9.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -247,7 +247,7 @@ launch = [["Open", "~/.local/bin/bc250-mesh-shaders"]]
 [apps.vram]
 name = "BC-250 Memory Manager"
 summary = "The VRAM split in CMOS, with the GTT, TTM limit and swap layout that go with it."
-tag = "bc250-vram-v4.7.1"
+tag = "bc250-vram-v4.8.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -274,7 +274,7 @@ launch = [["Open", "~/.local/bin/bc250-memory-manager"]]
 [apps.fan]
 name = "BC-250 Fan Control"
 summary = "A thermal guard that warns, cools and shuts down cleanly at a critical temperature, and the fans."
-tag = "bc250-fan-v4.7.1"
+tag = "bc250-fan-v4.8.0"
 sha256 = ""
 required = false
 changes_board = true
@@ -297,7 +297,7 @@ launch = [["Open", "~/.local/bin/bc250-fan-control"]]
 [apps.cec]
 name = "BC-250 CEC Manager"
 summary = "Turn the TV on and off with the board, switch its input and use its remote, over HDMI-CEC."
-tag = "bc250-cec-v4.7.1"
+tag = "bc250-cec-v4.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -311,7 +311,7 @@ launch = [["Open", "~/.local/bin/bc250-hdmi-cec"]]
 name = "BC-250 SFTP Tools"
 short = "SFTP Tools"
 summary = "Move files between computers over SFTP, and manage the SSH server of a Bazzite host."
-tag = "bc250-sftp-v4.7.1"
+tag = "bc250-sftp-v4.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -324,7 +324,7 @@ launch = [["Open", "~/.local/bin/bc250-sftp-tools"]]
 [apps.turing]
 name = "BC-250 Turing Screen"
 summary = "CPU, GPU, memory, fan and temperatures on a Turzx USB IPS screen (Turing Smart Screen 3.5\")."
-tag = "bc250-turing-v2.7.1"
+tag = "bc250-turing-v2.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -337,7 +337,7 @@ launch = [["Open", "~/.local/bin/bc250-turing-screen"]]
 [apps.webcam]
 name = "BC-250 Webcam"
 summary = "The PS5 HD Camera (CFI-ZEY1) as a webcam: loads its firmware at every plug-in and shows its picture."
-tag = "bc250-webcam-v2.7.1"
+tag = "bc250-webcam-v2.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -350,7 +350,7 @@ launch = [["Open", "~/.local/bin/bc250-webcam"]]
 [apps.controller]
 name = "BC-250 Controller"
 summary = "The DualSense and DualSense Edge on the board: battery, firmware updates from the official server, and the Edge's profiles."
-tag = "bc250-controller-v2.7.1"
+tag = "bc250-controller-v2.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -363,7 +363,7 @@ launch = [["Open", "~/.local/bin/bc250-controller"]]
 [apps.rpcs3]
 name = "RPCS3 Manager"
 summary = "PS3 games with the RPCS3 emulator: a tested RPCS3 build, the firmware, your games found and added to Game Mode."
-tag = "bc250-rpcs3-v7.8.1"
+tag = "bc250-rpcs3-v7.9.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -377,7 +377,7 @@ launch = [["Open", "~/.local/bin/bc250-rpcs3-manager"]]
 name = "BC-250 PS Remote Play"
 short = "PS Remote Play"
 summary = "Find, wake and register PS4 and PS5 consoles on the network, and start a Remote Play session."
-tag = "bc250-consoles-v5.7.1"
+tag = "bc250-consoles-v5.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -391,7 +391,7 @@ launch = [["Open", "~/.local/bin/bc250-console-link"]]
 name = "BC-250 XB Remote Play"
 short = "XB Remote Play"
 summary = "Stream your XBOX (Remote Play) or games from XBOX Cloud Gaming to the board, signed in with your Microsoft account."
-tag = "bc250-clb-v4.7.1"
+tag = "bc250-clb-v4.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -404,7 +404,7 @@ launch = [["Open", "~/.local/bin/bc250-console-linkb"]]
 [apps.shadps4]
 name = "shadPS4 Manager"
 summary = "PS4 games with the shadPS4 emulator: a tested shadPS4 release, your games found (or unpacked from .pkg files) and added to Game Mode."
-tag = "bc250-shadps4-v7.7.1"
+tag = "bc250-shadps4-v7.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -418,7 +418,7 @@ launch = [["Open", "~/.local/bin/bc250-shadps4-manager"]]
 name = "Bazzite DatStation"
 short = "DatStation"
 summary = "PlayStation quiz, console history, system versions, region codes, user guides and news, with your scores."
-tag = "bc250-datstation-v6.7.1"
+tag = "bc250-datstation-v6.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -431,7 +431,7 @@ launch = [["Open", "~/.local/bin/bazzite-datstation"]]
 [apps.ppsspp]
 name = "PPSSPP Manager"
 summary = "PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Game Mode."
-tag = "bc250-ppsspp-v5.8.1"
+tag = "bc250-ppsspp-v5.9.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -444,7 +444,7 @@ launch = [["Open", "~/.local/bin/bc250-ppsspp-manager"]]
 [apps.pcsx2]
 name = "PCSX2 Manager"
 summary = "PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Game Mode."
-tag = "bc250-pcsx2-v7.8.1"
+tag = "bc250-pcsx2-v7.9.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -457,7 +457,7 @@ launch = [["Open", "~/.local/bin/bc250-pcsx2-manager"]]
 [apps.vita3k]
 name = "Vita3K Manager"
 summary = "PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Game Mode."
-tag = "bc250-vita3k-v5.9.1"
+tag = "bc250-vita3k-v5.10.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -470,7 +470,7 @@ launch = [["Open", "~/.local/bin/bc250-vita3k-manager"]]
 [apps.xenia]
 name = "Xenia Manager"
 summary = "XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Game Mode."
-tag = "bc250-xenia-v5.9.1"
+tag = "bc250-xenia-v5.10.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -483,7 +483,7 @@ launch = [["Open", "~/.local/bin/bc250-xenia-manager"]]
 [apps.ssd]
 name = "BC-250 SSD Check"
 summary = "The health, power cycles and power-on hours of the board's SSDs."
-tag = "bc250-ssd-v3.7.1"
+tag = "bc250-ssd-v3.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -496,7 +496,7 @@ launch = [["Open", "~/.local/bin/bc250-ssd-check"]]
 [apps.btpair]
 name = "BC-250 Bluetooth Pairing"
 summary = "Pair your Bluetooth keyboard, mouse and controllers at boot, with no USB keyboard or mouse needed."
-tag = "bc250-btpair-v2.7.1"
+tag = "bc250-btpair-v2.8.0"
 sha256 = ""
 required = false
 changes_board = false
@@ -509,7 +509,7 @@ launch = [["Open", "~/.local/bin/bc250-bluetooth-pairing"]]
 [apps.quickfix]
 name = "BC-250 Quickfix"
 summary = "Small quickfixes for one job each: Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the regulator's sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
-tag = "bc250-quickfix-v1.8.1"
+tag = "bc250-quickfix-v1.9.0"
 sha256 = ""
 required = true
 changes_board = false
@@ -633,7 +633,7 @@ Both need a reboot, which the quickfix advises and never does.
 [apps.password]
 name = "BC-250 Password Generator"
 summary = "Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere."
-tag = "bc250-password-v1.7.1"
+tag = "bc250-password-v1.8.0"
 sha256 = ""
 required = false
 changes_board = false

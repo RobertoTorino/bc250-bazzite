@@ -3,7 +3,7 @@
 
 APP_NAME = "BC-250 Password Generator"
 APP_ID = "bc250-password"
-__version__ = "1.7.1"
+__version__ = "1.8.0"
 
 from pathlib import Path
 
