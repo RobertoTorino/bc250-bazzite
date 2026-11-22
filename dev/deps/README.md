@@ -6,20 +6,28 @@
 
 # Nexus Deps
 
-A window that lists the Python packages and external tools of the suite's apps installed on this machine, which apps
-use them, what is missing or must be updated (with the known vulnerabilities from OSV.dev), Bazzite's update
-state, and every update of the machine (Bazzite's image, Flatpaks, Homebrew, Rust, the development venv, Prime95's mprime); **Fix**
-installs what is missing, outdated or newer, after it shows every command and asks. An hourly notification
-says when something needs you. A development app: it runs from the checkout it lives in and has no releases of its own.
-Start it from [Nexus Dashboard](../dash), or:
+Nexus Deps shows the Python packages and external tools of the suite's apps installed on this machine. It shows
+which apps use them, and what is missing or must be updated. It names the known vulnerabilities from OSV.dev. It also
+shows Bazzite's update state and every update of the machine:
+
+- Bazzite's image
+- Flatpaks
+- Homebrew
+- Rust
+- the development venv
+- Prime95's mprime
+
+**Fix** installs what is missing, outdated or newer. It shows every command first and asks. An hourly notification
+tells you when something needs you. Nexus Deps is a development app. It runs from the checkout it lives in and has no
+releases of its own. Start it from [Nexus Dashboard](../dash), or:
 
 | | Linux |
 |---|---|
-| Open it | `dev/deps/run.sh` (`--fix` offers Fix at once, `--remind` is the hourly check) |
+| Open it | `dev/deps/run.sh`. With `--fix`, it offers Fix at once. With `--remind`, it runs the hourly check. |
 | Menu entry, Desktop icon and hourly reminder | `dev/deps/install.sh` (`--no-desktop-shortcut`, `--uninstall`, `--uninstall --purge`) |
 
-Nothing is copied: the entry starts the app of the checkout you installed it from. Its catalog of the suite is
-`nexus_deps/catalogs/bc250-bazzite.toml`.
+The installer copies nothing. The entry starts the app of the checkout you installed it from. The app's catalog of
+the suite is `nexus_deps/catalogs/bc250-bazzite.toml`.
 
 How to use it: [Deps in the wiki](https://robertotorino.github.io/bc250-bazzite/development/dashboard/#deps).
 

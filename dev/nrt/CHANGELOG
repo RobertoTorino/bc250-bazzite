@@ -1,3 +1,13 @@
+Changelog: 22-11-2026 23:09:02
+
+Fixed. The text of the README, run.sh, install.sh and the window was rewritten to the writing standard: short sentences
+with one fact each, no colon or semicolon chains, and "anymore" and "removed" in place of "any more" and "uninstalled".
+The step lines, tooltips, info texts, dialogs, the push and CI messages and the GitHub token warning are among them. No
+label was renamed. The info text of the release tab named All runs finished after Bring in the pin commit. It now lists
+the ten steps in their order, with All runs finished as step 9 and Bring in the pin commit as step 10. Nothing the app
+does has changed. tests/test_flow.py follows the new wording of four lines: the push waiting for another ci-local.sh
+run, the All runs finished line, the last step's ready line and the Push step's running line.
+
 Changelog: 22-11-2026 16:47:44
 
 Added. The Commit step lists the wiki's sections to read again first (tools/check_wiki.py), on the Commands tab, before

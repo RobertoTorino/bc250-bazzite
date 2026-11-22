@@ -261,7 +261,7 @@ def check_github(entry: dict, fetch: Fetch = _fetch, home: Path = Path.home()) -
             without.append(app["name"])             # the app is there, the program not (yet): a choice, no update
             continue
         updates.append(Update(f"{_app_label(app)}: installed", installed, app["version"]))
-        notes.append(f"Open {app['name']} and use its Install: it puts its tested {name} in place.")
+        notes.append(f"Open {app['name']} and use its Install. It puts its tested {name} in place.")
     late = [app for app in apps if newer(entry["compare"], latest, app["pin"])]
     if late:
         pins = sorted({app["version"] for app in late})
@@ -321,7 +321,7 @@ def check_sony(entry: dict, seen: dict[str, str] | None, get: Get = _get) -> Sou
     about = f"<p>{escape(entry['what'][0].upper() + entry['what'][1:])}.</p><p>{escape(entry['how'].format(apps=users))}</p>"
     if entry["kind"] == "on-device":
         return Source(key, name, group="apps", checked=False, about=about,
-                      detail="Checked on the device itself: the i says where.")
+                      detail="Checked on the device itself. The i says where.")
     try:
         body = get(entry["url"])
         found = (parse_controllers(body, entry["targets"]) if entry["kind"] == "controllers" else parse_ps4(body))

@@ -37,30 +37,36 @@ ICON_PX = 64
 BADGE_PX = 26                           # the warning in the corner of an app's icon that changes the board
 # Each local app's output, a log per app (the Nexus apps' logs are in checkout.LOG_DIR)
 LOCAL_LOG_DIR = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / APP_ID / "local"
-ABOUT = ("One place for the tools for working on the suite. The first tiles are the development apps of this "
-         "checkout, each a window of its own that keeps running when the dashboard closes: Nexus Release Tool (a "
-         "release's versions, CHANGELOG entries, pins and the board checks), Nexus Deps (the suite's packages and "
-         "tools on this machine, and its updates), Nexus Installer Tests (the suite's installer tests one at a "
-         "time), Nexus Demo Recorder (a portal installation recorded with OBS), Nexus Sound Lab (short sound "
-         "effects for the windows, made from sliders and saved as WAV), Nexus TTS (an English text "
-         "spoken in a natural voice and saved as a sound file) and Nexus Remix Studio (a voice mixed with a "
-         "synthesized background and saved).\n\n"
-         "The other tiles work on this checkout: Portal video tour and Apps video tour record the suite's tours "
-         "(tools/record-tour.sh and record-app-tour.sh), Convert icons makes a category's icons from your images "
-         "(tools/sync_icons.py), Close issues lists the repository's open issues on GitHub and closes the ones you "
-         "tick. A tile is greyed out where it does not run here.\n\n"
-         "Test local apps, below the tiles: the suite's portal and apps as they are in this checkout, to try them "
-         "before their release, then the suite's wiki served from the checkout. A click on the icon in the header "
-         "opens the suite's wiki.")
+ABOUT = ("<p>One place for the tools for working on the suite.</p>"
+         "<p>The first tiles are the development apps of this checkout. Each opens a window of its own, which keeps "
+         "running when the dashboard closes.</p><ul>"
+         "<li>Nexus Release Tool works on a release's versions, CHANGELOG entries, pins and the board checks.</li>"
+         "<li>Nexus Deps shows the suite's packages and tools on this machine, and its updates.</li>"
+         "<li>Nexus Garbage Remover shows the garbage on this machine and deletes what you check.</li>"
+         "<li>Nexus Installer Tests runs the suite's installer tests one at a time.</li>"
+         "<li>Nexus Demo Recorder records a portal installation with OBS.</li>"
+         "<li>Nexus Sound Lab makes short sound effects for the windows from sliders and saves them as WAV.</li>"
+         "<li>Nexus TTS speaks an English text in a natural voice and saves it as a sound file.</li>"
+         "<li>Nexus Remix Studio mixes a voice with a synthesized background and saves it.</li></ul>"
+         "<p>The other tiles work on this checkout.</p><ul>"
+         "<li><b>Portal video tour</b> and <b>Apps video tour</b> record the suite's tours with "
+         "tools/record-tour.sh and record-app-tour.sh.</li>"
+         "<li><b>Convert icons</b> makes a category's icons from your images with tools/sync_icons.py.</li>"
+         "<li><b>Close issues</b> lists the repository's open issues on GitHub and closes the ones you check.</li></ul>"
+         "<p>A tile turns gray where it does not run here.</p>"
+         "<p><b>Test local apps</b> sits below the tiles. It starts the suite's portal and apps as they are in this "
+         "checkout, so you can try them before their release. Its last icon serves the suite's wiki from the "
+         "checkout. A click on the icon in the header opens the suite's wiki.</p>")
 LOCAL_ABOUT = (
-    "Click an app to start it from this checkout, to try it before its release: <code>python -m</code> with this "
-    "venv and the checkout's core, as <code>run.sh</code> starts a development app. An app that changes how the "
-    "board runs (an orange <b>!</b> on its icon) asks first; it uses the scripts in the checkout. Each app writes its "
-    f"output to <code>{LOCAL_LOG_DIR}</code>; when it stops with an error, the end of that log shows below. The "
-    "suite's portal is the first icon; when a portal is already open it warns instead, as a second one would only "
-    "show the open one. The last icon is the suite's wiki: it is served with <code>mkdocs serve</code> and opens in "
-    "the browser with its design panel; it rebuilds on every save. With <b>Wiki on the network</b> it is served "
-    "for the other devices too, on a port of its own; the addresses show below.")
+    "Click an app to start it from this checkout and try it before its release. The dashboard starts it with "
+    "<code>python -m</code>, this venv and the checkout's core, as <code>run.sh</code> starts a development app. "
+    "An app that changes how the board runs has an orange <b>!</b> on its icon. It asks first, and it uses the "
+    f"scripts in the checkout. Each app writes its output to <code>{LOCAL_LOG_DIR}</code>. When it stops with an "
+    "error, the end of that log shows below. The suite's portal is the first icon. When a portal is already open, "
+    "the dashboard warns you instead. A second portal would only show the open one. The last icon is the suite's "
+    "wiki. The dashboard serves it with <code>mkdocs serve</code>, and it opens in the browser with its design "
+    "panel. It rebuilds on every save. With <b>Wiki on the network</b> checked, the other devices can open it too, "
+    "on a port of its own. The addresses show below.")
 
 
 def board_badge(icon: QIcon) -> QIcon:
@@ -156,7 +162,8 @@ class MainWindow(QMainWindow):
         header.logo.clicked.connect(lambda: open_url(SUITE_MANUAL_URL))
         self.header = header
         header.add_action(InfoButton(ABOUT, "What this app does"))
-        header.add_second(hint_label("Click a tile: an app opens in a window of its own, a tool on the suite."), 1)
+        header.add_second(hint_label("Click a tile. An app opens in a window of its own, and a tool works on the "
+                                     "suite."), 1)
         layout.addLayout(header)
 
         self.tiles = QListWidget()
@@ -173,15 +180,15 @@ class MainWindow(QMainWindow):
         local_title = QLabel("Test local apps")
         local_title.setStyleSheet("font-weight:700;")
         self.network_box = QCheckBox("Wiki on the network")
-        self.network_box.setToolTip("Serve the wiki on every address of this computer, on a port of its own, so the "
-                                    "other devices on the network (a handheld, a laptop, the TV) open it too; its "
-                                    "addresses show below once it started")
+        self.network_box.setToolTip("Serve the wiki on every address of this computer, on a port of its own. The "
+                                    "other devices on the network can open it too, such as a handheld, a laptop or "
+                                    "the TV. Its addresses show below once it has started")
         self.network_box.toggled.connect(lambda _on: self.fill_local())
         local_row = QHBoxLayout()
         local_row.addWidget(local_title)
         local_row.addWidget(InfoButton(LOCAL_ABOUT, "Test local apps"))
-        local_row.addWidget(hint_label("Click an app to start it from this checkout, to try it before its release; "
-                                       "the last icon serves the wiki."), 1)
+        local_row.addWidget(hint_label("Click an app to start it from this checkout and try it before its release. "
+                                       "The last icon serves the wiki."), 1)
         local_row.addWidget(self.network_box)
         layout.addLayout(local_row)
         self.local_apps = QListWidget()
@@ -216,17 +223,17 @@ class MainWindow(QMainWindow):
         off_tours = "" if (root / RECORD_TOUR).is_file() else f"This checkout has no {RECORD_TOUR.as_posix()}."
         off_icons = "" if has_category_icons(root) else "This checkout's apps take no category icons."
         found += [
-            Tile("portal-tour", "Portal video tour", LOGO_ICON, "Record the portal's video tour from this checkout: "
-                 "about two minutes, with music, at 1080p or 4K, and the copy on the wiki's Portal Tour page if "
-                 "you like", off=off_tours),
-            Tile("apps-tour", "Apps video tour", LOGO_ICON, "Record a short video tour of each app you tick, from "
-                 "this checkout: about 40 seconds each, with music, at 1080p or 4K", off=off_tours or (
+            Tile("portal-tour", "Portal video tour", LOGO_ICON, "Record the portal's video tour from this checkout. "
+                 "It runs about two minutes, with music, at 1080p or 4K. It can also write the copy on the wiki's "
+                 "Portal Tour page", off=off_tours),
+            Tile("apps-tour", "Apps video tour", LOGO_ICON, "Record a short video tour of each app you check, from "
+                 "this checkout. Each runs about 40 seconds, with music, at 1080p or 4K", off=off_tours or (
                      "" if (root / RECORD_APP_TOUR).is_file() else
                      f"This checkout has no {RECORD_APP_TOUR.as_posix()}.")),
             Tile("icons", "Convert icons", LOGO_ICON, "Make a category's icons from new images, and their copies "
                  "in the suite's apps", off=off_icons),
             Tile("issues", "Close issues", LOGO_ICON, "The open issues on GitHub, such as the weekly Upstream "
-                 "review: tick the ones that are handled, and Run closes them (gh issue close)"),
+                 "review. Check the ones you have handled, and Run closes them (gh issue close)"),
         ]
         return found
 
@@ -286,21 +293,22 @@ class MainWindow(QMainWindow):
     def run_local(self, target: local.Launch) -> None:
         if target.changes_board and QMessageBox.question(
                 self, "Local app test",
-                f"{target.name} changes how the board runs. Like every app of the suite it is software-only and "
-                f"reversible; started from the checkout it uses the scripts in {target.folder}.\n\nStart it?") \
+                f"Start {target.name}?\n\n{target.name} changes how the board runs. Like every app of the suite, "
+                f"it is software-only and reversible. Started from the checkout, it uses the scripts in "
+                f"{target.folder}.") \
                 != QMessageBox.StandardButton.Yes:
             return
         if target.app_id and instance_running(target.app_id):
             QMessageBox.warning(
                 self, "Local app test",
-                f"{target.name} is already open (the installed one, or one started here).\n\nA second one never "
-                "opens: starting it again only brings the open window to the front, so the checkout would not be "
-                f"tested. Close {target.name} first, then click its icon again.")
+                f"{target.name} is already open. It is the installed one, or one started here.\n\nA second one "
+                "never opens. Starting it again only brings the open window to the front, so the checkout would not "
+                f"be tested. Close {target.name} first, then click its icon again.")
             return
         if target.url and answers(target.url):
             # Already up (started here or before): mkdocs would only fail on the taken port.
             open_url(target.url)
-            self.output.appendPlainText(f"{target.label} is already running: opened {target.url}" +
+            self.output.appendPlainText(f"{target.label} is already running, so {target.url} opened." +
                                         (f"\n{target.note}" if target.note else ""))
             return
         command, env = local.launch_command(self.root, target)
@@ -315,7 +323,7 @@ class MainWindow(QMainWindow):
             self.waiting.append(target.url)
         self.timer.start()
         self.output.appendPlainText(f"{target.label} started from {target.folder} (log: {log})" +
-                                    (f"; {target.url} opens once it is up" if target.url else "") +
+                                    (f". {target.url} opens once it is up." if target.url else "") +
                                     (f"\n{target.note}" if target.note else ""))
 
     def poll(self) -> None:
@@ -335,7 +343,7 @@ class MainWindow(QMainWindow):
             else:
                 tail = log_tail(log)
                 self.output.appendPlainText(f"{target.label} stopped with exit code {code}" +
-                                            (f"; the end of {log}:\n{tail}" if tail else "."))
+                                            (f". The end of {log}:\n{tail}" if tail else "."))
         if not self.running:
             self.timer.stop()
 
@@ -345,11 +353,11 @@ class MainWindow(QMainWindow):
         if not numbers:
             return
         if self.closer is not None:
-            self.output.appendPlainText("Close issues: the issues ticked before are still being closed.")
+            self.output.appendPlainText("Close issues: the dashboard is still closing the issues you checked before.")
             return
         gh = gh_program()
         if not gh:
-            self.output.appendPlainText("Close issues: gh (the GitHub CLI) is not installed; nothing was closed.")
+            self.output.appendPlainText("Close issues: gh (the GitHub CLI) is not installed. Nothing was closed.")
             return
         self.closing = close_commands(numbers, comment, gh)
         self._close_next()
@@ -381,7 +389,7 @@ class MainWindow(QMainWindow):
         closer, self.closer = self.closer, None
         closer.deleteLater()
         if code != 0:
-            self.output.appendPlainText(f"gh stopped with exit code {code}; the issues after it stay open.")
+            self.output.appendPlainText(f"gh stopped with exit code {code}. The issues after it stay open.")
             self.closing = []
             return
         self._close_next()

@@ -1,3 +1,11 @@
+Changelog: 22-11-2026 22:34:30
+
+Fixed. The text is rewritten to the writing standard: the README's introduction, the window's info text and
+instructions, its status lines and messages, the OBS setup steps, the shortcut service's errors, and the messages of
+install.sh and run.sh. The sentences are shorter, with one fact each and no semicolons, and say "remove" for
+"uninstall", "turn on" for "enable" and "anymore" for "any more". No labels are renamed. No fact was wrong. Nothing the
+app does has changed. No test changed.
+
 Changelog: 15-11-2026 10:09:36
 
 Breaking. Windows support is removed (owner, 15-11-2026): run.sh uses .venv-linux, and the window's text no longer

@@ -6,10 +6,10 @@
 
 # Nexus Release Tool
 
-The suite's release front end: it writes the versions, CHANGELOG entries, pins and portal bump of a release, and
-runs the board checks of a portal release. It commits, pushes, tags and starts the release workflow only when you
-press its buttons. It edits the checkout it lives in, so it is not part of a portal's releases and has none of its
-own.
+Nexus Release Tool is the suite's release front end. It writes the versions, CHANGELOG entries, pins and portal
+bump of a release. It also runs the board checks of a portal release. It commits, pushes, tags and starts the
+release workflow only when you press its buttons. It edits the checkout it lives in, so it is not part of a portal's
+releases and has none of its own.
 
 ## Start it
 
@@ -22,8 +22,8 @@ From the repository's root, with the checkout's venv ([Set up and test](https://
 | Menu entry and Desktop icon | `dev/nrt/install.sh` |
 
 The installer takes `--no-desktop-shortcut`, `--uninstall` and `--uninstall --purge` (the settings too). Nothing is
-copied: the entry starts the app of the checkout you installed it from. The window's header names the checkout's
-last commit and its time: the tool is never released and has no version.
+copied. The entry starts the app of the checkout you installed it from. The tool is never released and has no
+version. So the window's header names the checkout's last commit and its time.
 
 How to use it: [Releases in the wiki](https://robertotorino.github.io/bc250-bazzite/development/releases/).
 

@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 23:04:04
+
+Fixed. The text of the window's info and hint, the README and the messages of install.sh and run.sh is rewritten to the
+writing standard: short sentences, one fact each, no chains with semicolons or colons, and American English. The hint
+says "Check" instead of "Tick", the installer says "removed" instead of "uninstalled", and the launcher says "anymore".
+No label is renamed and no fact is corrected. Nothing the app does has changed. No test changed.
+
 Changelog: 15-11-2026 10:09:36
 
 Breaking. One suite (owner, 15-11-2026): the repository is the suite, so the suite chosen in the header, --suite and

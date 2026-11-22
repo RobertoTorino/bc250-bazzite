@@ -45,7 +45,7 @@ BREW_HOME = "/home/linuxbrew/.linuxbrew/bin/brew"    # Bazzite's Homebrew: not o
 VENV = ".venv-linux"
 REQUIREMENTS = "requirements-dev.txt"
 RELEASES = "https://github.com/ublue-os/bazzite/releases"
-ROLLBACK = ("If the new image misbehaves, choose the previous one in the boot menu, or run <code>rpm-ostree rollback"
+ROLLBACK = ("If the new image misbehaves, choose the previous one in the boot menu. Or run <code>rpm-ostree rollback"
             f"</code> and restart (<code>{RESTART}</code>).")
 
 
@@ -99,7 +99,7 @@ def majors(updates: tuple[Update, ...]) -> str:
     if not names:
         return ""
     return (f"New major version{'s' if len(names) > 1 else ''}: {', '.join(names)}. A major version can change how "
-            "it behaves or drop what was deprecated; try what uses it afterwards.")
+            "it behaves. It can also drop deprecated features. Try what uses it afterward.")
 
 
 def _notes(*notes: str) -> str:
@@ -158,8 +158,9 @@ def check_image(run: Run) -> Source:
         # A new Fedora release: the whole system changes. Not by a click: the steps, in order.
         old, new = _major(current), _major(version)
         return Source("image", name, (update,), note=(
-            f"Bazzite {version} moves from Fedora {old} to Fedora {new}: a system-wide change (the kernel, Mesa, the "
-            "system's Python and libraries). Not installed from here: see the steps under the i."), about=(
+            f"Bazzite {version} moves from Fedora {old} to Fedora {new}. This is a system-wide change. It changes "
+            "the kernel, Mesa, the system's Python and the system's libraries. Nexus Deps does not install it. "
+            "The steps are under the i."), about=(
             IMAGE_ABOUT + f"<p><b>Fedora {old} → {new}</b> changes the whole system. Install it by hand:</p><ol>"
             f"<li>Read its release notes: <a href='{RELEASES}'>Bazzite's releases</a> (what breaks, what to do "
             "first).</li>"
@@ -226,8 +227,9 @@ def check_dnf(run: Run) -> Source:
     current = installed_versions(run, list(names))
     updates = tuple(Update(package, current.get(package, ""), version) for package, version in offered)
     kernels = [package for package in names if package.startswith(KERNELS)]
-    note = (f"A new kernel ({', '.join(kernels)}) is used after a restart ({RESTART}), which Nexus Deps never does "
-            "by itself; uncheck it in Update's question to keep the one you have.") if kernels else ""
+    note = (f"A new kernel ({', '.join(kernels)}) takes effect after a restart ({RESTART}). Nexus Deps never "
+            "restarts the machine by itself. Uncheck it in Update's question to keep the one you have."
+            ) if kernels else ""
     return Source("dnf", name, updates, step=dnf_step(f"{len(names)} system package(s) with dnf", "upgrade", names),
                   note=note, about=DNF_ABOUT)
 
@@ -396,7 +398,7 @@ def check_venv(run: Run, checkout: Path) -> Source:
     missing = sum(not update.current for update in updates)
     note = ""
     if missing and made and running and made != running:
-        note = (f"The venv was made with Python {made} and runs Python {running} now (a new Bazzite image): the "
+        note = (f"The venv was made with Python {made}. It runs Python {running} now (a new Bazzite image). The "
                 f"packages it had for {made} are not used. Update installs requirements-dev.txt for {running}.")
     title = f"{len(updates)} package(s) into {VENV}" + (f", {missing} of them missing" if missing else "")
     return Source("venv", name, updates, held, step=Step("pip", title, (*pip, *upgrade)) if updates else None,
@@ -465,7 +467,7 @@ def check_mprime(run: Run, home: Path, checkout: Path, board_test: Path | None =
     script = mprime_installer(checkout, board_test)
     if script is None:
         return Source("mprime", name, updates, about=MPRIME_ABOUT, detail=detail,
-                      note="Board Test's installer is not there: install Board Test from the portal, then Update.")
+                      note="Board Test's installer is not there. Install Board Test from the portal, then use Update.")
     step = Step("mprime", f"mprime {mprime_version(latest)} into ~/{MPRIME_DIR}", ("bash", str(script), "--mprime"))
     return Source("mprime", name, updates, step=step, about=MPRIME_ABOUT, detail=detail,
                   note="" if installed else "Unpacked by hand: Update installs the latest release over it.")

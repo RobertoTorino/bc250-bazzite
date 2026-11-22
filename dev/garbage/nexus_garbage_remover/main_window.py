@@ -31,10 +31,10 @@ from .garbage import Garbage, find, remove, size_text
 
 WIKI = "https://robertotorino.github.io/bc250-bazzite/development/dashboard/#garbage-remover"
 ABOUT = ("Nexus Garbage Remover finds the files on this machine that nobody needs again. They are crash dumps, "
-         "Steam's crash reports, the Trash and caches that fill up. It shows each place with its size and the command that "
-         "empties it. Uncheck what you keep, then <b>Delete</b> empties the checked places after it asks. Crash "
-         "dumps belong to the system, so deleting them asks for your password. An hourly check sends a "
-         "notification when there is 1 GB or more. "
+         "Steam's crash reports, the Trash and caches that fill up. It shows each place with its size and the "
+         "command that empties it. Uncheck what you want to keep. <b>Delete</b> asks first, then empties the "
+         "checked places. Crash dumps belong to the system, so deleting them asks for your password. An hourly "
+         "check sends a notification when there is 1 GB of garbage or more. "
          f"<a href='{WIKI}'>Wiki</a>")
 COLUMNS = ("Delete", "What", "Where", "Size", "Removed with")
 
@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         if kind == "found":
             self._show(value)
             return
-        self.say("Deleted." if not value else "Not everything went:\n" + "\n".join(value), ok=not value)
+        self.say("Deleted." if not value else "Some places were not emptied:\n" + "\n".join(value), ok=not value)
         self.refresh()
 
     def _show(self, found: list[Garbage]) -> None:

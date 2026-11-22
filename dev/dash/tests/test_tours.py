@@ -186,7 +186,7 @@ def test_the_portal_dialog_records_into_videos_with_the_wiki_copy_when_asked(qap
 
     assert dialog.made == [videos / "bc250-portal-tour-v6.4.0.mp4"]
     assert "--no-music --wiki" in dialog.output.toPlainText()
-    assert "wiki's copy is changed in the checkout" in dialog.output.toPlainText()
+    assert "wiki's copy changed in the checkout" in dialog.output.toPlainText()
     dialog.play_button.click()
     assert played == [videos / "bc250-portal-tour-v6.4.0.mp4"]
     dialog.close()

@@ -63,9 +63,9 @@ class IconsDialog(QDialog):
         self.checkout: Path | None = root
         layout = QVBoxLayout(self)
         intro = QLabel(
-            "Make a category's icons from your images: one image for every size, or an image for a single size. "
-            "They are scaled, saved as WebP (the 128 px icon as PNG) under the category's names, and copied to "
-            "every app of the category. Images must be square."
+            "Make a category's icons from your images. Pick one image for every size, or an image for a single size. "
+            "Images must be square. The tool scales them and saves them as WebP under the category's names. The "
+            "128 px icon is a PNG. Every app of the category gets a copy."
         )
         intro.setWordWrap(True)
         layout.addWidget(intro)
@@ -73,7 +73,7 @@ class IconsDialog(QDialog):
         checkout_row = QHBoxLayout()
         checkout_row.addWidget(QLabel("Checkout:"))
         self.checkout_label = QLabel(str(root))
-        self.checkout_label.setToolTip("The checkout whose icons are converted")
+        self.checkout_label.setToolTip("The checkout whose icons this dialog converts")
         checkout_row.addWidget(self.checkout_label, 1)
         layout.addLayout(checkout_row)
 
@@ -133,7 +133,7 @@ class IconsDialog(QDialog):
         self.category.clear()
         if not has_category_icons(checkout):
             self.checkout = None
-            self.output.setPlainText(f"{checkout.name} has no icons/categories.toml: its apps take no category "
+            self.output.setPlainText(f"{checkout.name} has no icons/categories.toml. Its apps take no category "
                                      "icons, so there is nothing to convert here.")
         else:
             self.checkout = checkout
@@ -179,7 +179,7 @@ class IconsDialog(QDialog):
                 ok = False
                 break
         if ok:
-            log.append("Done. The icons and their copies in the apps are changed in the checkout; review and commit "
+            log.append("Done. The icons and their copies in the apps changed in the checkout. Review and commit "
                        "them there.")
             for field in (self.whole, *self.sizes.values()):
                 field.clear()

@@ -213,13 +213,13 @@ def test_needs_update_when_an_app_wants_newer_or_a_release_fixes_a_vulnerability
 
 
 def test_the_bazzite_card_on_top(qapp):
-    """An update waiting for a reboot: the card says so first, in the system section above the packages."""
+    """An update waiting for a restart: the card says so first, in the system section above the packages."""
     running = Deployment("44.20261012.1", 1791962757, booted=True, staged=False)
     waiting = Deployment("44.20261019.0", 1792567557, booted=False, staged=True)
     window = _window(CheckResult(packages=[], tools=[], installed=frozenset()),
                      bazzite=lambda: BazziteState(running, waiting, "ghcr.io/ublue-os/bazzite:stable"))
-    assert _wait_for(lambda: "waits for a reboot" in window.bazzite_card.text.text())
-    assert window.bazzite_card.status.text() == "Reboot to update"
+    assert _wait_for(lambda: "waits for a restart" in window.bazzite_card.text.text())
+    assert window.bazzite_card.status.text() == "Restart to update"
     assert "Bazzite 44.20261019.0" in window.bazzite_card.text.text()
     window.close()
 

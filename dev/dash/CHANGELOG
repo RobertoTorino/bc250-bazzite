@@ -1,3 +1,12 @@
+Changelog: 22-11-2026 22:36:54
+
+Fixed. The text of the window, the dialogs, the messages, install.sh, run.sh and the README is rewritten to the writing
+standard: short sentences, one fact each, lists for the tiles and the installer's options, and American English (check,
+gray, anymore). The question before a local app that changes the board now opens with Start <name>?. No label is
+renamed. The info text and the README now name Nexus Garbage Remover among the development apps. They left it out,
+although it has a tile. The README now also names the Close issues tile among the tools. Nothing the app does has
+changed. tests/test_issues.py and tests/test_tours.py expect the new wording of two messages.
+
 Changelog: 22-11-2026 18:33:23
 
 Fixed. tests/test_main_window.py expects the tile of Nexus Garbage Remover, after Nexus Deps.

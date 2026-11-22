@@ -54,7 +54,7 @@ TRY_SECONDS = 12
 # Where a spoken text is kept as the voice
 SPOKEN = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / APP_ID / "voice-from-text.wav"
 NO_VOICE = "No voice yet. The mix is the background alone."
-NO_OUTPUT = "No audio output was found, so the mix is not heard. Save as… still writes it."
+NO_OUTPUT = "The app found no audio output, so you do not hear the mix. Save as… still writes it."
 WIKI = f"{SUITE_MANUAL_URL}development/dashboard/#remix-studio"
 ABOUT = ("A remix has two tracks, a voice and a background.<br><br><b>Voice</b> is a sound file, or a text that "
          "Nexus TTS speaks for you. <b>Remove silence</b> cuts the silence at the start and the end of the "

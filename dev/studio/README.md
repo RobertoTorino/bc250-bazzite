@@ -11,15 +11,15 @@ file, or a text spoken by [Nexus TTS](../text). The background is a sustained so
 the app from a preset, a chord and three sliders. The mix sets how loud each track is and how the background leads
 in, trails and fades.
 
-A development app: it runs from the checkout it lives in and has no releases of its own. Start it from
-[Nexus Dashboard](../dash), or:
+Remix Studio is a development app. It runs from the checkout it lives in and has no releases of its own. Start it
+from [Nexus Dashboard](../dash), or with these commands:
 
 | | Linux |
 |---|---|
 | Open it | `dev/studio/run.sh` |
 | Menu entry and Desktop icon | `dev/studio/install.sh` (`--no-desktop-shortcut`, `--uninstall`, `--uninstall --purge`) |
 
-Nothing is copied: the entry starts the app of the checkout you installed it from.
+The installer copies nothing. The entry starts the app of the checkout you installed it from.
 
 How to use it: [Remix Studio in the wiki](https://robertotorino.github.io/bc250-bazzite/development/dashboard/#remix-studio).
 

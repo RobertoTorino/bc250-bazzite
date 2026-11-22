@@ -55,17 +55,17 @@ def test_the_owners_board_up_to_date():
     assert state.image == "ghcr.io/ublue-os/bazzite:stable"
     assert state.updater_last.strftime("%Y-%m-%d %H:%M") == "2026-10-15 04:06" and not state.updater_failed
     kind, text = bazzite.describe(state)
-    assert "Bazzite 44.20261012.1 (built " in text and "No update waits for a reboot." in text
+    assert "Bazzite 44.20261012.1 (built " in text and "No update waits for a restart." in text
     assert "last ran 15-10-2026 04:06." in text
     assert bazzite.reminder(state, NOW) == ""
 
 
-def test_an_update_waits_for_a_reboot():
+def test_an_update_waits_for_a_restart():
     state = bazzite.read_state(fake_run(status(NEWER, RUNNING, PREVIOUS)), which)
     assert state.update_waiting and not state.rollback_waiting and state.next_boot.staged
     kind, text = bazzite.describe(state)
-    assert kind == "warn" and "Bazzite 44.20261019.0" in text and "waits for a reboot" in text
-    assert bazzite.reminder(state, NOW) == "Bazzite 44.20261019.0 waits for a reboot: restart the board to use it."
+    assert kind == "warn" and "Bazzite 44.20261019.0" in text and "waits for a restart" in text
+    assert bazzite.reminder(state, NOW) == "Bazzite 44.20261019.0 waits for a restart. Restart the board to use it."
 
 
 def test_a_rollback_is_not_an_update():
@@ -118,7 +118,7 @@ def test_a_flattened_image_reads_os_release_and_never_runs_rpm_ostree(tmp_path, 
     assert not state.update_waiting and state.updater_last is not None
     kind, text = bazzite.describe(state)
     assert kind == "ok" and "flattened (no ostree), with kernel 7.3.1" in text and "dnf" in text
-    assert "waits for a reboot" not in text and "updates the image" not in text
+    assert "waits for a restart" not in text and "updates the image" not in text
     assert bazzite.reminder(state, NOW) == ""
     assert all(argv[0] != "rpm-ostree" for argv in run.calls)
     assert bazzite.read_state(run, which).flattened                    # read_state takes this path by itself

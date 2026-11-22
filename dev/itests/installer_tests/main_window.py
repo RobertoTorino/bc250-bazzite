@@ -30,10 +30,11 @@ from bc250_core.widgets import InfoButton, hint_label
 from . import APP_NAME, CHECKOUT, LOGO_PATH
 from .runner import InstallerTestRunner, discover_tests, tests_dir
 
-ABOUT = ("Each installer test installs an app of the suite from the checkout, as its installer does on a device, "
-         "and removes it again, in a temporary home: nothing of yours is touched. On Linux the tests run with "
-         "fakeroot (Homebrew's on Bazzite) and fixed temporary folders under /tmp, so the same test is never run "
-         "twice at once. CI runs every one of them on each push; here they run one at a time with their output.")
+ABOUT = ("Each installer test installs an app of the suite from the checkout, as its installer does on a device. "
+         "Then it removes the app again. It works in a temporary home, so it touches nothing of yours. "
+         "On Linux the tests run with fakeroot (Homebrew's on Bazzite). "
+         "They use fixed temporary folders under /tmp, so the same test never runs twice at once. "
+         "CI runs every one of them on each push. Here they run one at a time, with their output.")
 
 
 class MainWindow(QMainWindow):
@@ -50,7 +51,8 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(central)
         header = nexus_header(LOGO_PATH, APP_NAME, CHECKOUT)  # the checkout's commit, never a version
         header.add_action(InfoButton(ABOUT, "What this app does"))
-        header.add_second(hint_label("Tick the tests to run, or Run all; the output and each result show here."), 1)
+        header.add_second(hint_label("Check the tests to run, or choose Run all. "
+                                     "The output and each result show here."), 1)
         layout.addLayout(header)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)

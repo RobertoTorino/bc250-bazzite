@@ -655,7 +655,7 @@ def test_the_step_being_done_says_a_command_runs(release_window, monkeypatch):
     monkeypatch.setattr(w.commands, "is_running", lambda: False)
     page.show_state()
     assert page.marks[now].text() == "▶"
-    assert "Pushing: CI's jobs run here first" in release_page.RUNNING["push"]
+    assert "Pushing. CI's jobs run here first" in release_page.RUNNING["push"]
 
 
 CI_OUTPUT = ("Current branch main is up to date.\n46 jobs from ci.yml, 6 at a time, on Python 3.12.16\n"
@@ -671,7 +671,7 @@ def test_ci_here_is_read_from_its_output():
     assert (progress.total, progress.done, progress.failed) == (46, 3, ("pytest/apps/pcsx2",))
     assert progress.line() == "CI's jobs here, before the push: 3 of 46 done; failed: pytest/apps/pcsx2."
     waiting = flow.local_ci("==> Another ci-local.sh run is going on this computer: waiting until it ends\n")
-    assert waiting.started and "the push waits until it ends" in waiting.line()
+    assert waiting.started and "The push waits until it ends" in waiting.line()
 
 
 def test_a_run_asked_to_run_again_is_not_asked_twice():
@@ -1021,7 +1021,7 @@ def test_the_last_step_waits_until_github_runs_nothing_more(release_window, monk
     assert flow.current_step(page.facts) == "ready" and page.marks["ready"].text() == "▶"
     assert page.titles["ready"].text() == "9. All runs finished"
     assert page.titles["finish"].text() == "10. Bring in the pin commit" and page.marks["finish"].text() != "✓"
-    assert page.details["ready"].text() == "GitHub still runs Wiki on main: wait until it finished. Nothing to press."
+    assert page.details["ready"].text() == "GitHub still runs Wiki on main. Wait until it finishes. Nothing to press."
     assert not page.finish_button.isEnabled() and page.details["finish"].text() != flow.READY
     pin = _run("f" * 40, "ci.yml", "CI", status="in_progress", conclusion="")    # the pin commit, not pulled yet
     monkeypatch.setattr(w.build, "runs", [pin, wiki, release])
@@ -1035,5 +1035,5 @@ def test_the_last_step_waits_until_github_runs_nothing_more(release_window, monk
     monkeypatch.setattr(w.build, "runs", [_run(head, "docs.yml", "Wiki"), release])         # pulled
     page.show_state()
     assert page.marks["finish"].text() == "✓" and page.details["finish"].text() == flow.READY == \
-        "The release is out and pulled in: ready."
+        "The release is out and pulled in. Ready."
     assert flow.still_running([wiki, wiki, release]) == ("Wiki on main",)

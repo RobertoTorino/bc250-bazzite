@@ -47,16 +47,16 @@ if $uninstall; then
     if $purge; then
         info "Removing the settings"
         rm -rf "${CONFIG_DIR:?}/$APP_ID"
-        info "$APP_NAME is uninstalled; the checkout stays."
+        info "$APP_NAME is removed. The checkout stays."
     else
-        info "$APP_NAME is uninstalled; the checkout and its settings stay."
+        info "$APP_NAME is removed. The checkout and its settings stay."
     fi
     exit 0
 fi
 
-[ "$(uname -s)" = Linux ] || die "install.sh makes a Linux app menu entry; the app runs on Linux (OBS, the desktop portal)."
+[ "$(uname -s)" = Linux ] || die "install.sh makes a Linux app menu entry. The app runs on Linux only, for OBS and the desktop portal."
 [ -x "$REPO/.venv-linux/bin/python" ] || [ -x "$REPO/.venv/bin/python" ] || [ -n "${PYTHON:-}" ] ||
-    info "Note: no .venv-linux yet; create it (see CLAUDE.md) before you start the app."
+    info "Note: there is no .venv-linux yet. Create it before you start the app. CLAUDE.md says how."
 
 # The app was Media Tool of the BC250 Bazzite Suite until 02-11-2026 (and Simple Demo Tool before that): installed
 # by its own installer with a copy and a venv of its own under ~/.local/share/<id>. That copy, its launcher, menu
@@ -75,7 +75,7 @@ mkdir -p "$(dirname "$LAUNCHER")"
 cat >"$LAUNCHER" <<LAUNCH
 #!/usr/bin/env bash
 # $APP_NAME launcher, written by dev/demo/install.sh. Runs the app of this checkout.
-[ -x "$APP/run.sh" ] || { echo "No checkout in $REPO any more; run dev/demo/install.sh again." >&2; exit 1; }
+[ -x "$APP/run.sh" ] || { echo "No checkout in $REPO anymore. Run dev/demo/install.sh again." >&2; exit 1; }
 exec "$APP/run.sh" "\$@"
 LAUNCH
 chmod 755 "$LAUNCHER"

@@ -150,7 +150,7 @@ def test_a_venv_left_on_an_older_python_says_so(tmp_path):
     """Bazzite's image moved python3 to 3.15: the venv's python follows it, without the packages it had for 3.14."""
     run = Machine(python="3.15", installed=[{"name": "pip", "version": "26.1.2"}], report=REPORT)
     venv = system.check_venv(run, checkout(tmp_path, made="3.14"))
-    assert "made with Python 3.14 and runs Python 3.15" in venv.note
+    assert "made with Python 3.14. It runs Python 3.15" in venv.note
     assert venv.step.title == "4 package(s) into .venv-linux, 4 of them missing"
     # Once they are installed again, pyvenv.cfg still names 3.14: no note then
     again = Machine(python="3.15", installed=INSTALLED, report={"install": []})
@@ -247,7 +247,7 @@ def test_dnf_lists_the_updates_with_the_kernel_and_its_restart():
         system.Update("mesa-dri-drivers", "", "25.2.7-1.fc43")]
     assert source.step.command == ("pkexec", "dnf", "upgrade", "-y", "fio", "linux-ps5", "mesa-dri-drivers")
     assert source.step.packages == ("fio", "linux-ps5", "mesa-dri-drivers") and source.step.restart
-    assert "linux-ps5" in source.note and "uncheck it" in source.note and "pkexec dnf upgrade" in source.about
+    assert "linux-ps5" in source.note and "Uncheck it" in source.note and "pkexec dnf upgrade" in source.about
 
 
 def test_dnf_with_nothing_newer_or_failing():

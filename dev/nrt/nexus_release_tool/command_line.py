@@ -121,7 +121,7 @@ class CommandLine(QWidget):
         self.prompt.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.line = QLineEdit()
         self.line.setFont(self.output.font())
-        self.line.setPlaceholderText("A command, run with bash in the checkout (Enter); ↑ ↓ for earlier ones")
+        self.line.setPlaceholderText("Type a command to run with bash in the checkout (Enter). ↑ ↓ for earlier ones")
         self.line.returnPressed.connect(self.submit)
         self.line.installEventFilter(self)
         self.commands_button = QToolButton()
@@ -167,8 +167,8 @@ class CommandLine(QWidget):
         self.offered = command_lines(text)
         self.commands_button.setEnabled(bool(self.offered))
         self.commands_button.setToolTip(
-            "The commands the last step showed: pick one to put it on the line" if self.offered else
-            "Retract shows the commands to run next; they are offered here then")
+            "The commands the last step showed. Pick one to put it on the line" if self.offered else
+            "Retract shows the commands to run next. This menu then offers them")
 
     def _fill_menu(self) -> None:
         menu = self.commands_button.menu()

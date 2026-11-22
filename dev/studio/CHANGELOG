@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 23:04:21
+
+Fixed. The text is rewritten to the writing standard, in short sentences of one fact each. The rewrite covers the
+README, the window's status line, the dialog From a text and the messages of install.sh and run.sh. install.sh says
+that the app is removed, not uninstalled, as Nexus Dashboard's installer does. Nothing the app does has changed. No
+test changed.
+
 Changelog: 20-11-2026 20:48:17
 
 Fixed. The window, the dialog From a text and the README say Nexus TTS, the new name of Text to Speech (owner,

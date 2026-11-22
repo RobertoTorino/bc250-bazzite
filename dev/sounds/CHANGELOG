@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 23:04:34
+
+Fixed. The text of the README, install.sh, run.sh and the window is rewritten to the writing standard: short sentences,
+one fact each, and a list where the README's introduction and the info text name three or more things. The info text
+names the sliders by their labels. install.sh says the app is removed, not uninstalled, and writes anymore. No labels
+were renamed and no facts were corrected. Nothing the app does has changed. No tests changed.
+
 Changelog: 22-11-2026 16:58:55
 
 Fixed. The checkbox reads Keep the audio link awake, and its tooltip says that it plays a silent loop while the window

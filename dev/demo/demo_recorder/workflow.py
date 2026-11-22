@@ -141,8 +141,8 @@ def connect_obs(host: str, port: int, password: str):
         import obsws_python as obs
         import websocket
     except ImportError as exc:
-        raise WorkflowError("The OBS WebSocket client is missing: install the checkout's requirements-dev.txt "
-                            "in the dev venv (obsws-python).") from exc
+        raise WorkflowError("The OBS WebSocket client (obsws-python) is missing. Install the checkout's "
+                            "requirements-dev.txt in the dev venv.") from exc
     try:
         client = obs.ReqClient(host=host, port=port, password=password, timeout=3)
         version = client.get_version()
@@ -152,7 +152,7 @@ def connect_obs(host: str, port: int, password: str):
     except (obs.OBSSDKError, websocket.WebSocketException, OSError, ValueError, AttributeError) as exc:
         raise WorkflowError(
             f"Could not connect to OBS at {host}:{port}: {exc}\n\n"
-            "Open OBS → Tools → WebSocket Server Settings, enable the server, and check the port and password."
+            "Open OBS → Tools → WebSocket Server Settings, turn on the server, and check the port and password."
         ) from exc
     return client, obs_version
 
@@ -178,7 +178,7 @@ def set_recording_directory(client) -> Path:
     except (obs.OBSSDKError, OSError, AttributeError) as exc:
         raise WorkflowError(
             f"Could not set the OBS recording folder to {RECORDINGS_DIRECTORY}: {exc}\n"
-            "OBS WebSocket 5.3 or newer is required."
+            "This needs OBS WebSocket 5.3 or newer."
         ) from exc
     return RECORDINGS_DIRECTORY
 
@@ -243,7 +243,7 @@ def find_terminal() -> tuple[str, str] | None:
 def launch_installer(installer: Path) -> Path:
     terminal = find_terminal()
     if terminal is None:
-        raise WorkflowError("No supported terminal emulator was found to run the portal installer.")
+        raise WorkflowError("Could not find a supported terminal emulator to run the portal installer.")
     descriptor, name = tempfile.mkstemp(prefix="nexus-demo-installer-")
     os.close(descriptor)
     exit_file = Path(name)

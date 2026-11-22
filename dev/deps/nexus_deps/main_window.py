@@ -89,8 +89,8 @@ def package_advice(result: DependencyStatus, apps: dict[str, App]) -> str:
     parts = []
     for env in result.missing + result.unmet:
         users = escape(_names(_app_name(owner, apps) for owner in env.owners))
-        parts.append(f"Fix installs {name} in {escape(_short_path(env.environment))}, which {users} needs; "
-                     "installing the app again from the portal does too.")
+        parts.append(f"Fix installs {name} in {escape(_short_path(env.environment))}, which {users} needs. "
+                     "Installing the app again from the portal does too.")
     fixes = {}
     for version, vuln in result.vulnerabilities:
         if vuln.fixed:
@@ -112,7 +112,7 @@ def package_advice(result: DependencyStatus, apps: dict[str, App]) -> str:
     for version, names in users.items():
         fixed = max(fixes[version], key=release)
         parts.append(f"Update {name} {escape(version)} to {escape(fixed)} or newer for "
-                     f"{escape(_names(dict.fromkeys(names)))}: that release fixes the known vulnerabilities.")
+                     f"{escape(_names(dict.fromkeys(names)))}. That release fixes the known vulnerabilities.")
     return ("<b>Advice:</b> " + " ".join(dict.fromkeys(parts))) if parts else ""
 
 
@@ -175,7 +175,7 @@ class _Card(QFrame):
         title_row.addWidget(self.about_button)
         if isinstance(item, ExternalTool) and item.root:
             root = QLabel(NEEDS_ROOT)
-            root.setToolTip("It does its work only as root; the apps run it through sudo or pkexec.")
+            root.setToolTip("It does its work only as root. The apps run it through sudo or pkexec.")
             title_row.addWidget(root)
         if isinstance(item, Dependency):
             self.cve = QLabel(CVE_UNKNOWN)
@@ -262,13 +262,13 @@ class DependencyCard(_Card):
             self.status.set_status("Wrong version", "bad", "An installed version does not meet the app's "
                                    "requirement. Fix installs one that does.")
         elif result.vulnerabilities:
-            self.status.set_status("Vulnerable", "bad", "An installed version has known vulnerabilities; see "
-                                   "below.")
+            self.status.set_status("Vulnerable", "bad", "An installed version has known vulnerabilities. They "
+                                   "are listed below.")
         elif result.error:
             self.status.set_status("Check failed", "bad", result.error)
         elif result.update_available:
             self.status.set_status("Update available", "warn", f"PyPI has {result.latest}. The apps update it "
-                                   "when they are installed again; newer versions are tested with an app release.")
+                                   "when you install them again. Newer versions are tested with an app release.")
         elif result.latest:
             self.status.set_status("Up to date", "ok", f"PyPI: {result.latest}.")
         else:
@@ -285,7 +285,7 @@ class DependencyCard(_Card):
         else:
             self.cve.setText(CVE_UNKNOWN)
             self.cve.setToolTip(f"The vulnerability check failed: {result.cve_error}" if result.cve_error else
-                                "Not installed for any installed app: nothing to check.")
+                                "Not installed for any installed app, so there is nothing to check.")
         rows = "".join(
             f"<li><a href='{escape(vuln.url, quote=True)}'>{escape(vuln.id)}</a> in {escape(version)}"
             f"{': ' + escape(vuln.summary) if vuln.summary else ''}"
@@ -332,11 +332,11 @@ class ExternalToolCard(_Card):
         elif need == "required":
             how = ("Fix installs it with Homebrew" if self.tool.brew else
                    "Fix layers it into the Bazzite image" if self.tool.rpm else
-                   "The app's manual (linked below) says how to install it")
+                   "The app's wiki chapter (linked below) says how to install it")
             self.status.set_status("Missing", "bad", f"An installed app needs it. {how}.")
         elif need == "optional":
-            self.status.set_status("Not installed", "info", "Optional: the apps work without it and use it when "
-                                   "it is there. The app's manual (linked below) says how to install it.")
+            self.status.set_status("Not installed", "info", "Optional. The apps work without it and use it when "
+                                   "it is there. The app's wiki chapter (linked below) says how to install it.")
         else:
             self.status.set_status("Not needed", "neutral", "No installed app uses it.")
         found = _short_path(result.path) if result.path else "not found"
@@ -348,7 +348,7 @@ class ExternalToolCard(_Card):
 
 
 class BazziteCard(QFrame):
-    """Bazzite's update state: the running image, an update waiting for a reboot, the updater's last run."""
+    """Bazzite's update state: the running image, an update waiting for a restart, the updater's last run."""
 
     PILLS = {"ok": ("Up to date", "ok"), "warn": ("Look at this", "warn"), "neutral": ("Not known", "neutral")}
 
@@ -375,9 +375,9 @@ class BazziteCard(QFrame):
         kind, text = describe(state)
         word, colour = self.PILLS[kind]
         if state.update_waiting:
-            word = "Reboot to update"
-        self.status.set_status(word, colour, "Read from /etc/os-release and systemd; dnf updates the packages"
-                               if state.flattened else "Read from rpm-ostree and systemd; updating is Bazzite's own")
+            word = "Restart to update"
+        self.status.set_status(word, colour, "Read from /etc/os-release and systemd. dnf updates the packages."
+                               if state.flattened else "Read from rpm-ostree and systemd. Bazzite updates itself.")
         self.text.setText(text)
 
 
@@ -433,12 +433,13 @@ class SystemCard(QFrame):
             self.update_button.setToolTip(f"Runs, after asking: {' '.join(step.command)}")
             self.update_button.clicked.connect(lambda _checked=False: update(step))
         if not source.checked:
-            self.status.set_status("On the device", "neutral", "Nothing a program can ask: the i says where to look.")
+            self.status.set_status("On the device", "neutral", "A program cannot check this. The i says where to look.")
         elif source.error:
             self.status.set_status("Check failed", "bad", source.error)
             self.text.setText(escape(f"Could not be checked: {source.error}"))
         elif source.manual:
-            self.status.set_status("By hand", "warn", "Not installed from here: the i beside the name says how.")
+            self.status.set_status("By hand", "warn", "Nexus Deps does not install this. "
+                                   "The i beside the name says how.")
             rows = "".join(f"<li>{escape(update_row(item))}</li>" for item in source.updates)
             self.text.setText(f"<ul style='margin:0;'>{rows}</ul>" + (escape(source.detail) if source.detail else ""))
         elif source.updates:
@@ -453,8 +454,8 @@ class SystemCard(QFrame):
             self.text.setText(f"<ul style='margin:0;'>{rows}</ul>{more}")
         elif source.known:
             # Sony's latest versions, not the device's own: no news since the last look, nothing more is known
-            self.status.set_status("Nothing new", "neutral", "No new version since the last look; the device's own "
-                                   "version: the i says where to see it.")
+            self.status.set_status("Nothing new", "neutral", "No new version since the last look. The i says where "
+                                   "to see the device's own version.")
             self.text.setText(escape(source.detail))
         else:
             self.status.set_status("Up to date", "ok")
@@ -758,7 +759,7 @@ class DependencyWindow(QMainWindow):
         # Fix: what is missing or must be updated, after a confirmation that lists every command
         self.fix_button = QPushButton("Fix")
         self.fix_button.setAccessibleName("Fix")
-        self.fix_button.setToolTip("Nothing to fix yet: check first.")
+        self.fix_button.setToolTip("Nothing to fix yet. Check first.")
         self.fix_button.setMinimumWidth(120)
         self.fix_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         self.fix_button.setStyleSheet(box_style + "QPushButton { font-size:16px; font-weight:700; }")
@@ -770,18 +771,22 @@ class DependencyWindow(QMainWindow):
         suite_name = escape(SUITE_NAME)
         about.addWidget(hint_label(f"This machine's updates and the {suite_name}'s apps on it."), 1)
         about.addWidget(InfoButton(
-            "<b>System</b> shows Bazzite's update state and what is newer on this machine: Bazzite's image, the "
-            "Flatpaks, Homebrew's formulae and casks, the Rust toolchain and the checkout's development venv (within "
-            "what requirements-dev.txt allows). <b>Update</b> on a card installs that source's updates; Bazzite's "
-            "updater does it every night too. "
-            "Each app's Python packages are checked in the environment that app runs in, compared with PyPI and "
-            "looked up in OSV.dev for known vulnerabilities (CVE). External tools are checked for availability. "
-            "<b>Fix</b> installs what is missing or must be updated: Python packages with pip into the app's own "
-            "environment, a missing tool an installed app needs with Homebrew, else layered into the Bazzite image "
-            "with rpm-ostree, and the machine's updates (a new image and layered tools are there after a restart, "
-            f"<code>{RESTART}</code>, which this app never does by itself). It shows every command first and asks. "
-            "Optional tools are left out; each app's manual says how to install them. Click the information button "
-            "beside a name for what it is.", "What Nexus Deps checks and fixes"))
+            "<p><b>System</b> shows Bazzite's update state and what is newer on this machine:</p><ul>"
+            "<li>Bazzite's image</li><li>the Flatpaks</li><li>Homebrew's formulae and casks</li>"
+            "<li>the Rust toolchain</li>"
+            "<li>the checkout's development venv, within what requirements-dev.txt allows</li></ul>"
+            "<p><b>Update</b> on a card installs that source's updates. Bazzite's updater does it every night too.</p>"
+            "<p>Nexus Deps checks each app's Python packages in the environment that app runs in. It compares them "
+            "with PyPI. It looks them up in OSV.dev for known vulnerabilities (CVE). It also checks that the "
+            "external tools are there.</p>"
+            "<p><b>Fix</b> installs what is missing or must be updated:</p><ul>"
+            "<li>Python packages, with pip into the app's own environment</li>"
+            "<li>a missing tool an installed app needs, with Homebrew, else layered into the Bazzite image with "
+            "rpm-ostree</li><li>the machine's updates</li></ul>"
+            f"<p>A new image and layered tools are there after a restart (<code>{RESTART}</code>). This app never "
+            "restarts the machine by itself. Fix shows every command first and asks.</p>"
+            "<p>Fix leaves optional tools out. Each app's wiki chapter says how to install them. Click the "
+            "information button beside a name for what it is.</p>", "What Nexus Deps checks and fixes"))
         root.addLayout(about)
 
         content = QWidget()

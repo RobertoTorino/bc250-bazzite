@@ -47,16 +47,16 @@ if $uninstall; then
     if $purge; then
         info "Removing the settings"
         rm -rf "${CONFIG_DIR:?}/$APP_ID"
-        info "$APP_NAME is uninstalled; the checkout stays."
+        info "$APP_NAME is removed. The checkout stays."
     else
-        info "$APP_NAME is uninstalled; the checkout and its settings stay."
+        info "$APP_NAME is removed. The checkout and its settings stay."
     fi
     exit 0
 fi
 
 [ "$(uname -s)" = Linux ] || die "install.sh makes a Linux app menu entry."
 [ -x "$REPO/.venv-linux/bin/python" ] || [ -x "$REPO/.venv/bin/python" ] || [ -n "${PYTHON:-}" ] ||
-    info "Note: no .venv-linux yet; create it (see CLAUDE.md) before you start the app."
+    info "Note: there is no .venv-linux yet. Create it (see CLAUDE.md) before you start the app."
 
 # The app was BC-250 Installer Tests of the BC250 Bazzite Suite (bc250-installer-test-gui, in its
 # tools/installer-tests/gui) until 02-11-2026: its launcher, menu entry and Desktop icon pointed at a folder that is
@@ -73,7 +73,7 @@ mkdir -p "$(dirname "$LAUNCHER")"
 cat >"$LAUNCHER" <<LAUNCH
 #!/usr/bin/env bash
 # $APP_NAME launcher, written by dev/itests/install.sh. Runs the app of this checkout.
-[ -x "$APP/run.sh" ] || { echo "No checkout in $REPO any more; run dev/itests/install.sh again." >&2; exit 1; }
+[ -x "$APP/run.sh" ] || { echo "No checkout in $REPO anymore. Run dev/itests/install.sh again." >&2; exit 1; }
 exec "$APP/run.sh" "\$@"
 LAUNCH
 chmod 755 "$LAUNCHER"

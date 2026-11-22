@@ -35,7 +35,7 @@ RECORD_APP_TOUR = Path("tools") / "record-app-tour.sh"
 MANIFEST = Path("portal") / "apps.toml"
 SECONDS = 40                                        # an app's tour, as tools/app_tour.py makes it by default
 SIZES = ("1080p", "1440p", "2160p")                 # the video's size (tools/tour_frames.py); the first is the default
-SIZE_HINT = "1080p for the wiki, 2160p (4K) for YouTube: about four times the time"
+SIZE_HINT = "1080p for the wiki, 2160p (4K) for YouTube, which takes about four times the time"
 
 
 def size_suffix(size: str) -> str:
@@ -149,7 +149,7 @@ class TourDialog(QDialog):
         checkout_row = QHBoxLayout()
         checkout_row.addWidget(QLabel("Checkout:"))
         self.checkout_label = QLabel(str(checkout))
-        self.checkout_label.setToolTip("The checkout the tour is recorded from")
+        self.checkout_label.setToolTip("The checkout this dialog records the tour from")
         checkout_row.addWidget(self.checkout_label, 1)
         layout.addLayout(checkout_row)
 
@@ -202,7 +202,8 @@ class TourDialog(QDialog):
         """The checkout; one without the script gets the dialog greyed out."""
         self.checkout = checkout
         if not (checkout / self.SCRIPT).is_file():
-            self.output.setPlainText(f"This checkout has no {self.SCRIPT.as_posix()}: its tours are not recorded here.")
+            self.output.setPlainText(f"This checkout has no {self.SCRIPT.as_posix()}. This dialog cannot record its "
+                                     "tours.")
             self.checkout = None
         else:
             self.output.clear()
@@ -240,7 +241,7 @@ class TourDialog(QDialog):
         if not self.queue:
             self.process = None
             self.current = None
-            done = f"Done: {len(self.made)} video(s) in {videos_dir()}." if self.made else "No video was made."
+            done = f"Done: {len(self.made)} video(s) in {videos_dir()}." if self.made else "The run made no video."
             if self.failed:
                 done += " Failed: " + ", ".join(path.name for path in self.failed) + "."
             self.output.appendPlainText(done)
@@ -323,9 +324,9 @@ class PortalTourDialog(TourDialog):
                  parent: QWidget | None = None) -> None:
         super().__init__(
             "Portal video tour",
-            "Record the portal's video tour, about two minutes, from the checkout as it is now: the real portal "
-            "window, offscreen, so nothing shows on the screen while it records. It takes about a minute and goes to "
-            "your Videos folder.", checkout, play, parent)
+            "Record the portal's video tour from the checkout as it is now. The tour runs about two minutes. It "
+            "records the real portal window offscreen, so nothing shows on the screen. Recording takes about a "
+            "minute, and the video goes to your Videos folder.", checkout, play, parent)
         self.wiki = QCheckBox("Also write the copy on the wiki's Portal Tour page (docs/videos/portal-tour.mp4)")
         self.options.addWidget(self.music)
         self.options.addWidget(self.wiki)
@@ -341,7 +342,7 @@ class PortalTourDialog(TourDialog):
 
     def finished_all(self) -> None:
         if self.made and self.wiki.isChecked():
-            self.output.appendPlainText("The wiki's copy is changed in the checkout; review and commit it there.")
+            self.output.appendPlainText("The wiki's copy changed in the checkout. Review and commit it there.")
 
 
 class AppsTourDialog(TourDialog):
@@ -351,9 +352,9 @@ class AppsTourDialog(TourDialog):
                  parent: QWidget | None = None) -> None:
         super().__init__(
             "Apps video tour",
-            "Record a short video tour of each app you tick, from the checkout as it is now: the app's real window, "
-            "offscreen, with its own tooltips as the captions. Each takes a few seconds and goes to your Videos "
-            "folder. What an app reads from the board is real: watch a video before you publish it.",
+            "Record a short video tour of each app you check, from the checkout as it is now. Each tour shows the "
+            "app's real window offscreen, with its own tooltips as the captions. Each takes a few seconds and goes "
+            "to your Videos folder. What an app reads from the board is real, so watch a video before you publish it.",
             checkout, play, parent)
         self.apps = QListWidget()
         self.apps.itemChanged.connect(lambda _item: self.update_buttons())

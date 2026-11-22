@@ -958,9 +958,9 @@ def token_warning(token: str) -> str:
     fine-grained or there is none."""
     if not token or token.startswith("github_pat_"):
         return ""
-    return ("The GitHub token on this machine (a gh login or a classic token) reaches every repository of your "
-            "account, not only this one. A fine-grained token for this repository only limits what someone with "
-            "this account can do: github.com, Settings, Developer settings, Fine-grained tokens.")
+    return ("The GitHub token on this machine is a gh login or a classic token. It reaches every repository of "
+            "your account, not just this one. A fine-grained token for just this repository limits what someone "
+            "with this account can do. Make one on github.com under Settings, Developer settings, Fine-grained tokens.")
 
 
 def github_get(url: str, etag: str = "") -> tuple[object | None, str, RateInfo | None]:

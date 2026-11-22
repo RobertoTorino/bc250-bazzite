@@ -41,19 +41,23 @@ KEEP_AWAKE_KEY = "keep_awake"
 SAVE_DIR_KEY = "save_dir"
 CUSTOM = "Custom"                       # the preset box once a slider left the preset
 NAV_LABELS = ("Home", "Library", "Settings", "Power")
-NO_OUTPUT = "No audio output was found: the sound is drawn, not heard."
-ABOUT = ("Each slider is one number of the sound: the pitch slides from its start to its end over the length of a "
-         "tone, the attack is the rise to full volume, the decay how fast it dies away (per second), the noise a "
-         "burst over the tone with a decay of its own; more tones follow the first, each the interval higher. The "
-         "sound is drawn beside the sliders and plays when a slider is let go. Moving between the buttons below "
-         "plays it as a window does while you navigate, from the keyboard or a controller's d-pad; A plays it "
-         "again.<br><br><b>Silent on a TV?</b> PipeWire pauses the output when nothing plays, and an HDMI TV mutes "
-         "a moment after the stream stops and needs time to unmute when it starts again: a 50 ms tick is over "
-         "before it is heard. <b>Keep the audio link awake</b> plays a silent loop while this window is open, so "
-         "the output never pauses. The preset Tick after silence shows the same from the other side: with the link "
-         "asleep only its tick comes through. A window that plays such sounds needs the same loop.<br><br>"
-         "<b>Save as WAV</b> writes the sound (16-bit mono, 44.1 kHz) for a suite's sounds folder, where its "
-         "portal plays it by name.")
+NO_OUTPUT = "No audio output was found. The window draws the sound, but you cannot hear it."
+ABOUT = ("Each slider sets one number of the sound:"
+         "<ul><li>The pitch slides from <b>Pitch at the start</b> to <b>Pitch at the end</b> over the "
+         "<b>Length of a tone</b></li>"
+         "<li><b>Attack</b> is the rise to full volume</li>"
+         "<li><b>Decay</b> is how fast the tone dies away, per second</li>"
+         "<li><b>Noise</b> is a burst over the tone, with its own <b>Noise decay</b></li>"
+         "<li>More <b>Tones</b> follow the first, each one the <b>Interval between tones</b> higher</li></ul>"
+         "The window draws the sound beside the sliders. It plays when you let go of a slider. Moving between the "
+         "buttons below plays it, as a window does while you navigate. Move with the keyboard or a controller's "
+         "d-pad. Press A to play it again.<br><br><b>Silent on a TV?</b> PipeWire pauses the output when nothing plays. "
+         "An HDMI TV mutes a moment after the stream stops. It needs time to unmute when the stream starts again. "
+         "So a 50 ms tick is over before you hear it. <b>Keep the audio link awake</b> plays a silent loop while "
+         "this window is open, so the output never pauses. The preset Tick after silence shows the same from the "
+         "other side. With the link asleep, only its tick comes through. A window that plays such sounds needs the "
+         "same loop.<br><br><b>Save as WAV</b> writes the sound (16-bit mono, 44.1 kHz) for a suite's sounds "
+         "folder. The suite's portal plays it from there by name.")
 
 
 class WaveView(QWidget):
@@ -114,15 +118,15 @@ class MainWindow(QMainWindow):
         header.add_action(InfoButton(ABOUT, "What this app does"))
         self.preset_box = QComboBox()
         self.preset_box.addItems([*PRESETS, CUSTOM])
-        self.preset_box.setToolTip("A sound to start from; the box says Custom once a slider has left it")
+        self.preset_box.setToolTip("A sound to start from. The box says Custom once you move a slider away from it")
         self.preset_box.currentTextChanged.connect(self.choose_preset)
         self.wave_box = QComboBox()
         self.wave_box.addItems(WAVES)
-        self.wave_box.setToolTip("The waveform of the tone: a sine is the purest, a square the harshest, noise "
-                                 "has no pitch")
+        self.wave_box.setToolTip("The waveform of the tone. A sine is the purest and a square the harshest. "
+                                 "Noise has no pitch")
         self.wave_box.currentTextChanged.connect(self.changed)
-        self.play_button = accent_button("Play", "Play the sound as it is now (Space with a button focused, A on "
-                                                 "a controller)")
+        self.play_button = accent_button("Play", "Play the sound as it is now. Press Space on a focused button, "
+                                                 "or A on a controller")
         self.play_button.clicked.connect(self.play)
         self.save_button = QPushButton("Save as WAV…")
         self.save_button.setToolTip("Write the sound as a 16-bit mono WAV, for a suite's sounds folder")
@@ -322,7 +326,7 @@ class MainWindow(QMainWindow):
             path.parent.mkdir(parents=True, exist_ok=True)
             write_wav(path, self.frames)
         except OSError as error:
-            QMessageBox.critical(self, APP_NAME, f"The sound could not be saved: {error}")
+            QMessageBox.critical(self, APP_NAME, f"Could not save the sound: {error}")
             return None
         if self.settings is not None:
             self.settings.setValue(SAVE_DIR_KEY, str(path.parent))

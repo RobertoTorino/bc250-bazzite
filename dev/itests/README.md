@@ -6,16 +6,16 @@
 
 # Nexus Installer Tests
 
-A window that runs the suite's installer tests, `tools/installer-tests/*.sh`, one at a time, with their live
-output and each one's result. A development app: it runs from the checkout it lives in and has no releases of its own. Start it
-from [Nexus Dashboard](../dash), or:
+A window that runs the suite's installer tests, `tools/installer-tests/*.sh`, one at a time. It shows their live
+output and each one's result. It is a development app. It runs from the checkout it lives in and has no releases of
+its own. Start it from [Nexus Dashboard](../dash), or use these commands:
 
 | | Linux |
 |---|---|
 | Open it | `dev/itests/run.sh` |
 | Menu entry and Desktop icon | `dev/itests/install.sh` (`--no-desktop-shortcut`, `--uninstall`, `--uninstall --purge`) |
 
-Nothing is copied: the entry starts the app of the checkout you installed it from.
+The installer copies nothing. The entry starts the app of the checkout you installed it from.
 
 How to use it: [Installer tests in the wiki](https://robertotorino.github.io/bc250-bazzite/development/dashboard/#installer-tests).
 

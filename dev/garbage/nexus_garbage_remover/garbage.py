@@ -75,8 +75,9 @@ def places(home: Path | None = None, steam: Path | None = None, dumps: Path = DU
     home = home or Path.home()
     steam = steam if steam is not None else find_steam(home)
     found = [Garbage("dumps", "Crash dumps", dumps,
-                     "The system keeps a dump of every program that crashed, for a developer to read. They are "
-                     "not needed to use the machine. A crash loop can leave gigabytes.", _empty(dumps), root=True)]
+                     "The system keeps a dump of every program that crashed, for a developer to read. You do "
+                     "not need them to use the machine. A program that crashes again and again can leave "
+                     "gigabytes.", _empty(dumps), root=True)]
     if steam is not None:
         reports = steam / "config" / "htmlcache" / "BrowserMetrics"
         found.append(Garbage("steam-reports", "Steam's crash reports", reports,
@@ -90,13 +91,13 @@ def places(home: Path | None = None, steam: Path | None = None, dumps: Path = DU
                          "pictures and videos. It makes them again when it needs them.", _empty(thumbnails)))
     pip = home / ".cache" / "pip"
     found.append(Garbage("pip", "pip's download cache", pip, "Python packages pip downloaded once. pip downloads "
-                         "them again when you install them once more.", _empty(pip)))
+                         "them again the next time you install them.", _empty(pip)))
     brew_cache = home / ".cache" / "Homebrew"
     if which("brew"):
         # brew cleanup keeps Homebrew's package index (api) and its compiled Ruby (bootsnap): they would come back
         # as garbage after every Delete
         found.append(Garbage("homebrew", "Homebrew's downloads", brew_cache, "Downloads and old versions Homebrew "
-                             "keeps. brew cleanup removes them, and what is installed stays.",
+                             "keeps. brew cleanup removes them. What you installed stays.",
                              ["brew", "cleanup", "--prune=all"], kept=("api", "bootsnap", "tool-selection")))
     return found
 

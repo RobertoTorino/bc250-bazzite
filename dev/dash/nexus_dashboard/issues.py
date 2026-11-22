@@ -105,9 +105,9 @@ class IssuesDialog(QDialog):
         self.list.itemDoubleClicked.connect(
             lambda item: QDesktopServices.openUrl(QUrl(item.data(Qt.ItemDataRole.UserRole + 1))))
         self.comment = QLineEdit()
-        self.comment.setPlaceholderText("Comment on each (optional), e.g. PPSSPP pinned at 1.20")
-        self.run_button = accent_button("Run", "Close the ticked issues with gh issue close; it needs a gh login "
-                                               "(gh auth login)")
+        self.comment.setPlaceholderText("An optional comment on each, such as PPSSPP pinned at 1.20")
+        self.run_button = accent_button("Run", "Close the checked issues with gh issue close. It needs a gh "
+                                               "login (gh auth login)")
         self.run_button.clicked.connect(self.accept)
         cancel = QPushButton("Cancel")
         cancel.clicked.connect(self.reject)
@@ -117,7 +117,7 @@ class IssuesDialog(QDialog):
         buttons.addWidget(self.run_button)
         lay = QVBoxLayout(self)
         lay.addWidget(hint_label(
-            "Tick the issues that are handled and press <b>Run</b>: it closes them with <code>gh issue close</code>, "
+            "Check the issues you have handled and press <b>Run</b>. It closes them with <code>gh issue close</code>, "
             "with the comment when you write one. A double click opens an issue on GitHub. The weekly Upstream "
             "review and Backlog review open a new issue when they have something again."))
         lay.addWidget(self.state)

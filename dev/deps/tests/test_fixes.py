@@ -129,7 +129,7 @@ def test_the_reminder_says_what_needs_the_user():
     note = reminder_text(quiet, result(tool_results=[ToolStatus(t["setpci"])]), which_all)
     assert note.text == "Tools an installed app needs: setpci." and list(note.actions) == ["fix", "open"]
     note = reminder_text(waiting, None)                                          # the check failed: Bazzite alone
-    assert note.text.startswith("Bazzite 44.2 waits for a reboot") and list(note.actions) == ["open"]
+    assert note.text.startswith("Bazzite 44.2 waits for a restart") and list(note.actions) == ["open"]
 
 
 class Run:

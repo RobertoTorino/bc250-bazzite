@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Bazzite's update state, read only: the image the board runs, an update that waits for a reboot, and the last run
+"""Bazzite's update state, read only: the image the board runs, an update that waits for a restart, and the last run
 of Bazzite's updater (uupd, a nightly systemd timer that updates the image, Flatpaks, Homebrew and distroboxes).
 
 A flattened image (one that does not boot from ostree, such as a PS5 image: no /run/ostree-booted, rpm-ostree
 refuses with "not booted via libostree") has no deployments: its version is read from /etc/os-release and its
-packages are updated with dnf (system.py's System packages), so nothing waits for a reboot here.
+packages are updated with dnf (system.py's System packages), so nothing waits for a restart here.
 
 Updating is Bazzite's: the suite answers for its own apps, and shows this so a waiting update is not missed (owner's
 decision, 15-10-2026); what is newer than the machine has, and installing it sooner, is system.py's (owner,
@@ -142,7 +142,7 @@ def read_state(run: Run = subprocess.run, which: Callable[[str], str | None] = s
     if not booted():
         return read_flattened(run, which)
     if which("rpm-ostree") is None:
-        return BazziteState(error="This system has no rpm-ostree: it is not Bazzite, or not an image-based one.")
+        return BazziteState(error="This system has no rpm-ostree. It is not Bazzite, or not an image-based one.")
     try:
         done = run(["rpm-ostree", "status", "--json"], capture_output=True, text=True, timeout=TIMEOUT)
         if done.returncode != 0:
@@ -172,14 +172,14 @@ def describe(state: BazziteState) -> tuple[str, str]:
         text += f", from {state.image}." if state.image else "."
         if state.update_waiting:
             text += (f" Bazzite {state.next_boot.version} (built {build_date(state.next_boot)}) is installed and waits "
-                     "for a reboot: restart the board to use it.")
+                     "for a restart. Restart the board to use it.")
             kind = "warn"
         elif state.rollback_waiting:
             text += (f" The next boot starts the older {state.next_boot.version} (a rollback); restart to go back to "
                      "it, or keep running this one.")
             kind = "warn"
         else:
-            text += " No update waits for a reboot."
+            text += " No update waits for a restart."
     if state.updater_last is None:
         text += f" Bazzite's updater ({UPDATER}) has not run yet."
         kind = "warn"
@@ -205,7 +205,7 @@ def reminder(state: BazziteState, now: datetime.datetime | None = None) -> str:
         return ""
     lines = []
     if state.update_waiting:
-        lines.append(f"Bazzite {state.next_boot.version} waits for a reboot: restart the board to use it.")
+        lines.append(f"Bazzite {state.next_boot.version} waits for a restart. Restart the board to use it.")
     if state.updater_failed:
         lines.append(f"Bazzite's updater ({UPDATER}) failed on its last run.")
     elif state.updater_stale(now):

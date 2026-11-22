@@ -6,10 +6,17 @@
 
 # Nexus Garbage Remover
 
-A window that shows the garbage on this machine and deletes what you check. It lists crash dumps, Steam's crash
-reports, the Trash and caches that fill up, each with its size and the command that empties it. An hourly
-notification says when there is 1 GB or more. A development app: it runs from the checkout it lives in and has no
-releases of its own. Start it from [Nexus Dashboard](../dash), or:
+Nexus Garbage Remover finds the garbage on this machine and deletes the places you check. It lists these places,
+each with its size and the command that empties it:
+
+- crash dumps
+- Steam's crash reports
+- the Trash
+- caches that fill up
+
+An hourly notification tells you when there is 1 GB or more. Nexus Garbage Remover is a development app. It runs from
+the checkout it lives in and has no releases of its own. Start it from [Nexus Dashboard](../dash), or with these
+commands:
 
 | | Linux |
 |---|---|

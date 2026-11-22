@@ -48,8 +48,8 @@ def main() -> int:
     stamp = checkout_stamp(CHECKOUT)  # never released: the commit says which code runs
     parser = argparse.ArgumentParser(prog="nexus_garbage_remover", description=f"{APP_NAME} {stamp}".strip())
     parser.add_argument("--version", action="version", version=f"%(prog)s {stamp} (core {CORE_VERSION})")
-    parser.add_argument("--remind", action="store_true", help="no window: a desktop notification when there is much "
-                                                              "garbage (the hourly timer runs this)")
+    parser.add_argument("--remind", action="store_true", help="Show no window. Send a desktop notification when there "
+                                                              "is much garbage. The hourly timer runs this.")
     args, qt_args = parser.parse_known_args()
     if args.remind:
         return remind()

@@ -64,7 +64,7 @@ class PortalShortcutManager(QWidget):
             if event.get("event") == "registered":
                 trigger_description = event.get("trigger")
                 if not isinstance(trigger_description, str) or not trigger_description:
-                    self._fail("The desktop registered the shortcut without describing its trigger.")
+                    self._fail("The desktop registered the shortcut but did not say which keys trigger it.")
                     continue
                 self._request_pending = False
                 self._is_registered = True
@@ -77,7 +77,7 @@ class PortalShortcutManager(QWidget):
 
     def _process_error(self) -> None:
         if self._request_pending or self._is_registered:
-            self._fail("Could not start or keep running the global-shortcut service.")
+            self._fail("The global-shortcut service did not start, or it stopped.")
 
     def _process_finished(self) -> None:
         if not self._stopping and (self._request_pending or self._is_registered):

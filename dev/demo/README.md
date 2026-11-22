@@ -6,17 +6,21 @@
 
 # Nexus Demo Recorder
 
-Records a demo of a portal installation with OBS: a portal release extracted in Downloads, or the suite in this
-checkout, installed in a terminal while OBS records the screen, then the portal opened and one optional app
-installed and shown. A development app: it runs from the checkout it lives in and has no
-releases of its own. Start it from [Nexus Dashboard](../dash), or:
+Nexus Demo Recorder records a demo video of a portal installation with OBS. It installs one of these in a terminal
+while OBS records the screen:
+
+- a portal release extracted in Downloads
+- the suite in this checkout
+
+Then it opens the portal, and you install and show one optional app. It is a development app. It runs from the
+checkout it lives in and has no releases of its own. Start it from [Nexus Dashboard](../dash), or:
 
 | | Linux |
 |---|---|
 | Open it | `dev/demo/run.sh` |
 | Menu entry and Desktop icon | `dev/demo/install.sh` (`--no-desktop-shortcut`, `--uninstall`, `--uninstall --purge`) |
 
-Nothing is copied: the entry starts the app of the checkout you installed it from.
+The installer copies nothing. The entry starts the app of the checkout you installed it from.
 
 How to use it: [Demo Recorder in the wiki](https://robertotorino.github.io/bc250-bazzite/development/dashboard/#demo-recorder).
 

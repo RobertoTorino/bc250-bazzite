@@ -21,6 +21,6 @@ if [[ -z "$PY" ]]; then
         [[ -x "$REPO/$candidate" ]] && PY="$REPO/$candidate" && break
     done
 fi
-[[ -n "$PY" ]] || die "No venv in $REPO: see CLAUDE.md or ./test.sh for how to create one."
+[[ -n "$PY" ]] || die "No venv in $REPO. To create one, see CLAUDE.md or ./test.sh."
 cd "$APP"
 PYTHONPATH="$REPO/core${PYTHONPATH:+:$PYTHONPATH}" exec "$PY" -m remix_studio "$@"

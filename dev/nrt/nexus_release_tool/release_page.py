@@ -34,8 +34,8 @@ if TYPE_CHECKING:
     from .main_window import ReleaseWindow
 
 COLUMNS = ("Release", "Now", "New version", "Why", "Notes")
-SEMVER_TIP = ("Breaking. (an entry that starts with it) -> major, Added. -> minor, Fixed. -> patch. auto: worked out "
-              "when Start writes the release.")
+SEMVER_TIP = ("An entry that starts with Breaking. makes a major release. Added. makes a minor one and Fixed. a "
+              "patch. With auto, Start works out the version when it writes the release.")
 MARKS = {"done": ("✓", GREEN), "now": ("▶", ORANGE), "failed": ("!", RED), "later": ("", GREY),
          "running": ("⋯", TEAL)}
 # The line of the step to do while a command runs (owner, 05-11-2026: Push stayed lit during its two minutes, which
@@ -45,12 +45,12 @@ RUNNING = {
     "commit": "Committing: the version and manifest checks run first, after the list of wiki sections to read "
               "again. Their output is on the Commands tab.",
     "ci": "Run CI again asks GitHub to start the failed jobs again. The output is on the Commands tab.",
-    "push": ("Pushing: CI's jobs run here first (on Linux, a couple of minutes), then git push. The output is on the "
-             "Commands tab; the step is done when it ends."),
-    "start": "The release is committed, pushed and started on GitHub. The output is on the Commands tab.",
+    "push": ("Pushing. CI's jobs run here first, which takes a couple of minutes on Linux. Then git push runs. The "
+             "output is on the Commands tab. The step is done when it ends."),
+    "start": "The tool commits the release, pushes it and starts it on GitHub. The output is on the Commands tab.",
     "finish": "git pull runs. Its output is on the Commands tab.",
 }
-RUNNING_ELSE = "A command runs. Its output is on the Commands tab; the steps go on when it ends."
+RUNNING_ELSE = "A command runs. Its output is on the Commands tab. The steps go on when it ends."
 REJECTED_KEY = "release/rejected"     # "<run url>|<portal tag>" of each Not OK, the newest 20
 DEFAULT_MESSAGE = "see changelog"      # the commit message the field starts with (owner, 05-11-2026)
 PILLS_PX = 360                        # the pills column of the steps: two pills side by side, or the message field
@@ -87,11 +87,11 @@ class ReleasePage(QWidget):
         self.commit_button = accent_button("Commit", "Stage every change and new file and commit them, after the "
                                            "version and manifest checks")
         self.commit_button.clicked.connect(self.commit)
-        self.push_button = accent_button("Push", "Push your commits to GitHub: what GitHub has that this checkout "
-                                         "lacks comes in under them first, then CI's jobs run here")
+        self.push_button = accent_button("Push", "Push your commits to GitHub. What GitHub has that this checkout "
+                                         "lacks comes in under them first. Then CI's jobs run here")
         self.push_button.clicked.connect(self.release_window.push)
-        self.rerun_ci_button = accent_button("Run CI again", "Start CI's failed jobs on this commit again: for a "
-                                             "failure of GitHub's own; when the code is wrong, fix it and commit")
+        self.rerun_ci_button = accent_button("Run CI again", "Start CI's failed jobs on this commit again. This is for "
+                                             "a failure of GitHub's own. When the code is wrong, fix it and commit")
         self.rerun_ci_button.clicked.connect(self.rerun_ci)
         self.start_button = accent_button("Start new release", "Write the release, commit it, push it and start the "
                                           "release on GitHub")
@@ -104,8 +104,8 @@ class ReleasePage(QWidget):
         self.video_note.setWordWrap(True)
         self.video_note.setStyleSheet("color:#1b1b1b; font-weight:700; background:transparent;")
         self.record_button = QPushButton("Record new video now")
-        self.record_button.setToolTip(f"Record the wiki's Portal Tour from this checkout ({flow.RECORD_VIDEO}): about "
-                                      "a minute, the output on the Commands tab")
+        self.record_button.setToolTip(f"Record the wiki's Portal Tour from this checkout ({flow.RECORD_VIDEO}). It "
+                                      "takes about a minute. The output is on the Commands tab")
         self.record_button.clicked.connect(self.record_video)
         banner.addWidget(self.video_note, 1)
         banner.addWidget(self.record_button)
@@ -147,24 +147,25 @@ class ReleasePage(QWidget):
         self.state.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         self.state.setOpenExternalLinks(True)
         self.stop_button = QPushButton("Stop run")
-        self.stop_button.setToolTip("Stop the release on GitHub (gh run cancel). Safe until a portal is published: "
-                                    "the portals see only portal tags")
+        self.stop_button.setToolTip("Stop the release on GitHub (gh run cancel). This is safe until a portal is "
+                                    "published, because the portals see only portal tags")
         self.stop_button.clicked.connect(self.stop_run)
         self.resume_button = accent_button("Resume run", "Start the jobs that failed or were stopped again (gh run "
-                                           "rerun --failed): what is out already is skipped, the draft made anew")
+                                           "rerun --failed). What is out already is skipped, and the draft is made "
+                                           "anew")
         self.resume_button.clicked.connect(self.resume_run)
         self.portal_choice = QComboBox()        # the run's portal draft waiting for its device test
         # Room before the tag (owner, 04-11-2026: this field only, not the theme every app shares)
         self.portal_choice.setStyleSheet("QComboBox { padding-left: 8px; }")
         self.portal_choice.currentIndexChanged.connect(self.show_state)     # Device test follows the draft picked
         self.test_button = accent_button("Device test", "Install the draft portal on this device from GitHub and "
-                                         "start it (check-release draft): test it as a user would")
+                                         "start it (check-release draft). Test it as a user would")
         self.test_button.clicked.connect(self.device_test)
-        self.publish_button = accent_button("Publish", "The device test passed: publish the draft, which makes the "
-                                            "portal tag; the portals offer it from then on")
+        self.publish_button = accent_button("Publish", "The device test passed. Publish the draft, which makes the "
+                                            "portal tag. The portals offer it from then on")
         self.publish_button.clicked.connect(self.publish)
         self.reject_button = QPushButton("Not OK")
-        self.reject_button.setToolTip("The device test failed: the draft stays unpublished")
+        self.reject_button.setToolTip("The device test failed. The draft stays unpublished")
         self.reject_button.clicked.connect(self.reject)
         self.finish_button = accent_button("git pull", "Bring in the release's Pin ... commit")
         self.finish_button.clicked.connect(self.pull)
@@ -209,24 +210,32 @@ class ReleasePage(QWidget):
         self.contents = QWidget()
         contents = QVBoxLayout(self.contents)
         contents.addLayout(info_row(
-            "What the release holds: the versions offered follow the CHANGELOG entries; type another to override.",
-            "One release of the suite: each app that ships something new since its last release, the portal, and "
-            "core when it changed since its last version. The version offered first "
-            "follows the CHANGELOG entries since the last tag (<b>Breaking.</b> major, <b>Added.</b> minor, "
-            "<b>Fixed.</b> patch); type another to override it. The portal's version says <b>auto</b>: it "
-            "is worked out when the release is written, at least what the app releases need, and can be typed "
-            "too. Notes become the release notes on GitHub."))
+            "What the release holds. The versions offered follow the CHANGELOG entries. Type another to override.",
+            "One release of the suite holds each app that ships something new since its last release. It also holds "
+            "the portal, and core when it changed since its last version. The version offered first follows the "
+            "CHANGELOG entries since the last tag. <b>Breaking.</b> makes a major release, <b>Added.</b> a minor one "
+            "and <b>Fixed.</b> a patch. Type another version to override it. The portal's version says <b>auto</b>. "
+            "The tool works out that version when it writes the release. That version is at least what the app "
+            "releases need, and you can type it too. Notes become the release notes on GitHub."))
         contents.addWidget(self.table, 1)
         lay = QVBoxLayout(self)
         lay.addLayout(info_row(
-            "The release's steps in their order: the one to do now has its pill lit and an orange ▶.",
-            "The release, step by step: Get up to date, Commit your changes, Push them, CI passes, Start new "
-            "release (what it holds is on the Contents tab), the release on GitHub (Stop or Resume), Device "
-            "test, Publish (or Not OK), Bring in the pin commit and All runs finished. Only the step to do now has "
-            "its pill lit and an orange ▶; a step done has a green ✓, one that failed a red !, and the line beside "
-            "each says what there is to do. Only the lit pill does anything, so you never need a command or another "
-            "tab. Start new release starts by itself when CI passes while this window is open; the last step has "
-            "its check when GitHub runs nothing more."))
+            "The release's steps in their order. The current step has its pill lit and an orange ▶.",
+            "The release goes step by step:<br>"
+            "<b>1.</b> Get up to date<br>"
+            "<b>2.</b> Commit your changes<br>"
+            "<b>3.</b> Push them<br>"
+            "<b>4.</b> CI passes<br>"
+            "<b>5.</b> Start new release. What it holds is on the Contents tab.<br>"
+            "<b>6.</b> The release on GitHub, with Stop or Resume<br>"
+            "<b>7.</b> Device test<br>"
+            "<b>8.</b> Publish, or Not OK<br>"
+            "<b>9.</b> All runs finished<br>"
+            "<b>10.</b> Bring in the pin commit<br>"
+            "Only the current step has its pill lit and an orange ▶. A step that is done has a green ✓. A step "
+            "that failed has a red !. The line beside each step says what there is to do. Only the lit pill does "
+            "anything, so you never need a command or another tab. Start new release starts by itself when CI "
+            "passes while this window is open. The last step gets its check when GitHub runs nothing more."))
         lay.addWidget(self.video_banner)
         lay.addWidget(self.slow_banner)
         lay.addWidget(self.times_row)
@@ -346,25 +355,26 @@ class ReleasePage(QWidget):
                 flow.duration_text(previous), f"Release commit {before.sha[:7]}. " + (
                     "Measured here: the time its steps worked, up to the device test."
                     if measured is not None else
-                    f"Not timed by this tool, so GitHub's own time: its CI before Start "
-                    f"{flow.duration_text(before.before) if before.before else 'not known'}, and from Start to the "
-                    f"end of the release on GitHub {flow.duration_text(before.release)}. Nothing of this computer "
-                    "(the push with CI's jobs here, waiting) is in it."))
+                    "Not timed by this tool, so this is GitHub's own time. " + (
+                        f"Its CI before Start took {flow.duration_text(before.before)}. " if before.before else
+                        "The time of its CI before Start is not known. ") +
+                    f"From Start to the end of the release on GitHub took {flow.duration_text(before.release)}. "
+                    "Nothing of this computer is in it, such as the push with CI's jobs here or the waiting."))
         current, counting = None, False
         if start:
             current, counting = flow.clock_time(self.clock, time.time()), not end
             self.time_now.set_value(flow.duration_text(current) + (" so far" if counting else ""),
                                     "The time the steps of this release worked, added up, from the first step "
-                                    "pressed to the device test: the commands on this computer, GitHub's CI and "
-                                    "the release run. The time the tool waited for you is not counted.")
+                                    "pressed to the device test. It counts the commands on this computer, GitHub's "
+                                    "CI and the release run. The time the tool waited for you is not counted.")
         elif times and times[0].running:        # started elsewhere, or before this window: GitHub's time so far
             current, counting = times[0].total, True
             self.time_now.set_value(flow.duration_text(current) + " so far",
-                                    f"Release commit {times[0].sha[:7]}, not started from this window: GitHub's own "
-                                    "time, its CI before Start and its release run so far.")
+                                    f"Release commit {times[0].sha[:7]}, not started from this window. This is "
+                                    "GitHub's own time so far, its CI before Start and its release run.")
         else:
-            self.time_now.set_value("—", "No release is being made. The time starts with the first step you press "
-                                         "(Get up to date, Commit, Push or Start new release).")
+            self.time_now.set_value("—", "No release is being made. The time starts with the first step you press. "
+                                         "That is Get up to date, Commit, Push or Start new release.")
         more = flow.deviation(current, previous)
         over = more is not None and round(more) > limit
         known = more is not None and (over or not counting)
@@ -575,9 +585,9 @@ class ReleasePage(QWidget):
             return ""
         window = self.release_window
         if key == "ready":
-            return (f"GitHub still runs {', '.join(facts.building)}: wait until "
-                    f"{'it' if len(facts.building) == 1 else 'they'} finished. Nothing to press"
-                    + (": git pull comes after it." if facts.behind else "."))
+            return (f"GitHub still runs {', '.join(facts.building)}. Wait until "
+                    f"{'it finishes' if len(facts.building) == 1 else 'they finish'}. Nothing to press"
+                    + (". The git pull comes after it." if facts.behind else "."))
         if key == "pull":
             return f"{facts.behind} commit{'s' if facts.behind != 1 else ''} on GitHub that this checkout lacks."
         if key == "commit":
@@ -587,41 +597,42 @@ class ReleasePage(QWidget):
             return f"{facts.ahead} commit{'s' if facts.ahead != 1 else ''} to push."
         if key == "ci":
             if facts.ci == "failed" and not self.rerunnable():
-                return ("Run CI again asked GitHub to start the failed jobs again: wait until GitHub shows them "
-                        "running. When a test failed, running it again does not help: fix it, then Commit and Push.")
+                return ("Run CI again asked GitHub to start the failed jobs again. Wait until GitHub shows them "
+                        "running. When a test failed, running it again does not help. Fix it, then Commit and Push.")
             if facts.ci == "failed":
-                return ("CI failed on this commit. When it was GitHub's own trouble (an error of its servers, a job "
-                        "that never started): Run CI again. When a test failed: fix it, then Commit and Push.")
+                return ("CI failed on this commit. When GitHub had trouble of its own, such as an error of its "
+                        "servers or a job that never started, press Run CI again. When a test failed, fix it, then "
+                        "Commit and Push.")
             then = " Start new release follows by itself." if facts.something and self.autostart_on() else ""
-            return (f"CI is running on this commit: wait until it passed.{then}" if facts.ci == "building" else
-                    f"GitHub has no CI run on this commit yet: wait a moment.{then}")
+            return (f"CI is running on this commit. Wait until it passes.{then}" if facts.ci == "building" else
+                    f"GitHub has no CI run on this commit yet. Wait a moment.{then}")
         if key == "start":
             if self.video_reason:
-                return "Record a new portal video first (the orange banner): the release waits for it."
-            return (f"The release commit is not pushed yet ({facts.unpushed}): Push and start." if facts.unpushed
+                return "Record a new portal video first, with the orange banner. The release waits for it."
+            return (f"The release commit is not pushed yet ({facts.unpushed}). Push and start." if facts.unpushed
                     else "Check the versions on the Contents tab, then Start new release.")
         if key == "run" and facts.run is not None:
             link = f' <a href="{facts.run.url}">Open the run</a>'
             if not facts.run.done:
                 return (f"{flow.WORKFLOW_NAME} is {facts.run.outcome} on {facts.run.sha[:7]}. Its first job waits until "
-                        f"CI passed on that commit, then it builds; Device test and Publish come after it. Wait, or "
+                        f"CI passed on that commit, then it builds. Device test and Publish come after it. Wait, or "
                         f"Stop run.{link}")
             if facts.restart:
-                return (f"{flow.WORKFLOW_NAME} ended {facts.run.outcome} on {facts.run.sha[:7]}; the fix is pushed and "
-                        f"passed CI: Start again on this commit (the release is not written anew).{link}")
-            return (f"{flow.WORKFLOW_NAME} ended {facts.run.outcome}: when it failed on something of GitHub's, Resume "
-                    f"run; when the code must change, fix it, then Commit, Push, and start it again here.{link}")
+                return (f"{flow.WORKFLOW_NAME} ended {facts.run.outcome} on {facts.run.sha[:7]}. The fix is pushed and "
+                        f"passed CI. Start again on this commit. The release is not written anew.{link}")
+            return (f"{flow.WORKFLOW_NAME} ended {facts.run.outcome}. When it failed on something of GitHub's, Resume "
+                    f"run. When the code must change, fix it, then Commit, Push, and start it again here.{link}")
         if key == "test" and state == "failed":
-            return (f"Not OK: {', '.join(facts.drafts)} stays a draft, no portal sees it. Fix what the test showed, "
-                    "then Commit your changes, Push them and, once CI passes, Start new release: the portal is built "
-                    "anew, the apps already out are skipped. Device test tests this draft again; Publish still "
+            return (f"Not OK: {', '.join(facts.drafts)} stays a draft, and no portal sees it. Fix what the test "
+                    "showed. Then Commit your changes and Push them. Once CI passes, Start new release. It builds the "
+                    "portal anew and skips the apps already out. Device test tests this draft again. Publish still "
                     "publishes it.")
         if key == "test" and facts.drafts:
             return f"{', '.join(facts.drafts)} is a draft: Device test, then Publish when it works or Not OK."
         if key == "publish" and facts.drafts:
             return "After the device test: Publish, or Not OK."
         if key == "finish":
-            return "The release is out and GitHub runs nothing more: git pull brings in its Pin ... commit."
+            return "The release is out and GitHub runs nothing more. Press git pull to bring in its Pin ... commit."
         return ""
 
     def choose_drafts(self, drafts: list[str]) -> None:
@@ -685,8 +696,8 @@ class ReleasePage(QWidget):
                 f"manifest check refuses the commit until the portal is bumped.\n\nBump the portal to {version} "
                 f"({reason}) and write its CHANGELOG entry, then commit?")
             if answer != QMessageBox.StandardButton.Yes:
-                self.output.set_text(f"Not committed: {name}'s portal needs a bump first (apps.toml changed: {why}). "
-                                     "Say yes here to write it.")
+                self.output.set_text(f"Not committed. {name}'s portal needs a bump first, because apps.toml "
+                                     f"changed ({why}). Say yes here to write it.")
                 return False
             changed, text = rp.write_portal_bump(root, base, version)
             self.output.set_text(f"{name}: portal {version} in " + ", ".join(p.relative_to(root).as_posix()
@@ -751,7 +762,8 @@ class ReleasePage(QWidget):
         log, tags = flow.write(window.root, chosen, window.base())
         message = flow.commit_message(tags)
         log = ([] if asked else ["CI passed: the release starts by itself.", rows, ""]) + log
-        log += ["", f"Commit \"{message}\", push, and {flow.RELEASE_WORKFLOW} on GitHub: see Commands."]
+        log += ["", f"This commits \"{message}\", pushes it and starts {flow.RELEASE_WORKFLOW} on GitHub. "
+                "The Commands tab shows the output."]
         self.output.set_text("\n".join(log))
         window.run_git(flow.start_command(message))
 
@@ -761,8 +773,8 @@ class ReleasePage(QWidget):
     def stop_run(self) -> None:
         run = self.run()
         if run is not None and QMessageBox.question(
-                self, "Stop run", f"Stop {flow.WORKFLOW_NAME} on {run.sha[:7]}? What is published stays; no "
-                                  "portal is published by it.") == QMessageBox.StandardButton.Yes:
+                self, "Stop run", f"Stop {flow.WORKFLOW_NAME} on {run.sha[:7]}? What is published stays. The "
+                                  "stopped run publishes no portal.") == QMessageBox.StandardButton.Yes:
             self.release_window.run_git(flow.stop_command(run))
 
     def resume_run(self) -> None:
@@ -774,7 +786,7 @@ class ReleasePage(QWidget):
         if self.facts.restart:
             window = self.release_window
             if window.confirm_git("Start again on this commit", f"Start {flow.WORKFLOW_NAME} again on HEAD, the fix on "
-                                  f"top of {run.sha[:7]}: the release as it is written, nothing new is written.",
+                                  f"top of {run.sha[:7]}. It runs the release as written and writes nothing new.",
                                   flow.restart_command()):
                 window.run_git(flow.restart_command())
             return
@@ -790,13 +802,13 @@ class ReleasePage(QWidget):
             self.output.set_text(str(exc))
             return
         self.output.set_text(f"A terminal downloads the draft of {tag}, checks it against its SHA256SUMS, installs "
-                             "it and starts it. Test it as a user would; then Publish, or Not OK.")
+                             "it and starts it. Test it as a user would. Then Publish, or Not OK.")
 
     def publish(self) -> None:
         tag = self.portal_choice.currentText()
         if tag and self.release_window.confirm_git(
-                "Publish", f"The device test of {tag} passed: publish it. Its tag is made, the portals offer it from "
-                           "now on and it is GitHub's Latest release.", flow.publish_command(tag)):
+                "Publish", f"The device test of {tag} passed. Publish it. Its tag is made. The portals offer it "
+                           "from now on. It becomes GitHub's Latest release.", flow.publish_command(tag)):
             self.release_window.run_git(flow.publish_command(tag))
 
     def reject(self) -> None:

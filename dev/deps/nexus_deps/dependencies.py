@@ -439,7 +439,7 @@ def latest_pypi_version(name: str, user_agent: str) -> str:
         raise DependencyCheckError("PyPI returned an unexpected response")
     version = data["info"].get("version")
     if not isinstance(version, str) or not version.strip():
-        raise DependencyCheckError("PyPI did not return a latest version")
+        raise DependencyCheckError("PyPI did not return the latest version")
     return version
 
 

@@ -2950,7 +2950,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
 | `test_bazzite.py` | `test_the_owners_board_up_to_date` |  |  | The running image first, the previous one kept for a rollback: nothing waits. |
-| `test_bazzite.py` | `test_an_update_waits_for_a_reboot` |  |  | An update waits for a reboot. |
+| `test_bazzite.py` | `test_an_update_waits_for_a_restart` |  |  | An update waits for a restart. |
 | `test_bazzite.py` | `test_a_rollback_is_not_an_update` |  |  | A rollback is not an update. |
 | `test_bazzite.py` | `test_the_updater_failed_or_stopped_running` |  |  | The updater failed or stopped running. |
 | `test_bazzite.py` | `test_not_bazzite_or_rpm_ostree_failing` |  |  | Not bazzite or rpm ostree failing. |
@@ -3039,7 +3039,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_cve_marks` |  | 0.3 s | Cve marks. |
 | `test_window.py` | `test_missing_tools_advise_what_they_are_needed_for` |  | 0.3 s | Missing tools advise what they are needed for. |
 | `test_window.py` | `test_needs_update_when_an_app_wants_newer_or_a_release_fixes_a_vulnerability` |  | 0.3 s | Needs update when an app wants newer or a release fixes a vulnerability. |
-| `test_window.py` | `test_the_bazzite_card_on_top` |  | 0.3 s | An update waiting for a reboot: the card says so first, in the system section above the packages. |
+| `test_window.py` | `test_the_bazzite_card_on_top` |  | 0.3 s | An update waiting for a restart: the card says so first, in the system section above the packages. |
 | `test_window.py` | `test_the_bazzite_card_without_bazzite` |  | 0.3 s | The bazzite card without bazzite. |
 | `test_window.py` | `test_fix_is_off_until_there_is_something_to_fix` |  | 0.6 s | Fix is off until there is something to fix. |
 | `test_window.py` | `test_fix_asks_with_every_command_and_no_changes_nothing` |  | 0.3 s | Fix asks with every command and no changes nothing. |

@@ -58,14 +58,16 @@ from .workflow import (
 
 RELEASES_URL = "https://github.com/RobertoTorino/bc250-bazzite/releases"
 SUITE_IN_CHECKOUT = CHECKOUT                             # the suite whose portal install the demo records
-ABOUT = ("The demo is a real portal installation recorded with OBS: a portal release extracted in Downloads (found by "
-         "itself), or the BC250 Bazzite Suite in this checkout, installed in a terminal while OBS records the screen, "
-         "then the portal opened and one optional app installed and shown.\n\n"
-         "OBS needs a screen-capture source and its WebSocket server (Setup instructions). The portal and the "
-         "chosen app must not be installed yet: the demo is a fresh install. While it records, this window hides; "
-         "the global shortcut stops the recording and brings it back. The recordings are in ~/Videos/demos.")
-INSTRUCTIONS = ("The installer runs in a terminal, for its output and its password prompts. This window then hides "
-                "and opens the portal; the global shortcut shown stops the recording and brings it back.")
+ABOUT = ("You get a video of a real portal installation, recorded with OBS. The app installs one of these in a "
+         "terminal while OBS records the screen.\n\n"
+         "- a portal release extracted in Downloads, which the app finds by itself\n"
+         "- the BC250 Bazzite Suite in this checkout\n\n"
+         "Then it opens the portal, and you install and show one optional app.\n\n"
+         "OBS needs a screen-capture source and its WebSocket server (Setup instructions). The demo records a fresh "
+         "install, so the portal and the chosen app must not be installed yet. While it records, this window hides. "
+         "The global shortcut stops the recording and brings the window back. The recordings are in ~/Videos/demos.")
+INSTRUCTIONS = ("The installer runs in a terminal, which shows its output and its password prompts. This window then "
+                "hides and opens the portal. The global shortcut shown stops the recording and brings the window back.")
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -211,8 +213,8 @@ class MainWindow(QMainWindow):
             "In OBS:\n"
             "1. Create a scene and add a screen-capture source.\n"
             "2. On Wayland, choose Screen Capture (PipeWire) and approve the sharing prompt.\n"
-            "3. Open Tools → WebSocket Server Settings and enable the server.\n"
-            "4. Note the server port (usually 4455) and password, then test the connection here.\n\n"
+            "3. Open Tools → WebSocket Server Settings and turn on the server.\n"
+            "4. Note the server port and password, then test the connection here. The port is 4455 by default.\n\n"
             f"{APP_NAME} does not change OBS settings or select a capture source for you.",
         )
 
@@ -227,8 +229,8 @@ class MainWindow(QMainWindow):
             self._update_start_button()
             return False
         self.obs_status.setText(
-            f"Connected to OBS {version}. Recordings will be saved in {recordings_path}. "
-            "Check the preview shows your desktop before recording."
+            f"Connected to OBS {version}. OBS saves the recordings in {recordings_path}. "
+            "Check that the preview shows your desktop before you record."
         )
         self.recent_recordings_button.setEnabled(True)
         self._update_start_button()
@@ -371,8 +373,8 @@ class MainWindow(QMainWindow):
                 )
                 return
             self.release_status.setText(
-                f"No extracted portal release in {downloads_dir()}: using the suite in this checkout, "
-                f"{SUITE_IN_CHECKOUT} (its portal/install.sh installs the released apps from the checkout's source)."
+                f"No extracted portal release in {downloads_dir()}. The demo is using the suite in this checkout, "
+                f"{SUITE_IN_CHECKOUT}. Its portal/install.sh installs the released apps from the checkout's source."
             )
             return
         try:
@@ -404,11 +406,11 @@ class MainWindow(QMainWindow):
     def _update_app_status(self, _index: int = -1) -> None:
         app = self._selected_app()
         if PORTAL_LAUNCHER.exists() or PORTAL_LAUNCHER.is_symlink():
-            self.app_status.setText("The portal is already installed; remove it first to record a fresh install.")
+            self.app_status.setText("The portal is already installed. Remove it first to record a fresh install.")
         elif app is None:
             self.app_status.setText("Choose an extracted release to load its optional apps.")
         elif is_installed(app):
-            self.app_status.setText(f"{app.name} is already installed; uninstall it to record a fresh install.")
+            self.app_status.setText(f"{app.name} is already installed. Remove it to record a fresh install.")
         else:
             self.app_status.setText(f"{app.name} is not installed and is ready for the demo.")
         self._update_start_button()
@@ -433,7 +435,7 @@ class MainWindow(QMainWindow):
                 return
             installer, _apps = validate_release(self.release_dir)
             if is_installed(app):
-                raise WorkflowError(f"{app.name} is already installed; uninstall it before recording.")
+                raise WorkflowError(f"{app.name} is already installed. Remove it before you record.")
             if PORTAL_LAUNCHER.exists() or PORTAL_LAUNCHER.is_symlink():
                 raise WorkflowError("The portal is already installed. Remove it first for a fresh-install demo.")
             self._pending_start = (app, installer)

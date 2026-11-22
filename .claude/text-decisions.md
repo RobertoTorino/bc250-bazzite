@@ -76,3 +76,16 @@ a line says otherwise.
 - **An app's README introduction** may stay as a list when it keeps every fact of the old one.
 - **Code comments, docstrings and an installer's comment header** keep their words, also where the window's text now
   spells a term another way, such as "bootloader".
+- **DESIGN.md's Icons section** keeps the text that `tools/design_icons.py` writes. That file gets no rewrite unit.
+- **The text behind the info symbol** may hold a list where it lists three or more things.
+- **"Remove"** replaces "uninstall" in an app's own messages, also where the portal's action is named otherwise. The
+  installers' shared messages still stay as they are.
+- **"Restart"** replaces "reboot" in window text and labels, such as Nexus Deps' **Restart to update**. A command keeps
+  its words (`systemctl reboot`).
+- **"Check" and "uncheck"** replace "tick" and "untick" in the wiki. A page takes it in its own unit, such as the
+  Dashboard chapter.
+- **A development app both Bazzite suites have** (Nexus TTS, Nexus Remix Studio) is rewritten in each suite's own
+  run. The rewrite in this suite does not change bazzite-console's copy.
+- **An installer's `--help` text** in its comment header keeps its words, as the rest of that header does.
+- **A development app's README** says "How to use it:" before its wiki link. The app READMEs' "How to install and
+  use it:" does not apply there.

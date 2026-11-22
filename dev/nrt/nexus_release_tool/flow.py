@@ -141,7 +141,7 @@ def write(root: Path, chosen: list[Pick], base: str = "origin/main") -> tuple[li
 # The wiki's Portal Tour keeps up with the portal (owner, 15-11-2026): while the portal's window or tiles changed since
 # it was recorded, an orange banner offers to record it, and the release waits. The owner records it.
 RECORD_VIDEO = "tools/record-tour.sh --wiki"
-VIDEO_STALE = ("The portal changed since the wiki's Portal Tour was recorded (its window or its tiles): record a new "
+VIDEO_STALE = ("The portal's window or its tiles changed since the wiki's Portal Tour was recorded. Record a new "
                "video before the release.")
 
 
@@ -155,7 +155,7 @@ def video_reason(root: Path, python: str = sys.executable) -> str:
         done = subprocess.run([python, str(script), "--check"], cwd=root, capture_output=True, text=True,
                               timeout=60, check=False)
     except (OSError, subprocess.TimeoutExpired) as exc:
-        return f"The portal video check could not run ({exc}): the release waits until it does."
+        return f"The portal video check could not run ({exc}). The release waits until it does."
     return "" if done.returncode == 0 else VIDEO_STALE
 
 
@@ -167,22 +167,22 @@ def ready(root: Path, base: str = "origin/main") -> list[str]:
     if dirty is None:
         return ["This folder is not a git checkout."]
     if dirty.strip():
-        reasons.append("The working tree has changes: commit and push them first, or put them away.")
+        reasons.append("The working tree has changes. Commit and push them first, or put them away.")
     head = (rp.git(root, "rev-parse", "HEAD") or "").strip()
     pushed = (rp.git(root, "rev-parse", "--verify", "-q", base) or "").strip()
     if not pushed:
-        reasons.append(f"No {base} here: git fetch first.")
+        reasons.append(f"No {base} here. Run git fetch first.")
     elif head != pushed:
         ahead = int((rp.git(root, "rev-list", "--count", f"{base}..HEAD") or "0").strip() or 0)
         behind = rp.behind(root, base)
-        reasons.append(f"HEAD has {ahead} commit{'s' if ahead != 1 else ''} not pushed: push them first."
+        reasons.append(f"HEAD has {ahead} commit{'s' if ahead != 1 else ''} not pushed. Push them first."
                        if ahead else f"{base} has {behind} commit{'s' if behind != 1 else ''} this checkout does "
-                       "not: git pull first.")
+                       "not. Run git pull first.")
     return reasons
 
 
 _CLOBBER = re.compile(r"^\s*!\s*\[rejected\]\s+(\S+)\s+->\s+\S+\s+\(would clobber existing tag\)", re.M)
-WAITS = "The release reads the last release of each part from the tags, so it waits until they can be fetched."
+WAITS = "The release reads the last release of each part from the tags. So it waits until git can fetch them."
 
 
 @dataclass(frozen=True)
@@ -401,22 +401,23 @@ def deviation_text(seconds: float) -> str:
 STEPS = (
     ("pull", "Get up to date", "Bring in what was pushed from the other machine."),
     ("commit", "Commit your changes", "Everything changed here, in one commit, after the version and manifest checks."),
-    ("push", "Push them", "Your commits to GitHub: what GitHub has that this checkout lacks comes in under them first "
-                          "(git pull --rebase), then CI's jobs run here (tools/ci-local.sh)."),
-    ("ci", "CI passes", "GitHub's CI on that commit. Nothing to press: wait until it passed."),
-    ("start", "Start new release", "Starts by itself when CI passes while this window is open; else check the "
-                                   "versions on the Contents tab, then start. It writes the release, commits and "
+    ("push", "Push them", "Sends your commits to GitHub. First, what GitHub has that this checkout lacks comes in "
+                          "under them (git pull --rebase). Then CI's jobs run here (tools/ci-local.sh)."),
+    ("ci", "CI passes", "GitHub's CI on that commit. Nothing to press. Wait until it passes."),
+    ("start", "Start new release", "Starts by itself when CI passes while this window is open. Otherwise, check "
+                                   "the versions on the Contents tab, then start. It writes the release, commits it, "
                                    "pushes it and starts the release on GitHub."),
     ("run", "The release on GitHub", "Builds and publishes the apps, pins them and makes the portal a draft."),
-    ("test", "Device test", "Installs the draft portal on this device and starts it: test it as a user would."),
+    ("test", "Device test", "Installs the draft portal on this device and starts it. Test it as a user would."),
     ("publish", "Publish", "The test passed: publish the portal. Not OK leaves it a draft."),
     # The wait before the pull (owner, 20-11-2026: git pull could be pressed while jobs still ran, and the tool said
     # finished while git pull was still to press): the pull is the last thing to do, and nothing says ready before it
-    ("ready", "All runs finished", "What GitHub still runs after Publish (the wiki, the runs on the portal's tag): "
-                                   "wait until they all finished."),
-    ("finish", "Bring in the pin commit", "The release wrote a commit Pin ... on main: pull it. The last step."),
+    ("ready", "All runs finished", "GitHub still runs some jobs after Publish, such as the wiki and the runs on the "
+                                   "portal's tag. Wait until they all finish."),
+    ("finish", "Bring in the pin commit", "The release wrote a commit Pin ... on main. Pull it. This is the last "
+                                          "step."),
 )
-READY = "The release is out and pulled in: ready."      # the last step's line once nothing is left to do
+READY = "The release is out and pulled in. Ready."      # the last step's line once nothing is left to do
 KEYS = tuple(key for key, _title, _what in STEPS)
 
 
@@ -460,7 +461,7 @@ class LocalCI:
     def line(self) -> str:
         """In words, for the Push step and the header's ticker."""
         if self.waiting and not self.total:
-            return "Another ci-local.sh run is going on this computer: the push waits until it ends."
+            return "Another ci-local.sh run is going on this computer. The push waits until it ends."
         text = f"CI's jobs here, before the push: {self.done} of {self.total} done"
         return text + (f"; failed: {', '.join(self.failed)}" if self.failed else "") + "."
 
@@ -479,13 +480,13 @@ def push_failure(output: str, code: int | None) -> str:
     if code == 0:
         return ""
     if code is None or code == 130:
-        return "The push was stopped: nothing was pushed. Push again."
+        return "The push was stopped, so nothing was pushed. Push again."
     failed = local_ci(output).failed
     if failed:
-        return (f"CI failed here on {', '.join(failed)}, so nothing was pushed. Its output is on the Commands tab, each "
-                f"job's log in {CI_LOGS}. Fix it, Commit and Push; when it was no fault of the code (a crash that "
-                "does not come again), Push again.")
-    return f"The push ended with exit code {code}, so nothing was pushed: the Commands tab says why. Then Push again."
+        return (f"CI failed here on {', '.join(failed)}, so nothing was pushed. Its output is on the Commands tab. "
+                f"Each job's log is in {CI_LOGS}. Fix it, then Commit and Push. When the code was not at fault, such "
+                "as a crash that does not come again, Push again.")
+    return f"The push ended with exit code {code}, so nothing was pushed. The Commands tab says why. Then Push again."
 
 
 def ci_runs(runs: list[rp.BuildRun], sha: str) -> list[rp.BuildRun]:

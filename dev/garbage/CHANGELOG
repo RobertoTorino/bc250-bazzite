@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 23:04:16
+
+Fixed. The text was rewritten to the writing standard: the README's introduction, which now lists the places, the
+info text, the line after a Delete that did not empty everything, the tooltips of the crash dumps, pip and Homebrew,
+and the help of --remind. No label was renamed and no fact was wrong. Nothing the app does has changed. No test
+changed.
+
 Changelog: 22-11-2026 18:33:23
 
 Fixed. The two boxes and the Delete pill now stand side by side with the row's spacing. They were spread over the width

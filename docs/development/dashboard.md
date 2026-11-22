@@ -331,15 +331,15 @@ and its weekly timer, `bc250-bazzite-update-reminder.timer`) and the development
 `nexus-dev-updates.timer`: Nexus Deps takes their place.
 
 **Bazzite**, the first card, shows the Bazzite image the machine runs (its version and build date), whether a newer
-one is installed and waits for a reboot, and when Bazzite's updater last ran. That updater, `uupd`, runs every
+one is installed and waits for a restart, and when Bazzite's updater last ran. That updater, `uupd`, runs every
 night by itself and updates the image, Flatpaks, Homebrew and distroboxes; a new image takes effect at the next
-boot, so an update can wait unnoticed for days. The card turns to **Reboot to update** then. It also warns when
+boot, so an update can wait unnoticed for days. The card turns to **Restart to update** then. It also warns when
 the updater failed on its last run or has not run for over a week. This card only reads (from `rpm-ostree status`
 and `systemctl`, without root or the network).
 
 On a flattened image (one that does not boot from ostree, such as a PS5 image, where `rpm-ostree` refuses with "not
 booted via libostree") the card shows the version from `/etc/os-release` and the running kernel instead. Nothing
-waits for a reboot there: dnf updates the packages in place, in the System packages card below. The updater line
+waits for a restart there: dnf updates the packages in place, in the System packages card below. The updater line
 stays, since `uupd` still updates the Flatpaks, Homebrew and distroboxes.
 
 **The machine's updates** follow, a card per source the machine has, each with what is newer (installed → new):
@@ -430,7 +430,7 @@ The catalog says how each tool is installed: `brew` (the Homebrew formula) and `
 
 Every hour (or at the next login, when the machine was off then) Nexus Deps runs its check
 without a window and, when something needs you, says so in a desktop notification: a Bazzite update waiting for a
-reboot, Bazzite's updater failing or not running, the machine's updates (per source, with how many), a venv left
+restart, Bazzite's updater failing or not running, the machine's updates (per source, with how many), a venv left
 on an older Python, the emulators and firmware with news (each piece of news once), Python packages missing or to
 update, tools an installed app needs. **Fix…** opens the window and asks to fix it, the same question as the
 button; **Open Nexus Deps** opens the window. When all is well it says nothing. It is a systemd user timer,

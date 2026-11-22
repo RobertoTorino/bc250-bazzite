@@ -111,7 +111,7 @@ def test_close_issues_without_gh_closes_nothing(qapp, monkeypatch):
     monkeypatch.setattr(main_window, "gh_program", lambda: "")
     window = MainWindow()
     window.close_issues([12], "")
-    assert "not installed; nothing was closed" in window.output.toPlainText() and window.closer is None
+    assert "not installed. Nothing was closed" in window.output.toPlainText() and window.closer is None
     window.close()
 
 

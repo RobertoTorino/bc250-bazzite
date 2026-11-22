@@ -65,16 +65,16 @@ if $uninstall; then
     if $purge; then
         info "Removing the settings"
         rm -rf "${CONFIG_DIR:?}/$APP_ID"
-        info "$APP_NAME is uninstalled; the checkout stays."
+        info "$APP_NAME is removed. The checkout stays."
     else
-        info "$APP_NAME is uninstalled; the checkout and its settings stay."
+        info "$APP_NAME is removed. The checkout and its settings stay."
     fi
     exit 0
 fi
 
-[ "$(uname -s)" = Linux ] || die "install.sh makes a Linux app menu entry and a systemd timer; the app runs on Linux."
+[ "$(uname -s)" = Linux ] || die "install.sh makes a Linux app menu entry and a systemd timer. The app runs on Linux."
 [ -x "$REPO/.venv-linux/bin/python" ] || [ -x "$REPO/.venv/bin/python" ] || [ -n "${PYTHON:-}" ] ||
-    info "Note: no .venv-linux yet; create it (see CLAUDE.md) before you start the app."
+    info "Note: there is no .venv-linux yet. Create it (see CLAUDE.md) before you start the app."
 
 # The app was the BC250 Bazzite Suite's Dependency Checker until 07-11-2026: installed by the portal with a copy of
 # its own under ~/.local/share/bc250-portal-dependency-checker, a launcher, a menu entry, a Desktop icon and a weekly
@@ -88,13 +88,13 @@ for old in "$HOME/.local/bin/$OLD_ID" "$DATA_DIR/applications/$OLD_ID.desktop" "
     rm -rf -- "$old"
 done
 if [ -e "$UNIT_DIR/bc250-bazzite-update-reminder.timer" ]; then
-    info "Removing the Dependency Checker's weekly timer (bc250-bazzite-update-reminder): this app's takes its place"
+    info "Removing the Dependency Checker's weekly timer (bc250-bazzite-update-reminder). This app's replaces it."
     remove_timer bc250-bazzite-update-reminder
 fi
 # The development machine's hourly look for newer versions (tools/dev-updates.sh, until 09-11-2026): this app shows
 # every update of the machine now, and its reminder says so.
 if [ -e "$UNIT_DIR/nexus-dev-updates.timer" ]; then
-    info "Removing the hourly nexus-dev-updates timer: this app's reminder takes its place"
+    info "Removing the hourly nexus-dev-updates timer. This app's reminder takes its place."
     remove_timer nexus-dev-updates
 fi
 
@@ -103,7 +103,7 @@ mkdir -p "$(dirname "$LAUNCHER")"
 cat >"$LAUNCHER" <<LAUNCH
 #!/usr/bin/env bash
 # $APP_NAME launcher, written by dev/deps/install.sh. Runs the app of this checkout.
-[ -x "$APP/run.sh" ] || { echo "No checkout in $REPO any more; run dev/deps/install.sh again." >&2; exit 1; }
+[ -x "$APP/run.sh" ] || { echo "No checkout in $REPO anymore. Run dev/deps/install.sh again." >&2; exit 1; }
 exec "$APP/run.sh" "\$@"
 LAUNCH
 chmod 755 "$LAUNCHER"

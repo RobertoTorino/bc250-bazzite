@@ -120,7 +120,7 @@ explanation.
    step stays off until then.
 10. **Bring in the pin commit** (**git pull**): the last step. The *Pin ...* commit is on main, and the tool knows
     of it once Publish fetched main (or GitHub's runs on main show that commit). The step lights when GitHub runs
-    nothing more. After the pull its line reads *The release is out and pulled in: ready.* and every step shows ✓.
+    nothing more. After the pull its line reads *The release is out and pulled in. Ready.* and every step shows ✓.
 
 Above the steps, three boxes say how long a release takes up to its device test: **Previous release**, **Current
 release** and the **Deviation** between the two.

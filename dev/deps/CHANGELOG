@@ -1,3 +1,14 @@
+Changelog: 22-11-2026 22:35:51
+
+Fixed. The text of the README, install.sh, run.sh and the window was rewritten to the writing standard: short sentences,
+one fact each, and no chains with semicolons or colons. The info text of the window lists what System shows and what Fix
+installs. The installer says "removed" instead of "uninstalled", and the launcher says "anymore". The tool cards and the
+info text name the app's wiki chapter instead of its manual. The card's label Reboot to update is now Restart to update,
+and the window, its notes and the Dashboard chapter say "waits for a restart" instead of "waits for a reboot". The
+command systemctl reboot keeps its words. No facts were corrected. Nothing the app does has changed. test_bazzite.py and
+test_system.py check the new wording of the restart note, the venv note and the kernel note. test_window.py and
+test_fixes.py check the new label and note.
+
 Changelog: 21-11-2026 00:38:50
 
 Added. The catalog lists make and gcc for BC-250 Quickfix, optional: VRM Sensors builds the bc250_vrm kernel module

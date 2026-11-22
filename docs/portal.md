@@ -116,6 +116,9 @@ or Page Up and Page Down on the keyboard. The portal always opens on the first o
 | K | R3 (the right stick pressed) | | Show or hide Bazzite's on-screen keyboard, Plasma Keyboard. R3 also works in a question or the file dialog |
 | Escape | B | Click ✕ | Close a menu or a question. On the Settings page, go back to the apps. Else, exit the portal |
 
+**The TV remote.** Your TV's remote moves the focus in the portal too, over HDMI, with no setup. Its arrows
+work as the arrow keys do.
+
 **Exiting.** The **✕** symbol in the top right corner closes the portal. B and Escape do so too, when no menu,
 question or Settings page is open. The portal closes at once, without a question. Only while a download or an
 install runs, it first asks *Do you really want to exit the Portal?* It also says what exiting does to the job. A

@@ -1,3 +1,16 @@
+Changelog: 22-11-2026 23:11:14
+
+Added. The wiki's portal chapter says that the TV remote moves the focus in the portal over HDMI, with no setup.
+Its arrows work as the arrow keys do.
+
+Changelog: 22-11-2026 22:36:40
+
+Fixed. DESIGN.md's text in tools/make_design.py is rewritten to the writing standard: the introduction, the rules, the
+color families and the uses of the colors are now short sentences, with lists for the state family, the text tints, the
+brand colors and the kinds of color. No labels were renamed. The active red #8b0000 was said to be the GPU Governor's
+active button. It fills a toggle button while its state is on, in BC-250 GPU Manager and BC-250 ACE Queues. Nothing
+an app does has changed. No tests changed.
+
 Changelog: 22-11-2026 20:45:14
 
 Fixed. The Beta note in README.md and on the wiki's Home page is now two sentences, the same as the portal's.

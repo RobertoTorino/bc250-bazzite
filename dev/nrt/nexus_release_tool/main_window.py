@@ -82,13 +82,13 @@ class WithdrawPage(QWidget):
                                              "CHANGELOG entry in the app")
         self.withdraw_button.clicked.connect(self.withdraw)
         self.back_button = QPushButton("Take back")
-        self.back_button.setToolTip("Remove the mark again (after a test, or a mistake)")
+        self.back_button.setToolTip("Remove the mark again, after a test or a mistake")
         self.back_button.clicked.connect(self.take_back)
         # The withdrawal tested on a board with the app installed (the tab Test on this board until 15-11-2026, whose
         # other tests the release tab's Device test does)
         self.test_button = QPushButton("Test withdrawal")
-        self.test_button.setToolTip("On a board with the app installed: install the portal from this checkout and "
-                                    "start it (check-release.sh local); it must show the app as not available and "
+        self.test_button.setToolTip("On a board with the app installed, install the portal from this checkout and "
+                                    "start it (check-release.sh local). It must show the app as not available and "
                                     "remove it")
         self.test_button.clicked.connect(self.test)
         self.output = StepLog(self, "Retract app", window.step_wrote)       # shows in Commands
@@ -103,15 +103,15 @@ class WithdrawPage(QWidget):
         reason_row.addWidget(self.test_button)
         lay = QVBoxLayout(self)
         lay.addLayout(info_row(
-            "Retract marks a pinned release withdrawn, with the reason the boards show; test it, then release the "
+            "Retract marks a pinned release withdrawn, with the reason the boards show. Test it, then release the "
             "portal.",
-            "For a release that must not be used any more (privacy, security, any reason):<br>"
-            "<b>1.</b> Retract: apps.toml marks the pinned release withdrawn, with the reason the boards show.<br>"
-            "<b>2.</b> <b>Test withdrawal</b> on a BC-250 that has the app installed: the portal from this checkout "
+            "Use these steps for a release that must not be used anymore, for privacy, security or any reason:<br>"
+            "<b>1.</b> Retract. apps.toml marks the pinned release withdrawn, with the reason the boards show.<br>"
+            "<b>2.</b> <b>Test withdrawal</b> on a BC-250 that has the app installed. The portal from this checkout "
             "shows it as \"App not available\" and removes it. Take back undoes the mark.<br>"
-            "<b>3.</b> Mark the release on GitHub with the command shown (it stays, as a pre-release, so no update "
-            "check offers it), then release the portal on the release tab, from Commit your changes: it removes the "
-            "app from the boards."))
+            "<b>3.</b> Mark the release on GitHub with the command shown. The release stays, as a pre-release, so no "
+            "update check offers it. Then release the portal on the release tab, from Commit your changes. That "
+            "removes the app from the boards."))
         lay.addLayout(row)
         lay.addLayout(reason_row)
         lay.addStretch(1)
@@ -147,7 +147,7 @@ class WithdrawPage(QWidget):
         if unit is None:
             return
         if not reason:
-            QMessageBox.warning(self, "Retract", "Say why the release is withdrawn: the boards show it.")
+            QMessageBox.warning(self, "Retract", "Say why the release is withdrawn. The boards show the reason.")
             return
         root = self.release_window.root
         changed = rp.withdraw(root, unit, reason)
@@ -182,7 +182,7 @@ class WithdrawPage(QWidget):
             self.output.set_text(str(exc))
             return
         self.output.set_text("A terminal installs the portal from this checkout and starts it. With the app "
-                             "installed, the portal says it is not available any more and removes it; its tile then "
+                             "installed, the portal says it is not available anymore and removes it. Its tile then "
                              "shows \"App not available\". Close the portal there to finish.")
 
 
@@ -200,8 +200,8 @@ class RemovePage(QWidget):
         self.release_window = window
         self.remove_button = QPushButton("Remove suite")
         self.remove_button.setToolTip("Show what of the suite is installed on this board and whether a test put it "
-                                      "there, then remove it all: every app, the portal and Board Test, each with "
-                                      "its own uninstaller (check-release.sh remove). Settings stay")
+                                      "there. Then remove every app, the portal and Board Test, each with its own "
+                                      "uninstaller (check-release.sh remove). Settings stay")
         self.remove_button.clicked.connect(self.remove)
         self.output = StepLog(self, "Remove suite", window.step_wrote, opens=False)   # lines while you click
         row = QHBoxLayout()
@@ -211,11 +211,11 @@ class RemovePage(QWidget):
         lay.addLayout(info_row(
             "Remove suite shows what of the suite is installed on this board and removes it all, in a terminal.",
             "<b>Remove suite</b> lists what of the suite is installed on this board and whether a test put it there "
-            "(check-release.sh status), then removes it all: every app, the portal and Board Test, each with its own "
-            "uninstaller (check-release.sh remove). Settings, history and results stay; <code>check-release.sh remove "
+            "(check-release.sh status). Then it removes every app, the portal and Board Test, each with its own "
+            "uninstaller (check-release.sh remove). Settings, history and results stay. <code>check-release.sh remove "
             "--purge</code> in a terminal removes them too. A test on a board without the suite removes what it "
-            "installed when the portal closes; a board that had the suite gets its own install back then "
-            "(<code>check-release.sh restore</code> does it by hand)."))
+            "installed when the portal closes. A board that had the suite gets its own install back then. "
+            "<code>check-release.sh restore</code> does it by hand."))
         lay.addLayout(row)
         lay.addStretch(1)
 
@@ -230,7 +230,7 @@ class RemovePage(QWidget):
         except RuntimeError as exc:
             self.output.appendPlainText(str(exc))
             return
-        self.output.appendPlainText("A terminal lists what of the suite is installed here, then removes it: every "
+        self.output.appendPlainText("A terminal lists what of the suite is installed here. Then it removes every "
                                     "app, the portal and Board Test. Board Test asks for the sudo password.")
 
 
@@ -539,7 +539,7 @@ class WorkflowTicker(QFrame):
             self.dot.setStyleSheet(f"color:{RED if self.local_failed else BLUE};")
             self.line = self.local
             self.text.setText(self.local)
-            self.setToolTip("tools/ci-local.sh runs CI's jobs here before git push; nothing is on GitHub yet. The "
+            self.setToolTip("tools/ci-local.sh runs CI's jobs here before git push. Nothing is on GitHub yet. The "
                             "output is on the Commands tab.")
             return
         now = time.time()
@@ -678,7 +678,8 @@ class ClaudeUsageIndicator(Pill):
             f"Input {today.input:,}, output {today.output:,}, cache written {today.cache_write:,}, "
             f"cache read {today.cache_read:,}.",
             *(f"{model}: {tokens:,}" for model, tokens in today.models), "",
-            "Claude Code on this machine, from its transcripts; other machines and claude.ai are not in it.",
+            "This counts Claude Code on this machine, from its transcripts. Other machines and claude.ai are not "
+            "in it.",
             f"Click to open {rp.CLAUDE_USAGE_PAGE} for the plan's limits."]))
 
     def stop(self) -> None:
@@ -712,7 +713,7 @@ class ReleaseWindow(QMainWindow):
         header = nexus_header(LOGO_PATH, HEADER_NAME, root)
         # The header's pills, all as wide as the widest (owner, 20-10-2026).
         self.refresh_pill = Pill("Refresh", "Click to refresh", "Read the checkout and its tags again, for changes "
-                                 "made in a terminal; what you entered stays")
+                                 "made in a terminal. What you entered stays")
         self.refresh_pill.clicked.connect(self.refresh)
         self.build = BuildIndicator(self, runs_source, notify)
         self.build.checker.finished.connect(self.refreshed)     # after the build's own slot: the steps are drawn
@@ -745,9 +746,9 @@ class ReleaseWindow(QMainWindow):
         # where what a step wrote (the release, Retract) shows too, under a line
         # that names the step (step_wrote()).
         self.commands_tab = self.tabs.addTab(self.commands, "Commands")
-        self.tabs.setTabToolTip(self.commands_tab, "The command line: runs a command in the checkout and shows its "
-                                                   "output, with what each step wrote; Commands offers what the "
-                                                   "last step showed")
+        self.tabs.setTabToolTip(self.commands_tab, "Runs a command in the checkout and shows its output, with what "
+                                                   "each step wrote. Its Commands menu offers what the last step "
+                                                   "showed")
         self.seen = ""                          # the checkout as last read: fingerprint()
         central = QWidget()
         lay = QVBoxLayout(central)
