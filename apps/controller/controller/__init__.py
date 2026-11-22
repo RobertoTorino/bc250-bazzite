@@ -5,7 +5,7 @@ talks to it through its hidraw node, with the standard library only."""
 
 APP_NAME = "BC-250 Controller"
 APP_ID = "bc250-controller"
-__version__ = "2.6.2"
+__version__ = "2.7.0"
 
 from pathlib import Path
 

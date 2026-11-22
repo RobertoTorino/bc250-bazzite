@@ -4,7 +4,7 @@ memory, fan, temperatures, network and disk."""
 
 APP_NAME = "BC-250 Turing Screen"
 APP_ID = "bc250-turing-screen"
-__version__ = "2.6.1"
+__version__ = "2.7.0"
 
 from pathlib import Path
 

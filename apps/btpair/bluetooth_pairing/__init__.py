@@ -3,7 +3,7 @@
 
 APP_NAME = "BC-250 Bluetooth Pairing"
 APP_ID = "bc250-bluetooth-pairing"
-__version__ = "2.6.1"
+__version__ = "2.7.0"
 
 from pathlib import Path
 

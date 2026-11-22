@@ -5,7 +5,7 @@ that go with them. The board changes only when you apply one, and only after a r
 
 APP_NAME = "BC-250 Memory Manager"
 APP_ID = "bc250-memory-manager"
-__version__ = "4.6.1"
+__version__ = "4.7.0"
 
 from pathlib import Path
 
