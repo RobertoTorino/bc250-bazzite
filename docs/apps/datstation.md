@@ -41,7 +41,7 @@ Install it again to update. Uninstall it in the portal, or with `./install.sh --
 the venv, the launcher and the menu entry, and keeps your settings and scores; `./install.sh --uninstall --purge`
 removes those too.
 
-**Steam Game Mode:** in the app, open the **Menu** beside the title and choose **Add to Steam**. It adds the app
+**Steam Game Mode:** in the app, open the **Menu** beside the title and choose **Add to Steam (Game Mode)**. It adds the app
 as a non-Steam game for every Steam user on the board, with artwork drawn from the app's icon, and the title line
 shows **In Steam**. Steam closes while its shortcut file changes and starts again afterwards, so do this from Desktop
 Mode; from Game Mode the app asks you to switch. **Remove from Steam** takes it out again, artwork included.
@@ -63,7 +63,7 @@ Pick a category (ALL, TRUE/FALSE, PS1 to PS5, PSVITA, PSP, CONTROLLER, GENERAL, 
 how many questions it has), or the **Quick Quiz**: 6 questions, nothing saved.
 
 A round starts with 42 seconds on the clock. A right answer adds 5 seconds and the question's points (10); a
-wrong answer or **Skip** takes 5 seconds. The clock stops while an answer is shown and while the game is paused
+wrong answer or **Skip (-5s)** takes 5 seconds. The clock stops while an answer is shown and while the game is paused
 (**Pause**, then **Resume**). The right answer turns green, a wrong choice red, and for a wrong answer the right
 one is named, with an explanation where the question has one. A question is not asked twice in one game until
 the category's questions are used up.

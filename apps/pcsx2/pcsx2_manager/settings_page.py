@@ -24,7 +24,7 @@ from bc250_core.updates import UpdateChecker
 from . import memcards, pcsx2_settings
 from .pcsx2_settings import CHOICE, PERCENT, SWITCH, Setting
 
-RUNNING = "PCSX2 is running: close it first, it would write its own settings over the change."
+RUNNING = "PCSX2 is running. Close it first, because it would write its own settings over the change."
 STREAM = "PCSX2"                        # PCSX2's sound stream, as PipeWire names it (core's sound)
 SOUND_MUTED = sound.muted_text(STREAM)
 SOUND_DOWN = sound.down_text(STREAM)

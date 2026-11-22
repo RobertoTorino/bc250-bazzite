@@ -104,7 +104,7 @@ class MainWindow(QWidget):
         # Screen off is a pill beside the boxes (owner, 26-10-2026); it reads Screen on while the backlight is off.
         self.screen_off = False
         self.power_pill = Pill("Screen off", "Click to switch",
-                               "Switches the screen's backlight off and on; the app keeps running.")
+                               "Switches the screen's backlight off and on. The app keeps running.")
         self.power_pill.clicked.connect(lambda: self.set_power(not self.screen_off))
         boxes = [self.model_box, self.port_box, self.size_box, self.power_pill]
         for box in boxes:
@@ -116,8 +116,9 @@ class MainWindow(QWidget):
         self.access_box = QGroupBox("Access to the screen")
         access_layout = QVBoxLayout(self.access_box)
         self.access_text = hint_label(
-            "The screen is plugged in, but your user may not use its port yet. Allow access adds a udev rule for "
-            "this screen only (it asks for your password); it takes effect at once, without unplugging it.")
+            "The app found the screen, but your user may not use its port yet. Allow access adds a udev rule for "
+            "this screen only. It takes effect at once, without unplugging the screen. You will be asked for your "
+            "password.")
         self.access_button = accent_button("Allow access…")
         self.access_button.clicked.connect(self.allow_access)
         access_layout.addWidget(self.access_text)
@@ -213,8 +214,8 @@ class MainWindow(QWidget):
             grid.addWidget(box, n // 3, n % 3)
             self.tile_boxes[key] = box
         rows = -(-len(render.TILES) // 3)
-        grid.addWidget(hint_label("GPU load needs the GPU governor's fix-metrics; without it the GPU tile shows the "
-                                  "clock. The weather needs a place, on the Weather tab."), rows, 0, 1, 3)
+        grid.addWidget(hint_label("GPU load needs the GPU governor's fix-metrics. Without it, the GPU tile shows the "
+                                  "clock. The weather needs a place on the Weather tab."), rows, 0, 1, 3)
         self.interface = QComboBox()
         self.interface.addItem(ALL_INTERFACES, "")
         for name in self.sensors.interfaces():
@@ -224,8 +225,8 @@ class MainWindow(QWidget):
             self.interface.addItem(chosen, chosen)          # not there now (unplugged, renamed): keep the choice
         self.interface.setCurrentIndex(max(0, self.interface.findData(chosen)))
         self.interface.currentIndexChanged.connect(lambda: self.set_interface(self.interface.currentData()))
-        self.interface.setToolTip("The interface the Network tile measures: Ethernet, Wi-Fi, or all of them "
-                                  "added up.")
+        self.interface.setToolTip("The interface the Network tile measures, such as Ethernet or Wi-Fi. The "
+                                  "All interfaces choice adds them up.")
         grid.addWidget(QLabel("Network tile"), rows + 1, 0)
         grid.addWidget(self.interface, rows + 1, 1, 1, 2)
         grid.setRowStretch(rows + 2, 1)
@@ -240,16 +241,16 @@ class MainWindow(QWidget):
         self.theme.currentTextChanged.connect(self.set_theme)
         self.theme.highlighted.connect(lambda n: self.try_look("theme", self.theme.itemText(n)))
         self.theme.popup_closed.connect(self.end_trial)
-        self.theme.setToolTip("Dark takes the suite's accent color; the others have their own. Moving through the "
-                              "list shows each theme in the preview; the screen changes when you choose one.")
+        self.theme.setToolTip("Dark takes the suite's accent color. The others have their own. Moving through the "
+                              "list shows each theme in the preview. The screen changes when you choose one.")
         grid.addWidget(QLabel("Theme"), 0, 0)
         grid.addWidget(self.theme, 0, 1, 1, 2)
         self.colour_buttons: dict[str, QPushButton] = {}
         colours = QHBoxLayout()
         for key, name in COLOUR_NAMES.items():
             button = QPushButton(name)
-            button.setToolTip(f"Your own colour for the {name.lower()}, instead of the theme's. The preview shows "
-                              "each color you try; the screen changes when you choose OK.")
+            button.setToolTip(f"Your own color for the {name.lower()}, instead of the theme's. The preview shows "
+                              "each color you try. The screen changes when you choose OK.")
             button.clicked.connect(partial(self.choose_colour, key))
             colours.addWidget(button)
             self.colour_buttons[key] = button
@@ -281,8 +282,9 @@ class MainWindow(QWidget):
         buttons.addWidget(self.picture_clear)
         buttons.addStretch(1)
         grid.addLayout(buttons, 4, 1, 1, 2)
-        grid.addWidget(hint_label("A picture of your own behind the tiles, cut to the screen's shape. The app keeps "
-                                  "where it is, not a copy: leave it there."), 5, 0, 1, 3)
+        grid.addWidget(hint_label("A picture of your own behind the tiles, cut to the screen's shape. The app "
+                                  "remembers its place and keeps no copy. Leave the picture where you put it."),
+                       5, 0, 1, 3)
         grid.setRowStretch(6, 1)
         return tab
 
@@ -339,8 +341,9 @@ class MainWindow(QWidget):
         grid.addWidget(self.weather_status, 4, 0, 1, 3)
         grid.addWidget(hint_label(
             "The weather comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, free and without an account. "
-            "Search sends the name you type; then the place's coordinates go to it every 30 minutes, only while the "
-            "Weather tile is on the screen. Nothing else about you is sent."), 5, 0, 1, 3)
+            "Search sends the name you type. After that, the place's coordinates go to Open-Meteo every 30 minutes. "
+            "That happens only while the Weather tile is on the screen. The app sends nothing else about you."),
+            5, 0, 1, 3)
         grid.setRowStretch(6, 1)
         self._show_place()
         return tab
@@ -356,8 +359,8 @@ class MainWindow(QWidget):
         self.off_on_quit.toggled.connect(lambda on: self.settings.set("off_on_quit", on))
         column.addWidget(self.autostart)
         column.addWidget(self.off_on_quit)
-        column.addWidget(hint_label("The screen shows the values while the app runs; minimized is enough. "
-                                    "Otherwise it keeps the last picture."))
+        column.addWidget(hint_label("The screen shows the values while the app runs. A minimized window is enough. "
+                                    "Otherwise, the screen keeps the last picture."))
         column.addStretch(1)
         return tab
 
@@ -436,7 +439,7 @@ class MainWindow(QWidget):
     def choose_colour(self, key: str) -> None:
         setting = f"colour_{key}"
         dialog = QColorDialog(getattr(self.theme_of(), render.COLOURS[key]) or QColor(ACCENT), self)
-        dialog.setWindowTitle(window_title(f"{COLOUR_NAMES[key]} colour"))
+        dialog.setWindowTitle(window_title(f"{COLOUR_NAMES[key]} color"))
         dialog.currentColorChanged.connect(lambda colour: self.try_look(setting, colour.name()))
         if dialog.exec():
             self.set_colour(key, dialog.selectedColor().name())
@@ -494,7 +497,8 @@ class MainWindow(QWidget):
         if not path:
             self.picture_label.setText("None: the theme's color")
         elif self.picture is None:
-            self.picture_label.setText(f"{path} cannot be read (moved or removed?): the theme's colour for now")
+            self.picture_label.setText(f"{path} cannot be read. It may have moved or been removed. The theme's color "
+                                       "shows for now.")
         else:
             self.picture_label.setText(path)
         self.picture_clear.setEnabled(bool(path))
@@ -513,7 +517,7 @@ class MainWindow(QWidget):
                 self.zone.setItemText(n, f"{ZONES[value]}: {render.zone_text(local, value)}")
         self.zone_hint.setText(
             f"The time is the system's, in its time zone ({local.tm_zone}, {render.offset(local)} now). Summer and "
-            "winter time follow by themselves: the name and offset change with them.")
+            "winter time follow by themselves. The name and offset change with them.")
 
     # ------------------------------------------------------------------- save
     def save_picture(self) -> None:
@@ -561,7 +565,7 @@ class MainWindow(QWidget):
         self.results.addItems([p.label for p in self.places])
         self.results.setEnabled(bool(self.places))
         self.use_button.setEnabled(bool(self.places))
-        self.weather_status.setText(f"{len(self.places)} found: choose one and Use this place." if self.places
+        self.weather_status.setText(f"{len(self.places)} found. Choose one and click Use this place." if self.places
                                     else "Nothing found by that name.")
 
     def use_place(self) -> None:
@@ -591,8 +595,8 @@ class MainWindow(QWidget):
             self.weather_unavailable = True
             kept = ("the screen keeps the last weather it had" if self.weather is not None else
                     "the screen says unavailable")
-            self.weather_status.setText(f"{result} Asked again in {weather.INTERVAL_S // 60} minutes; until then "
-                                        f"{kept}.")
+            self.weather_status.setText(f"{result} The app asks again in {weather.INTERVAL_S // 60} minutes. "
+                                        f"Until then, {kept}.")
             self.refresh(read=False)
             return
         self.weather, self.weather_unavailable = result, False
@@ -626,7 +630,7 @@ class MainWindow(QWidget):
     def show_state(self, state: State) -> None:
         self.state = state
         texts = {"searching": ("No screen found", "neutral",
-                               "No USB IPS screen (USB ID 1a86:5722) is plugged in. Plug it in; the app finds it "
+                               "No USB IPS screen (USB ID 1a86:5722) is plugged in. Plug one in. The app finds it "
                                "by itself."),
                  "no-access": ("No access", "warn", "Allow access gives your user the screen's port."),
                  "resetting": ("Starting the screen", "info", "The screen restarts once when the app connects, "

@@ -52,9 +52,7 @@ apps/<name>/
 - The **package** sits directly in `apps/<name>/`, never in a wrapper folder such as `apps/<name>/<name>/<package>`.
   `<name>` is a short name for the app and the package is the app's name without its BC-250 or Bazzite prefix, as
   a Python identifier: `apps/ace/ace_queues/` for BC-250 ACE Queues, `apps/datstation/datstation/` for Bazzite DatStation (the two names may be the same word), `apps/check/board_test/`
-  for BC-250 Board Test (a short name chosen apart from the app's, so that no folder is called test). Apps
-  from before this convention still have a `bc250_<something>` or `bazzite_<something>` package;
-  they move to it one at a time.
+  for BC-250 Board Test (a short name chosen apart from the app's, so that no folder is called test).
 - **Data** the package reads ships inside the package (DatStation's `data/questions.json`) or next to it
   in the app folder (acpi's `tables/`). Never one folder up from where the installer copies the app.
 - An app with a shell script as its engine keeps that script in the app folder too
@@ -276,9 +274,9 @@ Where the pictures come from depends on what the app has:
 | PPSSPP Manager | The game's own pictures (`ICON0.PNG`, `PIC1.PNG`), its icon as the logo |
 | Vita3K Manager | The game's own pictures (`icon0.png`, `pic0.png`), its icon as the logo |
 
-The emulator managers start a game through Steam too: their last tab, **Start game**, is core's `ActionTab` (a tab
-that acts on a click and leaves the open page open), which looks up the chosen game's shortcut in Steam's file
-(`steam.shortcut_number()`) and opens `steam.play_url()` for it.
+The emulator managers start a game through Steam too: the tab beside **Your games**, **Start game**, is core's
+`ActionTab` (a tab that acts on a click and leaves the open page open), which looks up the chosen game's shortcut in
+Steam's file (`steam.shortcut_number()`) and opens `steam.play_url()` for it.
 
 `steam_art.draw_icon_art()` is for an app with no pictures of its own: the background is near black in the icon's
 own color with a glow of it, the portrait and the wide picture show the icon with a title and a line under it, the

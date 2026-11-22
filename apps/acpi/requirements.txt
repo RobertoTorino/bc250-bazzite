@@ -1,1 +1,2 @@
+# SPDX-License-Identifier: MIT
 PyQt6>=6.5,<7

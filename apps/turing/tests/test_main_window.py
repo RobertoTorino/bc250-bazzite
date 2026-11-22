@@ -71,7 +71,7 @@ class FakeOpenMeteo:
     def __call__(self, url: str, params: dict) -> dict:
         self.requests.append((url, params))
         if self.fail:
-            raise weather.WeatherError("Open-Meteo cannot be reached: check the network.")
+            raise weather.WeatherError("Open-Meteo cannot be reached. Check the network.")
         if url == weather.GEOCODE_URL:
             return {"results": [{"name": "Berlin", "admin1": "State of Berlin", "country": "Germany",
                                  "latitude": 52.52, "longitude": 13.41}]}
@@ -266,14 +266,15 @@ def test_the_weather_says_when_open_meteo_is_unavailable(make, qapp):
     window.set_place(BERLIN)
     assert wait_until(qapp, lambda: window.weather_unavailable)
     assert window.weather_status.text() == ("Open-Meteo is unavailable for now (503: The service is overloaded). "
-                                            "Asked again in 30 minutes; until then the screen says unavailable.")
+                                            "The app asks again in 30 minutes. "
+                                            "Until then, the screen says unavailable.")
     assert "unavailable" in window.report_text()
     window.update_weather()
     assert wait_until(qapp, lambda: window.weather is not None and not window.weather_unavailable)
     assert "unavailable" not in window.report_text() and "12 °C" in window.report_text()
     window.update_weather()
     assert wait_until(qapp, lambda: window.weather_unavailable)
-    assert window.weather_status.text().endswith("until then the screen keeps the last weather it had.")
+    assert window.weather_status.text().endswith("Until then, the screen keeps the last weather it had.")
     assert "12 °C" in window.report_text()
     window.set_place(None)
     assert not window.weather_unavailable

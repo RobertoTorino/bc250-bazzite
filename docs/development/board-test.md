@@ -17,7 +17,7 @@ the opt-in `--stress` mode, which deliberately puts the board under load.
 ```bash
 sudo chmod +x test-board.sh
 
-sudo ./test-board.sh                        # passive diagnostics only (tests 00-40, 45)
+sudo ./test-board.sh                        # passive diagnostics only (tests 00-40, 45-53, 60)
 sudo ./test-board.sh --stress               # ... plus a 120s CPU+GPU stress run (test 41)
 sudo ./test-board.sh --stress=300           # 300s stress run
 sudo ./test-board.sh --stress=300 --interval=1   # sample telemetry every second
@@ -65,7 +65,7 @@ All files go to `/var/log/bc250-board-test/`:
 
 They are copied to `~/Desktop/bc250-board-test/` of the desktop user at the end of the run for easy
 sharing (skipped with `--no-desktop`; in the GUI this is *Settings > General > Copy the full reports to
-Desktop*, on by default).
+~/Desktop/bc250-board-test after each run*, on by default).
 During a stress run the files are flushed to disk after every sample, so they survive a hard lockup.
 
 The GUI additionally keeps its own captured output of every run as
@@ -102,7 +102,7 @@ reports the overall verdict.
 | 03 | System Uptime                | Reports uptime and load average.                                                |
 | 11 | Resource Consumption         | Top CPU and memory consumers.                                                   |
 | 12 | Boot Time                    | `systemd-analyze` breakdown, warns on units taking over a minute.               |
-| 31 | File and Directory Integrity | Verifies `/var/log` exists and is writable.                                     |
+| 31 | File and Directory Integrity | Lists `/var/log` and verifies that it exists.                                   |
 
 ### Network
 
@@ -211,7 +211,7 @@ its findings as `LEVEL: text` lines, which the script logs; a `WARNING` line cou
 |----|-------------------------------|-------------------------------------------------------------------------------|
 | 22 | Hardware Sensors              | nct6683/nct6687 SuperIO, GPU and CPU temperatures, CPU and GPU rails, fan RPM sanity. |
 | 27 | Handheld Daemon               | Confirms `hhd.service` is masked; it causes constant micro-stuttering.        |
-| 28 | Suspend Targets               | Confirms sleep/suspend/hibernate targets are masked; s2idle resume is broken. |
+| 28 | Suspend Targets               | Which sleep the board offers (suspend-to-idle), whether systemd may use it, and the suspends since boot. |
 | 40 | Power Delivery and Throttling | GPU power cap and draw, governor frequency ceiling, throttle messages.        |
 
 ### Crash forensics
@@ -269,7 +269,7 @@ unlocked CUs are not doing work, or the clock dropped. vkpeak's `copy-d2d` VRAM 
 too (memory-bound, so it does not change with CUs).
 
 1. Put the board in its stock configuration (undo any CU unlock and reboot, so 24 CUs), close games, then:
-   `sudo ./test-board.sh --only=42 --bench --save-baseline` (or tick *Save as baseline* in the GUI).
+   `sudo ./test-board.sh --only=42 --bench --save-baseline` (or tick *Save as baseline (stock board only)* in the GUI).
    This writes `/var/log/bc250-board-test/bench-baseline.json`: one baseline for every copy of the script
    and for the GUI. A baseline saved by an older version next to the script is moved there on the next `--bench` run.
 2. Apply an unlock, then run `sudo ./test-board.sh --only=42 --bench`. Compare in
@@ -547,10 +547,8 @@ But 512 MB has two documented crash mechanisms
    the dynamic ceiling. The documented fix is a larger minimum split; 6 GB resolved it for the reporter and never
    recurred.
    6 GB is the value with a documented fix-report behind it for exactly this failure.
-   We can use fanoush/bc250_memcfg, which writes to CMOS and survives reflashes. This also makes
-   the "P3.00 Chipset Menu" modded BIOS obsolete for VRAM purposes: its only draw was exposing
-   the hidden UMA setting in the setup menu, and bc250_memcfg sets the same CMOS value from Linux
-   on any BIOS:
+   We can use fanoush/bc250_memcfg, which writes the split to CMOS from Linux, on the stock BIOS.
+   The setup menu hides that UMA setting, and bc250_memcfg sets the same CMOS value:
 
    ```bash
    git clone https://github.com/fanoush/bc250_memcfg
@@ -567,7 +565,7 @@ But 512 MB has two documented crash mechanisms
    free -h                                               # ~9.4 GB system RAM
    ```
 
-## Optional: ACPI fix without the P3.00 MeiMeiDXE v3 BIOS
+## Optional: ACPI fix on the stock BIOS
 
 [e-tho/bc250-acpi-fix](https://github.com/e-tho/bc250-acpi-fix) (maintained fork of
 [bc250-collective/bc250-acpi-fix](https://github.com/bc250-collective/bc250-acpi-fix)) is a pure-software fix.
@@ -607,11 +605,11 @@ by writing the GPU's WGP mask registers with `umr`, and keeps a validated unlock
 
 1. **Test first:** `bc250-cu-bisect.sh` tests every locked WGP (2 CUs) on its own over several rounds and
    tells bad WGPs apart from an unstable unlock, power or heat. Then retest the combined mask on its own.
-2. **Make it persistent:** `bc250-cu-unlock.sh --install <masks>`, or **Install** in its BC Unlock GUI,
+2. **Make it persistent:** `bc250-cu-unlock.sh --install <masks>`, or **Install** in BC-250 CU Tools,
    saves the mask and reapplies it at every boot through a root systemd service that starts before the
-   desktop. It survives reboots, cold boots and Bazzite updates. The GUI only allows **Install** once the
+   desktop. It survives reboots, cold boots and Bazzite updates. CU Tools only allows **Install** once the
    bisect results show the combined mask passed every round with the same number of WGPs on all 4 rows.
-3. **Undo:** `sudo ./bc250-cu-unlock.sh --uninstall` or **Uninstall** in the GUI, then reboot: stock 24 CUs.
+3. **Undo:** `sudo ./bc250-cu-unlock.sh --uninstall` or **Uninstall** in CU Tools, then reboot: stock 24 CUs.
 
 Caveats:
 
@@ -622,13 +620,9 @@ Caveats:
 - A WGP that passed can still fail under other conditions (heat, a game). After a hang, uninstall and
   reboot, then test again.
 
-If you later want persistence for the cores, that is when the BIOS mod becomes relevant — the runtime route
-lets you validate the cores risk-free first. For the CUs, `bc250-cu-unlock.sh` above gives persistence
-without flashing; the BIOS route is the alternative.
-
-> **Note** (from e-tho's README): if you ever do install a modded BIOS, remove the ACPI
-> override first — modded BIOSes may ship their own ACPI fixes, and duplicate tables fail
-> to load.
+For persistence of the cores, [BC-250 CPU Tools](../apps/cores.md) keeps a validated core unlock across reboots
+with its boot service, as CU Tools does for the CUs. Both work on the stock BIOS. The suite advises the latest stock
+P5.00 BIOS and offers no BIOS flashing.
 
 ## Optional: bad CUs or an unstable unlock?
 
@@ -637,5 +631,5 @@ doesn't have to mean a bad WGP: the runtime unlock itself, power or heat can cau
 [bc250-cu-bisect](../apps/compute.md) separates these causes: it does its
 own unlock with umr, tests a control (same register writes, no extra CUs) and every locked WGP on its own
 over several rounds, and tells you per WGP whether it's good, fails every time (likely bad) or fails at
-random (likely the unlock, power or heat). Once a mask passes, `bc250-cu-unlock.sh` or the BC Unlock GUI
-from the same repository keeps it across reboots (see *For the extra CUs without flashing* above).
+random (likely the unlock, power or heat). Once a mask passes, `bc250-cu-unlock.sh` or BC-250 CU Tools
+keeps it across reboots (see *For the extra CUs without flashing* above).

@@ -1119,7 +1119,7 @@ def test_start_game_waits_for_a_steam_that_does_not_run(qapp, folders, monkeypat
     window.rpcs3_running = lambda: True
     window.table.selectRow(0)
     window.on_start_game()
-    assert window.running.text() == "RPCS3 is running: close it first, then start the game."
+    assert window.running.text() == "RPCS3 is running. Close it first, then start the game."
     window.close()
 
 

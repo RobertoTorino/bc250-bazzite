@@ -1,3 +1,7 @@
+Changelog: 22-11-2026 15:55:10
+
+Fixed. The app's files that had no license line have one now.
+
 Changelog: 21-11-2026 15:13:54
 
 Release 0.5.3.

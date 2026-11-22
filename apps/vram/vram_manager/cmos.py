@@ -233,10 +233,10 @@ def board_problem(sys_root: Path = Path("/sys")) -> str:
     """Why this machine's CMOS must not be touched; "" on a BC-250 without lockdown."""
     board = read_text(sys_root / "class/dmi/id/board_name")
     if board != BOARD_NAME:
-        return f"This is not a BC-250 (board name {board or 'unknown'!r}); its CMOS layout is unknown."
+        return f"This is not a BC-250, so its CMOS layout is unknown. Its board name is {board or 'unknown'!r}."
     mode = lockdown(sys_root)
     if mode not in ("", "none"):
-        return f"Kernel lockdown ({mode}) blocks direct port access; Secure Boot usually turns it on."
+        return f"Kernel lockdown ({mode}) blocks direct port access. Secure Boot usually turns lockdown on."
     return ""
 
 
@@ -257,7 +257,8 @@ def do_set_uma(bank: Bank, mb: int) -> dict:
     bank.write_block(wanted)
     after = bank.read_block()
     if after.raw != wanted.raw:
-        raise CmosError(f"Read back {after.raw.hex()} instead of {wanted.raw.hex()}: the write did not stick.")
+        raise CmosError(f"The new block did not stick. CMOS read back {after.raw.hex()} instead of "
+                        f"{wanted.raw.hex()}.")
     return {"ok": True, "before": before.to_json(), "after": after.to_json()}
 
 

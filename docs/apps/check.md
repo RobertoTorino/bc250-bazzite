@@ -74,7 +74,7 @@ there and installs them.
 | `mprime` (Prime95) | No test. [BC-250 CPU Tools](cores.md#longer-burn-in-mprime--rasdaemon) runs its torture test for a longer burn-in | Prime95 in `~/mprime`, with a link in `~/.local/bin` |
 | `sqlite` (`sqlite3`) | No test. It looks into the app's history database during development | Development extras |
 
-Tests 10, 20, 21 and 41 also use `glmark2`, `vulkan-tools` (`vulkaninfo`, `vkcube`) and `smartmontools`
+Tests 10, 20, 21, 41, 47 and 60 also use `glmark2`, `vulkan-tools` (`vulkaninfo`, `vkcube`) and `smartmontools`
 (`smartctl`). Those come with Bazzite.
 
 The script `/opt/bc250-board-test/development/tools/install-requirements.sh` installs the tools. Run without
@@ -251,7 +251,9 @@ Anything below a default costs points. Upgrades only raise the Extended score, s
 ## The window in detail
 
 **The left pane** holds the Overview, one page per test category, History, Game details, Help and Settings.
-Help is this chapter.
+Help shows this chapter. Its sections are listed on the left, and a click jumps to one. **Find in the help**
+searches the page, and Enter goes to the next place. **Back** returns to the page before, after you followed a
+link. **Wiki** opens the page in your browser.
 
 **The boxes at the top** count the latest result of every test over all runs, also after a restart:
 
@@ -297,7 +299,8 @@ play.
 
 * **Run all tests** never includes the benchmark (42), the disk speed test (43) or the internet speed test
   (44).
-* **Run all &lt;category&gt; tests** runs every test on that page.
+* **Run all &lt;category&gt; tests** runs every test on that page. The stress test runs along only when
+  **Include stress test (41) in run** is checked.
 * Only one run happens at a time. The buttons are off while it runs.
 * **Stop** stops the current run. The tests first end their CPU and GPU load and remove their temporary files.
   The test that was running goes back to not run.
@@ -327,6 +330,7 @@ in these files with placeholders. The terminal shows everything. The masked data
 * the home folder
 * serial numbers
 * MAC and IP addresses
+* the machine ID
 * the speed test's ISP and result URL
 
 Below the list of runs, **Files mentioned in this run** lists every log, CSV and config file the selected run
@@ -338,7 +342,7 @@ one to read it.
 * Root-only files show the `sudo less` command to use instead.
 * For a CSV, **Show graph** plots it.
 
-**Clean up logs** is under **Settings › Logs & history**. It removes the run logs older than N days, or all logs.
+**Clean up logs…** is under **Settings › Logs & history**. It removes the run logs older than N days, or all logs.
 The default is 30 days. The dialog shows what goes before anything happens. Removing old logs keeps the results in
 the history. **Remove ALL** also empties the history. The full reports are owned by root, so removing them asks
 for your password. `bench-baseline.json` and the benchmark and speed test history CSVs are always kept.
@@ -455,7 +459,8 @@ All files go to `/var/log/bc250-board-test/`:
 | `bc250-speedtest-history.csv`              | One line per speed test, with interface, server, speeds, idle/loaded latency, jitter and loss. |
 
 At the end of the run they are copied to `~/Desktop/bc250-board-test/` of the desktop user, for easy sharing.
-In the GUI this is **Settings > General > Copy the full reports to Desktop**, on by default. On the command line,
+In the GUI this is **Settings > General > Copy the full reports to ~/Desktop/bc250-board-test after each run**,
+on by default. On the command line,
 `--no-desktop` skips it.
 During a stress run the files are flushed to disk after every sample, so they survive a hard lockup.
 
@@ -601,8 +606,8 @@ without a warning, because the network cable needs nothing.
 
 | #  | Test           | Checks                                                                   |
 |----|----------------|--------------------------------------------------------------------------|
-| 15 | Boot Logs      | Current-boot kernel errors, with known-benign BC-250 noise filtered out. |
-| 16 | System Journal | Journal errors from the last 7 days, same filtering.                     |
+| 15 | Boot Logs      | Current-boot journal errors, with known-benign BC-250 noise filtered out.  |
+| 16 | System Journal | Journal warnings and errors from the last 7 days, same filtering.          |
 
 Tests 15, 16 and 17 follow the log lines with a hint per kind of line. The hint says what the line means and what
 to do about it, with the number of lines it covers. Real faults come first, such as GPU hangs, disk errors and
@@ -760,7 +765,7 @@ sudo mkdir -p /var/log/journal && sudo systemd-tmpfiles --create --prefix /var/l
 sudo sysctl -w kernel.nmi_watchdog=1
 ```
 
-Then reproduce it under observation. On the **Stability and thermals** page set **Stress duration** to 300 s
+Then reproduce it under observation. On the **Gaming** page set **Stress duration** to 300 s
 and **Sample interval** to 1 s, and run the stress test (41).
 
 The telemetry line prints to the page's terminal every 10 seconds. So if the board dies, the last values on
@@ -877,7 +882,7 @@ versions are not detected**. The binary has to be on `PATH`, so layering is the 
 | `memtest_vulkan` or `vkpeak`         | Test 41 GPU load  | vkmark, glmark2 or vkcube, which are much lighter. See below.                       |
 | `vkmark`, `glmark2` or `vkcube`      | Test 41 GPU load  | CPU-only stress plus a warning.                                                     |
 | `lm_sensors`                         | Test 22           | Falls back to reading hwmon sysfs directly.                                         |
-| `vulkan-tools`                       | Tests 20, 21      | Those checks are skipped.                                                           |
+| `vulkan-tools`                       | Tests 20, 21, 47, 60 | Those checks are skipped.                                                           |
 | `nvme-cli` or `smartmontools`        | Test 10           | DRAM/HMB guessed from the kernel log, and no SMART health.                          |
 | `fio`                                | Test 43           | Random 4K read skipped. Sequential read and write use `dd`.                         |
 | Ookla `speedtest` or `speedtest-cli` | Test 44           | Test 44 warns and is skipped. `speedtest-cli` has no loaded latency or packet loss. |

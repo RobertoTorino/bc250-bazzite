@@ -421,8 +421,8 @@ def import_payload(source: Path, payload_dir: Path) -> ImportResult:
             shutil.copy2(path, payload_dir / name)
             copied.append(name)
     if HELIXSR_DLL not in copied:
-        raise HelixError(("No {0} found in {1}. Pick the folder the HelixSR release was extracted to (or the release "
-                          "zip itself).").format(HELIXSR_DLL, source))
+        raise HelixError(("No {0} found in {1}. Pick the folder you extracted the HelixSR release to, or the release "
+                          "zip itself.").format(HELIXSR_DLL, source))
     if is_hlx(payload_dir / HLX_DLL):
         (payload_dir / HLX_DLL).unlink()            # the payload is one release: HelixSR 1 or 2 now
     shutil.rmtree(scaler_release(payload_dir), ignore_errors=True)
@@ -613,7 +613,7 @@ def deploy_folder(folder: Path, payload_dir: Path, ini_text: str | None = None,
     points at it; without, a second upscaler left from an earlier deploy is removed (and UpscalerDll cleared when
     it named it)."""
     if _require_ready(payload_dir).hlx:
-        raise HelixError("HelixSR 3 has no DLL for a stand-alone OptiScaler folder: its games without FSR 3.1 get "
+        raise HelixError("HelixSR 3 has no DLL for a stand-alone OptiScaler folder. Its games without FSR 3.1 get "
                          "HelixSR Scaler. For this mode, get the fallback release on the Setup page.")
     if second_upscaler is not None:
         if not second_upscaler.is_file():
@@ -766,11 +766,11 @@ def install_optiscaler(exe_dir: Path, folder: Path, payload_dir: Path) -> list[P
     the same name goes to <folder>/backup, an existing OptiScaler.ini is kept there as a copy and edited; again on
     the same folder it updates OptiScaler and keeps the record. Returns the files written."""
     if not optiscaler_available(payload_dir):
-        raise HelixError("The payload has no OptiScaler. HelixSR 1.7.0 to 1.8.1 ship it: get or import such a release.")
+        raise HelixError("The payload has no OptiScaler. HelixSR 1.7.0 to 1.8.1 ship it. Get or import such a release.")
     if not exe_dir.is_dir():
         raise HelixError("{0} does not exist.".format(exe_dir))
     if exe_dir.resolve() == folder.resolve():
-        raise HelixError(("The HelixSR folder must not be the game's .exe folder: pick a folder of its own, such as "
+        raise HelixError(("The HelixSR folder must not be the game's .exe folder. Pick a folder of its own, such as "
                           "{0}.").format(exe_dir / "HelixSR"))
     source = payload_dir / OPTISCALER_DIR
     record = optiscaler_record(folder) or {}
@@ -1238,7 +1238,7 @@ def scaler_remove(game_dir: Path, payload_dir: Path, runner: Runner | None = Non
     looks the game up again afterwards for its answer, and does not find a folder outside the stores' libraries once
     Scaler's files are gone: with HelixSR Scaler's record gone from *exe_folder*, the removal stands all the same."""
     if not scaler_available(payload_dir):
-        raise HelixError("The payload has no HelixSR 3 release to remove HelixSR Scaler with: import it again, or run "
+        raise HelixError("The payload has no HelixSR 3 release to remove HelixSR Scaler with. Import it again, or run "
                          "HelixSR-Scaler-remove.sh in the game's .exe folder.")
     try:
         return run_bridge(payload_dir, "remove", "--game", str(game_dir), runner=runner)

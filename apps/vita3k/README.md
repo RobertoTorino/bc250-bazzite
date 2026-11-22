@@ -6,11 +6,11 @@
 
 # Vita3K Manager
 
-Plays PS Vita games on the **AMD BC-250** on **Bazzite** with [Vita3K](https://vita3k.org): installs the Vita3K build
-it was tried with, installs your PS Vita firmware and your games through Vita3K and adds the games to Steam for Game
-Mode.
+Vita3K Manager lets you play PS Vita games on the **AMD BC-250** with **Bazzite**. It uses
+[Vita3K](https://vita3k.org). It installs the Vita3K build it was tried with. It installs your PS Vita firmware and
+your games through Vita3K. It adds the games to Steam for Game Mode.
 
-How to install and use it: [Vita3K Manager in the manual](https://robertotorino.github.io/bc250-bazzite/apps/vita3k/).
+How to install and use it: [Vita3K Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/vita3k/).
 
 ## Disclaimer
 
@@ -23,4 +23,5 @@ Vita3K, Xenia) and of Decky Loader, HelixSR and DirectMesh belong to their owner
 
 ## License
 
-GPL-3.0-or-later, see [LICENSE](LICENSE). Vita3K is a separate program (GPL-2.0), downloaded from its own release.
+GPL-3.0-or-later, see [LICENSE](LICENSE). Vita3K is a separate program (GPL-2.0). The app downloads it
+from its own release.

@@ -66,8 +66,8 @@ NOT_INSTALLED = "Not installed. Install it with the Install button."
 INSTALLED = "Installed. Uninstall with the Uninstall button."
 VERSIONS_TIP = "Put another installed PPSSPP build in use, or download one in the version manager"
 
-RUNNING_REMOVE = "PPSSPP is running: close it first, then remove the game."
-RUNNING_START = "PPSSPP is running: close it first, then start the game."
+RUNNING_REMOVE = "PPSSPP is running. Close it first, then remove the game."
+RUNNING_START = "PPSSPP is running. Close it first, then start the game."
 UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk. A window first lists what would go, "
                       "and you uncheck what to keep. Nothing is deleted before you confirm")
 

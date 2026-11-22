@@ -4,16 +4,16 @@
 
 # App categories
 
-Every app in the suite belongs to one of five categories, and every app in a category has the same icon. The icon
+Every app in the suite belongs to one of four categories, and every app in a category has the same icon. The icon
 tells you what kind of app it is: one that keeps the board running well, one for graphics in games, one for playing,
-a utility, or a tool for working on the suite.
+or a utility.
 
 ## Why categories
 
 - **You see at a glance what an app is for.** In the portal, the menu, on the Desktop and in Steam, the icon shows
   its kind before you read the name.
-- **The suite looks like one suite.** Twenty-odd apps with twenty-odd styles would look like a pile of separate
-  tools; five icons look like one family.
+- **The suite looks like one suite.** Thirty-odd apps with thirty-odd styles would look like a pile of separate
+  tools; four icons look like one family.
 - **One place to change them.** Each category's icon is kept once, in `icons/<category>/`. A new app picks a
   category and gets its icon; a new icon for a category reaches every app in it. How that works is in
   [Architecture and consistency](../development/architecture.md#icons).
@@ -27,7 +27,7 @@ The categories are also the [portal's](../portal.md) categories: an app's tile i
 | ![](../assets/categories/sustainable.webp){ .app-icon } | **Sustainable** | The board itself: test it, tune it, unlock it, cool it, and keep it running well for a long time. Most of these apps change how the board runs. |
 | ![](../assets/categories/graphics.webp){ .app-icon } | **Graphics** | Graphics features for games: upscaling, async compute and mesh shaders on the board's GPU. |
 | ![](../assets/categories/gaming.webp){ .app-icon } | **Gaming** | Playing: emulators, Remote Play with your console, and PlayStation trivia. |
-| ![](../assets/categories/utilities.webp){ .app-icon } | **Utilities** | Handy tools around the board: an overlay, a USB stats screen, the PS5 HD Camera as a webcam, the DualSense's firmware, the BIOS settings, Wi-Fi, the TV over HDMI-CEC, file transfer and a password generator. |
+| ![](../assets/categories/utilities.webp){ .app-icon } | **Utilities** | Handy tools around the board: an overlay, a USB stats screen, the PS5 HD Camera as a webcam, the DualSense's firmware, the BIOS settings, the TV over HDMI-CEC, file transfer and a password generator. |
 
 ## Apps by category
 

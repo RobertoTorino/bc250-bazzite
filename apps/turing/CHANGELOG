@@ -1,3 +1,13 @@
+Changelog: 22-11-2026 17:16:36
+
+Fixed. The text of the wiki chapter, the README and the window's hints, tooltips and messages was rewritten to the
+suite's writing standard: short sentences with one fact each, no chains, plain American English. The tooltip of the
+color buttons and the color dialog's title say color instead of colour, and the note for a background picture that
+cannot be read now says color too. The hint under Access to the screen now ends with "You will be asked for your
+password." The README links to the wiki instead of the manual. No labels were renamed and no facts needed correcting.
+Nothing the app does has changed. The window's tests now expect the new wording of the message after a failed weather
+request, and their fake network error uses the new wording.
+
 Changelog: 22-11-2026 11:56:40
 
 Release 2.7.0.

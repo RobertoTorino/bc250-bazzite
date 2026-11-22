@@ -108,7 +108,7 @@ VERSION=$(tr -d '[:space:]' <"$SRC/VERSION")
 command -v python3 >/dev/null 2>&1 || die "python3 is not installed."
 python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || die "Python 3.10 or newer is needed."
 python3 -c 'import venv, ensurepip' 2>/dev/null || die "python3 has no venv/ensurepip module."
-command -v pkexec >/dev/null 2>&1 || info "Note: pkexec is not installed; reading and writing CMOS needs it."
+command -v pkexec >/dev/null 2>&1 || info "Note: pkexec is not installed. Reading and writing CMOS needs it."
 
 info "Installing $APP_NAME $VERSION"
 

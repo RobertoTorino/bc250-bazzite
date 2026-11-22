@@ -49,6 +49,7 @@ of its own that keeps running when the dashboard closes.
 | **Nexus Release Tool** | The release front end: a release's versions, CHANGELOG entries, pins and portal bump, and the board checks ([Releases](releases.md)). |
 | **Nexus Demo Recorder** | A portal installation recorded with OBS ([below](#demo-recorder)). |
 | **Nexus Deps** | The suite's Python packages and tools on this machine, what is missing or outdated, and Fix for it ([below](#deps)). |
+| **Nexus Garbage Remover** | The garbage on this machine, with its size, and Delete for it ([below](#garbage-remover)). |
 | **Nexus Installer Tests** | The suite's installer tests, one at a time ([below](#installer-tests)). |
 | **Nexus Remix Studio** | Mixes a voice with a synthesized background and saves the result ([below](#remix-studio)). |
 | **Nexus Sound Lab** | Short sound effects for the suite's windows, made from sliders ([below](#sound-lab)). |
@@ -97,7 +98,8 @@ shows below, and when one fails the ones after it stay open. It needs the GitHub
 
 The tours are recorded from the checkout as it is now, from the real windows, offscreen: nothing shows on the
 screen while they record. They go to your Videos folder, with music under them that fades out over the last two
-seconds (untick **Music** for a video without sound). **Size** is 1080p (1920 × 1080) by default, the wiki's;
+seconds (untick **Music under the video, faded out over the last two seconds** for a video without sound). **Size**
+is 1080p (1920 × 1080) by default, the wiki's;
 choose 2160p (4K, 3840 × 2160) for a video for YouTube, which shows a 4K upload far sharper than a 1080p one: the
 same tour, drawn at twice the scale so the text stays crisp, about four times the time, and `-2160p` before `.mp4`
 in its name (1440p is the step between). A recording runs in the background; its output shows in the dialog,
@@ -311,8 +313,8 @@ The app remembers the voice file, the silence level, the background, the mix, th
 **Nexus Deps** (`dev/deps/`) lists the Python packages and external tools of the suite's apps installed on this
 machine, which apps and features use them, and what is missing or must be updated; **Fix** installs that. On top,
 it shows whether a Bazzite update waits for you and every update the machine has: Bazzite's image, the Flatpaks,
-Homebrew, Rust, the development venv and Prime95's mprime when it is in `~/mprime`. It runs from the checkout, like every development app; its catalog of the
-suite is `dev/deps/nexus_deps/catalogs/bc250-bazzite.toml`.
+Homebrew, Rust, the development venv and Prime95's mprime when it is in `~/mprime`. It runs from the checkout, like
+every development app; its catalog of the suite is `dev/deps/nexus_deps/catalogs/bc250-bazzite.toml`.
 
 ```bash
 dev/deps/run.sh                             # open it
@@ -350,6 +352,7 @@ stays, since `uupd` still updates the Flatpaks, Homebrew and distroboxes.
 | Homebrew | `brew update`, then `brew outdated` (formulae and casks) | `brew upgrade` |
 | Rust | `rustup check` (the toolchains and rustup) | `rustup update` |
 | Python venv (.venv-linux) | `pip list --outdated` and a dry run of `requirements-dev.txt` | `pip install --upgrade` of the outdated packages within `requirements-dev.txt` |
+| Prime95 (mprime), when it is in `~/mprime` | mersenne.org's download page, against `~/mprime/.release` | Board Test's `install-requirements.sh --mprime` |
 
 **Update** on a card asks with its command and runs it in a window with its output; **Fix** runs every card's with
 the packages' and tools' fixes. A source whose tool is missing has no card; one that could not be checked (offline)
@@ -417,7 +420,7 @@ shows their output and stops at the first that fails, then the check runs again.
 - The machine's updates: each card's **Update** command (above), after the packages and the tools.
 - A dnf step lists each of its packages with a checkbox in the question, all checked: only the checked ones are
   installed or updated. **All of …** checks them all, or clears them when all were checked; **Yes** is off when
-  nothing is left to run. Uncheck the kernel (`linux-ps5`, `kernel`) to keep the one you have.
+  nothing is left to run. Uncheck the kernel (`kernel`) to keep the one you have.
 - Optional tools are left out: the apps work without them. A tool neither Homebrew nor Fedora has (`ujust`, Steam,
   a tool an app brings itself) is left to the app's chapter, which says how to get it.
 
@@ -454,3 +457,32 @@ Each card has one status, the most urgent that applies. The boxes at the top cou
 | **Check failed** | package | PyPI could not be reached (no network). |
 
 The check sends the names and versions of the Python packages to PyPI and OSV.dev, nothing else.
+
+## Garbage Remover
+
+**Nexus Garbage Remover** (`dev/garbage/`) shows the garbage on this machine and deletes what you check. Garbage is
+files nobody needs again, which fill up a disk over time. Our tools' own leftovers are not in it:
+`tools/clean_caches.py` removes those before every local CI run.
+
+The table lists each place that holds 1 MB of garbage or more, the largest first:
+
+| What | Where | Removed with |
+|---|---|---|
+| **Crash dumps** | `/var/lib/systemd/coredump` | `sudo find /var/lib/systemd/coredump -mindepth 1 -delete` |
+| **Steam's crash reports** | `config/htmlcache/BrowserMetrics` in Steam's folder | `find <that folder> -mindepth 1 -delete` |
+| **Trash** | `~/.local/share/Trash` | `find ~/.local/share/Trash -mindepth 2 -delete` |
+| **Picture previews** | `~/.cache/thumbnails` | `find ~/.cache/thumbnails -mindepth 1 -delete` |
+| **pip's download cache** | `~/.cache/pip` | `find ~/.cache/pip -mindepth 1 -delete` |
+| **Homebrew's downloads** | `~/.cache/Homebrew` | `brew cleanup --prune=all` |
+
+Each row shows its size, and its tooltip says what the files are. Every row is checked at first. Uncheck a row to
+keep that place. **Can be removed** shows the total, and **Checked** shows what **Delete** would remove. **Delete**
+asks first and lists each place with its size. The crash dumps belong to the system, so for them the app asks for
+your password once. The folders themselves stay, only their content goes. The round symbol at the right of the
+title looks again.
+
+Every hour, or at the next login when the machine was off, the app measures the garbage without a window. From
+1 GB on, a desktop notification says how much there is, with the largest places. It says so once a day, or sooner
+when the garbage grew by another GB. **Open** opens the window. The notification deletes nothing. It is a systemd
+user timer, `nexus-garbage-remover-reminder.timer`, that `install.sh` adds and `--uninstall` removes.
+`systemctl --user disable --now nexus-garbage-remover-reminder.timer` switches it off.

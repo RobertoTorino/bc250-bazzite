@@ -28,12 +28,12 @@ GAP = 8
 
 TIPS = {
     "vram_used": ("VRAM in use: {used} of the {split} split. The split is the part of the 16 GB the GPU keeps for "
-                  "itself, set in CMOS and read at boot. The screen's framebuffers must fit in it: when a game "
-                  "fills it, the next frame cannot be shown and the session ends (Board Test, test 37)."),
+                  "itself. It is set in CMOS and read at boot. The screen's framebuffers must fit in it. When a "
+                  "game fills it, the GPU cannot show the next frame, and the session ends (Board Test, test 37)."),
     "vram_free": "Free VRAM: {mib} of the split is not in use now. Linux cannot use it for anything else.",
     "vram": "The VRAM split: {mib}, the part of the 16 GB the GPU keeps for itself, set in CMOS and read at boot.",
     "gtt": ("GTT in use: the GPU borrows {mib} of system RAM now. When the VRAM split is full, the GPU grows into "
-            "the RAM like this, up to the GTT limit (the bracket below the bar)."),
+            "the RAM like this, up to the GTT limit. The bracket below the bar shows that limit."),
     "zram": ("zram: {ram} of RAM holds {stored} of swapped-out pages, compressed. Pages Linux swaps out stay in RAM, "
              "only smaller, so swapping is fast."),
     "zswap": ("zswap: {ram} of RAM holds {stored} of pages, compressed, on their way to the swap device. Pages that "
@@ -152,7 +152,7 @@ def gtt_text(memory: Memory, usage: Usage | None) -> tuple[str, str]:
     if memory.gtt_capped:
         second = f"TTM limit {ttm} is above the RAM, so the GTT stops at the RAM"
     elif memory.ttm_on_cmdline:
-        second = f"TTM limit {ttm} (ttm.pages_limit on the kernel command line) sets the GTT"
+        second = f"TTM limit {ttm} sets the GTT, from ttm.pages_limit on the kernel command line"
     else:
         second = f"TTM limit {ttm}: the kernel's default, half the RAM"
     return first, second
@@ -199,7 +199,7 @@ def swap_rows(memory: Memory, usage: Usage | None) -> list[tuple[str, str, float
         size = usage.disk_swap_size_mib
         rows.append((f"disk swap: {mib_text(usage.disk_swap_used_mib)} used of {mib_text(size)}", GREY,
                      min(usage.disk_swap_used_mib / size, 1), 0,
-                     "Swap on the disk: slow, but it does not take RAM."))
+                     "Swap on the disk is slow, but it does not take RAM."))
     if not rows:
         rows.append(("No swap.", GREY, 0, 0, "Without swap, Linux cannot move unused pages out of the RAM."))
     return rows
@@ -320,7 +320,8 @@ class MemoryMap(QWidget):
         y = 0.0
         parts = ram_layout(self.memory, self.usage)
         if not parts:
-            self._text(p, 0, y, "The VRAM split and the RAM are not known: no amdgpu device, or no /proc/meminfo.",
+            self._text(p, 0, y, "The VRAM split and the RAM are not known. There is no amdgpu device, or no "
+                       "/proc/meminfo.",
                        dim=True)
             return
         self._text(p, 0, y, f"The {TOTAL_MIB // 1024} GB of GDDR6, as the firmware divided it at this boot (live)",
@@ -334,9 +335,9 @@ class MemoryMap(QWidget):
         self._bracket(p, y + 2, ram_x, bracket_w)
         first, second = gtt_text(self.memory, self.usage)
         self.zones.append((QRectF(ram_x, y, bracket_w, GAP + 2 * ROW_H),
-                           "The GTT limit: how much of the system RAM the GPU may borrow on top of the split. amdgpu "
-                           "takes it from ttm.pages_limit (by default half the RAM) and never makes it larger than "
-                           "the RAM."))
+                           "The GTT limit is how much of the system RAM the GPU may borrow on top of the split. "
+                           "The amdgpu driver takes it from ttm.pages_limit. Without that argument, the limit is half "
+                           "the RAM. The GTT never grows larger than the RAM."))
         y += GAP
         self._text(p, ram_x, y, first)
         self._text(p, ram_x, y + ROW_H, second, dim=True)

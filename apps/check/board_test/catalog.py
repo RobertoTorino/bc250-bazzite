@@ -75,8 +75,8 @@ CATEGORIES: list[Category] = [
                 "temporary file to measure write speed and where the SLC cache runs out."),
     ]),
     Category("logs", "System logs", [
-        TestDef("15", "Boot Logs", "Current-boot kernel errors, with known-benign BC-250 noise filtered out."),
-        TestDef("16", "System Journal", "Journal errors from the last 7 days, same filtering."),
+        TestDef("15", "Boot Logs", "Current-boot journal errors, with known-benign BC-250 noise filtered out."),
+        TestDef("16", "System Journal", "Journal warnings and errors from the last 7 days, same filtering."),
     ]),
     Category("gpu", "GPU and graphics", [
         TestDef("17", "amdgpu Driver", "Confirms amdgpu is bound to the Cyan Skillfish APU."),

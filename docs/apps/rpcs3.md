@@ -48,8 +48,8 @@ The header has four pills:
 - **RPCS3 Uninstall**
 - **Refresh**, which reads everything again
 
-Beside the title is a row of states. Each shows its name and a colored dot. Green is good, orange is a
-warning and red is a problem. Hold the pointer over a state to read it in full.
+Beside the title is a row of states. Each shows its name and a dot. The dot is green when all is well,
+and red when not. Hold the pointer over a state to read it in full.
 
 - **Installed**: the app's own state, such as **Not installed**
 - **RPCN**: the state of RPCS3's online service, see [RPCN](#rpcn)
@@ -405,7 +405,7 @@ dot that shows its state. Its tooltip says the state in full:
 
 - **RPCN Online**, with a green dot
 - **RPCN Offline**, with a red dot
-- **RPCN Off**, with a plain dot
+- **RPCN Off**, with a red dot
 
 While RPCS3 runs, it shows whether RPCS3 signed in, as its log says. Otherwise, it shows whether the server answers.
 

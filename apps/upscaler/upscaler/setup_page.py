@@ -44,10 +44,10 @@ class SetupPage(QWidget):
         header, _ = page_header("Setup")
         layout.addLayout(header)
         layout.addWidget(hint_label(
-            "One click does what the HelixSR README asks you to do by hand: download the release, fetch NVIDIA's "
-            "DLSS DLL, Microsoft's shader compiler and (on Bazzite) a portable Python in parallel, build the "
-            "network with HelixSR's own setup and import the result as the payload. The DLSS DLL is used once and "
-            "deleted; the network files it produces are NVIDIA's property and stay on this PC."))
+            "One click does what the HelixSR README asks you to do by hand. It downloads the release, and in parallel "
+            "NVIDIA's DLSS DLL, Microsoft's shader compiler and, on Bazzite, a portable Python. It builds the network "
+            "with HelixSR's own setup and imports the result as the payload. The app uses the DLSS DLL once and "
+            "deletes it. The network files it produces are NVIDIA's property and stay on this PC."))
 
         updates = QGroupBox("Releases")
         form = QFormLayout(updates)
@@ -81,7 +81,7 @@ class SetupPage(QWidget):
         self.version.addItem("Latest release", False)
         self.version.addItem("{0} (fallback)".format(FALLBACK_VERSION), True)
         self.version.setToolTip(("HelixSR's developer recommends {0} when the latest release does not work for you. "
-                                 "Switching builds the network files again; deploy again per game afterwards.")
+                                 "Switching builds the network files again. Deploy again per game afterward.")
                                 .format(FALLBACK_VERSION))
         self.version.currentIndexChanged.connect(lambda _: self.fallback_changed.emit(self.fallback()))
         choice.addWidget(self.version)
@@ -89,15 +89,15 @@ class SetupPage(QWidget):
         # Native Vulkan kernels (owner, 20-11-2026: an option, off by default)
         self.vulkan = QCheckBox("Native Vulkan kernels for HLX DLSS")
         self.vulkan.setToolTip("HelixSR 3: Vulkan games run HLX DLSS in Vulkan instead of through HelixSR Scaler's "
-                               "DirectX 12 bridge. The build takes about 11 minutes on a BC-250 instead of 5-6.")
+                               "DirectX 12 bridge. The build takes about 11 minutes on a BC-250 instead of 5–6.")
         self.vulkan.toggled.connect(self.vulkan_changed)
         choice.addWidget(self.vulkan)
         choice.addStretch(1)
         vbox.addLayout(choice)
         dlss = QHBoxLayout()
         self.use_local = QCheckBox("Use a {0} already on this PC:".format(DLSS_DLL))
-        self.use_local.setToolTip(("Skips the 59 MB download from NVIDIA's GitHub. Only DLSS 310.7.0 (the exact "
-                                   "build HelixSR pins) is accepted; Find looks through the Steam libraries for one."))
+        self.use_local.setToolTip(("Skips the 59 MB download from NVIDIA's GitHub. The app takes only DLSS 310.7.0, the "
+                                   "exact build HelixSR pins. Find in Steam looks through the Steam libraries for one."))
         self.use_local.toggled.connect(self._update_buttons)
         dlss.addWidget(self.use_local)
         self.dlss_path = QLineEdit()
@@ -115,8 +115,8 @@ class SetupPage(QWidget):
 
         actions = QHBoxLayout()
         self.start = accent_button("Download and build", ("Download the latest release and everything the setup "
-                                                          "needs, build the network and import the result (HelixSR 3: "
-                                                          "HLX FSR 4 comes built, so only the download)"))
+                                                          "needs, build the network and import the result. For HelixSR 3, "
+                                                          "HLX FSR 4 comes built and needs only the download."))
         self.start.clicked.connect(self._start_clicked)
         actions.addWidget(self.start)
         self.cancel = QPushButton("Cancel")
@@ -216,7 +216,7 @@ class SetupPage(QWidget):
             self.dlss_path.setToolTip(plain_tooltip("\n".join(str(p) for p in paths)))
             self.append("Found {0} matching {1}: {2}".format(len(paths), DLSS_DLL, ", ".join(str(p) for p in paths)))
         else:
-            self.append("No DLSS 310.7.0 {0} found in the Steam libraries; it will be downloaded.".format(DLSS_DLL))
+            self.append("No DLSS 310.7.0 {0} found in the Steam libraries. The setup downloads it.".format(DLSS_DLL))
 
     def set_running(self, on: bool) -> None:
         self._running = on

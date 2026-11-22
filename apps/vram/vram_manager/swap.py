@@ -160,7 +160,7 @@ def file_problem(wanted_mib: int, var: Path = Path("/var"), proc_root: Path = Pa
                 "and then apply this one.")
     free = free_mib(var)
     if free is not None and free + have < wanted_mib + SPARE_MIB:
-        return (f"A swap file of {wanted_mib} MiB does not fit: the disk has {free + have} MiB for it, and "
+        return (f"A swap file of {wanted_mib} MiB does not fit. The disk has {free + have} MiB for it, and "
                 f"{SPARE_MIB} MiB stays free.")
     return ""
 

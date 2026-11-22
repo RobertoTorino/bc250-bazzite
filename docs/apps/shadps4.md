@@ -38,8 +38,8 @@ The header has four pills:
 - **shadPS4 Uninstall**
 - **Refresh**, which reads everything again
 
-Beside the title is a row of states. Each shows its name and a colored dot. Green is good, orange is a
-warning and red is a problem. Hold the pointer over a state to read it in full.
+Beside the title is a row of states. Each shows its name and a dot. The dot is green when all is well,
+and red when not. Hold the pointer over a state to read it in full.
 
 - **Installed**: the app's own state, such as **Not installed**
 - **shadNet**: the state of shadPS4's online service, see [shadNet](#shadnet)
@@ -372,7 +372,7 @@ Beside the title, **shadNet** has a dot that shows its state. Its tooltip says t
   answers, so shadPS4 can sign in when a game starts. The app asks the server without signing in.
 - **shadNet Offline** has a red dot. The server does not answer, or shadPS4's sign-in was refused or dropped. The
   tooltip says why.
-- **shadNet Off** has a plain dot. No account is set up, or **Sign in to shadNet when a game starts** is off.
+- **shadNet Off** has a red dot. No account is set up, or **Sign in to shadNet when a game starts** is off.
 
 While shadPS4 runs, the app reads shadPS4's log every few seconds to see whether it signed in.
 

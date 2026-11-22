@@ -25,7 +25,7 @@ from . import saves, style
 from .saves import Save, SaveError
 
 PICTURE = 96                            # the save's picture at this width at most (ICON0.PNG is 144 by 80)
-RUNNING = "PPSSPP is running: close it before changing a save, it would write its own copy over the change."
+RUNNING = "PPSSPP is running. Close it before you change a save, because it would write its own copy over the change."
 GAME, SAVE, FOLDER, SIZE, SAVED = range(5)
 
 

@@ -25,8 +25,8 @@ Whether a game runs, and how well, is up to Xenia. Its
 
 The header has four pills: the **Xenia version**, **Xenia Install**, **Xenia Uninstall** and **Refresh**, which reads everything again.
 
-Beside the title is a row of states. Each shows its name and a colored dot. Green is good, orange is a
-warning and red is a problem. Hold the pointer over a state to read it in full.
+Beside the title is a row of states. Each shows its name and a dot. The dot is green when all is well,
+and red when not. Hold the pointer over a state to read it in full.
 
 - **Installed**: the app's own state, such as **Not installed**
 - **Controller**: **Controller connected**, or **No controller** when none is, checked again every few seconds
@@ -37,11 +37,12 @@ in Steam starts only while Steam is signed in. So start Steam and sign in before
 
 Under the links to **Xenia's release notes** and to this wiki, a second row of two pills follows, each with what it is for on top and what it does under it: **Games Uninstall** and **Available in Steam** (how many of your games are in Steam). Below the pills are two columns. The first says in two lines where each stands (**Xenia:**, **Game folder:**), short, with more in their tooltips. The second shows the **Installed version:** of Xenia. Then comes a row of six tabs: **Your games**, **Start game**, **Memory cards**, **Settings**, **View logs** and **Clear logs**. Start game and Clear logs are buttons.
 
-- **Xenia**: **Not installed.** or **Installed.**, with the button to use under it. The tooltip says which build
-  is installed, or what Install takes, and when a newer build is out. **Install** downloads Xenia (about 18 MB)
-  and checks it against the checksum of the build the app was tried with before installing it; when another build
-  is in use, the tooltip and the log say so, and **Install** puts it back in use. **Uninstall** takes it out
-  again; Xenia's own folder, with its settings, saves and installed content, stays.
+- **Xenia**: **Not installed. Install it with the Install button.** or **Installed. Uninstall with the Uninstall
+  button.** The tooltip says which build is installed, or what Install takes, and when a newer build is out.
+  **Install** downloads Xenia (about 16 MB) and checks it against the checksum of the build the app was tried with
+  before installing it; when another build is in use, the tooltip and the log say so, and **Install** puts it back
+  in use. **Uninstall** takes it out again; Xenia's own folder, with its settings, saves and installed content,
+  stays.
 - **Game folder**: where the app looks for games, `~/Games/XBOX360` and a removable drive's `Games/XBOX360` (see
   [Where your games go](#where-your-games-go)); nothing is chosen or browsed to. The **i** beside them says what
   goes there. A game may sit up to six folders deep.
@@ -119,7 +120,8 @@ wide picture, the banner and the logo. Press **Steam artwork…** to enter the k
 picture SteamGridDB does not have stays drawn. See [Covers from SteamGridDB](covers.md) for the key, how a game is
 looked up and how to use pictures of your own.
 
-**Steam** in the line under the table is a link: it opens Steam's library (Steam starts when it does not run).
+**Steam** in the info symbol's text under the table is a link: it opens Steam's library (Steam starts when it does
+not run).
 
 #### A game in Steam more than once
 

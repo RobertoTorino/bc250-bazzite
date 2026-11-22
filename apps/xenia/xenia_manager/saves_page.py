@@ -22,7 +22,7 @@ from bc250_core.widgets import hint_label
 from . import saves, style
 from .saves import Save, SaveError
 
-RUNNING = "Xenia is running: close it before changing a save, it would write its own copy over the change."
+RUNNING = "Xenia is running. Close it before you change a save, because it would write its own copy over the change."
 GAME, SAVE, FOLDER, SIZE, SAVED = range(5)
 
 

@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Installs BC-250 Upscaler Manager for the current user: a private venv with PyQt6, the app
-# in ~/.local/share, a launcher in ~/.local/bin and a desktop entry with icon, so it shows up in
-# the application menu like any other app. Nothing is layered with rpm-ostree, no root needed.
+# Installs BC-250 Upscaler Manager for the current user, so it shows up in the application menu like any
+# other app. You get a private venv with PyQt6, the app in ~/.local/share, a launcher in ~/.local/bin and a
+# desktop entry with icon. It layers nothing with rpm-ostree and needs no root.
 # The imported HelixSR release lives in ~/.local/share/bc250-upscaler/payload and is
-# kept across updates and uninstalls (it is never shipped with this app).
+# kept across updates and removals. This app never ships it.
 #
 #   ./install.sh                         install or update
 #   ./install.sh --no-desktop-shortcut   app menu entry only, no icon on the Desktop
-#   ./install.sh --uninstall             remove everything it installed; keeps the payload and settings
+#   ./install.sh --uninstall             remove everything it installed, but keep the payload and settings
 #   ./install.sh --uninstall --purge     also remove the imported payload and the settings
 #   ./install.sh --run                   install and start the app
 #
-# Run it as your own user, not with sudo. Deployed games and the list of them (deployments.json) are never
-# touched, so a reinstalled app can still restore those games.
+# Run it as your own user, not with sudo. It never touches deployed games or their list (deployments.json).
+# So a reinstalled app can still restore those games.
 
 set -euo pipefail
 
@@ -91,9 +91,9 @@ uninstall() {
     command -v update-desktop-database >/dev/null && update-desktop-database -q "$APPS_DIR" || true
     command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -t "$DATA_HOME/icons/hicolor" 2>/dev/null || true
     if [[ -d "$APP_DIR/payload" ]]; then
-        say "Done. The imported HelixSR payload in $APP_DIR/payload and any deployed games were left untouched."
+        say "Done. The imported HelixSR payload in $APP_DIR/payload and any deployed games stay as they were."
     else
-        say "Done. Deployed games were left untouched."
+        say "Done. Deployed games stay as they were."
     fi
 }
 

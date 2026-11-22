@@ -1,3 +1,39 @@
+Changelog: 22-11-2026 17:41:13
+
+Fixed. The message on the Memory cards tab while Vita3K runs reads "Vita3K is running. Close it before you change a
+save, because ...", as the others do. library._in_own_folder(), which nothing called, is gone. Nothing the app does has
+changed.
+
+Changelog: 22-11-2026 17:19:21
+
+Fixed. The text is rewritten to the writing standard (.claude/writing.md): the wiki chapter, the README, the text in the
+window (tooltips, the info texts, the line under the tabs, the questions and the log lines), the Settings tab's
+tooltips, the Delete saves question and the message of bc250-vita3k-run. Sentences are short and hold one fact, the
+spelling is American English, "tick" is "check", "licence" is "license" and "the manual" is "the wiki". Label renamed:
+the table's column Id is ID. Facts corrected: the wiki said to press Install firmware once for each firmware file. That
+button is gone. The files go in ~/Games/Vita/Firmware, and the app gives them to Vita3K by itself. The wiki said the
+app will not delete a game at the top of a drive or in a folder that holds another game. The app refuses only a game
+that is not in Vita3K's storage (ux0/app). Nothing the app does has changed. The tests that changed are
+test_no_user_name_on_the_screen, test_the_firmware_is_taken_from_the_apps_folder,
+test_the_firmware_installed_through_vita3k, test_a_package_installed_through_vita3k, test_the_steam_link,
+test_no_steam_game_mode_or_no_wrapper, test_start_game_starts_the_chosen_game_through_steam and
+test_start_game_waits_for_a_steam_that_does_not_run in test_main_window.py, for the new wording.
+
+Changelog: 22-11-2026 16:59:54
+
+Fixed. The tests hold the config.yml that the pinned build 4377 writes on its first start, as
+tests/fixtures/config-4377.yml. They held build 4186's until now, although the pin had moved. Build 4377 adds four
+settings: disable-mask-bit, enable-cheats and the two keyboard bindings for leaving a game's GUI.
+
+Changelog: 22-11-2026 15:55:10
+
+Fixed. The app's files that had no license line have one now, the arrow of its lists among them.
+
+Changelog: 22-11-2026 15:19:54
+
+Fixed. The states beside the title now use two colors: green when all is well, red when not. A warning and an off state,
+such as Not installed or shadNet Off, are red now. The wiki says so.
+
 Changelog: 22-11-2026 11:56:40
 
 Release 5.9.0.

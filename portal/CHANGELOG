@@ -1,3 +1,16 @@
+Changelog: 22-11-2026 16:56:47
+
+Fixed. The Utilities category's tooltips named Wi-Fi, but no app of the suite handles Wi-Fi anymore. The wiki's App
+categories page drops it too.
+
+Changelog: 22-11-2026 15:19:00
+
+Fixed. The portal reads the controller through pygame, and gave SDL its dummy video and sound drivers for that. They
+stayed in the portal's environment, so every app it opened got them, and so did Steam when such an app started it.
+Steam's web helper then crashed on every window, every 10 seconds, and Steam never signed in. Now the variables are
+there only while SDL starts, as in core's exit_keys. The window class pygame sets goes too. test_touchpad_and_raise.py
+checks that none stays.
+
 Changelog: 22-11-2026 11:56:40
 
 Release 26.11.0. Pins bc250-check-v4.8.0, bc250-quickfix-v1.8.0, bc250-upscaler-v5.7.0, bc250-overlay-v4.7.0, bc250-bios-v4.7.0, bc250-ace-v4.7.0, bc250-mesh-v4.8.0, bc250-vram-v4.7.0, bc250-fan-v4.7.0, bc250-cec-v4.7.0, bc250-sftp-v4.7.0, bc250-turing-v2.7.0, bc250-webcam-v2.7.0, bc250-controller-v2.7.0, bc250-rpcs3-v7.8.0, bc250-consoles-v5.7.0, bc250-clb-v4.7.0, bc250-shadps4-v7.7.0, bc250-datstation-v6.7.0, bc250-ppsspp-v5.8.0, bc250-pcsx2-v7.8.0, bc250-vita3k-v5.9.0, bc250-xenia-v5.9.0, bc250-ssd-v3.7.0, bc250-btpair-v2.7.0, bc250-password-v1.7.0.

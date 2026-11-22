@@ -114,8 +114,8 @@ class MainWindow(QMainWindow):
         self.map = MemoryMap(self.memory)
         lay_map = QVBoxLayout(mapped)
         lay_map.addWidget(self.map)
-        lay_map.addWidget(hint_label("Hover a part for what it is. Picking a new split or GTT limit below shows the "
-                                     "next boot under the bar."))
+        lay_map.addWidget(hint_label("Hover over a part to see what it is. When you pick a new split or GTT limit "
+                                     "below, the next boot shows under the bar."))
         self.timer = QTimer(self)
         self.timer.setInterval(REFRESH_MS)
         self.timer.timeout.connect(self.refresh_usage)
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         for mb in SPLITS:
             self.combo.addItem(split_label(mb), mb)
         self.combo.currentIndexChanged.connect(self.on_pick)
-        self.apply_button = accent_button("Apply…", "Write this split to CMOS; it takes effect after a reboot")
+        self.apply_button = accent_button("Apply…", "Write this split to CMOS. It takes effect after a restart")
         self.apply_button.clicked.connect(self.apply_split)
         self.undo_button = QPushButton("Undo")
         self.undo_button.setToolTip("Write back the split from before the last change")
@@ -135,10 +135,11 @@ class MainWindow(QMainWindow):
         self.read_button.setToolTip("Show the memory block in CMOS and save a dump of it (read-only)")
         self.read_button.clicked.connect(self.read_cmos)
         self.split_info = InfoButton(
-            "The split is the part of the 16 GB the GPU keeps for itself; the rest is system RAM, from which the GPU "
-            "can borrow more (GTT). A larger split prevents the framebuffer pin failures that end a game session "
-            "(Board Test, test 37). The firmware reads the new split at the next boot. Clearing CMOS (jumper or "
-            f"battery) brings back the firmware's default. <a href='{MANUAL_URL}'>Manual</a>", "About the split")
+            "The split is the part of the 16 GB the GPU keeps for itself. The rest is system RAM. The GPU can "
+            "borrow more from the RAM, which is the GTT. A larger split prevents the framebuffer pin failures that "
+            "end a game session (Board Test, test 37). The firmware reads the new split at the next boot. Clearing "
+            "CMOS with the jumper or the battery brings back the firmware's default. "
+            f"<a href='{MANUAL_URL}'>Wiki</a>", "About the split")
         row = QHBoxLayout()
         row.addWidget(QLabel("New split:"))
         row.addWidget(self.combo, 1)
@@ -159,12 +160,13 @@ class MainWindow(QMainWindow):
         self.ttm_button = accent_button("Apply…", "Put this limit in the next boot's kernel arguments (rpm-ostree)")
         self.ttm_button.clicked.connect(self.apply_ttm)
         self.ttm_info = InfoButton(
-            "The GTT limit is how much RAM the GPU may borrow on top of the split: amdgpu takes it from "
-            "ttm.pages_limit on the kernel command line, half the RAM when it is not there, and never more than the "
-            "RAM. A small split needs the argument to reach the whole RAM; with a 6 GB split, 11.5 GiB is already all "
-            "of it. It does not fix the framebuffer pin failures; only a larger split does. rpm-ostree puts it in the "
-            "next boot's kernel arguments as a new deployment, and takes it out again for the kernel default. "
-            f"<a href='{MANUAL_URL}#the-gtt-limit'>Manual</a>", "About the GTT limit")
+            "The GTT limit is how much RAM the GPU may borrow on top of the split. amdgpu takes it from "
+            "ttm.pages_limit on the kernel command line. Without the argument, the limit is half the RAM. The GTT "
+            "never grows past the RAM. A small split needs the argument to reach the whole RAM. With a 6 GB split, "
+            "11.5 GiB is already the whole RAM. The limit does not fix the framebuffer pin failures. Only a larger "
+            "split does. rpm-ostree puts the limit in the next boot's kernel arguments as a new deployment. For the "
+            "kernel default, rpm-ostree takes the argument out again. "
+            f"<a href='{MANUAL_URL}#the-gtt-limit'>Wiki</a>", "About the GTT limit")
         row_ttm = QHBoxLayout()
         row_ttm.addWidget(QLabel("Next boot:"))
         row_ttm.addWidget(self.ttm_combo, 1)
@@ -188,13 +190,13 @@ class MainWindow(QMainWindow):
             row_profiles.addWidget(button)
         row_profiles.addStretch(1)
         row_profiles.addWidget(InfoButton(
-            f"<b>Default profile:</b> the firmware's {split_label(FIRMWARE_MB)} split and the kernel's GTT limit, "
-            f"half the RAM, as a board without changes runs. <b>Games profile:</b> the {split_label(RECOMMENDED_MB)} "
-            "split that "
-            "prevents the framebuffer pin failures (Board Test, test 37) and the 11.5 GiB limit, all the RAM with "
-            "that split: what the suite's boards run. A profile writes what differs from the board: the split to CMOS "
-            "and the limit to the next boot's kernel arguments, each with its password prompt; both take effect after "
-            f"you reboot the board. <a href='{MANUAL_URL}#profiles'>Manual</a>", "About the profiles"))
+            f"The <b>Default profile</b> has the firmware's {split_label(FIRMWARE_MB)} split and the kernel's GTT "
+            "limit, half the RAM. A board without changes runs like this. The <b>Games profile</b> has the "
+            f"{split_label(RECOMMENDED_MB)} split and the 11.5 GiB limit. The split prevents the framebuffer pin "
+            "failures (Board Test, test 37). The limit is all the RAM with that split. The suite's boards run this "
+            "profile. A profile writes only what differs from the board. The split goes to CMOS, and the limit goes "
+            "to the next boot's kernel arguments. Each of the two asks for your password. Both take effect after you "
+            f"restart the board. <a href='{MANUAL_URL}#profiles'>Wiki</a>", "About the profiles"))
         lay_profiles = QVBoxLayout(profiles)
         lay_profiles.addLayout(row_profiles)
 
@@ -203,16 +205,16 @@ class MainWindow(QMainWindow):
         for key, label in swap.LAYOUTS.items():
             self.layout_combo.addItem(label, key)
         self.layout_combo.currentIndexChanged.connect(self.on_layout)
-        self.swap_button = accent_button("Apply…", "Write this swap layout; it takes effect after a restart")
+        self.swap_button = accent_button("Apply…", "Write this swap layout. It takes effect after a restart")
         self.swap_button.clicked.connect(self.apply_swap)
         self.delete_button = QPushButton("Delete swap file…")
         self.delete_button.clicked.connect(self.delete_swap_file)
         self.swap_info = InfoButton(
             "Swap is where Linux puts pages that do not fit in the RAM. <b>zram</b> keeps them in the RAM, "
-            "compressed, which is fast and is what Bazzite does. <b>zswap</b> keeps them compressed in the RAM "
-            "first and moves the oldest to a swap file on the disk, which holds more than the RAM can. "
+            "compressed. That is fast, and it is what Bazzite does. <b>zswap</b> first keeps them compressed in the "
+            "RAM. It moves the oldest pages to a swap file on the disk, which holds more than the RAM can. "
             "<b>vm.swappiness</b> is how readily Linux swaps, from 0 to 200. A layout is a few files of the app's "
-            "own, so Bazzite's own layout comes back when they are removed. "
+            "own. Removing them brings Bazzite's own layout back. "
             f"<a href='{MANUAL_URL}#the-swap-layout'>Wiki</a>", "About the swap layout")
         row_swap = QHBoxLayout()
         row_swap.addWidget(QLabel("Next boot:"))
@@ -298,7 +300,7 @@ class MainWindow(QMainWindow):
             self.settings.set("ttm_outcome", f"The {ttm_label(wanted)} from the last change is active.{borrow}")
         else:
             self.settings.set("ttm_outcome", f"The {ttm_label(wanted)} was written for the next boot, but this boot "
-                                             f"has the {ttm_label(got)}: the board may have started another "
+                                             f"has the {ttm_label(got)}. The board may have started another "
                                              "deployment.")
         self.settings.set("pending_ttm", "")
         self.settings.set("pending_ttm_boot_id", "")
@@ -355,9 +357,10 @@ class MainWindow(QMainWindow):
         self.ttm_box.caption.setText("ttm.pages_limit" if m.ttm_on_cmdline else "ttm.pages_limit (default)")
         self.gtt_box.caption.setText("GTT: all the RAM" if m.gtt_capped else "GTT (RAM the GPU borrows)")
         self.details.setText(f"vm.swappiness {m.swappiness}" if m.swappiness is not None else "")
-        self.details.setToolTip("How readily Linux moves pages out of the RAM into swap, 0 to 200: 0 only when the RAM "
-                                "is full, 60 the kernel's default, 100 and more preferring swap to the file cache "
-                                "(usual with zram, where swap is RAM). Swap layout sets it for the next boot.")
+        self.details.setToolTip("How readily Linux moves pages out of the RAM into swap, from 0 to 200. At 0, Linux "
+                                "swaps only when the RAM is full. 60 is the kernel's default. At 100 and more, Linux "
+                                "prefers swap to the file cache. That is usual with zram, where swap is RAM. Swap "
+                                "layout sets it for the next boot.")
         self.details.setVisible(bool(self.details.text()))
 
         pending = self.settings.get("pending_mb")
@@ -365,7 +368,7 @@ class MainWindow(QMainWindow):
         swap_pending = self.refresh_swap()
         ttm_pending = self.refresh_ttm() or swap_pending
         if pending:
-            self.badge.set_status("Reboot to apply", "warn", f"{split_label(pending)} is in CMOS; the firmware "
+            self.badge.set_status("Reboot to apply", "warn", f"{split_label(pending)} is in CMOS. The firmware "
                                                                "reads it at the next boot.")
             self.split_note.setText(f"<b>{escape(split_label(pending))}</b> is written to CMOS and takes effect after "
                                     "a reboot.")
@@ -397,11 +400,11 @@ class MainWindow(QMainWindow):
         if m.ttm_limit_mib is None:
             return "The kernel's ttm module is not loaded, so there is no limit to read."
         if not m.ttm_on_cmdline:
-            return ("The kernel's default, half the RAM: ttm.pages_limit is not on the kernel command line. The GPU "
-                    f"may borrow up to {system.mib_text(m.gtt_mib)} of the RAM.")
+            return ("This is the kernel's default, half the RAM. ttm.pages_limit is not on the kernel command line. "
+                    f"The GPU may borrow up to {system.mib_text(m.gtt_mib)} of the RAM.")
         text = f"ttm.pages_limit={m.ttm_cmdline_pages} on the kernel command line, {system.mib_text(m.ttm_limit_mib)}."
         if m.gtt_capped:
-            return text + (f" That is above the RAM, so the GTT is all the RAM, {system.mib_text(m.gtt_mib)}: a "
+            return text + (f" That is above the RAM, so the GTT is all the RAM, {system.mib_text(m.gtt_mib)}. A "
                            "higher limit cannot give the GPU more.")
         return text + f" The GPU may borrow up to {system.mib_text(m.gtt_mib)} of the RAM."
 
@@ -419,8 +422,8 @@ class MainWindow(QMainWindow):
                 self.ttm_combo.addItem(f"{system.mib_text(kargs.mib(nxt.pages))}, as set now", nxt.pages)
             self.ttm_combo.setCurrentIndex(self.ttm_combo.findData(nxt.pages))
             if nxt.pages != m.ttm_cmdline_pages:
-                waiting = (f"The {ttm_label(nxt.pages)} is in the next boot's kernel arguments. Reboot the board to "
-                           "use it; the app does not reboot by itself.")
+                waiting = (f"The {ttm_label(nxt.pages)} is in the next boot's kernel arguments. Restart the board "
+                           "to use it. The app does not restart the board by itself.")
                 self.ttm_note.setText(f"<b>{escape(waiting)}</b>")
                 self.ttm_box.caption.setText(f"next boot {system.mib_text(kargs.mib(nxt.pages))}" if nxt.pages
                                              else "next boot: default")
@@ -545,7 +548,7 @@ class MainWindow(QMainWindow):
         answer = QMessageBox.question(
             self, window_title("Swap layout"),
             f"Write the swap layout \"{swap.LAYOUTS[setup.layout]}\" for the next boot?\n\n" + "\n".join(facts)
-            + "\nIt takes effect after you restart the board.\n\nIt needs your password.")
+            + "\nIt takes effect after you restart the board.\n\nYou will be asked for your password.")
         if answer != QMessageBox.StandardButton.Yes:
             return
         result = self.swapper(swap.arguments(setup))
@@ -563,7 +566,8 @@ class MainWindow(QMainWindow):
         answer = QMessageBox.question(
             self, window_title("Delete swap file"),
             f"Delete the swap file {path}?\n\nNo layout uses it anymore.\n"
-            f"It frees {system.mib_text(swap.file_mib(self.var_root))} on the disk.\n\nIt needs your password.")
+            f"It frees {system.mib_text(swap.file_mib(self.var_root))} on the disk.\n\n"
+            "You will be asked for your password.")
         if answer != QMessageBox.StandardButton.Yes:
             return
         result = self.swapper(["--delete-file"])
@@ -585,14 +589,15 @@ class MainWindow(QMainWindow):
         m = self.memory
         left = ""
         if m.vram_mib and m.ram_mib:
-            left = f" The system keeps about {system.mib_text(m.vram_mib + m.ram_mib - mb)} of RAM."
+            left = f"\nThe system keeps about {system.mib_text(m.vram_mib + m.ram_mib - mb)} of RAM."
         if ask:
             answer = QMessageBox.question(
                 self, window_title(title),
                 f"Write a VRAM split of {split_label(mb)} to CMOS?\n\n"
-                f"This changes how the board starts: the firmware reads the split at the next boot.{left} Only the "
-                "split changes; the memory timings stay as they are. You can change it back here, or clear CMOS "
-                "(jumper or battery) for the firmware's default.\n\nIt needs your password.")
+                f"This changes how the board starts.\nThe firmware reads the split at the next boot.{left}\n"
+                "Only the split changes. The memory timings stay as they are.\nYou can change it back here, or "
+                "clear CMOS with the jumper or the battery for the firmware's default.\n\n"
+                "You will be asked for your password.")
             if answer != QMessageBox.StandardButton.Yes:
                 return False
         result = self.runner(["--set-uma", str(mb)])
@@ -619,10 +624,10 @@ class MainWindow(QMainWindow):
         ram = m.ram_mib or 0
         if then == m.gtt_mib:
             if then >= ram * 95 // 100:
-                return (f" The GTT stays at {system.mib_text(m.gtt_mib)}, all the RAM with this split: a limit above "
-                        "the RAM changes nothing until a smaller split.")
-            return f" The GTT stays at {system.mib_text(m.gtt_mib)}."
-        return f" The GTT then is about {system.mib_text(then)} instead of {system.mib_text(m.gtt_mib)} now."
+                return (f"\nThe GTT stays at {system.mib_text(m.gtt_mib)}, all the RAM with this split. A limit "
+                        "above the RAM changes nothing until a smaller split.")
+            return f"\nThe GTT stays at {system.mib_text(m.gtt_mib)}."
+        return f"\nThe GTT then is about {system.mib_text(then)} instead of {system.mib_text(m.gtt_mib)} now."
 
     def apply_ttm(self, pages=PICK, ask: bool = True) -> bool:
         """Puts the limit (the combo's, or *pages*) in the next boot's kernel arguments, after the question and
@@ -639,9 +644,10 @@ class MainWindow(QMainWindow):
                         "than the RAM.")
             answer = QMessageBox.question(
                 self, window_title("GTT limit"),
-                f"{what}{self.gtt_effect(pages)}\n\nrpm-ostree writes a new deployment with the change, which takes "
-                "a minute or two (it puts the layered packages on it again). It takes effect after you reboot the "
-                "board, which the app leaves to you. The split in CMOS stays as it is.\n\nIt needs your password.")
+                f"{what}{self.gtt_effect(pages)}\n\nrpm-ostree writes a new deployment with the change.\nThis takes "
+                "a minute or two, because rpm-ostree puts the layered packages on it again.\nThe change takes effect "
+                "after you restart the board. The app leaves the restart to you.\nThe split in CMOS stays as it "
+                "is.\n\nYou will be asked for your password.")
             if answer != QMessageBox.StandardButton.Yes:
                 return False
         # rpm-ostree works for a minute or two after the password dialog closes: say so where it is seen, with the
@@ -676,8 +682,9 @@ class MainWindow(QMainWindow):
         if changed and ask:
             QMessageBox.information(
                 self, window_title("GTT limit"),
-                f"Done: the {ttm_label(pages)} is in the next boot's kernel arguments.\n\nReboot the board to use "
-                "it. The app does not reboot by itself: use the menu, or in a terminal: systemctl reboot.")
+                f"Done. The {ttm_label(pages)} is in the next boot's kernel arguments.\n\nRestart the board to use "
+                "it. The app does not restart the board by itself. Use the menu, or run systemctl reboot in a "
+                "terminal.")
         self.refresh()
         return True
 
@@ -685,7 +692,7 @@ class MainWindow(QMainWindow):
         """The note while rpm-ostree works: the seconds so far, so the window is seen to be alive."""
         seconds = int(time.monotonic() - self.writing_since)
         self.ttm_note.setText(f"<b>rpm-ostree is writing the next boot's kernel arguments, {seconds} s so far. This "
-                              "takes a minute or two; the window answers again when it is done.</b>")
+                              "takes a minute or two. The window answers again when rpm-ostree is done.</b>")
 
     def apply_profile(self, key: str) -> None:
         """Writes a profile's split and limit where they differ from the board, after one question; one password
@@ -694,11 +701,12 @@ class MainWindow(QMainWindow):
         steps = self.profile_steps(key)
         if not steps:
             return
-        prompts = "One password prompt for each." if len(steps) > 1 else "It needs your password."
+        two = len(steps) > 1
         answer = QMessageBox.question(
             self, window_title(name),
-            f"Write {' and '.join(steps)}?\n\n{prompts} Both take effect after you reboot the board, which the app "
-            "leaves to you.")
+            f"Write {' and '.join(steps)}?\n\n{'Both take' if two else 'It takes'} effect after you restart the "
+            "board.\nThe app leaves the restart to you.\n\nYou will be asked for your password"
+            + (" once for each." if two else "."))
         if answer != QMessageBox.StandardButton.Yes:
             return
         if not self.block_problem and mb != self.written_split() and not self.write_split(mb, name, ask=False):
@@ -707,8 +715,8 @@ class MainWindow(QMainWindow):
             return
         QMessageBox.information(
             self, window_title(name),
-            f"Done: {' and '.join(steps)}.\n\nReboot the board to use it. The app does not reboot by itself: use the "
-            "menu, or in a terminal: systemctl reboot.")
+            f"Done. The app wrote {' and '.join(steps)}.\n\nRestart the board to use it. The app does not restart "
+            "the board by itself. Use the menu, or run systemctl reboot in a terminal.")
 
     def save_backup(self, data: dict) -> Path:
         folder = backups_dir()

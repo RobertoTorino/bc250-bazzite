@@ -60,7 +60,7 @@ class NextBoot:
 
 def _failure(code: int, out: str, err: str) -> str:
     if code == NOT_INSTALLED:
-        return "This system has no rpm-ostree: it is not Bazzite, or not an image-based one."
+        return "This system has no rpm-ostree. It is not Bazzite, or not an image-based one."
     text = (err.strip() or out.strip()).splitlines()
     last = text[-1] if text else f"exit code {code}"
     if "not authorized" in last.lower() or "notauthorized" in last.lower():
@@ -102,6 +102,6 @@ def apply(run: Run, pages: int | None, present: int | None) -> str:
     if after.pages != pages:
         now = f"{KEY}={after.pages}" if after.pages is not None else f"no {KEY}"
         return (f"rpm-ostree reported {'no change' if code == UNCHANGED else 'success'}, but the next boot's kernel "
-                f"arguments still have {now}. Nothing is changed; try again, or in a terminal: "
+                f"arguments still have {now}. Nothing is changed. Try again, or run this in a terminal: "
                 f"{' '.join(command(pages, after.pages))}")
     return ""

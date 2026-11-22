@@ -15,14 +15,14 @@ it out of what they show and save where they can.
 
 ## What goes over the network
 
-Each request names the app and its version (for example `bc250-shadps4-manager/0.1.5`) and nothing about you.
+Each request names the app and its version (for example `bc250-shadps4-manager/0.1.5`) and nothing about you. A request for cover art names the suite only, as `bc250-bazzite-suite`.
 The servers see your IP address, as any website you open does.
 
 **GitHub** (`github.com`, `api.github.com`, `raw.githubusercontent.com`), for releases:
 
 - The [portal](portal.md) downloads the apps you install from the suite's releases, and at start asks whether a
   newer portal release is out.
-- The shadPS4, RPCS3, PPSSPP, PCSX2 and Xenia Managers ask for the emulator's newest release when their
+- The shadPS4, RPCS3, PPSSPP, PCSX2, Vita3K and Xenia Managers ask for the emulator's newest release when their
   window opens, and download the release you install.
 - [BC-250 Upscaler Manager](apps/upscaler.md), [BC-250 Mesh Shaders](apps/mesh.md) and the
   [GPU Manager](apps/gpu.md) look for a newer release of what they install at start; each can be
@@ -36,7 +36,8 @@ to), and downloads the firmware when you update a controller.
 and versions of the Python packages in the apps' environments, to learn whether newer ones or known vulnerabilities
 exist. Its Bazzite card reads Bazzite's update state on the board itself and sends nothing. Its cards of the
 machine's updates, and its hourly reminder, ask each source's own tool what is newer (rpm-ostree, Flatpak, Homebrew,
-rustup and pip), which talk to their own servers as they do when you run them yourself; its cards of the emulators
+rustup and pip), which talk to their own servers as they do when you run them yourself; its mprime card reads
+mersenne.org's download page; its cards of the emulators
 and the PlayStation firmware ask GitHub for each emulator's latest release and Sony for its firmware lists, and send
 nothing about the board. Installing an app downloads
 its Python packages from PyPI.
@@ -53,6 +54,9 @@ its Python packages from PyPI.
   account you set. shadPS4 keeps the password as it is and shadNet sends it unencrypted: use one you use nowhere
   else.
 - [BC-250 SFTP Tools](apps/sftp.md) connects only to the host you enter.
+- The emulator managers take the games' pictures for Steam from SteamGridDB (`www.steamgriddb.com`) only with an
+  API key you enter. [Covers from SteamGridDB](apps/covers.md) has the details.
+- [BC-250 Quickfix](apps/quickfix.md): its **Prime95** pill downloads mprime from mersenne.org.
 - [Bazzite DatStation](apps/datstation.md#privacy) loads the PlayStation Blog's feed on its PS News page.
 - [BC-250 Board Test](apps/check.md): its network test resolves and pings `google.com` and asks
   `www.example.com` for a page header; the optional speed test uses Ookla's servers and about 1 GB of data.

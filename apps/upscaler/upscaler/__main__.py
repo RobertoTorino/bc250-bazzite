@@ -26,7 +26,7 @@ def main() -> int:
     parser.add_argument("--payload", metavar="DIR", default=None,
                         help=f"folder that holds the imported HelixSR release (default: {PAYLOAD_DIR})")
     parser.add_argument("--deployments", metavar="FILE", default=None,
-                        help=f"JSON file that lists where HelixSR was deployed (default: {DEPLOYMENTS_FILE})")
+                        help=f"JSON file that lists where the app deployed HelixSR (default: {DEPLOYMENTS_FILE})")
     parser.add_argument("--work", metavar="DIR", default=None,
                         help=f"folder for downloaded HelixSR releases (default: {WORK_DIR})")
     parser.add_argument("--no-update-check", action="store_true",

@@ -1,3 +1,17 @@
+Changelog: 22-11-2026 17:18:47
+
+Fixed. The text of the wiki chapter, the README, the window's hints, tooltips, info texts and dialogs, the memory map's
+tooltips, the helpers' messages and one installer note was rewritten to the writing standard: short sentences, one fact
+each, no chains, the purpose first. The dialogs now give one fact per line and end with "You will be asked for your
+password." The info texts link to the Wiki, where they said Manual, and the README links to the wiki. No label was
+renamed. The wiki named the GTT limit's choice "11.5 GiB, the suite's value", and now names it as the window does,
+"11.5 GiB, the suite's value (Board Test, test 37)". A profile that writes only one of its two parts said "Both take
+effect" in its question, and now says "It takes effect". The installer's shared messages and "Not authorized: the
+password dialog was canceled or refused." keep their wording. tools/text_check/words.txt gains ttm, zstd, lzo and
+tmpfiles. Nothing the app does has changed. In tests/test_main_window.py the tests of the GTT limit's question and Done
+message, the waiting note, the writing note, the profiles' question and Done message, the swap layout's question and
+the info link now look for the new wording. In tests/test_kargs.py the test of the read-back failure does too.
+
 Changelog: 22-11-2026 11:56:40
 
 Release 4.7.0.

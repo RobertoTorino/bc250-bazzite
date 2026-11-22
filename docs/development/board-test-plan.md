@@ -49,7 +49,7 @@ It reports the following:
 2. Put the vkpeak binary from [https://github.com/nihui/vkpeak/releases](https://github.com/nihui/vkpeak/releases) in `~/.local/bin`
 3. `chmod +x vkpeak && mv vkpeak ~/.local/bin/`
 4. Undo any CU unlock (reboot, so 24 CUs) and close games and applications.
-5. On the Performance page, tick "Save as baseline" and run test 42. 
+5. On the Performance page, tick "Save as baseline (stock board only)" and run test 42. 
 6. It saves the benchmark results as `bench-baseline.json`.
 7. Unlock your CU's and run test 42 again for the comparison.
 
@@ -98,7 +98,7 @@ In the graph window:
 * Drag to zoom in.
 * Right-click to zoom out.
 * Hover to see values. 
-* "Save as PNG" saves all panels as one image. 
+* "Save as PNG…" saves all panels as one image. 
 
 ---
 

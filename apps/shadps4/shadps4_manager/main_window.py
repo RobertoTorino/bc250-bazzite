@@ -66,7 +66,7 @@ START_TIP = "Start the game chosen under Your games through Steam, as its shortc
 CLEAR_TIP = "Empty the app's log file, the older ones beside it and the View logs tab"
 STEAM_ON = "Steam runs and is signed in. The games in Steam can start."
 STEAM_OFF = "Steam does not run or is not signed in. Start Steam and sign in before you start a game."
-RUNNING = "shadPS4 is running: close it first, it writes its own settings over the change when it closes."
+RUNNING = "shadPS4 is running. Close it first, because it writes its own settings over the change when it closes."
 STEAM_URL = "steam://open/games"        # Steam's library; Steam starts when it does not run
 STEAM, GAME, SERIAL, VERSION, FOLDER = range(5)             # the table's columns
 WIDTH = 900                             # the window opens this wide, and is never narrower (owner, 18-11-2026)
@@ -80,8 +80,8 @@ VERSIONS_TIP = "Put another installed shadPS4 build in use, or download one in t
 _NUMBERED = re.compile(r"\d+(\.\d+)*")
 
 
-RUNNING_REMOVE = "shadPS4 is running: close it first, then remove the game."
-RUNNING_START = "shadPS4 is running: close it first, then start the game."
+RUNNING_REMOVE = "shadPS4 is running. Close it first, then remove the game."
+RUNNING_START = "shadPS4 is running. Close it first, then start the game."
 UNINSTALL_GAME_TIP = ("Delete the game or package chosen under Your games from the disk. A window first lists "
                       "what would go, and you uncheck what to keep. Nothing is deleted before you confirm")
 UNPACKED_KEY = "packages/unpacked"      # the packages unpacked whole (path|size|time): no longer waiting rows

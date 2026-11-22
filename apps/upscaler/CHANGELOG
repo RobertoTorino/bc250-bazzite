@@ -1,3 +1,26 @@
+Changelog: 22-11-2026 17:22:38
+
+Fixed. The text of the app was rewritten to the suite's writing standard. That covers the wiki chapter, the README,
+the window's hints, tooltips, dialogs and messages, and the setup log. It also covers the installer's own messages
+and help, the command line help and the desktop entry's comment. The Help page is now short, as the owner decided.
+It says what the app does, links to its chapter in the wiki and shows where its files are. What only the Help page
+said moved into the chapter, with a new table of the helixsr.ini keys. The message about invalid helixsr.ini values
+says uncheck instead of untick. The hint under the helixsr.ini check box says Checked and Unchecked. The README links
+to the wiki instead of the manual. These facts were wrong and are corrected:
+- The Help page said that Vulkan games are not supported. From HelixSR 3 on, HelixSR Scaler takes DirectX 11 and
+  Vulkan games.
+- The Help page gave the latest release zip as 2 MB. A HelixSR 3 release is about 280 MB.
+- The tooltip of Download and build read as if HelixSR 3 needs only the download. The setup also builds HLX DLSS's
+  network. Only HLX FSR 4 needs just the download.
+- The chapter said the app is under Gaming in the portal. It is under Graphics.
+- The chapter spoke of two deploy modes. The Deploy page has three.
+- The chapter called the first deploy mode Replace the game's DLL. The window shows Replace the selected DLL.
+- The chapter named buttons that the window labels otherwise. It now uses Import release folder…, Import release
+  zip…, Remove HelixSR from game, Forget entry, Copy OptiScaler.ini lines, Save as payload default and Write to game.
+- The chapter listed a test.sh in the app folder and tests of translations. Neither exists.
+Nothing the app does has changed. Tests changed: test_acquire.py and test_helixsr3.py follow the reworded setup
+messages.
+
 Changelog: 22-11-2026 11:56:40
 
 Release 5.7.0.

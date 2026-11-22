@@ -52,7 +52,7 @@ MANUAL_URL = f"{SUITE_MANUAL_URL}apps/vita3k/"
 INSTALL_WATCH_MS = 2000
 INSTALL_WATCH_LIMIT = 300               # checks, so 10 minutes: Vita3K's own window does the installing
 INSTALL_TIMEOUT = 900                   # seconds for Vita3K to install a firmware file or a package without a window
-STEAM_TIP = "Add the ticked games to Steam and take out the others; Steam closes for it and starts again"
+STEAM_TIP = "Add the checked games to Steam and take out the others. Steam closes for it and starts again"
 START_TIP = "Start the game chosen under Your games through Steam, as its shortcut in Steam does"
 CLEAR_TIP = "Empty the app's log file, the older ones beside it and the View logs tab"
 STEAM_ON = "Steam runs and is signed in. The games in Steam can start."
@@ -67,10 +67,10 @@ GAMES, START, SAVES, SETTINGS, LOG = range(5)               # the tabs
 NOT_INSTALLED = "Not installed. Install it with the Install button."
 INSTALLED = "Installed. Uninstall with the Uninstall button."
 
-RUNNING_REMOVE = "Vita3K is running: close it first, then remove the game."
-RUNNING_START = "Vita3K is running: close it first, then start the game."
-UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk: a window lists what would go, and you "
-                      "untick what to keep; nothing is deleted before you confirm")
+RUNNING_REMOVE = "Vita3K is running. Close it first, then remove the game."
+RUNNING_START = "Vita3K is running. Close it first, then start the game."
+UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk. A window first lists what would go, "
+                      "and you uncheck what to keep. Nothing is deleted before you confirm")
 VERSIONS_TIP = "Put another installed Vita3K build in use, or download one in the version manager"
 
 
@@ -199,12 +199,13 @@ class MainWindow(QMainWindow):
         self.install_pill = style.action_pill("Vita3K", "Install", f"Download Vita3K build {emulator.VERSION} from "
                                                                    f"GitHub (about {emulator.SIZE_MB} MB) and check it")
         self.install_pill.clicked.connect(self.on_install)
-        self.remove_pill = style.action_pill("Vita3K", "Uninstall", "Remove the installed Vita3K; its own folders "
-                                                                    "(firmware, games, saves, settings) stay")
+        self.remove_pill = style.action_pill("Vita3K", "Uninstall", "Remove the installed Vita3K. Its own folders "
+                                                                    "stay, with the firmware, games, saves and "
+                                                                    "settings")
         self.remove_pill.clicked.connect(self.on_remove)
-        self.game_pill = style.action_pill("Games", "Install", "Install one of your own games in Vita3K: a .vpk or "
-                                                               ".zip, a .pkg with its zRIF license key, or a dumped "
-                                                               "game folder")
+        self.game_pill = style.action_pill("Games", "Install", "Install one of your own games in Vita3K. It takes a "
+                                                               ".vpk or .zip, a .pkg with its zRIF license key, or a "
+                                                               "dumped game folder")
         self.game_menu = QMenu(self)
         self.game_menu.addAction("From a file (.vpk, .zip, .pkg)…", self.on_install_game_file)
         self.game_menu.addAction("From a dumped folder…", self.on_install_game_folder)
@@ -259,7 +260,7 @@ class MainWindow(QMainWindow):
         columns.addLayout(second, 1)
 
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["In Steam", "Game title", "Id", "Version", "Folder"])
+        self.table.setHorizontalHeaderLabels(["In Steam", "Game title", "ID", "Version", "Folder"])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -275,19 +276,19 @@ class MainWindow(QMainWindow):
         self.table.itemSelectionChanged.connect(self._update_buttons)
 
         self.vita3k_button = QPushButton("Vita3K settings")
-        self.vita3k_button.setToolTip("Open Vita3K's own window for what the Settings tab does not set: its other "
-                                      "settings, the controls and its game list")
+        self.vita3k_button.setToolTip("Open Vita3K's own window for what the Settings tab does not set. It has "
+                                      "Vita3K's other settings, the controls and its game list")
         self.vita3k_button.clicked.connect(self.on_open_vita3k)
         self.covers_button = QPushButton("Steam artwork…")
-        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite: with it, Update Steam "
+        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite. With it, Update Steam "
                                       "gives each game a cover from SteamGridDB in Steam's library")
         self.covers_button.clicked.connect(self.on_covers)
         self.steam_button = style.primary_button("Update Steam", STEAM_TIP)
         self.steam_button.clicked.connect(self.on_update_steam)
         buttons = QHBoxLayout()
         # What the boxes and Start game do, behind an info symbol (owner, 18-11-2026, in place of a line of text)
-        self.steam_info = InfoButton("A checkmark before a game adds the game to Steam. When the Start game button "
-                                     f"is clicked the game starts from {style.link(self, STEAM_URL, 'Steam')}.",
+        self.steam_info = InfoButton("A checkmark before a game adds the game to Steam. When you click the Start game "
+                                     f"button, the game starts from {style.link(self, STEAM_URL, 'Steam')}.",
                                      "About the games and Steam")
         self.steam_info.opens = lambda _url: self.open_steam()      # the app opens Steam itself (open_steam)
         buttons.addWidget(self.steam_info)
@@ -312,7 +313,7 @@ class MainWindow(QMainWindow):
         log_page = QWidget()
         log = QVBoxLayout(log_page)
         log.setContentsMargins(0, 8, 0, 0)
-        log.addWidget(hint_label(f"Everything the app said and did, newest last; the same lines are in "
+        log.addWidget(hint_label(f"Everything the app said and did, newest last. The same lines are in "
                                  f"{escape(private(self.log_path))}, which turns over at 1 MB."))
         log.addWidget(self.output, 1)
         self.tabs = QTabWidget()
@@ -450,8 +451,8 @@ class MainWindow(QMainWindow):
                                        "reads it.")
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected: switch it on, or press its PS button to wake "
-                                       "it, before starting a game from Steam.")
+                                       "No controller is connected. Switch it on, or press its PS button to wake "
+                                       "it, before you start a game from Steam.")
 
     def say(self, text: str, ok: bool = True) -> None:
         """What the window has to say: the line under the tabs, the View logs tab and the log file."""
@@ -480,7 +481,7 @@ class MainWindow(QMainWindow):
         times = userdata.play_times(self.vita_fs)
         total = sum(seconds for seconds, _ in times.values())
         if not total:
-            self.time_box.set_value("—", "Vita3K counts the time spent in each game; none yet.")
+            self.time_box.set_value("—", "Vita3K counts the time spent in each game. There is none yet.")
             return
         titles = {g.name: g.title for g in self.games}
         lines = [f"{titles.get(name, name)}: {userdata.played(seconds)}"
@@ -500,8 +501,8 @@ class MainWindow(QMainWindow):
             self.emulator_state.setText(INSTALLED)
             if self.version != pinned:
                 self.emulator_box.set_value(self.version)
-                tip = (f"Vita3K build {self.version} is in use; it was not tried on the board. This version of the "
-                       f"app was tried with build {pinned}: Install puts it back in use.")
+                tip = (f"Vita3K build {self.version} is in use. It was not tried on the board. This version of the "
+                       f"app was tried with build {pinned}. Install puts that build back in use.")
                 if not self._pin_noted:
                     self.note(tip)
                     self._pin_noted = True
@@ -514,7 +515,7 @@ class MainWindow(QMainWindow):
                 tip = f"Vita3K build {pinned} ({emulator.SEMVER}), the build this version of the app was tried with"
         if self.newer is not None:
             tip += (f"\nVita3K build {self.newer.version} is out ({self.newer.published}). A later version of this "
-                    f"app brings a newer build, once it has been tried on the board: {self.newer.url}")
+                    f"app brings a newer build, once it has been tried on the board.\nWhat is new: {self.newer.url}")
         self.emulator_state.setToolTip(tip)
         self.version_state.setText(escape(self.version) if self.version else "—")   # whole: the pill shortens it
         self.version_state.setToolTip(tip)
@@ -530,19 +531,20 @@ class MainWindow(QMainWindow):
         self.firmware_state.setText("Installed." if fw.ready else "Partly installed." if fw.system or fw.fonts
                                     else "Not installed.")
         self.firmware_info.set_text("Drop your own firmware and font package in "
-                                    f"{escape(private(library.firmware_home(self.user_home)))}. System software can "
-                                    f"be downloaded from its official page {official}. Font package can be "
-                                    f"downloaded from {fonts}. Preinstalled apps can be downloaded {preinstall}.")
+                                    f"{escape(private(library.firmware_home(self.user_home)))}. Download the system "
+                                    f"software from its official page {official}. Download the font package "
+                                    f"{fonts}. Download the preinstalled apps {preinstall}.")
         self.firmware_state.setToolTip("\n".join(parts)
-                                       + "\nVita3K needs the system software and the font package to start most games; "
-                                       "the preinstalled apps are optional. The app gives the PSP2UPDAT.PUP files to "
+                                       + "\nVita3K needs the system software and the font package to start most games. "
+                                       "The preinstalled apps are optional. The app gives the PSP2UPDAT.PUP files to "
                                        f"Vita3K, which installs them in {private(self.vita_fs)}.")
 
         # The app's own folders (owner, 03-11-2026): the home folder's, and a removable drive's when it has one.
         where = ", ".join(f"<b>{escape(private(f))}</b>" for f in self.folders)
         self.folders_state.setText(where)
-        self.folders_info.set_text(f"Drop your games in {escape(private(self.user_home / library.GAMES_HOME))}, .vpk, "
-                                   ".zip, .pkg, zRIF license key, or drop a game folder there.")
+        self.folders_info.set_text(f"Drop your games in {escape(private(self.user_home / library.GAMES_HOME))}. A "
+                                   "game is a .vpk, .zip or .pkg file, or a game folder. A .pkg needs its zRIF "
+                                   "license key.")
         self.folders_state.setToolTip("\n".join(private(f) for f in self.folders)
                                       + f"\n{len(self.games)} game(s) installed in Vita3K's storage, "
                                       f"{private(self.vita_fs)}.")
@@ -563,8 +565,8 @@ class MainWindow(QMainWindow):
         self.newer = release
         if release is not None:
             self._show_state()
-            self.note(f"Vita3K build {release.version} is out ({release.published}); a later version of this app "
-                      f"brings a newer build, once it has been tried on the board: {release.url}")
+            self.note(f"Vita3K build {release.version} is out ({release.published}). A later version of this app "
+                      f"brings a newer build, once it has been tried on the board. What is new: {release.url}")
 
     def _fill_table(self) -> None:
         self.table.blockSignals(True)
@@ -617,9 +619,9 @@ class MainWindow(QMainWindow):
                                       for g in add)
         self.steam_button.setEnabled(idle and changed and self.steam_dir is not None and not steam.game_mode())
         if self.steam_dir is None:
-            self.steam_button.setToolTip("Steam was never started on this system: start it once first")
+            self.steam_button.setToolTip("Steam was never started on this system. Start it once first")
         elif steam.game_mode():
-            self.steam_button.setToolTip("In Game Mode Steam is the session itself: change it in Desktop Mode")
+            self.steam_button.setToolTip("In Game Mode, Steam is the session itself. Change it in Desktop Mode")
         else:
             self.steam_button.setToolTip(STEAM_TIP)
 
@@ -644,8 +646,8 @@ class MainWindow(QMainWindow):
     def on_install(self) -> None:
         if not (self.home / emulator.VERSION / emulator.MEMBER).is_file() and \
                 not self._ask("Install", f"Download Vita3K build {emulator.VERSION} from GitHub (about "
-                                         f"{emulator.SIZE_MB} MB)?\n\nIt is checked against the SHA-256 this app was "
-                                         f"tried with before it is installed in {self.home}."):
+                                         f"{emulator.SIZE_MB} MB)?\n\nThe app checks the file against the SHA-256 it "
+                                         f"was tried with.\nThen it installs Vita3K in {self.home}."):
             return
         home, fetch = self.home, self.fetch
 
@@ -727,8 +729,8 @@ class MainWindow(QMainWindow):
             if not key or key in given:
                 continue
             self.settings.set("firmware_given", [*given, key])
-            self.note(f"Firmware file found in {private(library.firmware_home(self.user_home))}: {private(pup)} is "
-                      "given to Vita3K.")
+            self.note(f"Firmware file found in {private(library.firmware_home(self.user_home))}. The app gives "
+                      f"{private(pup)} to Vita3K.")
             self.install_firmware(pup)
             return
 
@@ -746,7 +748,7 @@ class MainWindow(QMainWindow):
                 named = parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
                 return True, f"{pup.name}: {named} installed."
             if code == 0:
-                return False, (f"Vita3K did not install {pup.name}: nothing of the firmware was written. Is it one "
+                return False, (f"Vita3K did not install {pup.name}. It wrote nothing of the firmware. Is it one "
                                "of the PS Vita's PSP2UPDAT.PUP files?")
             return False, f"Vita3K did not install {pup.name}" + (f": {last}" if last else ".")
         self._run_vita3k(["--firmware", str(pup)], done)
@@ -760,7 +762,7 @@ class MainWindow(QMainWindow):
         path = Path(name)
         if path.suffix.lower() == ".pkg":
             zrif, ok = QInputDialog.getText(self, window_title("The game's license"),
-                                            f"The zRIF licence key of {path.name} (it starts with KO5i):",
+                                            f"The zRIF license key of {path.name}, which starts with KO5i:",
                                             QLineEdit.EchoMode.Normal)
             if ok and zrif.strip():
                 self.install_package(path, zrif.strip())
@@ -782,8 +784,8 @@ class MainWindow(QMainWindow):
             if new:
                 return True, f"{pkg.name} is installed: {', '.join(new)}."
             if code == 0:
-                return True, (f"Vita3K installed {pkg.name}; no new game came with it (an update goes to ux0/patch, "
-                              "extra content to ux0/addcont).")
+                return True, (f"Vita3K installed {pkg.name}. No new game came with it. An update goes to ux0/patch, "
+                              "and extra content to ux0/addcont.")
             return False, f"Vita3K did not install {pkg.name}" + (f": {last}" if last else ".")
         self._run_vita3k(["--pkg", str(pkg), "--zrif", zrif], done)
 
@@ -820,7 +822,7 @@ class MainWindow(QMainWindow):
         if self.open_url(STEAM_URL):
             self.note("Steam was opened.")
         else:
-            self.say("Steam could not be opened: xdg-open is missing.", ok=False)
+            self.say("Steam could not be opened. xdg-open is missing.", ok=False)
 
     def on_remove_game(self) -> None:
         """Games Uninstall (Remove game… until 20-11-2026; owner, 03-11-2026, from the Windows Portable Suite's managers: before deleting anything, let
@@ -874,7 +876,7 @@ class MainWindow(QMainWindow):
         the address, came up and never started the game)."""
         game = self.chosen()
         if game is None:
-            self.say("Choose a game under Your games first: Start game starts the chosen one in Steam.", ok=False)
+            self.say("Choose a game under Your games first. Start game starts the chosen one in Steam.", ok=False)
             return
         if self.worker.running:
             self.say("Wait until what runs now has finished, then start the game.", ok=False)
@@ -882,7 +884,7 @@ class MainWindow(QMainWindow):
         number = (steam.shortcut_number(self.steam_dir, shortcuts.for_game(game))
                   if self.steam_dir is not None and game.name in self.in_steam else None)
         if number is None:
-            self.say(f"{game.title} is not in Steam yet: tick it and press Update Steam first.", ok=False)
+            self.say(f"{game.title} is not in Steam yet. Check it and press Update Steam first.", ok=False)
             return
         if self.vita3k_running():
             self.say(RUNNING_START, ok=False)
@@ -896,22 +898,22 @@ class MainWindow(QMainWindow):
             except steam.SteamError as error:
                 return False, f"{title} was not started: {error}"
             return True, f"{title} runs, started through Steam."
-        self._start(f"Starting {title} through Steam (Steam starts first when it does not run)…", job)
+        self._start(f"Starting {title} through Steam, which starts first when it does not run…", job)
 
     def on_update_steam(self) -> None:
         if self.steam_dir is None:
             return
         if not self.run_path.is_file():
-            self.say(f"The shortcuts run {self.run_path}, which is not there: install {APP_NAME} through the "
+            self.say(f"The shortcuts run {self.run_path}, which is not there. Install {APP_NAME} through the "
                      "portal first.", ok=False)
             return
         add, remove = self.steam_plan()
         if add and not self.version:
-            self.say("Install Vita3K first: the games in Steam start it.", ok=False)
+            self.say("Install Vita3K first. The games in Steam start it.", ok=False)
             return
         text = f"{len(add)} game(s) in Steam" + (f", {len(remove)} taken out." if remove else ".")
         if self.doubles:
-            text += f"\n{sum(self.doubles.values())} double shortcut(s) taken out: each game stays in Steam once."
+            text += f"\n{sum(self.doubles.values())} double shortcut(s) taken out. Each game stays in Steam once."
         if self.steam_running():
             text += "\n\nSteam closes for it and starts again in the background."
         if not self._ask("Steam", text):
@@ -948,7 +950,7 @@ class MainWindow(QMainWindow):
                 missing = [g.title for g in add if g.name not in found]
                 if missing:
                     extra.append(f"Read back from Steam's file, {len(add) - len(missing)} of the {len(add)} game(s) "
-                                 f"are there: not {', '.join(missing)}.")
+                                 f"are there. Missing are {', '.join(missing)}.")
             again = " Steam was closed for it and starts again in the background." if restarted else ""
             return True, "\n".join([*notes, f"{len(add)} game(s) in Steam, under Non-Steam in the library"
                                               f"{f'; {len(remove)} taken out' if remove else ''}.{again}", *extra])
@@ -960,7 +962,7 @@ class MainWindow(QMainWindow):
         if covers.edit_key(self, self.covers_key, "Update Steam"):
             self.refresh()
             self.say("The SteamGridDB key was changed." if covers.read_key(self.covers_key) else
-                     "The SteamGridDB key was taken out; the covers kept stay in use.")
+                     "The SteamGridDB key was taken out. The covers the app already has stay in use.")
 
     def resizeEvent(self, event: QResizeEvent) -> None:  # noqa: N802 (Qt override)
         super().resizeEvent(event)

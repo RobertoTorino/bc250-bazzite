@@ -23,7 +23,7 @@ from bc250_core.updates import UpdateChecker
 from . import rpcs3_settings, userdata
 from .rpcs3_settings import CHOICE, PERCENT, SWITCH, Setting
 
-RUNNING = "RPCS3 is running: close it first, it writes its own settings over the change when it closes."
+RUNNING = "RPCS3 is running. Close it first, because it writes its own settings over the change when it closes."
 STREAM = "RPCS3"                        # RPCS3's sound stream, as PipeWire names it (core's sound)
 SOUND_TIP = sound.tip(STREAM)
 SOUND_MUTED = sound.muted_text(STREAM)

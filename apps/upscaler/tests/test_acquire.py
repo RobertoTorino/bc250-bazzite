@@ -443,7 +443,7 @@ def test_setup_worker_gives_the_script_no_input(qapp, tmp_path, installer_line):
     assert outcome.ok, outcome.message
     assert (outcome.release_dir / "stdin.txt").read_text() == "no input\n"
     assert not any("GodOfWar" in line for line in log)                                     # the questions are hidden
-    assert any("game installer is skipped" in line for line in log)
+    assert any("skips HelixSR's own game installer" in line for line in log)
     assert "[fake-setup] args: --yes --dlss " + str(tmp_path / "work" / "nvngx_dlss.dll") in log    # the build is shown
     assert not any((outcome.release_dir / name).exists() for name in acquire.UNUSED_OUTPUT)
     assert (outcome.release_dir / backend.WEIGHTS).is_file()
@@ -624,5 +624,5 @@ def test_the_builders_python(qapp, tmp_path, monkeypatch):
     assert worker._python() == portable and pip[0][:4] == [portable, "-m", "pip", "install"]
     numpy.clear()
     monkeypatch.setattr(worker, "_stream", lambda *a, **k: 1)
-    with pytest.raises(acquire.HelixError, match="numpy could not be installed"):
+    with pytest.raises(acquire.HelixError, match="pip could not install numpy"):
         worker._python()

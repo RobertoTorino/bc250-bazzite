@@ -16,8 +16,8 @@ to skip it. When the intro has played to its end, a short welcome sound follows.
 a small **i** that says where the apps install from, and a line that says in a few words what the open category is
 for, with **☰ Settings** at the top right and, in the corner beside it, **✕ Exit**, which closes the portal. Under
 them, in a row, twelve big symbols. Four act on the apps: **Refresh** (two
-circling arrows: look again at which apps are installed), **Sys info** (a chip), **Install All apps** (a grid of
-apps with an arrow down) and **Install All updates** (a circular arrow around an arrow down). Eight are shortcuts
+circling arrows: look again at which apps are installed), **Sys info** (a chip), **Install all apps** (a grid of
+apps with an arrow down) and **Install all updates** (a circular arrow around an arrow down). Eight are shortcuts
 to what is outside the suite: **Files** (a folder), **Steam**, **YouTube** (a screen with a play triangle),
 **GitHub** (a cat in a disc),
 **Bluetooth**, **Network**, **Volume** (a loudspeaker) and **Screen** (a screen on its foot). Each is described
@@ -32,9 +32,9 @@ do.
 **Board Test** and **Quickfix** are always installed with the portal; every other app is optional. Below the header is a strip
 with a name for each [category](apps/categories.md): Sustainable, Graphics, Gaming and Utilities, and beside it
 the notice of updates. Each app is a large tile under its category, left to right in the order of `apps.toml`
-and as many to a row as the screen fits; Board Test is always the first tile on Sustainable. The tile with the
-focus is framed in silver; move it with the arrow keys, the d-pad or the stick, or point at a tile with the
-mouse:
+and as many to a row as the screen fits; Board Test is always the first tile on Sustainable, and the
+quickfixes come first on Utilities. The tile with the focus is framed in silver; move it with the arrow keys, the
+d-pad or the stick, or point at a tile with the mouse:
 
 - **The icon**, its category's, drawn from a 512 px picture so it stays sharp on a 4K screen. It is gray while
   the app is not installed. Hover over the tile to see what the app does, its state and the release this portal
@@ -139,7 +139,8 @@ nothing in the portal. There are two ways to get every button:
 
 The tools for working on the suite are not in the portal: they are in `dev/` of the repository, run from a
 checkout and have no release. [Nexus Dashboard](development/dashboard.md) opens them all:
-Nexus Release Tool, Nexus Installer Tests (the installer tests one at a time), Nexus Demo Recorder, Nexus Sound Lab
+Nexus Release Tool, Nexus Deps (the suite's packages and tools on this machine), Nexus Garbage Remover (crash
+dumps, the Trash and caches), Nexus Installer Tests (the installer tests one at a time), Nexus Demo Recorder, Nexus Sound Lab
 (short sound effects for the windows), Nexus TTS (a text spoken aloud), Nexus Remix Studio (a voice mixed with a
 synthesized background), the video tours and the icons. Start it from the checkout, or give it a menu entry with its `install.sh`.
 
@@ -202,7 +203,7 @@ synthesized background), the video tours and the icons. Start it from the checko
   The GPU's load comes from the kernel's load sensor where there is one; the BC-250's stock kernel has none, so the
   portal adds up the GPU time of your own programs (the games and the desktop among them), or reads GPU Governor's
   corrected metrics when it has set them up. What the system does not report is left out of the line.
-- **Install All updates**, a symbol at the top, enabled when the notice names any app; a red badge on it says how
+- **Install all updates**, a symbol at the top, enabled when the notice names any app; a red badge on it says how
   many, and its tooltip what it does.
   Click it to install them all, updates and reinstalls, one after the other. The portal asks once, with the list, and warns when one of them changes
   the board. Each app's installer runs in its own terminal, as a single install does. When one asks for your
@@ -210,7 +211,7 @@ synthesized background), the video tours and the icons. Start it from the checko
   one of how many it is at, for example **2/5**. An install that fails does not stop the others; at the end the portal
   names those that failed, and Install in their tiles' menus tries again. **Refresh**, while it waits for a
   terminal that was closed, can stop waiting, and then stops the rest too.
-- **Install All apps**, a symbol at the top, enabled when the open category has apps that are not installed yet
+- **Install all apps**, a symbol at the top, enabled when the open category has apps that are not installed yet
   (its tooltip says how many). Click it to install them, one after the other, the same way as **Install all updates**: one question with the
   list and the board warning, each installer in its own terminal, its badge showing which one of how many. It is
   disabled once every app of the category is installed. A portal installed for the first time fills a category with
@@ -230,7 +231,7 @@ synthesized background), the video tours and the icons. Start it from the checko
 - **✕ Exit**, the symbol in the top right corner: closes the portal, as B and Escape do. See **Exiting** above.
 - **☰ Settings**, the symbol at the top right, or the ☰ button on the controller (Start, Options on a PlayStation
   controller): the Settings page, in place of the category strip and the tiles, under the same header. It holds
-  the seven settings below, each a pill with a short line beside it; on a small screen the page scrolls, following
+  the nine settings below, each a pill with a short line beside it; on a small screen the page scrolls, following
   the focus. Move between them with the arrow keys, the
   d-pad or the stick, and press A or Enter to change one. B, Escape or ☰ again goes back to the apps.
 - **Icons on Desktop**, on the Settings page (Yes or No; click it to switch): on, every installed app has an icon on the Desktop; off, only the
@@ -314,7 +315,7 @@ What it installs:
 | What the portal remembers: the apps it installed and their releases, the wallpaper, the music track, a downloaded portal update | `~/.local/share/bc250-bazzite-suite/state` | Apart from the program, so an update of the portal keeps it; each app's matching uninstaller is at hand |
 | BC-250 Board Test (bundled in the portal release) | `/opt/bc250-board-test`, through its own installer, which asks for the sudo password | Its test engine runs as root and must be root-owned |
 | BC-250 Quickfix (bundled in the portal release) | `~/.local/share/bc250-quickfix/app`, through its own installer | An app of your own; a quickfix asks for your password when it changes the board |
-| The suite's shared venv with PyQt6 | `~/.local/share/bc250-bazzite-suite/venv` | One copy of the ~100 MB of Qt for all suite apps; removed with the last app that uses it (`venv-users/`) |
+| The suite's shared venv with PyQt6 and pygame-ce | `~/.local/share/bc250-bazzite-suite/venv` | One copy of the ~100 MB of Qt for all suite apps; removed with the last app that uses it (`venv-users/`) |
 | What the apps found outside the suite, one file per app | `~/.local/share/bc250-bazzite-suite/upstream/` | For **Outside the suite** in the notice; written by the apps, read by the portal |
 | Launcher, menu entry, Desktop icon | `~/.local/bin/bc250-bazzite-suite`, `~/.local/share/applications/`, the Desktop | The portal's icon is the one way in; the apps' own icons are optional (**Icons on Desktop**) |
 
@@ -453,7 +454,7 @@ For a release by hand, before the portal tag:
     Apps then install as on a user's board: the portal downloads each pinned tarball from GitHub and refuses it
     unless its checksum matches the pin. Without `--source release`, a portal installed from a checkout installs
     the apps from the checkout.
-4. The apps whose pin changed show a red dot and a red Install button. Update them, open each one and check that
+4. The apps whose pin changed show a red dot and a red **Update** in their menu. Update them, open each one and check that
    it starts and works; afterwards the red dots and the update count in the header are gone.
 5. All good: tag the portal (step 5). Something wrong: fix the app and release a new patch version of it (steps 1
    to 4). Nothing has reached users yet.
@@ -507,26 +508,21 @@ How to build a release's tag yourself and compare it with the published tarball:
 ---
 
 ### a new app gets into the portal
-#### Code
 
-Create apps/<name>/ with VERSION 0.1.0, a CHANGELOG, a LICENSE and a .gitignore. For an app that stays outside the
-portal, add `.standalone` instead of adding it to `portal/apps.toml`. An app that runs from the checkout and is
-never released also gets `.checkout-only` and stays out of `apps.toml`: the portal lists only released apps.
-Add an install.sh that supports --uninstall and puts a launcher in ~/.local/bin/, plus tests under tests/.        
-Add the app to ./test.sh, the CI shellcheck list and an installer test in tools/installer-tests/.       
-Add its [apps.<name>] card to portal/apps.toml: name, summary, changes_board, category (the same as its icon's in
-icons/categories.toml: it is the app's category in the portal), install/uninstall/detect/launch,          
-and tag = "<name>-v<VERSION>" with sha256 left empty. CI accepts a tag that doesn't exist yet as long as it matches the app's VERSION.        
-Run all the checks and hand over.
+`tools/new_app.py` makes a new app and lists it everywhere the suite lists its apps, so a new app reaches the portal
+the same way every time:
 
-#### Release:
-5. Commit and push. CI asks for a portal version bump: minor for a new app; for an app update, at least as big as the app's bump.             
-6. Tag bc250-<name>-v0.1.0. release.yml builds the tarball and SHA256SUMS and publishes the release.              
-7. Run python3 tools/pin_app.py bc250-<name>-v0.1.0, which fills in the sha256.             
-8. Tag bc250-portal-v<x.y.z>. The portal release checks with --require-tags that every pinned tag exists, then publishes.             
+```bash
+python3 tools/new_app.py <name> "<App Name>" --category <category>
+```
 
-Users then see the new card, and installed apps whose version differs from the pinned one get the red update dot.                 
+It writes the app's folder with `VERSION` 0.1.0, its installer test and its wiki chapter, and adds the app's
+`[apps.<name>]` entry to `portal/apps.toml`. It also adds the app to `icons/categories.toml` and the wiki's lists.
+[Adding a new app](development/architecture.md#adding-a-new-app) has the steps, and what to fill in after it.
 
-#### New Version
-- Change portal/VERSION from 0.1.0 to 0.2.0.
-- Change __version__ in portal/bc250_portal/init.py:6 to the same number.
+Nexus Release Tool then releases the app with the portal, as [Releases](development/releases.md#the-release)
+describes. It works out each version from the CHANGELOG entries and has GitHub build and publish the app's release.
+It pins the release in `apps.toml` with its checksum and makes the portal a draft. After your device test, it
+publishes the portal. You never change a `VERSION` by hand.
+
+Users then see the new tile. An installed app whose version differs from the pinned one gets the red update dot.

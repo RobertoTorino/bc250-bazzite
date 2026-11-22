@@ -65,7 +65,7 @@ CLEAR_TIP = "Empty the app's log file, the older ones beside it and the View log
 STEAM_ON = "Steam runs and is signed in. The games in Steam can start."
 STEAM_OFF = "Steam does not run or is not signed in. Start Steam and sign in before you start a game."
 NO_SFB = "PS3_DISC.SFB is missing or damaged in this disc game's folder: RPCS3 does not start it without"
-RUNNING = "RPCS3 is running: close it first, it writes its own settings over the change when it closes."
+RUNNING = "RPCS3 is running. Close it first, because it writes its own settings over the change when it closes."
 RUNNING_INSTALL = "RPCS3 is running. Close it first. The app installs packages only while RPCS3 is closed."
 STEAM_URL = "steam://open/games"        # Steam's library; Steam starts when it does not run
 STEAM, GAME, SERIAL, VERSION, FOLDER, SCREEN = range(6)     # the table's columns (the screen last; owner)
@@ -113,8 +113,8 @@ def install_message(report: userdata.InstallReport, new_games: int, new_licenses
     return True, text
 
 
-RUNNING_REMOVE = "RPCS3 is running: close it first, then remove the game."
-RUNNING_START = "RPCS3 is running: close it first, then start the game."
+RUNNING_REMOVE = "RPCS3 is running. Close it first, then remove the game."
+RUNNING_START = "RPCS3 is running. Close it first, then start the game."
 UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk. A window first lists what would go. "
                       "Uncheck what you want to keep. Nothing is deleted before you confirm")
 

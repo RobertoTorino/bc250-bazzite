@@ -18,7 +18,7 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     exit 0
 fi
 [ -x "$APPIMAGE" ] || {
-    echo "Vita3K is not installed: open Vita3K Manager and press Install." >&2
+    echo "Vita3K is not installed. Open Vita3K Manager and press Install." >&2
     exit 1
 }
 # Vita3K's AppImage mounts itself with its own FUSE library and the system's fusermount (part of Bazzite); without

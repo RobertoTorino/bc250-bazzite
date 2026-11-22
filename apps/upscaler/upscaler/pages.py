@@ -105,23 +105,23 @@ class OverviewPage(QWidget):
         payload_layout.addWidget(self.update_hint)
         payload_layout.addWidget(hint_label(
             "The Setup page downloads a HelixSR release and builds its network files "
-            "(<code>{weights}</code>, <code>{kernels}</code>) from NVIDIA's DLSS DLL for you. Or do it by hand: "
-            "extract the release, run its <code>helixsr-setup.sh</code> there once and import that folder here. The "
-            "network files are NVIDIA's property: they stay on this PC and are never part of this app.".format(
+            "(<code>{weights}</code>, <code>{kernels}</code>) from NVIDIA's DLSS DLL for you. You can also do it by "
+            "hand. Extract the release, run its <code>helixsr-setup.sh</code> there once and import that folder here. "
+            "The network files are NVIDIA's property. They stay on this PC and are never part of this app.".format(
                 weights=WEIGHTS, kernels=KERNELS)))
         buttons = QHBoxLayout()
-        self.setup = accent_button("Get HelixSR…", ("Open the Setup page: download the latest release and build the "
+        self.setup = accent_button("Get HelixSR…", ("Open the Setup page. It downloads the latest release and builds the "
                                                     "network files in one go."))
         self.setup.clicked.connect(self.setup_requested)
         buttons.addWidget(self.setup)
         self.import_folder = QPushButton("Import release folder…")
-        self.import_folder.setToolTip(("The folder the HelixSR zip was extracted to, after running helixsr-setup.sh "
+        self.import_folder.setToolTip(("The folder you extracted the HelixSR zip to, after you ran helixsr-setup.sh "
                                        "there."))
         self.import_folder.clicked.connect(self.import_folder_requested)
         buttons.addWidget(self.import_folder)
         import_zip = QPushButton("Import release zip…")
-        import_zip.setToolTip(("The release zip as downloaded; the network files still have to be built and imported "
-                               "from the extracted folder afterwards."))
+        import_zip.setToolTip(("The release zip as downloaded. You still build the network files afterward, and import "
+                               "them from the extracted folder."))
         import_zip.clicked.connect(self.import_zip_requested)
         buttons.addWidget(import_zip)
         open_payload = QPushButton("Open payload folder")
@@ -150,8 +150,8 @@ class OverviewPage(QWidget):
         row.addWidget(self.forget)
         row.addStretch(1)
         self.update_older = QPushButton("Update older games")
-        self.update_older.setToolTip(("Put the payload's HelixSR into every game marked {0} or {1}; the helixsr.ini "
-                                      "there is kept.").format(OLDER, RESTORED))
+        self.update_older.setToolTip(("Put the payload's HelixSR into every game marked {0} or {1}. The game keeps its "
+                                      "helixsr.ini.").format(OLDER, RESTORED))
         self.update_older.clicked.connect(self.update_requested)
         row.addWidget(self.update_older)
         self.remove = QPushButton("Remove HelixSR from game")
@@ -183,7 +183,7 @@ class OverviewPage(QWidget):
                                        plain_tooltip(str(status.path / key)))
         self.pills[INI].set_status("Present" if status.ini else "Default", "ok" if status.ini else "neutral",
                                    plain_tooltip(str(status.path / INI)) if status.ini else
-                                   "No helixsr.ini in the payload: HelixSR's defaults are used as the template.")
+                                   "No helixsr.ini in the payload. HelixSR's defaults serve as the template.")
         version = (f"HelixSR {status.version}" if status.version
                    else "HelixSR (version unknown)")
         if status.ready:
@@ -330,14 +330,14 @@ class DeployPage(QWidget):
         self.mode_group.buttonToggled.connect(lambda *_: self._mode_changed())
         mode_layout.addWidget(self.mode_replace)
         mode_layout.addWidget(hint_label(
-            "The way HelixSR is meant to be installed: the game calls FSR 3.1 and gets HelixSR. Pick the game's "
-            "<code>amd_fidelityfx_upscaler_dx12.dll</code> (Unreal: under Engine/Plugins/…/Win64) or "
-            "<code>amd_fidelityfx_dx12.dll</code> above, then choose <b>AMD FSR</b> in the game. No launch options."))
+            "This is how HelixSR is meant to go in. The game calls FSR 3.1 and gets HelixSR. Above, pick the game's "
+            "<code>amd_fidelityfx_upscaler_dx12.dll</code> or <code>amd_fidelityfx_dx12.dll</code>. Unreal games "
+            "keep it under Engine/Plugins/…/Win64. Then choose <b>AMD FSR</b> in the game. No launch options."))
         mode_layout.addWidget(self.mode_scaler)
         self.scaler_hint = hint_label(
             "HelixSR's own installer puts HelixSR Scaler (OptiScaler with HelixSR) into the game folder chosen above, "
             "as <code>dxgi.dll</code> unless the game has its own, and keeps what it replaces. Pick <b>DLSS</b> in "
-            "the game; <b>Insert</b> opens HelixSR Scaler's menu. Remove puts everything back.")
+            "the game. <b>Insert</b> opens HelixSR Scaler's menu. Remove puts everything back.")
         self.scaler_hint.setVisible(False)
         mode_layout.addWidget(self.scaler_hint)
         mode_layout.addWidget(self.mode_folder)
@@ -358,10 +358,10 @@ class DeployPage(QWidget):
         self.second_label = QLabel("Second upscaler:")
         second_row.addWidget(self.second_label)
         self.second_path = QLineEdit()
-        self.second_path.setPlaceholderText("Optional: AMD's amd_fidelityfx_upscaler_dx12.dll, e.g. with FSR 4")
+        self.second_path.setPlaceholderText("Optional: AMD's amd_fidelityfx_upscaler_dx12.dll, for example with FSR 4")
         self.second_path.setToolTip(
-            "Copied into the folder as {0}, with UpscalerDll in helixsr.ini pointing at it: OptiScaler's FFX Upscaler "
-            "menu then lists its upscalers after HelixSR, and the one you pick runs in that DLL. Empty: HelixSR only.".format(SECOND_UPSCALER_DLL))
+            "Copied into the folder as {0}, with UpscalerDll in helixsr.ini pointing at it. OptiScaler's FFX Upscaler "
+            "menu then lists its upscalers after HelixSR. The one you pick runs in that DLL. Empty means HelixSR only.".format(SECOND_UPSCALER_DLL))
         self.second_path.textChanged.connect(lambda *_: self._update_buttons())
         second_row.addWidget(self.second_path, 1)
         self.browse_second = QPushButton("Browse…")
@@ -383,17 +383,17 @@ class DeployPage(QWidget):
         exe_row.addWidget(self.browse_exe)
         mode_layout.addLayout(exe_row)
         self.opti_hint = hint_label(
-            "The OptiScaler that comes with HelixSR goes next to the game's .exe as dxgi.dll (or under the name of an "
-            "OptiScaler the game already has), with its OptiScaler.ini pointed at this folder. Start the game and "
-            "select <b>DLSS</b>; OptiScaler's menu (Insert) shows <b>FSR HelixSR</b>. A Steam game's launch options "
+            "The OptiScaler that comes with HelixSR goes next to the game's .exe as dxgi.dll. If the game already has "
+            "an OptiScaler, it takes that name. Its OptiScaler.ini points at this folder. Start the game and select "
+            "<b>DLSS</b>. OptiScaler's menu (Insert) shows <b>FSR HelixSR</b>. A Steam game's launch options "
             "get the WINEDLLOVERRIDES Proton needs for it. Remove puts back everything it replaced.")
         mode_layout.addWidget(self.opti_hint)
         self.folder_hint = hint_label(
             "You install OptiScaler yourself, as its documentation describes. <b>OptiScaler.ini</b> is OptiScaler's "
-            "settings file, next to the game's .exe. The lines below make OptiScaler use HelixSR: "
-            "<code>Dx12Upscaler=fsr31</code> hands the game's upscaling to an FSR 3.1 DLL, and the two "
+            "settings file, next to the game's .exe. The lines below make OptiScaler use HelixSR. "
+            "<code>Dx12Upscaler=fsr31</code> hands the game's upscaling to an FSR 3.1 DLL. The two "
             "<code>Path</code> lines say that this DLL is HelixSR in this folder. <b>Copy OptiScaler.ini lines</b> puts "
-            "them on the clipboard: paste them into the game's OptiScaler.ini, in place of the lines with the same "
+            "them on the clipboard. Paste them into the game's OptiScaler.ini, in place of the lines with the same "
             "names.")
         mode_layout.addWidget(self.folder_hint)
         self.snippet = Terminal()
@@ -418,10 +418,10 @@ class DeployPage(QWidget):
         ini_column.setSpacing(2)
         ini_column.addWidget(self.write_ini)
         self.write_ini_hint = hint_label(
-            "<b>helixsr.ini</b> is HelixSR's own settings file, next to its DLL in the game: sharpening, the log and "
-            "the other options of the helixsr.ini page. Ticked, Deploy writes that page's values there. Unticked, "
-            "the payload's helixsr.ini is copied if it has one; without one HelixSR uses its defaults (no "
-            "sharpening, as DLSS).")
+            "<b>helixsr.ini</b> is HelixSR's own settings file, next to its DLL in the game. It holds the options of "
+            "the helixsr.ini page, such as sharpening and the log. Checked, Deploy writes that page's values there. "
+            "Unchecked, Deploy copies the payload's helixsr.ini if it has one. Without one, HelixSR uses its "
+            "defaults, with no sharpening as in DLSS.")
         ini_column.addWidget(self.write_ini_hint)
         actions.addLayout(ini_column, 1)
         actions.addSpacing(12)
@@ -506,10 +506,10 @@ class DeployPage(QWidget):
             self.found_info.setText(error)
         elif not found:
             self.found_info.setText(("No FSR 3.1 upscaler DLL in this folder. The game may not ship FSR 3.1 as a "
-                                     "separate DLL: use the OptiScaler folder below, or check the game's folder."))
+                                     "separate DLL. Use the OptiScaler folder below, or check the game's folder."))
         else:
-            self.found_info.setText(("{0} DLL(s) found; select the one the game loads (usually the only one, "
-                                     "or the shallowest).").format(len(found)))
+            self.found_info.setText(("{0} DLL(s) found. Select the one the game loads, usually the only one "
+                                     "or the shallowest.").format(len(found)))
             self.table.selectRow(0)
         self._update_buttons()
 
@@ -570,8 +570,8 @@ class DeployPage(QWidget):
         self.install_opti.setEnabled(self.optiscaler_available)
         self.install_opti.setToolTip(
             "" if self.optiscaler_available else
-            ("The payload has no OptiScaler: HelixSR 1.7.0 to 1.8.1 ship it, 1.9.0 and newer do not. Get the fallback "
-             "release on the Setup page; the payload keeps its OptiScaler when you switch back."))
+            ("The payload has no OptiScaler. HelixSR 1.7.0 to 1.8.1 ship it, 1.9.0 and newer do not. Get the fallback "
+             "release on the Setup page. The payload keeps its OptiScaler when you switch back."))
         auto = self.optiscaler_available and self.install_opti.isChecked()
         self.exe_path.setEnabled(auto)
         self.browse_exe.setEnabled(auto)
@@ -595,14 +595,14 @@ class DeployPage(QWidget):
                                    and (not needs_exe or self.exe_folder() is not None))
             self.remove.setEnabled(folder is not None and (folder / HELIXSR_DLL).is_file())
             self.deploy.setToolTip("Import a complete payload first." if not self.payload_ready else
-                                   "HelixSR 3 has no DLL for a stand-alone OptiScaler folder: get the fallback release "
-                                   "on the Setup page for this mode." if self.payload_hlx else
+                                   "HelixSR 3 has no DLL for a stand-alone OptiScaler folder. For this mode, get the "
+                                   "fallback release on the Setup page." if self.payload_hlx else
                                    "Write HelixSR under both FidelityFX names into the folder.")
         elif self.mode() == MODE_SCALER:
             game = self.game_dir()
             self.deploy.setEnabled(self.scaler_ready and game is not None)
             self.remove.setEnabled(game is not None)
-            self.deploy.setToolTip("HLX DLSS's network is not built yet: Download and build on the Setup page."
+            self.deploy.setToolTip("HLX DLSS's network is not built yet. Use Download and build on the Setup page."
                                    if not self.scaler_ready else "Choose a game folder first." if game is None else
                                    "Put HelixSR Scaler into the game, next to its .exe.")
         else:
@@ -639,9 +639,9 @@ class IniPage(QWidget):
         header.addWidget(defaults)
         layout.addLayout(header)
         layout.addWidget(hint_label(
-            "Optional settings HelixSR reads from a helixsr.ini next to its DLL; every key has a default. These "
-            "values are written on Deploy (when ticked there), can be saved as the payload's default, or pushed to a "
-            "game that already has HelixSR."))
+            "Optional settings HelixSR reads from a helixsr.ini next to its DLL. Every key has a default. Deploy "
+            "writes these values when its box is checked. You can also save them as the payload's default, or push "
+            "them to a game that already has HelixSR."))
         self.ignored_hint = QLabel()
         self.ignored_hint.setWordWrap(True)
         self.ignored_hint.setStyleSheet(f"color:{STATE_COLORS['warn']}; font-weight:600;")
@@ -655,13 +655,13 @@ class IniPage(QWidget):
         self.sharpening_mode = QComboBox()
         self.sharpening_mode.addItems(SHARPENING_MODES)
         self.sharpening_mode.setToolTip(
-            "off: never sharpen (DLSS's network does not). game: the game's FSR sharpness, "
-            "or Sharpness below if it sends none. override: always Sharpness below.")
+            "With off, HelixSR never sharpens, as DLSS's network does not. With game, it uses the game's FSR "
+            "sharpness, or Sharpness below if the game sends none. With override, it always uses Sharpness below.")
         form.addRow("Mode", self.sharpening_mode)
         self.sharpener = QComboBox()
         self.sharpener.addItems(SHARPENERS)
-        self.sharpener.setToolTip(("HelixSR 1.8 and newer: off (as DLSS 4), nvidia (NVIDIA's sharpening filter, as the "
-                                   "driver's Image Sharpening) or rcas (AMD FSR's)."))
+        self.sharpener.setToolTip(("For HelixSR 1.8 and newer. Pick off as in DLSS 4, nvidia for NVIDIA's sharpening "
+                                   "filter, or rcas for AMD FSR's. NVIDIA's filter is like the driver's Image Sharpening."))
         form.addRow("Sharpener", self.sharpener)
         self.sharpness = self._spin(0, 1, 0.05, 2, "0 = none, 1 = strongest RCAS (FidelityFX scale).")
         form.addRow("Sharpness", self.sharpness)
@@ -688,20 +688,21 @@ class IniPage(QWidget):
         model = QGroupBox("[ModelE]")
         form = QFormLayout(model)
         self.model_e_enabled = QCheckBox("Run the Model E network")
-        self.model_e_enabled.setToolTip("Off, or while the network files are missing, a placeholder upscale is used.")
+        self.model_e_enabled.setToolTip("When this is off, or while the network files are missing, HelixSR uses a placeholder upscale.")
         form.addRow("Enabled", self.model_e_enabled)
         self.network = QComboBox()
         self.network.addItems(NETWORKS)
-        self.network.setToolTip(("auto: the main network at every scale ratio (faster than the Ultra Performance "
-                                 "network on GPUs without matrix cores). nvidia: as DLSS selects it. Or force one."))
+        self.network.setToolTip(("With auto, HelixSR runs the main network at every scale ratio. On GPUs without matrix "
+                                 "cores, that is faster than the Ultra Performance network. With nvidia, it picks as "
+                                 "DLSS does. Or force one."))
         form.addRow("Network", self.network)
         self.invert_jitter = QCheckBox("Jitter comes out mirrored")
         form.addRow("InvertJitter", self.invert_jitter)
         self.invert_motion_vectors = QCheckBox("Motion vectors come out mirrored")
         form.addRow("InvertMotionVectors", self.invert_motion_vectors)
         self.motion_vector_front_end = QCheckBox("Convert render-resolution motion vectors first")
-        self.motion_vector_front_end.setToolTip(("Used anyway when the game's vectors include the jitter; otherwise "
-                                                 "NVIDIA's render-resolution path is faster."))
+        self.motion_vector_front_end.setToolTip(("HelixSR uses it anyway when the game's vectors include the jitter. "
+                                                 "Otherwise, NVIDIA's render-resolution path is faster."))
         form.addRow("MotionVectorFrontEnd", self.motion_vector_front_end)
         right.addWidget(model)
         forward = QGroupBox("[Forwarding]")
@@ -713,8 +714,8 @@ class IniPage(QWidget):
         self.upscaler_dll = QLineEdit()
         self.upscaler_dll.setPlaceholderText("empty: HelixSR only")
         self.upscaler_dll.setToolTip(
-            "A second FidelityFX upscaler DLL (e.g. AMD's with FSR 4) listed after HelixSR in "
-            "OptiScaler's menu. A bare name is looked up next to HelixSR.")
+            "A second FidelityFX upscaler DLL, such as AMD's with FSR 4. OptiScaler's menu lists it after "
+            "HelixSR. HelixSR looks for a bare name next to its own DLL.")
         form.addRow("UpscalerDll", self.upscaler_dll)
         right.addWidget(forward)
         right.addStretch(1)
@@ -734,8 +735,8 @@ class IniPage(QWidget):
 
         actions = QHBoxLayout()
         self.save_default = QPushButton("Save as payload default")
-        self.save_default.setToolTip(("Write this file into the payload folder: it is what Deploy copies when the "
-                                      "helixsr.ini tick box there is off, and what this page starts from."))
+        self.save_default.setToolTip(("Write this file into the payload folder. Deploy copies it when its helixsr.ini "
+                                      "box is unchecked, and this page starts from it."))
         self.save_default.clicked.connect(lambda: self.save_default_requested.emit(self.text()))
         actions.addWidget(self.save_default)
         actions.addStretch(1)
@@ -775,7 +776,7 @@ class IniPage(QWidget):
         for name in ("sharpening_mode", "sharpener", "sharpness", "motion_adaptive", "motion_threshold", "motion_limit",
                      "motion_reduction", "use_game_slider", "network"):
             getattr(self, name).setEnabled(name not in ignored)
-        self.ignored_hint.setText(("HelixSR {0} does not read the grayed-out settings; they are kept in the file "
+        self.ignored_hint.setText(("HelixSR {0} does not read the grayed-out settings. The file keeps them "
                                    "for other versions.").format(version) if ignored else "")
         self.ignored_hint.setVisible(bool(ignored))
 

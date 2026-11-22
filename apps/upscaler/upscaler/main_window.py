@@ -226,8 +226,8 @@ class MainWindow(QMainWindow):
         self.box_payload.set_colour(COPPER if status.dll else RED)
         if status.hlx:                          # HelixSR 3: HLX FSR 4 carries its own; HLX DLSS's is for HelixSR Scaler
             self.box_network.set_value("Ready" if status.scaler else "Not built",
-                                       "HLX DLSS's network for HelixSR Scaler, built by Download and build "
-                                       "(HLX FSR 4 needs none)")
+                                       "HLX DLSS's network for HelixSR Scaler, built by Download and build. "
+                                       "HLX FSR 4 needs none.")
             self.box_network.set_colour(TEAL if status.scaler else ORANGE)
         else:
             self.box_network.set_value("Ready" if status.network_ready else "Missing",
@@ -297,7 +297,7 @@ class MainWindow(QMainWindow):
         fresh = [d for d in targets if not d.deployed]
         if fresh and QMessageBox.question(
                 self, "Run with HelixSR",
-                "Put HelixSR in place of\n{paths}\n\nThe game's file is kept as .original.dll; Remove puts it "
+                "Put HelixSR in place of\n{paths}\n\nThe app keeps the game's file as .original.dll. Remove puts it "
                 "back.".format(paths="\n".join(str(d.path) for d in fresh))) != QMessageBox.StandardButton.Yes:
             return
         version = backend.payload_status(self.payload_dir).version
@@ -319,7 +319,7 @@ class MainWindow(QMainWindow):
         except OSError as exc:
             QMessageBox.warning(self, "Could not start the game", "steam://rungameid/{0}\n{1}".format(scan.app_id, exc))
             return
-        self.statusBar().showMessage(("HelixSR put into {0} DLL(s); starting {1} through Steam. Choose AMD FSR in the "
+        self.statusBar().showMessage(("HelixSR put into {0} DLL(s). Starting {1} through Steam. Choose AMD FSR in the "
                                       "game.").format(len(targets), name) if targets else
                                      "Starting {0} through Steam with HelixSR.".format(name), 10000)
 
@@ -419,7 +419,7 @@ class MainWindow(QMainWindow):
 
     def _browse_second(self) -> None:
         start = self.deploy_page.second_path.text() or self.deploy_page.game_path.text() or str(Path.home())
-        path, _ = QFileDialog.getOpenFileName(self, "Second FidelityFX upscaler DLL (e.g. AMD's with FSR 4)", start,
+        path, _ = QFileDialog.getOpenFileName(self, "Second FidelityFX upscaler DLL, such as AMD's with FSR 4", start,
                                               "DLL files (*.dll)")
         if path:
             self.deploy_page.set_second_upscaler(Path(path))
@@ -452,7 +452,7 @@ class MainWindow(QMainWindow):
     def _deploy(self, info: GameDll | None, mode: str, folder: Path | None, write_ini: bool,
                 second: Path | None = None, exe_dir: Path | None = None) -> None:
         if write_ini and not self.ini_page.valid():
-            QMessageBox.warning(self, "helixsr.ini", ("The helixsr.ini page has invalid values; fix them or untick "
+            QMessageBox.warning(self, "helixsr.ini", ("The helixsr.ini page has invalid values. Fix them, or uncheck "
                                                       "writing the ini."))
             return
         ini_text = self.ini_page.text() if write_ini else None
@@ -478,9 +478,9 @@ class MainWindow(QMainWindow):
                 if exe_dir is not None and backend.optiscaler_record(folder) is None and QMessageBox.question(
                         self, "Install OptiScaler",
                         ("Put OptiScaler into\n{exe_dir}\nnext to the game's .exe, pointed at HelixSR in\n{folder}?"
-                         "\n\nA file of the game it replaces is kept in {backup}; Remove puts it back. The game's "
-                         "Steam launch options get the WINEDLLOVERRIDES that Proton needs to load it; Remove takes "
-                         "that out again.").format(
+                         "\n\nThe app keeps a file of the game it replaces in {backup}. Remove puts it back.\n"
+                         "The game's Steam launch options get the WINEDLLOVERRIDES that Proton needs to load it. "
+                         "Remove takes that out again.").format(
                                     exe_dir=exe_dir, folder=folder, backup=folder / backend.OPTISCALER_BACKUP)) \
                         != QMessageBox.StandardButton.Yes:
                     return
@@ -506,13 +506,13 @@ class MainWindow(QMainWindow):
                      "select DLSS. OptiScaler's menu (Insert) shows FSR HelixSR.").format(
                                 folder=folder, name=record["optiscaler"], exe_dir=record["exe_dir"], launch=launch)
                     if exe_dir is not None and record else
-                    ("HelixSR is in\n{folder}\n\nNow point OptiScaler at it: the OptiScaler.ini lines "
-                     "on the Deploy page (Copy button) go into the game's OptiScaler.ini.").format(folder=folder))
+                    ("HelixSR is in\n{folder}\n\nNow point OptiScaler at it. Put the OptiScaler.ini lines "
+                     "from the Deploy page into the game's OptiScaler.ini. Its Copy button copies them.").format(folder=folder))
             QMessageBox.information(self, "HelixSR folder ready",
                                     text
                                     + (
                                         "\n\n" + (
-                                            "The second upscaler is in the folder as {0}; OptiScaler's FFX Upscaler menu "
+                                            "The second upscaler is in the folder as {0}. OptiScaler's FFX Upscaler menu "
                                             "lists its upscalers after HelixSR.").format(backend.SECOND_UPSCALER_DLL)
                                        if second is not None else ""))
 
@@ -534,12 +534,12 @@ class MainWindow(QMainWindow):
             return
         app_id = self._app_id(game_dir)
         if app_id and backend.game_running(app_id):
-            QMessageBox.warning(self, "HelixSR Scaler", "The game is running: close it first.")
+            QMessageBox.warning(self, "HelixSR Scaler", "The game is running. Close it first.")
             return
         if QMessageBox.question(
                 self, "HelixSR Scaler",
-                ("Put HelixSR Scaler into\n{0}\nnext to the game's .exe?\n\nThe game's own files it replaces are "
-                 "kept in HelixSR-Scaler-backup; Remove puts them back.").format(game_dir)) \
+                ("Put HelixSR Scaler into\n{0}\nnext to the game's .exe?\n\nThe app keeps the game's own files it "
+                 "replaces in HelixSR-Scaler-backup. Remove puts them back.").format(game_dir)) \
                 != QMessageBox.StandardButton.Yes:
             return
         try:
@@ -557,7 +557,8 @@ class MainWindow(QMainWindow):
         launch = game.get("launch_options")
         if launch:
             self._copy(launch)
-            text += ("\n\nIn Steam, the game's launch options need (copied to the clipboard; Properties, General):\n"
+            text += ("\n\nIn Steam, the game's launch options need this line. Paste it in Properties, General. "
+                     "It is on the clipboard:\n"
                      + launch)
         QMessageBox.information(self, "HelixSR Scaler", (text + "\n\n" if text else "") +
                                 "Start the game and pick DLSS. Insert opens HelixSR Scaler's menu.")
@@ -602,7 +603,7 @@ class MainWindow(QMainWindow):
         if game_dir:
             self._scan(game_dir)
         self._rescan_game_of(location)
-        self.statusBar().showMessage("Removed {0} file(s); HelixSR is gone from {1}".format(
+        self.statusBar().showMessage("Removed {0} file(s). {1} no longer has HelixSR".format(
             len(removed), location.parent if mode == MODE_REPLACE else location), 8000)
         if launch:
             self._restore_launch_options(launch)
@@ -683,7 +684,7 @@ class MainWindow(QMainWindow):
         if problem is not None:
             QMessageBox.information(self, "Steam launch options", (
                 "The game's Steam launch options were not changed: {0} Take WINEDLLOVERRIDES out of them in the "
-                "game's Properties in Steam; without OptiScaler it does nothing.").format(problem))
+                "game's Properties in Steam. Without OptiScaler it does nothing.").format(problem))
 
     def _forget(self, dep: Deployment) -> None:
         self.store.forget(dep.location)
@@ -720,12 +721,12 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("Update check: {0}".format(helix.latest.error), 8000)
         elif helix.update_available and self.setup_page.fallback() and \
                 version_tuple(helix.installed) == version_tuple(FALLBACK_VERSION):
-            self.overview.show_update(("HelixSR {version} is out ({published}); the payload has {installed}, "
+            self.overview.show_update(("HelixSR {version} is out ({published}). The payload has {installed}, "
                                        "the fallback picked on the Setup page.").format(
                                               version=helix.latest.version, published=helix.latest.published,
                                               installed=helix.installed), "info")
         elif helix.update_available:
-            self.overview.show_update(("HelixSR {version} is out ({published}); the payload "
+            self.overview.show_update(("HelixSR {version} is out ({published}). The payload "
                                        "has {installed}. Get HelixSR… updates it.").format(
                                               version=helix.latest.version, published=helix.latest.published,
                                               installed=helix.installed), "warn")
@@ -733,7 +734,7 @@ class MainWindow(QMainWindow):
             self.overview.show_update("Latest HelixSR release: {version} ({published}).".format(
                 version=helix.latest.version, published=helix.latest.published), "info")
         elif helix.unsupported:
-            self.overview.show_update(("HelixSR {version} is out; this app does not support it yet and stays on "
+            self.overview.show_update(("HelixSR {version} is out. This app does not support it yet and stays on "
                                        "{installed}.").format(version=helix.unsupported,
                                                               installed=helix.installed), "info")
         else:

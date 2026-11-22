@@ -200,7 +200,7 @@ def test_setup_worker_builds_helixsr_3(qapp, tmp_path):
 def test_a_failed_helixsr_3_build_keeps_hlx_fsr_4(qapp, tmp_path):
     outcome, _ = run_3x(qapp, tmp_path, build="fail")
     assert outcome.ok and outcome.message.startswith("HelixSR 3.4.1 is downloaded in")
-    assert outcome.warning.startswith("HLX FSR 4 is ready; HLX DLSS's network for HelixSR Scaler was not built")
+    assert outcome.warning.startswith("HLX FSR 4 is ready. HLX DLSS's network for HelixSR Scaler was not built")
     payload = tmp_path / "payload"
     backend.import_payload(outcome.release_dir, payload)
     status = backend.payload_status(payload)
@@ -364,7 +364,7 @@ def test_the_native_vulkan_kernels(qapp, tmp_path):
     builder's record whether they were built."""
     outcome, log = run_3x(qapp, tmp_path, vulkan=True)
     assert outcome.ok and "--vulkan" in (outcome.release_dir / "args.txt").read_text().split()
-    assert any("with its Vulkan kernels (about 11 minutes" in line for line in log)
+    assert any("with its Vulkan kernels, about 11 minutes" in line for line in log)
     (tmp_path / "plain").mkdir()
     plain, _ = run_3x(qapp, tmp_path / "plain")
     assert "--vulkan" not in (plain.release_dir / "args.txt").read_text().split()

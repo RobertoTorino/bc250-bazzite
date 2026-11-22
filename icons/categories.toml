@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # The category of each app's icon. Every app in a category has the same icon, kept once in icons/<category>/:
 # <category>-1024.webp, -512.webp, -256.webp and -128.png. tools/sync_icons.py copies them to where the apps, the
 # installers, the portal and the wiki look for them; tools/tests/test_icons.py fails when a copy is out of date.

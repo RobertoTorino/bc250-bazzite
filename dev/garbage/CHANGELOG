@@ -1,0 +1,7 @@
+Changelog: 22-11-2026 15:43:13
+
+Added. Nexus Garbage Remover, a development app. It lists the garbage on this machine: crash dumps, Steam's crash
+reports, the Trash, picture previews, pip's download cache and Homebrew's downloads, each with its size and the
+command that empties it. Delete empties the checked places after it asks, the crash dumps through pkexec. An hourly
+timer sends a notification from 1 GB on, once a day or sooner when it grew by 1 GB. Our tools' own leftovers stay
+with tools/clean_caches.py.

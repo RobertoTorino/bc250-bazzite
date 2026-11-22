@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
 ![BC-250 Persistent ACPI](../assets/acpi/bc250-persistent-acpi.webp){ .app-logo }
 
 # BC-250 Persistent ACPI

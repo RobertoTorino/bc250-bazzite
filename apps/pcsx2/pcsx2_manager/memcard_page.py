@@ -29,7 +29,7 @@ from . import memcard_icon, memcards, pcsx2_settings, style
 from .memcards import Card, CardError, Save
 
 PICTURE = 96                            # the icon shown at this size (drawn at memcard_icon.SIZE, scaled down)
-RUNNING = "PCSX2 is running: close it before changing a card, it would write its own copy over the change."
+RUNNING = "PCSX2 is running. Close it before you change a card, because it would write its own copy over the change."
 EXPORT_FILTERS = ";;".join(f"{name} (*{suffix})" for suffix, name in memcards.EXPORT_KINDS.items())
 IMPORT_FILTER = "PS2 saves (" + " ".join(f"*{s}" for s in memcards.IMPORT_SUFFIXES) + ")"
 SLOTS = {0: "Not in a slot", 1: "Slot 1", 2: "Slot 2"}

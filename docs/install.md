@@ -23,9 +23,9 @@ after it runs: fix what its message names and paste the block again. Prefer the 
 the [portal's release page](https://github.com/RobertoTorino/bc250-bazzite/releases/tag/{{ portal_tag }}); extract
 the archive beside them and run `install.sh` in the extracted folder.
 
-This installs the portal in `~/.local/share/bc250-bazzite-suite/portal` and BC-250 Board Test. Install the other
-apps from the portal. The other releases on the Releases page (`bc250-gpu-v…`, `bc250-upscaler-v…` and so on) are
-the app downloads the portal uses; you do not need them. What goes where and how to uninstall: [Portal](portal.md).
+This installs the portal in `~/.local/share/bc250-bazzite-suite/portal`, BC-250 Board Test and BC-250 Quickfix. Install
+the other apps from the portal. The other releases on the Releases page (`bc250-gpu-v…`, `bc250-upscaler-v…` and so on)
+are the app downloads the portal uses; you do not need them. What goes where and how to uninstall: [Portal](portal.md).
 
 To test from a clone of the repository instead, run `./install.sh` in its root. The portal then installs every app
 from the clone, so keep it where it is. `./install.sh --uninstall` removes it again, and asks about each other

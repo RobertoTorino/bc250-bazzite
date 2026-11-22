@@ -55,7 +55,8 @@ explanation.
 
 1. **Get up to date** (**git pull**): only when GitHub has commits this checkout lacks, pushed from the other machine.
 2. **Commit your changes:** the message field holds *see changelog*; keep it or type what the changes do, then
-   **Commit**. It stages every change and new file and commits them after the version and manifest checks. When
+   **Commit**. It stages every change and new file and commits them after the version and manifest checks. First, the
+   **Commands** tab lists the wiki's sections to read again (`tools/check_wiki.py`): the list never stops the commit. When
    `apps.toml` changed since the last portal release (an app added, removed or withdrawn, a pin moved), that check
    needs a portal bump: the step asks first, with the version the release would suggest (the portal's CHANGELOG entries
    count: a Breaking entry makes it major), or the least the check accepts, whichever is higher, and writes it with
@@ -181,10 +182,10 @@ withdrawal, [below](#withdrawing-a-release)), **Remove suite** and **Commands**.
   `~/.cache/nexus-release-tool/commands/commands-<YYYY-MM-DD>.log`, so what a step said can be read again afterwards, or sent along when one
   went wrong.
 
-**GitHub** in the header shows whether GitHub built your last push: every workflow run (CI, Release, Wiki) on its
+**GitHub build** in the header shows whether GitHub built your last push: every workflow run (CI, Release, Wiki) on its
 commit, tags included. It reads the newest 30 runs of the repository; when they all belong to your commit (a
 release of many apps starts many runs), it reads the rest of that commit's runs too, so the CI runs under them
-count. It reads **building** while one runs, then **passed** or **failed**; right after a push, until GitHub has started the runs of that commit, it reads **building** too and the line under the pills says that it waits for GitHub, as the runs GitHub lists then are the commit's before; hover for each run, click
+count. It reads **Building** while one runs, then **Passed** or **Failed**; right after a push, until GitHub has started the runs of that commit, it reads **Building** too and the line under the pills says that it waits for GitHub, as the runs GitHub lists then are the commit's before; hover for each run, click
 to open the run that failed (or still runs) on GitHub. A run GitHub canceled because a later run of the same
 workflow on the same commit took its place is no failure: hover says **replaced by a later run**. It looks every 15
 seconds while a build runs, every 10 seconds after a push until GitHub has started its runs (a few seconds after
@@ -201,7 +202,7 @@ passed. The line wraps when it is longer than the window is wide, so its end is 
 job of every run; click to open the job that runs (or failed) on GitHub. While a run has failed, **Run again** at
 its right starts that run's failed jobs again on the same commit (`gh run rerun <id> --failed`, in the Commands
 tab). The jobs need a gh login (`gh auth login`): it then reads them every 10 seconds while a run goes. Without one
-it shows the runs only, so the 60 requests an hour stay for the **GitHub** pill.
+it shows the runs only, so the 60 requests an hour stay for the **GitHub build** pill.
 
 **GitHub status** beside it says whether GitHub itself works, as [githubstatus.com](https://www.githubstatus.com/)
 reports it: a green dot while every part of GitHub is up, a red dot while the page reports a problem (an open incident,
@@ -297,5 +298,5 @@ GitHub's **Latest** release is the newest portal. The app releases are published
 are never Latest, and the portal becomes Latest when it is published (by **Publish** for a draft, or by
 `release.yml` for a portal tag pushed by hand). `/releases/latest`, which the READMEs and this wiki link to for the
 download, therefore always opens the newest portal. Installed portals and apps do not use it: they find their
-releases by their tag prefix (`portal-v`, `<app>-v`), reading GitHub's release list page by page, newest first,
-until a page holds the prefix.
+releases by their tag prefix (`bc250-portal-v`, `bc250-<app>-v`), reading GitHub's release list page by page,
+newest first, until a page holds the prefix.

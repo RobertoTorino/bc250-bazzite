@@ -105,7 +105,7 @@ def fetch_json(url: str, params: dict, user_agent: str = "bc250-turing-screen") 
             raise WeatherError(f"Open-Meteo is unavailable for now ({exc.code}: {reason}).") from exc
         raise WeatherError(f"Open-Meteo answered {exc.code}: {reason}.") from exc
     except (urllib.error.URLError, OSError) as exc:
-        raise WeatherError("Open-Meteo cannot be reached: check the network.") from exc
+        raise WeatherError("Open-Meteo cannot be reached. Check the network.") from exc
     except ValueError as exc:
         raise WeatherError("Open-Meteo's answer could not be read.") from exc
 

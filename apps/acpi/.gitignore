@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 /.idea/
 .DS_Store
 __pycache__/

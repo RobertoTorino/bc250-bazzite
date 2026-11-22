@@ -1,3 +1,79 @@
+Changelog: 22-11-2026 17:03:46
+
+Fixed. The wiki sections that tools/check_wiki.py listed after today's changes were read against them. The Development
+chapter's table of core now names StatusText, steam.signed_in() and steam_environment(), and says that exit_keys gives
+SDL its dummy drivers only while SDL starts. Its Colors part says that DESIGN.md lists the icons too. The Releases page
+says that the Commit step lists the wiki's sections to read again first. Stray third cells in the table of core are
+gone.
+
+Changelog: 22-11-2026 17:00:04
+
+Fixed. The Board Test script page no longer advises a modded BIOS. It said that bc250_memcfg made the P3.00 modded BIOS
+obsolete, that persistence for the cores needs the BIOS mod, and what to do before installing one. Now the split is set
+on the stock BIOS, BC-250 CPU Tools keeps a core unlock across reboots, and the suite advises the latest stock P5.00
+BIOS. The ACPI fix's heading reads "on the stock BIOS", and the page calls BC-250 CU Tools by its name instead of the BC
+Unlock GUI. The portal chapter's part on a new app describes tools/new_app.py and the release through Nexus Release
+Tool, instead of tagging and pinning by hand with old version numbers. App categories no longer names Wi-Fi under
+Utilities, since no app handles Wi-Fi. The dashboard page's kernel example is kernel, not linux-ps5. The privacy page
+says a request for cover art names the suite only.
+
+Changelog: 22-11-2026 16:51:05
+
+Fixed. The wiki pages the text rewrite has not reached yet were checked against the code, and 61 wrong or outdated
+statements on 22 pages were corrected. App categories: four categories, not five, and no development category. The apps'
+index, the portal chapter and the Development chapter now name Nexus Deps and Nexus Garbage Remover. The portal chapter:
+Install all apps and Install all updates as the window writes them, nine settings, the shared venv with PyQt6 and
+pygame-ce, a red Update in the tile's menu, the quickfixes first under Utilities, how a new app reaches ./test.sh and
+CI, and the __init__.py path. Upscaler Manager: its category is Graphics, three deploy modes, the buttons' labels, and
+no test.sh or translations. Vita3K and Xenia Managers: the line under the title names its button, the Steam link is in
+the info symbol, and Xenia's download is about 16 MB. VRAM Manager: the profile labels and the suite's value.
+DatStation: Add to Steam (Game Mode) and Skip (-5s). The Development chapter: the machine's link, mesh and ace among the
+root-owned apps in /opt, and Nexus Deps' mprime card. The Board Test pages: test ranges, settings labels, test 28 and 31
+descriptions and the baseline checkbox. The dashboard, releases and GitHub settings pages: label texts, the GitHub build
+pill and the refresh times. The FAQ, the install page and the privacy page: what changes the board, how a change is
+undone, what installs with the portal, and the requests the emulator managers and mprime make. tools/check_wiki.py and
+tools/tests/test_wiki_names.py are described in the Development chapter.
+
+Changelog: 22-11-2026 16:47:44
+
+Added. Two checks keep the wiki in step with the code. tools/tests/test_wiki_names.py fails on a name the wiki gives
+that is gone: a path, a constant or function in code style, an option of one of our scripts, or a window label an app's
+chapter tells you to use. tools/check_wiki.py --base origin/main lists the wiki's sections that name a changed file but
+did not change themselves, so each is read against the change. On the commit of 20-11-2026 that brought the version
+managers, it lists the Development chapter's part about pins, which said the old thing until today. Both share
+tools/wiki_names.py. The rewrite command runs them before its handover.
+
+Changelog: 22-11-2026 16:35:29
+
+Fixed. The Development chapter said each emulator manager installs one pinned release. Since the version managers came,
+the pin is the build that version of the app was tried with: Install installs it, and any other build can be downloaded
+beside it. The part about upstream pins says so now, and that users can choose a newer build before the pin moves.
+
+Changelog: 22-11-2026 16:23:31
+
+Added. DESIGN.md has an Icons part again, the listing ICONS.md was until the suite left Nexus. It names the suite's own
+icon files, the category icons with their apps, the portal's drawn symbols, the icons the apps take from the desktop's
+style, the wiki's Material icons and the characters the apps use as icons. tools/design_icons.py reads all but the
+suite's own icon files from the repository, tools/make_design.py writes it, and tools/tests/test_design_icons.py checks
+it. The eight pictures in docs/design/icons/, drawn by Nexus's make_icons.py and used by nothing since, are gone.
+
+Changelog: 22-11-2026 16:10:31
+
+Added. The wiki's Development chapter has a part for the development machine: the tools the work needs, how
+the machine stays up to date and clean, and git's identity and signing. It was only on Nexus's page until now.
+tools/tests/test_tour_frames.py tests tools/tour_frames.py again: the video's size, the temporary home, the window's
+place, the music and a crashed ffmpeg. Its test had gone with the Windows code on 15-11-2026. tools/tour_frames.py now
+says how ffmpeg ended when it crashes during a recording, as its twin in bazzite-console does, instead of a traceback
+about a broken pipe.
+
+Changelog: 22-11-2026 15:55:10
+
+Added. Every text file opens with its SPDX-License-Identifier line now, in the comment of its format.
+tools/tests/test_spdx.py checks it on every run and names each file that may go without, with the reason: license texts,
+files the tools read as one value, CHANGELOGs, JSON, other projects' files and recorded test data. An app under another
+license keeps its own line. tools/make_design.py writes the line into DESIGN.md and its color samples, and
+tools/all_tests.py into ALL-TESTS.md.
+
 Changelog: 21-11-2026 20:19:32
 
 Fixed. The development page Board Test plan named a home folder with a user name in its MangoHud example. It says

@@ -279,7 +279,7 @@ def _replace(card: Path, write: Callable[[Path], None]) -> None:
 def _change(card: Path, change: Callable[[ps2mc.ps2mc], None]) -> Path:
     """*change* on a copy of the card, after its backup; returns the backup."""
     if pcsx2_running():
-        raise CardError("PCSX2 is running: close it first, it would write its own copy of the card over the change.")
+        raise CardError("PCSX2 is running. Close it first, because it would write its own copy of the card over the change.")
     saved = backup(card)
 
     def write(temp: Path) -> None:
@@ -489,7 +489,7 @@ def format_card(card: Path) -> str:
     saves."""
     size_mb, ecc = card_size(card)
     if pcsx2_running():
-        raise CardError("PCSX2 is running: close it first, it would write its own copy of the card over the change.")
+        raise CardError("PCSX2 is running. Close it first, because it would write its own copy of the card over the change.")
     saved = backup(card)
     try:
         _replace(card, lambda temp: _format(temp, size_mb, ecc))

@@ -683,7 +683,7 @@ def test_shadnet_not_saved_while_shadps4_runs(qapp, shad_files):
     dialog.npid.setText("Player_1")
     dialog.password.setText("secret")
     dialog.on_save()
-    assert "close it first" in dialog.result_label.text() and not userdata.read_users(shad_files)[0].npid
+    assert "Close it first" in dialog.result_label.text() and not userdata.read_users(shad_files)[0].npid
     dialog.npid.setText("x")
     dialog.on_try()
     assert dialog.result_label.text().startswith("A shadNet name has 3 to 16")
@@ -1055,7 +1055,7 @@ def test_start_game_waits_for_a_steam_that_does_not_run(qapp, folders, monkeypat
     window.shad_running = lambda: True
     window.table.selectRow(0)
     window.on_start_game()
-    assert window.running.text() == "shadPS4 is running: close it first, then start the game."
+    assert window.running.text() == "shadPS4 is running. Close it first, then start the game."
     window.close()
 
 

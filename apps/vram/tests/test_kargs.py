@@ -58,5 +58,5 @@ def test_apply_checks_the_next_boot_afterwards():
     stubborn = Stubborn()
     error = kargs.apply(stubborn, None, 3014656)
     assert error.startswith("rpm-ostree reported no change, but the next boot's kernel arguments still have "
-                            "ttm.pages_limit=3014656. Nothing is changed; try again, or in a terminal: rpm-ostree "
-                            "kargs --delete=ttm.pages_limit=3014656")
+                            "ttm.pages_limit=3014656. Nothing is changed. Try again, or run this in a terminal: "
+                            "rpm-ostree kargs --delete=ttm.pages_limit=3014656")

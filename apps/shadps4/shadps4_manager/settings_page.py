@@ -23,7 +23,7 @@ from bc250_core.updates import UpdateChecker
 from . import shadps4_settings, userdata
 from .shadps4_settings import CHOICE, PERCENT, Setting
 
-RUNNING = "shadPS4 is running: close it first, it writes its own settings over the change when it closes."
+RUNNING = "shadPS4 is running. Close it first, because it writes its own settings over the change when it closes."
 STREAM = "shadPS4"                      # shadPS4's sound stream, as PipeWire names it (core's sound; seen on the board)
 SOUND_TIP = sound.tip(STREAM)
 SOUND_MUTED = sound.muted_text(STREAM)

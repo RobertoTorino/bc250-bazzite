@@ -575,14 +575,14 @@ class SetupWorker(QThread):
                              if not req.fallback else
                              "Could not look up HelixSR {0}: {1}".format(FALLBACK_VERSION, release.error))
         if not release.asset_url:
-            raise HelixError("HelixSR {0} has no zip to download; see {1}".format(release.version, release.url))
+            raise HelixError("HelixSR {0} has no zip to download. See {1}".format(release.version, release.url))
         if not 1 <= version_tuple(release.version)[0] <= SUPPORTED_MAJOR:
-            raise HelixError("HelixSR {0} is not supported yet: this app sets up HelixSR up to {1}.x.".format(
+            raise HelixError("HelixSR {0} is not supported yet. This app sets up HelixSR up to {1}.x.".format(
                 release.version, SUPPORTED_MAJOR))
         for folder in (req.work_dir, req.helix_data):
             free = free_mb(folder)
             if 0 <= free < REQUIRED_DISK_MB:
-                raise HelixError(("Only {free} MB free for {folder}: the setup needs about {need:.1f} GB while it "
+                raise HelixError(("Only {free} MB free for {folder}. The setup needs about {need:.1f} GB while it "
                                   "runs. Free some space and start again.").format(
                                       free=free, folder=folder, need=REQUIRED_DISK_MB / 1000))
         req.work_dir.mkdir(parents=True, exist_ok=True)
@@ -610,7 +610,7 @@ class SetupWorker(QThread):
             except Aborted:
                 raise
             except (HelixError, OSError) as exc:
-                self.warning = ("HLX FSR 4 is ready; HLX DLSS's network for HelixSR Scaler was not built: {0}"
+                self.warning = ("HLX FSR 4 is ready. HLX DLSS's network for HelixSR Scaler was not built: {0}"
                                 .format(exc))
                 self._say(self.warning)
             return release_dir, release.version
@@ -633,8 +633,8 @@ class SetupWorker(QThread):
         needed = needed_pins(pins, req.helix_data, req.dlss_file, is_immutable_system())
         unparsed = [k for k in ("dlss", "dxc", "python") if k not in pins]
         if unparsed:
-            self._say(("Could not read the pinned source(s) for {0} from the setup scripts; "
-                       "the script will download them itself.").format(", ".join(unparsed)))
+            self._say(("Could not read the pinned source(s) for {0} from the setup scripts. "
+                       "The script will download them itself.").format(", ".join(unparsed)))
         downloads: dict[str, Path] = {}
         if needed:
             self.stage.emit("Downloading {0} in parallel".format(", ".join(p.label for p in needed)))
@@ -680,7 +680,7 @@ class SetupWorker(QThread):
         if self._cancelled():
             raise Aborted("cancelled")
         if code != 0:
-            raise HelixError("{0} exited with code {1}; see the output above.".format(
+            raise HelixError("{0} exited with code {1}. See the output above.".format(
                 BUILDER if version_tuple(release.version) >= BUILDER_FROM else SETUP_SCRIPT, code))
 
     def _stream(self, command: list[str], cwd: Path, env: dict[str, str], name: str,
@@ -699,8 +699,8 @@ class SetupWorker(QThread):
                 continue
             if stop_at and stop_at in line:
                 stopped = True
-                self._say(("The network is built. HelixSR's own game installer is "
-                           "skipped: use the Deploy page to put HelixSR into a game."))
+                self._say(("The network is built. The app skips HelixSR's own game installer. "
+                           "Use the Deploy page to put HelixSR into a game."))
                 continue
             self._say(line.rstrip("\n"))
         code = self._process.wait()
@@ -717,7 +717,7 @@ class SetupWorker(QThread):
             command += ["--dlss", str(dlss)]
         if version_tuple(version) >= NO_FG_FROM:
             command.append("--no-fg")
-        self.stage.emit("Building the network files (about 5-6 minutes on a BC-250)")
+        self.stage.emit("Building the network files, about 5–6 minutes on a BC-250")
         env = {**os.environ, **req.script_env}
         env.setdefault("XDG_DATA_HOME", str(req.helix_data.parent))
         return self._stream(command, release_dir, env, SETUP_SCRIPT, stop_at=INSTALLER_START)
@@ -740,7 +740,7 @@ class SetupWorker(QThread):
         if self._cancelled():
             raise Aborted("cancelled")
         if code != 0 or not python_has_numpy(str(portable)):
-            raise HelixError("numpy could not be installed into the portable Python; see the output above.")
+            raise HelixError("pip could not install numpy into the portable Python. See the output above.")
         return str(portable)
 
     def _build(self, release_dir: Path, dlss: Path | None) -> int:
@@ -752,8 +752,8 @@ class SetupWorker(QThread):
         env = {**os.environ, **req.script_env}
         wine = find_wine(Path(env["HOME"]) if env.get("HOME") else None)
         if not wine:
-            raise HelixError("No Proton or Wine found to run the shader compiler: install Proton in Steam (any "
-                             "version) and start again.")
+            raise HelixError("No Proton or Wine found to run the shader compiler. Install Proton in Steam, any "
+                             "version, and start again.")
         python = self._python()
         dxc = write_dxc_wrapper(req.work_dir / DXC_WRAPPER, wine, req.helix_data)
         self._say("Shader compiler through {0}".format(wine))
@@ -765,8 +765,8 @@ class SetupWorker(QThread):
             command.append("--vulkan")
         if dlss is not None:
             command += ["--dlss", str(dlss)]
-        self.stage.emit("Building the network with its Vulkan kernels (about 11 minutes on a BC-250)" if vulkan else
-                        "Building the network (about 5-6 minutes on a BC-250)")
+        self.stage.emit("Building the network with its Vulkan kernels, about 11 minutes on a BC-250" if vulkan else
+                        "Building the network, about 5–6 minutes on a BC-250")
         try:
             code = self._stream(command, release_dir, env, BUILDER)
         finally:
@@ -780,7 +780,7 @@ class SetupWorker(QThread):
             status = str(exc)
         self._say("{0}: {1}".format(payload.name, status))
         if "network=1" not in status.split():
-            raise HelixError("The build finished but {0} does not carry the network ({1}).".format(payload.name,
+            raise HelixError("The build finished, but {0} does not carry the network ({1}).".format(payload.name,
                                                                                                   status))
         return 0
 

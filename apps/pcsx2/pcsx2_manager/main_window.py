@@ -61,7 +61,7 @@ STEAM_ON = "Steam runs and is signed in. The games in Steam can start."
 STEAM_OFF = "Steam does not run or is not signed in. Start Steam and sign in before you start a game."
 STEAM_URL = "steam://open/games"        # Steam's library; Steam starts when it does not run
 KINDS = {"iso": "ISO", "chd": "CHD", "cso": "CSO", "zso": "ZSO", "gz": "GZ"}
-RUNNING = "PCSX2 is running: close it first, it would write its own settings over the change."
+RUNNING = "PCSX2 is running. Close it first, because it would write its own settings over the change."
 STEAM, GAME, SERIAL, KIND, FILE, SCREEN = range(6)          # the table's columns (the screen last; owner)
 WIDTH = 900                             # the window opens this wide, and is never narrower (owner, 18-11-2026)
 HEIGHT = 606                            # the window opens this high (owner, 18-11-2026); it was 800
@@ -73,8 +73,8 @@ INSTALLED = "Installed. Uninstall with the Uninstall button."
 VERSIONS_TIP = "Put another installed PCSX2 build in use, or download one in the version manager"
 
 
-RUNNING_REMOVE = "PCSX2 is running: close it first, then remove the game."
-RUNNING_START = "PCSX2 is running: close it first, then start the game."
+RUNNING_REMOVE = "PCSX2 is running. Close it first, then remove the game."
+RUNNING_START = "PCSX2 is running. Close it first, then start the game."
 UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk. A window first lists what would go. "
                       "Uncheck what you want to keep. Nothing is deleted before you confirm")
 

@@ -69,25 +69,27 @@ LANGUAGES = (("1", "English (United States)"), ("18", "English (United Kingdom)"
 
 SETTINGS: tuple[Setting, ...] = (
     Setting("renderer", PICTURE, "Renderer", "backend-renderer", "Vulkan", CHOICE, RENDERERS,
-            "How Vita3K draws: Vulkan on the BC-250; OpenGL helps only a game that fails with Vulkan."),
+            "How Vita3K draws. Use Vulkan on the BC-250. OpenGL helps only a game that fails with Vulkan."),
     Setting("scale", PICTURE, "Resolution", "resolution-multiplier", "1", NUMBER, SCALES,
-            "The size Vita3K draws the picture at, a multiple of the PS Vita's 960 × 544: 2x fills a 1080p screen "
-            "sharply. A higher one asks more of the GPU."),
+            "The size Vita3K draws the picture at. It is a multiple of the PS Vita's 960 × 544. 2x fills a 1080p "
+            "screen sharply. A higher one asks more of the GPU."),
     Setting("filter", PICTURE, "Screen filter", "screen-filter", "Bilinear", CHOICE, FILTERS,
-            "How the drawn picture is scaled to the screen: Bilinear smooth, Nearest sharp pixels, Bicubic sharper "
-            "than Bilinear, FXAA smooths edges, FidelityFX Super Resolution AMD's upscaler (with Vulkan only)."),
+            "How Vita3K scales the drawn picture to the screen. Bilinear is smooth, and Nearest keeps sharp pixels. "
+            "Bicubic is sharper than Bilinear, and FXAA smooths edges. FidelityFX Super Resolution is AMD's upscaler, "
+            "with Vulkan only."),
     Setting("anisotropy", PICTURE, "Anisotropic filtering", "anisotropic-filtering", "1", CHOICE, ANISOTROPY,
             "Sharper textures seen at an angle, such as a road ahead."),
     Setting("stretch", PICTURE, "Fill the screen", "stretch_the_display_area", FALSE, SWITCH,
-            tip="The picture stretched to fill the whole screen; off, the PS Vita's shape is kept, with borders "
-                "where the screen is wider."),
+            tip="The picture stretches to fill the whole screen. Off, the picture keeps the PS Vita's shape, with "
+                "borders where the screen is wider."),
     Setting("vsync", PICTURE, "VSync", "v-sync", TRUE, SWITCH,
-            tip="Waits for the screen's refresh before showing a frame: no tearing, a little more delay."),
+            tip="Waits for the screen's refresh before showing a frame. There is no tearing, but a little more delay."),
     Setting("accuracy", SPEED, "High accuracy", "high-accuracy", FALSE, SWITCH,
-            tip="Draws more exactly, as the PS Vita does, for a game that shows errors; slower (Vulkan only)."),
+            tip="Draws more exactly, as the PS Vita does, for a game that shows errors. It is slower, and works with "
+                "Vulkan only."),
     Setting("pipelines", SPEED, "Compile shaders in the background", "async-pipeline-compilation", TRUE, SWITCH,
-            tip="The game goes on while Vita3K compiles what it shows the first time, with a stutter less; "
-                "something may then show a moment late."),
+            tip="The game goes on while Vita3K compiles what it shows the first time, with less stutter. "
+                "Something may then show a moment late."),
     Setting("fps", SPEED, "FPS hack", "fps-hack", FALSE, SWITCH,
             tip="May double a 30 FPS game to 60, but makes some games run twice as fast."),
     Setting("overlay", SPEED, "Performance overlay", "performance-overlay", FALSE, SWITCH,
@@ -96,16 +98,16 @@ SETTINGS: tuple[Setting, ...] = (
             tip="A message in the game while Vita3K compiles shaders."),
     Setting("volume", SOUND, "Volume", "audio-volume", "100", PERCENT, tip="The game's sound, in percent."),
     Setting("audio", SOUND, "Sound output", "audio-backend", "SDL", CHOICE, AUDIO,
-            "Through which library Vita3K plays sound; SDL is its own choice, Cubeb an alternative when the sound "
+            "The library Vita3K plays sound through. SDL is its own choice. Cubeb is an alternative when the sound "
             "crackles."),
     Setting("ngs", SOUND, "NGS sound", "ngs-enable", TRUE, SWITCH,
-            tip="The PS Vita's sound engine that many games play their music and effects with; off, those games "
-                "are silent, for one that hangs on it."),
+            tip="The PS Vita's sound engine that many games play their music and effects with. Off, those games "
+                "are silent. Turn it off for a game that hangs on it."),
     Setting("enter", SYSTEM, "Confirm button", "sys-button", "1", CHOICE, ENTER,
-            "Which button confirms in the PS Vita's menus and many games: Cross as on a PS Vita sold outside "
+            "Which button confirms in the PS Vita's menus and many games. Cross is as on a PS Vita sold outside "
             "Japan, Circle as in Japan."),
     Setting("language", SYSTEM, "Language", "sys-lang", "1", CHOICE, LANGUAGES,
-            "The PS Vita's language: a game with that language shows it."),
+            "The PS Vita's language. A game that has that language shows it."),
 )
 GROUPS = (PICTURE, SPEED, SOUND, SYSTEM)
 

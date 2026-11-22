@@ -668,7 +668,7 @@ def test_start_game_waits_for_a_steam_that_does_not_run(qapp, folders, monkeypat
     window.ppsspp_running = lambda: True
     window.table.selectRow(0)
     window.on_start_game()
-    assert window.running.text() == "PPSSPP is running: close it first, then start the game."
+    assert window.running.text() == "PPSSPP is running. Close it first, then start the game."
     window.close()
 
 

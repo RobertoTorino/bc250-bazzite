@@ -108,8 +108,8 @@ def test_no_user_name_on_the_screen(qapp, folders, tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     window = _window(folders)
     assert window.folders_state.text() == "<b>~/Games/Vita</b>"                # what goes there: the info symbol
-    assert window.folders_info.text_ == ("Drop your games in ~/Games/Vita, .vpk, .zip, .pkg, zRIF license key, or "
-                                         "drop a game folder there.")
+    assert window.folders_info.text_ == ("Drop your games in ~/Games/Vita. A game is a .vpk, .zip or .pkg file, or a "
+                                         "game folder. A .pkg needs its zRIF license key.")
     assert window.folders_state.toolTip() == "~/Games/Vita\n1 game(s) installed in Vita3K's storage, ~/storage."
     assert window.firmware_info.text_.startswith("Drop your own firmware and font package in ~/Games/Vita/Firmware. ")
     assert str(tmp_path) not in window.firmware_info.text_ + window.firmware_state.toolTip()
@@ -223,7 +223,7 @@ def test_the_firmware_is_taken_from_the_apps_folder(qapp, folders, tmp_path, mon
                                             f"--firmware {home / 'fonts' / 'PSP2UPDAT.PUP'}"]
     assert window.running.text() == "PSP2UPDAT.PUP: the system software installed."
     assert f"{home / 'PSP2UPDAT.PUP'}" not in window.output.toPlainText()       # the home folder as ~
-    assert "~/Games/Vita/Firmware/PSP2UPDAT.PUP is given to Vita3K." in window.output.toPlainText()
+    assert "The app gives ~/Games/Vita/Firmware/PSP2UPDAT.PUP to Vita3K." in window.output.toPlainText()
     assert window.firmware.system and len(window.settings.get("firmware_given")) == 2
     log.unlink()
     window.refresh()
@@ -265,7 +265,7 @@ def test_the_firmware_installed_through_vita3k(qapp, folders, tmp_path):
     _fake_vita3k(folders["run"], log, 'echo "Firmware Version file not found!"')         # a file Vita3K cannot use
     window.install_firmware(pup)
     _wait(window, qapp)
-    assert window.running.text().startswith("Vita3K did not install PSP2UPDAT.PUP: nothing of the firmware was ")
+    assert window.running.text().startswith("Vita3K did not install PSP2UPDAT.PUP. It wrote nothing of the firmware.")
     _fake_vita3k(folders["run"], log, 'echo "Firmware file not found" >&2; exit 1')
     window.install_firmware(pup)
     _wait(window, qapp)
@@ -288,7 +288,7 @@ def test_a_package_installed_through_vita3k(qapp, folders, tmp_path):
     _fake_vita3k(folders["run"], log)
     window.install_package(tmp_path / "update.pkg", "KO5i")
     _wait(window, qapp)
-    assert "no new game came with it (an update goes to ux0/patch" in window.running.text()
+    assert "No new game came with it. An update goes to ux0/patch" in window.running.text()
     window.close()
 
 
@@ -338,8 +338,8 @@ def test_the_steam_link(qapp, folders):
     window.show()
     window.steam_info.click()
     label = window.steam_info.popup.findChild(QLabel)
-    assert re.sub(r"<[^>]+>", "", label.text()) == ("A checkmark before a game adds the game to Steam. When the Start "
-                                                    "game button is clicked the game starts from Steam.")
+    assert re.sub(r"<[^>]+>", "", label.text()) == ("A checkmark before a game adds the game to Steam. When you click the "
+                                                    "Start game button, the game starts from Steam.")
     assert ">Steam</a>" in label.text() and not label.openExternalLinks()
     label.linkActivated.emit("steam://open/games")
     assert opened == ["steam://open/games"] and "Steam was opened." in window.output.toPlainText()
@@ -398,7 +398,7 @@ def test_no_steam_game_mode_or_no_wrapper(qapp, folders, monkeypatch):
     window = _window(folders)
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
-    assert "install Vita3K Manager through the portal first" in window.running.text()
+    assert "Install Vita3K Manager through the portal first" in window.running.text()
     assert not window.worker.running
     window.close()
 
@@ -644,7 +644,7 @@ def test_start_game_starts_the_chosen_game_through_steam(qapp, folders, monkeypa
     window.table.selectRow(0)
     title = window.chosen().title
     tabs.tabBarClicked.emit(start)                                           # chosen, but not in Steam yet
-    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet: tick it and press Update Steam "
+    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet. Check it and press Update Steam "
                                                       "first.")
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
@@ -750,7 +750,7 @@ def test_start_game_waits_for_a_steam_that_does_not_run(qapp, folders, monkeypat
     window.vita3k_running = lambda: True
     window.table.selectRow(0)
     window.on_start_game()
-    assert window.running.text() == "Vita3K is running: close it first, then start the game."
+    assert window.running.text() == "Vita3K is running. Close it first, then start the game."
     window.close()
 
 

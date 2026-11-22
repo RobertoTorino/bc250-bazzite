@@ -183,7 +183,7 @@ class ShadNetDialog(QDialog):
             self._say(str(error), False)
             return
         if self.running():
-            self._say("shadPS4 is running: close it first, as it writes its own settings back when it ends.", False)
+            self._say("shadPS4 is running. Close it first, because it writes its own settings back when it ends.", False)
             return
         try:
             userdata.save_shadnet(self.shad_home, user.user_id, self.npid.text().strip(), self.password.text(),

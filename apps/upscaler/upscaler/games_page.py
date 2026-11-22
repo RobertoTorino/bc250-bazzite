@@ -36,11 +36,10 @@ class GamesPage(QWidget):
         header.addWidget(rescan)
         layout.addLayout(header)
         layout.addWidget(hint_label(
-            "Every Steam game on this PC. HelixSR goes in place of a game's AMD FSR 3.1 DLL, so only the games that "
-            "ship one can use it: they come first, the others are grayed out. <b>Run with HelixSR</b> (or a "
-            "double-click) puts HelixSR in when it is not there yet, again after a game update put the game's own "
-            "DLL back, or when the payload has a newer build, then starts the game through Steam. Choose <b>AMD "
-            "FSR</b> in the game's graphics settings."))
+            "Every Steam game on this PC. HelixSR goes in place of a game's AMD FSR 3.1 DLL. So only the games that "
+            "ship one can use it. They come first, and the others are grayed out. <b>Run with HelixSR</b> or a double "
+            "click puts HelixSR in where it is missing or older, or where a game update put the game's own DLL back. "
+            "Then it starts the game through Steam. Choose <b>AMD FSR</b> in the game's graphics settings."))
         self.table = _table(["Game", "HelixSR", "FSR 3.1 DLL", "Folder"])
         self.table.itemSelectionChanged.connect(self._update_buttons)
         self.table.itemDoubleClicked.connect(lambda *_: self._run_clicked())
@@ -139,7 +138,7 @@ class GamesPage(QWidget):
         self.run.setToolTip("Import a complete payload first (Setup page)." if not self.payload_ready else
                             "Select a game with an FSR 3.1 DLL in the list." if scan is None else
                             "Looking through the game's folder…" if busy else
-                            "Not a Steam game: start it yourself." if not scan.app_id else
+                            "Not a Steam game. Start it yourself." if not scan.app_id else
                             "Install HelixSR where needed, then start {0} through Steam.".format(scan.folder.name))
 
     def _run_clicked(self) -> None:

@@ -99,7 +99,7 @@ def test_shows_the_board(qapp, sys_root, proc_root):
     w.combo.setCurrentIndex(main_window.SPLITS.index(4096))
     w.ttm_combo.setCurrentIndex(w.ttm_combo.findData(None))
     assert w.apply_button.isEnabled() and w.ttm_button.isEnabled()
-    assert "framebuffer pin failures" in w.split_info.text_ and "Manual" in w.ttm_info.text_
+    assert "framebuffer pin failures" in w.split_info.text_ and "Wiki" in w.ttm_info.text_
     w.close()
 
 
@@ -191,20 +191,20 @@ def test_ttm_apply_reboot_and_default(qapp, sys_root, proc_root, answer):
     w = make(qapp, sys_root, proc_root, Board(), ostree)
     w.ttm_combo.setCurrentIndex(w.ttm_combo.findData(4194304))
     w.apply_ttm()
-    assert ("The GTT stays at 9.4 GiB, all the RAM with this split: a limit above the RAM changes nothing until a "
+    assert ("The GTT stays at 9.4 GiB, all the RAM with this split. A limit above the RAM changes nothing until a "
             "smaller split.") in answer["questions"][0]
     assert ostree.calls[1] == ["rpm-ostree", "kargs", "--replace=ttm.pages_limit=4194304", "--unchanged-exit-77"]
     assert "ttm.pages_limit=4194304" in ostree.arguments and "3014656" not in ostree.arguments
     assert w.badge.text() == "Reboot to apply" and "16.0 GiB GTT limit is in the next boot" in w.ttm_note.text()
-    assert "Reboot the board to use it" in w.ttm_note.text()
+    assert "Restart the board to use it" in w.ttm_note.text()
     assert not w.ttm_button.isEnabled()                   # 16 GiB is written: not again
     w.ttm_combo.setCurrentIndex(w.ttm_combo.findData(3014656))
     assert w.ttm_button.isEnabled()
     w.ttm_combo.setCurrentIndex(w.ttm_combo.findData(4194304))
     assert w.ttm_box.value.text() == "11.5 GiB" and w.ttm_box.caption.text() == "next boot 16.0 GiB"
-    assert answer["infos"] == ["Done: the 16.0 GiB GTT limit is in the next boot's kernel arguments.\n\nReboot the "
-                               "board to use it. The app does not reboot by itself: use the menu, or in a terminal: "
-                               "systemctl reboot."]
+    assert answer["infos"] == ["Done. The 16.0 GiB GTT limit is in the next boot's kernel arguments.\n\nRestart the "
+                               "board to use it. The app does not restart the board by itself. Use the menu, or run "
+                               "systemctl reboot in a terminal."]
     assert w.combo.currentData() == 6144 and not w.apply_button.isEnabled()  # the split is untouched
     w.close()
 
@@ -305,7 +305,7 @@ def test_ttm_says_writing_while_rpm_ostree_runs(qapp, sys_root, proc_root, answe
     w.ttm_combo.setCurrentIndex(w.ttm_combo.findData(4194304))
     w.apply_ttm()
     assert seen == [("Writing…", "<b>rpm-ostree is writing the next boot's kernel arguments, 83 s so far. This takes "
-                     "a minute or two; the window answers again when it is done.</b>", False, False, True)]
+                     "a minute or two. The window answers again when rpm-ostree is done.</b>", False, False, True)]
     assert not w.writing_timer.isActive()
     assert w.badge.text() == "Reboot to apply" and not w.ttm_button.isEnabled() and not w.apply_button.isEnabled()
     w.ttm_combo.setCurrentIndex(w.ttm_combo.findData(None))
@@ -321,13 +321,15 @@ def test_profiles_write_what_differs(qapp, sys_root, proc_root, answer):
     assert w.profile_buttons["games"].toolTip() == "6 GB  (recommended for games) split, 11.5 GiB GTT limit"
     w.apply_profile("defaults")
     assert answer["questions"][-1].startswith("Write the 512 MB split to CMOS and the kernel default GTT limit "
-                                              "(half the RAM) to the next boot's kernel arguments?\n\nOne password "
-                                              "prompt for each.")
+                                              "(half the RAM) to the next boot's kernel arguments?\n\nBoth take "
+                                              "effect after you restart the board.")
+    assert answer["questions"][-1].endswith("You will be asked for your password once for each.")
     assert board.calls == [["--set-uma", "512"]] and board.uma == 512
     assert ostree.calls[-3][2] == "--delete=ttm.pages_limit=3014656" and "ttm" not in ostree.arguments
-    assert answer["infos"] == ["Done: the 512 MB split to CMOS and the kernel default GTT limit (half the RAM) to "
-                               "the next boot's kernel arguments.\n\nReboot the board to use it. The app does not "
-                               "reboot by itself: use the menu, or in a terminal: systemctl reboot."]
+    assert answer["infos"] == ["Done. The app wrote the 512 MB split to CMOS and the kernel default GTT limit (half "
+                               "the RAM) to the next boot's kernel arguments.\n\nRestart the board to use it. The app "
+                               "does not restart the board by itself. Use the menu, or run systemctl reboot in a "
+                               "terminal."]
     assert w.badge.text() == "Reboot to apply" and w.combo.currentData() == 512
     assert w.ttm_combo.currentData() is None
     assert not w.profile_buttons["defaults"].isEnabled() and w.profile_buttons["games"].isEnabled()
@@ -350,7 +352,7 @@ def test_profile_asks_once_and_stops_on_no(qapp, sys_root, proc_root, answer):
     answer["value"] = QMessageBox.StandardButton.Yes
     assert w.profile_steps("defaults") == ["the 512 MB split to CMOS"]
     w.apply_profile("defaults")
-    assert board.uma == 512 and "It needs your password." in answer["questions"][-1]
+    assert board.uma == 512 and "You will be asked for your password." in answer["questions"][-1]
     w.close()
 
 
@@ -370,7 +372,7 @@ def test_swap_layout_is_written_once_and_waits_for_a_restart(qapp, sys_root, pro
     assert swapper.calls == [] and answer["questions"][-1].splitlines() == [
         'Write the swap layout "zram with your size and compressor" for the next boot?', "",
         "zram gets the size half the RAM (4.7 GiB), with zstd.", "vm.swappiness becomes 180.",
-        "It takes effect after you restart the board.", "", "It needs your password."]
+        "It takes effect after you restart the board.", "", "You will be asked for your password."]
     answer["value"] = QMessageBox.StandardButton.Yes
     w.swap_button.click()
     assert swapper.calls == [["--layout", "zram", "--zram-size", "ram / 2", "--compressor", "zstd",

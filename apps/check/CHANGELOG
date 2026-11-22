@@ -1,3 +1,24 @@
+Changelog: 22-11-2026 18:11:59
+
+Added. Help is a readable page now. The chapter's text stands in a column of about 90 characters, in larger type with
+room between the lines, under the app's icon instead of the large picture. Its sections are listed on the left, and a
+click jumps to one. Find in the help searches the page. Back and Wiki are pills: Wiki opens the page in the browser, and
+Open in editor is gone. The chapter says so, and tests/test_smoke.py checks it.
+
+Changelog: 22-11-2026 18:05:41
+
+Fixed. The app's chapter was checked against the code, and its texts with it. Test 15 reads the current boot's journal
+errors, not only the kernel's, and test 16 reads warnings and errors. The Settings page said that Older than N days also
+removes the runs' history entries: their results stay in the history. The chapter now names tests 47 and 60 among the
+users of vulkan-tools, says that Run all leaves out the stress test unless it is checked, lists the machine ID among
+what Privacy hides, writes the labels Clean up logs… and Copy the full reports to ~/Desktop/bc250-board-test after each
+run as the window does, and puts Stress duration on the Gaming page.
+
+Changelog: 22-11-2026 16:58:55
+
+Fixed. The Finished box's tooltip said it counts the tests with a result in this session. It counts the latest result of
+each test over all runs, and the tooltip says so now.
+
 Changelog: 22-11-2026 11:56:40
 
 Release 4.8.0.

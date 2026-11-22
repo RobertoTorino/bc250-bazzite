@@ -6,13 +6,13 @@
 
 # BC-250 Turing Screen
 
-Shows the **AMD BC-250**'s live system values on a **Turzx USB IPS screen** (the Turing Smart Screen 3.5" and the
-UsbMonitor screens of the same family) on **Bazzite**: CPU, GPU, memory, fan, temperatures, network and disk. The
-screen needs no driver on Linux; the app gives your user its port once and draws the values on it, with the time, the
-date and the weather if you want them, in six themes or your own colors. It saves what the screen shows as a picture,
-and every value as a report.
+BC-250 Turing Screen shows the live system values of the **AMD BC-250** on **Bazzite**. It draws them on a **Turzx
+USB IPS screen**, such as the Turing Smart Screen 3.5" or a UsbMonitor screen of the same family. It shows the CPU,
+GPU, memory, fan, temperatures, network and disk. It can add the time, the date and the weather. You choose one of six
+themes or your own colors. The screen needs no driver on Linux. The app gives your user its port once. It saves what
+the screen shows as a picture, and every value as a report.
 
-How to install and use it: [BC-250 Turing Screen in the manual](https://robertotorino.github.io/bc250-bazzite/apps/turing/).
+How to install and use it: [BC-250 Turing Screen in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/turing/).
 
 ## License
 

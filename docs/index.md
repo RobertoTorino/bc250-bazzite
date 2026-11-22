@@ -115,18 +115,17 @@ other app installs from the portal.
 
 ### Do the apps change my board?
 
-Only the apps marked **changes the board**: the unlocks, the GPU governor, GPU overclocking, the ACPI override, the
-VRAM split and the patched GPU drivers. They are software-only and can be undone, and the portal asks before it
-installs or opens them. Each of their chapters opens with a **Changes the board** box that says what the app
-touches, what stays after a reboot or a power off, what it never touches (the BIOS, the firmware) and how the
-change is undone; the portal shows the same text when you hover over the tile. BC-250 Board Test and BIOS
-Reader only read.
+Only the apps marked **changes the board**: the unlocks, the GPU governor, GPU overclocking, the ACPI override, the VRAM
+split, the thermal guard and the patched GPU drivers. They are software-only and can be undone, and the portal asks
+before it installs or opens them. Each of their chapters opens with a **Changes the board** box that says what the app
+touches, what stays after a reboot or a power off, what it never touches (the BIOS, the firmware) and how the change is
+undone; the portal shows the same text when you hover over the tile. BC-250 Board Test and BIOS Reader only read.
 
 ### How do I undo a change?
 
-In the app that made it: each of these apps has an Uninstall, Remove or Undo. Uninstalling an app does not undo
-what it changed on the board, so undo that first. [What stays after an uninstall](portal.md#what-stays-after-an-uninstall)
-lists each app and how to undo it.
+In the app that made it: each of these apps has an Uninstall, Remove, Undo or Turn off. Uninstalling an app does not
+undo what it changed on the board, so undo that first.
+[What stays after an uninstall](portal.md#what-stays-after-an-uninstall) lists each app and how to undo it.
 
 ### Do the apps change Bazzite's own driver?
 

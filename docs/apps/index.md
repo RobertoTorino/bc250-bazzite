@@ -68,8 +68,8 @@ controller Steam Input owns sends what its desktop layout says, by default Escap
 | ![](../assets/apps/password.webp){ .app-icon } [BC-250 Password Generator](password.md) | Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere. |
 
 The tools for working on the suite run from a checkout of the repository and are not in the portal:
-[Nexus Dashboard](../development/dashboard.md) opens them all (Nexus Release Tool, Nexus
-Installer Tests, Nexus Demo Recorder, Nexus Sound Lab, Nexus TTS, Nexus Remix Studio, the video tours and the icons).
+[Nexus Dashboard](../development/dashboard.md) opens them all (Nexus Release Tool, Nexus Deps,
+Nexus Garbage Remover, Nexus Installer Tests, Nexus Demo Recorder, Nexus Sound Lab, Nexus TTS, Nexus Remix Studio, the video tours and the icons).
 
 Apps that **change the board** (unlocks, the GPU governor, GPU overclocking, the ACPI override, the VRAM split,
 a patched GPU driver) change how the BC-250 runs. They are software-only and can be undone; the portal asks before it installs or opens them. Read an

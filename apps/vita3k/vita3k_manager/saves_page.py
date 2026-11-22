@@ -26,7 +26,7 @@ from . import saves, style
 from .saves import Save, SaveError
 
 PICTURE = 96                            # the save's picture at this width at most (icon0.png, when a save has one)
-RUNNING = "Vita3K is running: close it before changing a save, it would write its own copy over the change."
+RUNNING = "Vita3K is running. Close it before you change a save, because it would write its own copy over the change."
 GAME, SAVE, FOLDER, SIZE, SAVED = range(5)
 
 
@@ -245,7 +245,7 @@ class SavesPage(QWidget):
             return
         listed = "\n".join(f"  {s.label}" for s in chosen[:10]) + ("\n  …" if len(chosen) > 10 else "")
         if self._ask("Delete saves", f"Delete {len(chosen)} save(s) from Vita3K's save folder?\n\n{listed}\n\n"
-                                     "A deleted save is gone: export it first to keep a copy."):
+                                     "A deleted save is gone. Export it first to keep a copy."):
             self.delete(chosen)
 
     def delete(self, chosen: list[Save]) -> None:
