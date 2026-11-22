@@ -294,6 +294,10 @@ and the release waits for CI on the release commit itself, as does a commit whos
 commit may fix what failed there, such as a version CI wanted bumped, so its own CI decides. CI still runs on the
 release commit; nothing waits for it.
 
+The portal's part downloads the checksums of the app releases the run just made. GitHub can miss a release
+for a short while after it was made. The run then tries again every 10 seconds for a minute. After that it
+stops and names the release it did not find.
+
 GitHub's **Latest** release is the newest portal. The app releases are published with `--latest=false`, so they
 are never Latest, and the portal becomes Latest when it is published (by **Publish** for a draft, or by
 `release.yml` for a portal tag pushed by hand). `/releases/latest`, which the READMEs and this wiki link to for the
