@@ -41,7 +41,7 @@ JOURNAL_DIR = "log/journal"                                       # in /var
 JOURNAL_MARK = ".bc250-quickfix"                                   # in it: the quickfix made the folder
 KARGS = {"iommu": "amd_iommu=off", "mitigations": "mitigations=off"}  # the kernel arguments the quickfixes add
 KARGS_DIR = "lib/bc250-quickfix"                                   # in /var, shared by every deployment: <key>.karg
-REBOOT = "Restart the board to apply it: systemctl reboot"
+REBOOT = "Restart the board with systemctl reboot to apply it"
 # VRM Sensors: the source of the bc250_vrm module comes with the app (vrm/, unchanged files of VRM_REPO at VRM_TAG;
 # tests/test_vrm.py compares them with VRM_SHA256), with a Kbuild and the service's script of our own.
 VRM_REPO = "Hexxeh/bc250-vrm-dkms"
@@ -132,7 +132,7 @@ def set_metrics(text: str, on: bool, method: str | None) -> str:
 def metrics(etc: Path, on: bool, method: str | None) -> int:
     config = etc / GOVERNOR_CONFIG
     if not config.is_file():
-        print(f"{config} does not exist: the GPU governor is not installed.")
+        print(f"{config} does not exist. The GPU governor is not installed.")
         return 1
     backup = config.with_name(f"{config.name}.bak-{datetime.datetime.now():%Y%m%d-%H%M%S}")
     shutil.copy2(config, backup)
@@ -149,7 +149,7 @@ def sensors(etc: Path, on: bool) -> int:
                     f"{SENSORS_LINE}\n")
         return run(["modprobe", "nct6683", "force=true"])
     conf.unlink(missing_ok=True)
-    print(f"Removed {conf}; the module stays loaded until the next boot.")
+    print(f"Removed {conf}. The module stays loaded until the next boot.")
     return 0
 
 
@@ -172,11 +172,11 @@ def journal(var: Path, on: bool) -> int:
         code = run(["systemd-tmpfiles", "--create", "--prefix", str(folder)])
         return code or run(["journalctl", "--flush"])
     if not (folder / JOURNAL_MARK).is_file():
-        print(f"{folder} was not made by BC-250 Quickfix: it stays.")
+        print(f"BC-250 Quickfix did not make {folder}, so it stays.")
         return 1
     run(["journalctl", "--relinquish-var"])
     shutil.rmtree(folder)
-    print(f"Removed {folder}: the journal is kept in memory until the next boot again.")
+    print(f"Removed {folder}. journald keeps the journal in memory again, until the next boot.")
     return 0
 
 
@@ -186,11 +186,11 @@ def kargs(var: Path, key: str, on: bool) -> int:
     arg, mark = KARGS[key], karg_mark(var, key)
     current = next_kargs()
     if current is None:
-        print("rpm-ostree could not read the kernel arguments: is this an rpm-ostree system?")
+        print("rpm-ostree could not read the kernel arguments. Is this an rpm-ostree system?")
         return 1
     if on:
         if arg in current:
-            print(f"{arg} is on the kernel command line of the next boot already: nothing to do.")
+            print(f"{arg} is on the kernel command line of the next boot already. There is nothing to do.")
             return 1
         mark.parent.mkdir(parents=True, exist_ok=True)
         mark.write_text(f"{arg}\n", encoding="utf-8")           # first: a failure below removes it again
@@ -201,7 +201,7 @@ def kargs(var: Path, key: str, on: bool) -> int:
         print(f"Added {arg}. {REBOOT}.")
         return 0
     if not mark.is_file():
-        print(f"{arg} was not added by BC-250 Quickfix: it stays.")
+        print(f"BC-250 Quickfix did not add {arg}, so it stays.")
         return 1
     code = run(["rpm-ostree", "kargs", f"--delete-if-present={arg}"]) if arg in current else 0
     if code:
@@ -250,7 +250,7 @@ def vrm(etc: Path, var: Path, on: bool, source: Path = VRM_SOURCE) -> int:
         code = run(["systemctl", "restart", VRM_UNIT])
         if code:
             run(["journalctl", "-u", VRM_UNIT, "-b", "-n", "40", "--no-pager", "-o", "cat"])
-            print("The module was not built or not loaded. The service stays on: Turn off removes it.")
+            print("The module was not built or not loaded. The service stays on. Turn off removes it.")
         return code
     if unit.is_file():
         run(["systemctl", "disable", "--now", VRM_UNIT])

@@ -149,7 +149,7 @@ def test_installed_with_bios_and_games(qapp, folders, tmp_path):
     assert window.bios_remove_pill.isEnabled()
     head = window.table.horizontalHeader().model()
     assert [head.headerData(c, Qt.Orientation.Horizontal) for c in range(6)] == [
-        "In Steam", "Game title", "Id", "Type", "File name", "Screen setting"]        # owner, 24-10-2026
+        "In Steam", "Game title", "ID", "Type", "File name", "Screen setting"]        # owner, 24-10-2026
     assert window.table.item(0, 2).text() == "SLUS-00002"
     assert window.table.item(0, 4).text() == "Two.iso"                          # the file's name; the path as tip
     assert window.table.item(0, 4).toolTip() == str(tmp_path / "Games" / "PS2" / "Two.iso")
@@ -219,7 +219,7 @@ def test_the_bios_is_taken_from_the_apps_folder(qapp, folders, tmp_path, monkeyp
     running = [True]
     window = _window(folders, pcsx2_running=lambda: running[0])
     assert not bios_dir(folders["pcsx2_home"]).exists() and window.pill.text() == "No BIOS"
-    assert "in ~/Games/PS2/BIOS: the app copies it into PCSX2." in window.bios_info.text_
+    assert "in ~/Games/PS2/BIOS. The app copies it into PCSX2." in window.bios_info.text_
     running[0] = False
     window.refresh()
     folder = bios_dir(folders["pcsx2_home"])
@@ -233,7 +233,7 @@ def test_the_bios_is_taken_from_the_apps_folder(qapp, folders, tmp_path, monkeyp
     assert window.output.toPlainText().count("BIOS taken from") == said         # unchanged: nothing copied again
     second = make_bios(folder, "SCPH-70004.BIN")                                # one put in PCSX2's folder by hand
     window.refresh()
-    assert "also there: SCPH-70004.BIN" in window.bios_state.toolTip() and "also" not in window.bios_state.text()
+    assert "also holds SCPH-70004.BIN" in window.bios_state.toolTip() and "also" not in window.bios_state.text()
     running[0] = True
     window.remove_bios(second)
     assert window.running.text() == window_module.RUNNING and second.is_file()
@@ -344,9 +344,9 @@ def test_the_apps_own_game_folders(qapp, folders, tmp_path, monkeypatch):
     assert window.table.rowCount() == 2
     text = window.folders_state.text()
     assert text == "<b>~/Games/PS2</b>, <b>~/sd/Games/PS2</b>"                 # what goes there: the info symbol
-    assert window.folders_info.text_ == ("Drop your games in ~/Games/PS2, .ISO, .CHD, .CSO, .ZSO or .GZ. Drop your "
-                                         "own BIOS in ~/Games/PS2/BIOS. A USB drive or an SD card with a Games/PS2 "
-                                         "folder is also checked for content.")
+    assert window.folders_info.text_ == ("Put your games in ~/Games/PS2 as .ISO, .CHD, .CSO, .ZSO or .GZ files. Put "
+                                         "your own BIOS in ~/Games/PS2/BIOS. The app also looks in the Games/PS2 "
+                                         "folder of a USB drive or an SD card.")
     assert str(tmp_path) not in text and window.folders_state.toolTip() == "~/Games/PS2\n~/sd/Games/PS2"
     assert "folders" not in window.settings.DEFAULTS
     window.close()
@@ -413,7 +413,7 @@ def test_update_steam_reads_the_file_back(qapp, folders, monkeypatch, tmp_path):
     answers.append({})                                          # what the read-back finds; refresh reads for real
     window.on_update_steam()
     _wait(window, qapp)
-    assert "Read back from Steam's file, 0 of the 1 game(s) are there: not Two." in window.running.text()
+    assert "Read back from Steam's file, 0 of the 1 game(s) are there. Missing: Two." in window.running.text()
     assert list(real(folders["steam_dir"]).values()) == ["[PS2] Two"]                  # written all the same
     def broken(folder):
         raise OSError("unreadable")
@@ -479,7 +479,7 @@ def test_no_steam_game_mode_or_no_wrapper(qapp, folders, monkeypatch, tmp_path):
     window = _window(folders)
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
-    assert "install PCSX2 Manager through the portal first" in window.running.text()
+    assert "Install PCSX2 Manager through the portal first" in window.running.text()
     assert not window.worker.running
     window.close()
 
@@ -909,7 +909,7 @@ def test_start_game_starts_the_chosen_game_through_steam(qapp, folders, monkeypa
     window.table.selectRow(0)
     title = window.chosen().title
     tabs.tabBarClicked.emit(start)                                           # chosen, but not in Steam yet
-    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet: tick it and press Update Steam "
+    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet. Check it and press Update Steam "
                                                       "first.")
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()

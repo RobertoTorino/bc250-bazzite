@@ -26,7 +26,7 @@ class NamingTemplate(Enum):
     ID_TITLE_SPACE = "ID Title"
     ID_TITLE_VERSION = "ID - Title - Version"
     TITLE_ID = "Title - ID"
-    TITLE_ID_SPACE = "Title Id"
+    TITLE_ID_SPACE = "Title ID"
     TITLE_ONLY = "Title only"
     TITLE_BRACKET_ID = "Title [ID]"
     TITLE_BRACKET_ID_VERSION = "Title [ID] [Version]"

@@ -63,7 +63,7 @@ class NewCardDialog(QDialog):
         buttons.addWidget(cancel)
         lay = QVBoxLayout(self)
         lay.addLayout(form)
-        lay.addWidget(hint_label("A name ending in .ps2 is PCSX2's own kind; .mc2 is a card without ECC, as a "
+        lay.addWidget(hint_label("A name ending in .ps2 is PCSX2's own kind. A .mc2 card has no ECC, as a "
                                  "MemCard PRO2 reads. Cards over 8 MB work in PCSX2 only, and not with every "
                                  "game."))
         lay.addLayout(buttons)
@@ -101,8 +101,8 @@ class MemcardPage(QWidget):
         self.slot_combo = QComboBox()
         for slot, text in SLOTS.items():
             self.slot_combo.addItem(text, slot)
-        self.slot_combo.setToolTip("The slot of the PS2 this card is in: a game saves to the card in slot 1, and "
-                                   "some use slot 2 too. A card is in one slot at most.")
+        self.slot_combo.setToolTip("The slot of the PS2 this card is in. A game saves to the card in slot 1, and "
+                                   "some games use slot 2 too. A card is in one slot at most.")
         self.slot_combo.currentIndexChanged.connect(self._slot_chosen)
         self.new_button = QPushButton("New card…")
         self.new_button.setToolTip("Make a new, empty card in PCSX2's memory card folder")
@@ -168,11 +168,11 @@ class MemcardPage(QWidget):
         middle.addWidget(self.table, 1)
         middle.addWidget(self.side, 0, Qt.AlignmentFlag.AlignTop)
 
-        self.import_button = style.primary_button("Import…", "Put save files on the card (.max, .psu, .sps, "
-                                                             ".xps, .cbs, .psv)")
+        self.import_button = style.primary_button("Import…", "Put save files on the card. It takes .max, .psu, "
+                                                             ".sps, .xps, .cbs and .psv files")
         self.import_button.clicked.connect(self.on_import)
         self.export_button = QPushButton("Export…")
-        self.export_button.setToolTip("Save the selected saves as files (.psu or .max), to keep or to share")
+        self.export_button.setToolTip("Save the selected saves as .psu or .max files, to keep or to share")
         self.export_button.clicked.connect(self.on_export)
         self.copy_button = QPushButton("Copy to…")
         self.copy_button.setToolTip("Copy the selected saves onto another card")
@@ -218,9 +218,9 @@ class MemcardPage(QWidget):
         keep = keep or (self.card().name if self.card() else "")
         self.folder = memcards.card_folder(self.pcsx2_home)
         self.slots = memcards.slot_cards(self.pcsx2_home)
-        self.hint.setText(f"The cards in {self.folder}, the folder PCSX2 keeps them in. Before every change a card "
-                          f"is copied beside it (name.date.bak, the newest {memcards.BACKUPS_KEPT} kept), and "
-                          "nothing is written while PCSX2 runs.")
+        self.hint.setText(f"The cards in {self.folder}, the folder PCSX2 keeps them in. Before every change, a card "
+                          f"is copied beside it as name.date.bak. The app keeps the newest {memcards.BACKUPS_KEPT}. "
+                          "Nothing is written while PCSX2 runs.")
         if not keep:
             keep = next((name for name, slot in sorted(self.slots.items(), key=lambda s: s[1])), "")
         self.cards = memcards.find_cards(self.folder)
@@ -549,7 +549,7 @@ class MemcardPage(QWidget):
         card = self.card()
         if card is None:
             return
-        if self._ask("Format", f"Format {card.name}?\n\nEvery save on it is erased; the backup made first keeps "
+        if self._ask("Format", f"Format {card.name}?\n\nEvery save on it is erased. The backup made first keeps "
                                "them."):
             self.format_card()
 

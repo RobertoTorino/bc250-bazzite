@@ -1,3 +1,16 @@
+Changelog: 22-11-2026 10:14:15
+
+Fixed. The text is rewritten to the writing standard (.claude/writing.md): the wiki chapter, the README, the tooltips,
+hints and messages in the window, the memory card page, the settings' tooltips and the message of bc250-pcsx2-run.
+Sentences are short and hold one fact, the spelling is American English, "tick" is "check", and "the manual" is "the
+wiki". The label of the game table's Id column is renamed to ID. Facts corrected: the wiki said you pick the BIOS dump
+with BIOS Install, but there is no such pill and you put the dump in ~/Games/PS2/BIOS. The wiki said the PCSX2 line has
+a button under it, but Install and Uninstall are the PCSX2 Install and PCSX2 Uninstall pills in the header. The No games
+state said to add the folder with your games, but the folders are fixed, so it now says to put your games in Games/PS2.
+The wiki now names the 16:9 choice of Video (FMV) shape. Nothing the app does has changed. The tests in
+test_main_window.py that check the column labels, the BIOS and game folder info texts, the BIOS tooltip, the message
+after Update Steam, the message before Start game and the message about a missing run wrapper follow the new wording.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 7.7.1.

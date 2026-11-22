@@ -25,10 +25,10 @@ SECRET_HINT = "x-kde-passwordManagerHint"       # Plasma's clipboard history ski
 STANDARD = (f"The rules meet the minimum of NIST SP 800-63B and OWASP. NIST accepts {SHORT} characters only for an "
             f"account that also has a second sign-in step, and asks for {LONG} characters where the password is the "
             "only step.")
-ABOUT = (f"<b>{APP_NAME}</b> makes a random password of {SHORT} or {LONG} characters with at least one capital "
-         "letter, one small letter, one number and one special character.<br><br>The password is <b>kept "
-         "nowhere</b>: not in a file, not in a setting, not in a log. A new password replaces it and closing the "
-         f"app ends it, for good.<br><br><b>Copy</b> puts it on the clipboard for {CLIPBOARD_SECONDS} seconds, so "
+ABOUT = (f"<b>{APP_NAME}</b> makes a random password of {SHORT} or {LONG} characters. It has at least one capital "
+         "letter, one small letter, one number and one special character.<br><br>The app keeps the password "
+         "<b>nowhere</b>. It is not in a file, a setting or a log. A new password replaces it. Closing the app ends "
+         f"it for good.<br><br><b>Copy</b> puts it on the clipboard for {CLIPBOARD_SECONDS} seconds, so "
          "you can paste it where you keep your passwords. Then the app clears the clipboard.<br><br>" + STANDARD
          + " The special characters are OWASP's list of password special characters, without the space.")
 
@@ -71,7 +71,7 @@ class MainWindow(QMainWindow):
         self.password_label.setTextFormat(Qt.TextFormat.PlainText)       # a password may hold <, > and &
         self.password_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.password_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.password_label.setToolTip("The password. It is shown here and kept nowhere.")
+        self.password_label.setToolTip("The password. The app shows it here and keeps it nowhere.")
         self.password_label.setStyleSheet(
             surface_style(None, "QLabel", 8, theme=current_theme())
             + "QLabel { font-family:monospace; font-size:48px; font-weight:700; letter-spacing:6px; "
@@ -82,8 +82,8 @@ class MainWindow(QMainWindow):
         layout.addLayout(header)
         layout.addWidget(self.password_label)
         layout.addWidget(hint_label(
-            "A capital letter, a small letter, a number and a special character. The password is kept nowhere: "
-            "store it yourself before you make a new one or close the app."))
+            "A capital letter, a small letter, a number and a special character. The app keeps the password nowhere. "
+            "Store it yourself before you make a new one or close the app."))
         layout.addWidget(hint_label(STANDARD))
         layout.addStretch(1)
         self.setCentralWidget(contents)
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
         self._show_clipboard()
         if was_copied and self.password:
             self.state.set_status("Clipboard cleared", "warn", "The password is off the clipboard. It is still in "
-                                                               "this window: Copy puts it there again.")
+                                                               "this window. Copy puts it on the clipboard again.")
 
     def _show_clipboard(self) -> None:
         if self.seconds_left > 0:

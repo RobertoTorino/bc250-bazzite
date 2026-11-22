@@ -18,12 +18,12 @@ fi
 if [ ! -f "$MODULE" ]; then
     KDIR="/lib/modules/$KERNEL/build"
     if [ ! -f "$KDIR/Makefile" ]; then
-        echo "The kernel's build files for $KERNEL are missing ($KDIR): the module cannot be built." >&2
+        echo "The kernel's build files for $KERNEL are missing ($KDIR). The module cannot be built." >&2
         exit 1
     fi
     for tool in make gcc; do
         if ! command -v "$tool" >/dev/null 2>&1; then
-            echo "$tool is missing: the module cannot be built." >&2
+            echo "$tool is missing. The module cannot be built." >&2
             exit 1
         fi
     done

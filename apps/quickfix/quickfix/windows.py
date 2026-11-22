@@ -51,15 +51,15 @@ class QuickfixWindow(CardWindow):
 
 # ------------------------------------------------------------------------------------------------- Quickfix
 TOOLS_INFO = ("<b>Quickfix</b> shows the optional tools BC-250 Board Test's tests use, whether each one is "
-               "there, and which tests use it. Board Test runs without them: a test whose tool is missing says so."
+               "there, and which tests use it. Board Test runs without them. A test whose tool is missing says so."
                "<br><br>A group's pill (<b>Install</b>) runs Board Test's own installer, "
-               "<code>install-requirements.sh</code>, for that group in a terminal: it asks for your password "
-               "where it layers packages and skips what is there already. <b>Install all</b> installs every group "
-               "but the development extras.<br><br>"
-               "<b>Prime95</b> is mprime, which no test uses: BC-250 CPU Tools runs its torture test for a longer "
-               "burn-in. The latest release is downloaded from mersenne.org and checked against the SHA-256 listed "
-               "there. Nexus Deps shows a newer release when there is one, and its Update installs it.<br><br>"
-               "Layered RPM packages are active after a reboot (<code>systemctl reboot</code>). glmark2, "
+               "<code>install-requirements.sh</code>, for that group in a terminal. The installer asks for your "
+               "password where it layers packages. It skips what is there already. <b>Install all</b> installs "
+               "every group but the development extras.<br><br>"
+               "<b>Prime95</b> is mprime, which no test uses. BC-250 CPU Tools runs its torture test for a longer "
+               "burn-in. The pill downloads the latest release from mersenne.org and checks it against the SHA-256 "
+               "listed there. Nexus Deps shows a newer release when there is one, and its Update installs it.<br><br>"
+               "Layered RPM packages are active after a restart (<code>systemctl reboot</code>). glmark2, "
                "vulkan-tools and smartmontools come with Bazzite.")
 
 
@@ -126,8 +126,8 @@ class ToolsWindow(QuickfixWindow):
             self.rows[tool.command].setText(f"<span style='color:{GREEN if where else GREY};'>"
                                             f"{'●' if where else '○'}</span>")
             self.rows[tool.command].setToolTip(where or f"{tool.command} is not on PATH")
-        self.found_box.set_value(f"{found}/{len(tools)}", "The tools the tests can find now; a layered package "
-                                 "counts after the reboot.")
+        self.found_box.set_value(f"{found}/{len(tools)}", "The tools the tests can find now. A layered package "
+                                 "counts after the restart.")
         self.found_box.set_colour(GREEN if found == len(tools) else ORANGE)
         script = state.installer(self.board_test)
         for button in (*self.buttons.values(), self.all_button):
@@ -141,7 +141,7 @@ class ToolsWindow(QuickfixWindow):
                 button.setEnabled(False)
         if script is None:
             self.state.set_status("Board Test not found", "warn",
-                                  f"Its installer is not in {self.board_test}: install Board Test from the portal.")
+                                  f"Its installer is not in {self.board_test}. Install Board Test from the portal.")
         else:
             self.state.set_status("Ready", "ok")
 
@@ -157,10 +157,10 @@ class ToolsWindow(QuickfixWindow):
 
 # --------------------------------------------------------------------------------------------- MangoHud Config
 MANGOHUD_INFO = ("<b>MangoHud Config</b> opens MangoHud's own settings file, <code>~/.config/MangoHud/"
-                 "MangoHud.conf</code>, to edit and save; a file that is not there yet is made on Save.<br><br>"
-                 "<b>FPS log</b> sets the three lines BC-250 Board Test needs to show a game's FPS: "
-                 "<code>output_folder=~/mangohud-logs</code>, <code>autostart_log=1</code> and "
-                 "<code>log_interval=500</code>; Save then makes the folder. MangoHud writes a log file per game "
+                 "MangoHud.conf</code>, to edit and save. When the file is not there yet, Save makes it.<br><br>"
+                 "<b>FPS log</b> sets the three lines BC-250 Board Test needs to show a game's FPS:<br>"
+                 "<code>output_folder=~/mangohud-logs</code><br><code>autostart_log=1</code><br>"
+                 "<code>log_interval=500</code><br>Save then makes the folder. MangoHud writes a log file per game "
                  "session while the game runs. Delete logs removes the ones older than 30 days.<br><br>"
                  "MangoHud must be active for the game, for example with the Steam launch option "
                  "<code>mangohud %command%</code>. Without the log, Board Test still shows the game's name and its "
@@ -178,12 +178,12 @@ class MangoHudWindow(QuickfixWindow):
         self.log_box = MetricBox("FPS log")
         self.logs_box = MetricBox("Log files")
         self.log_button = ActionPill("FPS log", "Set in the text")
-        self.log_button.setToolTip("Set the three lines of the FPS log in the text; Save writes them")
+        self.log_button.setToolTip("Set the three lines of the FPS log in the text. Save writes them")
         self.log_button.clicked.connect(self.add_logging)
         self.save_button = ActionPill("Save", "Your edits")
         self.save_button.clicked.connect(self.save)
         self.revert_button = ActionPill("Revert", "Revert changes")
-        self.revert_button.setToolTip("Read the file again; your edits go")
+        self.revert_button.setToolTip("Read the file again and drop your edits")
         self.revert_button.clicked.connect(self.refresh)
         self.folder_button = ActionPill("Log folder", "Click to open")
         self.folder_button.setToolTip(f"Open {self.folder}")
@@ -214,7 +214,7 @@ class MangoHudWindow(QuickfixWindow):
         self.editor.setPlainText(self.saved)
         self.editor.blockSignals(False)
         self.file_box.set_value("There" if exists else "New", str(self.path) if exists else
-                                f"{self.path} is not there yet: Save makes it.")
+                                f"{self.path} is not there yet. Save makes it.")
         self.file_box.set_colour(GREEN if exists else GREY)
         logs = state.log_files(self.folder)
         self.logs_box.set_value(str(len(logs)), f"In {self.folder}")
@@ -230,7 +230,7 @@ class MangoHudWindow(QuickfixWindow):
         values = state.conf_values(text)
         on = state.logging_on(values)
         self.log_box.set_value("On" if on else "Off", f"Logs to {values['output_folder']}" if on else
-                               "MangoHud writes no log: FPS log sets it.")
+                               "MangoHud writes no log. FPS log turns it on.")
         self.log_box.set_colour(GREEN if on else GREY)
         self.log_button.setEnabled(state.with_logging(text, self.folder) != (text if text.endswith("\n") or not text
                                                                              else text + "\n"))
@@ -310,15 +310,17 @@ class SwitchWindow(QuickfixWindow):
 
 
 METRICS_INFO = ("<b>Fix GPU Metrics</b> lets the GPU governor (cyan-skillfish-governor-smu) show the real GPU load. "
-                "The governor measures the load to drive the clock anyway; with <code>fix-metrics</code> on, it also "
-                "writes that load into a patched copy of <code>gpu_metrics</code> and mounts it over the sysfs file, "
-                "so the Steam performance overlay, MangoHud and radeontop show a real GPU %.<br><br>"
+                "The governor measures the load to drive the clock anyway. With <code>fix-metrics</code> on, it also "
+                "writes that load into a patched copy of <code>gpu_metrics</code> and mounts it over the sysfs file. "
+                "Then the Steam performance overlay, MangoHud and radeontop show a real GPU %.<br><br>"
                 "Turn on sets <code>fix-metrics = true</code> and the method in the <code>[gpu-usage]</code> table of "
-                "<code>/etc/cyan-skillfish-governor-smu/config.toml</code>, after a dated backup of it beside it "
-                "(<code>config.toml.bak-YYYYMMDD-HHMMSS</code>, as BC-250 GPU Manager makes), and restarts a governor "
-                "that runs. <b>busy-flag</b> samples the GPU's busy bit (the default), <b>process</b> sums the "
-                "programs' GPU time (more CPU), <b>kernel</b> only works on a patched kernel.<br><br>"
-                "On some kernels the patching misbehaves: if the overlay or the governor acts up, turn it off again. "
+                "<code>/etc/cyan-skillfish-governor-smu/config.toml</code>. First it makes a dated backup beside it "
+                "(<code>config.toml.bak-YYYYMMDD-HHMMSS</code>), as BC-250 GPU Manager does. Then it restarts the "
+                "governor when it runs. The methods:<br>"
+                "<b>busy-flag</b> samples the GPU's busy bit. It is the default.<br>"
+                "<b>process</b> sums the programs' GPU time. It costs more CPU.<br>"
+                "<b>kernel</b> only works on a patched kernel.<br><br>"
+                "On some kernels the patching misbehaves. If the overlay or the governor acts up, turn it off again. "
                 "A kernel that reports the load itself does not need it.")
 
 
@@ -345,7 +347,7 @@ class MetricsWindow(SwitchWindow):
             self.method.blockSignals(False)
         self.show_box("Governor", "Installed" if m.installed else "Missing",
                       "Its config.toml is there" if m.installed else
-                      "The GPU governor is not installed: BC-250 GPU Manager installs it.", m.installed or None)
+                      "The GPU governor is not installed. BC-250 GPU Manager installs it.", m.installed or None)
         self.show_box("fix-metrics", "On" if m.fix else "Off", f"method = {m.method or 'busy-flag'}", m.fix)
         self.show_box("Mounted", "Yes" if m.mounted else "No", "A patched gpu_metrics is mounted over the sysfs "
                       "file" if m.mounted else "No patched gpu_metrics is mounted", m.mounted)
@@ -359,20 +361,20 @@ class MetricsWindow(SwitchWindow):
             self.state.set_status("No governor", "warn", "Install the GPU governor first (BC-250 GPU Manager).")
         elif m.fix and not m.mounted:
             self.state.set_status("On, not mounted", "warn", "fix-metrics is on, but no patched gpu_metrics is "
-                                  "mounted: the governor may not run (BC-250 GPU Manager shows it).")
+                                  "mounted. The governor may not run. BC-250 GPU Manager shows whether it does.")
         else:
             self.state.set_status("On" if m.fix else "Off", "ok" if m.fix else "info")
-        self.note.setText("Check it: <code>mount | grep gpu_metrics</code> shows the patched copy.")
+        self.note.setText("To check it, run <code>mount | grep gpu_metrics</code>. It shows the patched copy.")
 
 
-SENSORS_INFO = ("<b>Sensors Module</b> makes sure a driver serves the board's SuperIO chip, a Nuvoton NCT6686D, which "
-                "gives the board's temperatures and fan speeds (BC-250 Board Test's test 22, lm_sensors' "
-                "<code>sensors</code>). Bazzite loads the nct6687 driver for it by itself since image 45.20261117. "
-                "Other images may not load it. The kernel's own "
-                "nct6683 driver only loads when it is forced.<br><br>Turn on writes "
+SENSORS_INFO = ("<b>Sensors Module</b> makes sure a driver serves the board's SuperIO chip, a Nuvoton NCT6686D. The "
+                "chip gives the board's temperatures and fan speeds. BC-250 Board Test's test 22 and the "
+                "<code>sensors</code> command of lm_sensors show them. Bazzite loads the nct6687 driver for the chip "
+                "by itself since image 45.20261117. Other images may not load it. The kernel's own nct6683 driver "
+                "only loads when something forces it.<br><br>Turn on writes "
                 f"<code>{system.SENSORS_LINE}</code> to <code>/etc/{system.SENSORS_CONF}</code>, so nct6683 loads at "
-                "every boot, and loads it now; it is offered only when no driver serves the chip. Turn off removes "
-                "that file; the driver stays loaded until the next boot.")
+                "every boot. It also loads the driver now. Turn on is offered only when no driver serves the chip. "
+                "Turn off removes that file. The driver stays loaded until the next boot.")
 
 
 class SensorsWindow(SwitchWindow):
@@ -389,26 +391,26 @@ class SensorsWindow(SwitchWindow):
                       "Neither nct6683 nor nct6687 is loaded", bool(s.driver))
         self.show_box("Forced at boot", "Yes" if forced else "No", f"Set in /etc/modprobe.d/{s.elsewhere}"
                       if s.elsewhere else f"/etc/{system.SENSORS_CONF}" if s.ours else
-                      "nct6683 is not forced" + (f"; {s.driver} needs no forcing" if s.driver else ""),
+                      "nct6683 is not forced" + (f". {s.driver} needs no forcing" if s.driver else ""),
                       True if forced else None)
         self.show_box("Sensors", s.hwmon or "None", f"The chip reports as hwmon {s.hwmon}" if s.hwmon else
                       "No hwmon of the chip", bool(s.hwmon))
         self.on_button.setEnabled(not s.on)
         self.off_button.setEnabled(s.ours)
         self.state.set_status("On" if s.on else "Off", "ok" if s.on else "info")
-        self.note.setText(f"Forced by /etc/modprobe.d/{s.elsewhere}: Turn off does not remove another file."
+        self.note.setText(f"Forced by /etc/modprobe.d/{s.elsewhere}. Turn off does not remove that file."
                           if s.elsewhere and not s.ours else "")
 
 
 VRM_INFO = ("<b>VRM Sensors</b> builds and loads <code>bc250_vrm</code>, the kernel module that reads the board's "
-            "voltage regulator: the voltage, current, power and regulator temperature of the CPU and the GPU supply, "
-            "and the 12 V input. BC-250 System Overlay shows them, and BC-250 Board Test's test 22 and lm_sensors' "
-            "<code>sensors</code> report them. Bazzite does not include the module.<br><br>"
-            f"Turn on copies the module's source (<code>{system.VRM_REPO}</code> {system.VRM_TAG}, which comes with "
-            f"the app) to <code>/var/{system.VRM_DIR}</code> and starts <code>{system.VRM_UNIT}</code>, which builds "
-            "the module for the running kernel and loads it, now and at every boot. After a kernel update the first "
-            "boot builds it again, which takes a few seconds. Turn off unloads the module and removes the service "
-            "and the folder.<br><br>"
+            "voltage regulator. It gives the voltage, current, power and regulator temperature of the CPU and the "
+            "GPU supply, and the 12 V input. BC-250 System Overlay shows them. BC-250 Board Test's test 22 and the "
+            "<code>sensors</code> command of lm_sensors report them. Bazzite does not include the module.<br><br>"
+            f"Turn on copies the module's source to <code>/var/{system.VRM_DIR}</code>. The source is "
+            f"<code>{system.VRM_REPO}</code> {system.VRM_TAG}, and it comes with the app. Then Turn on starts "
+            f"<code>{system.VRM_UNIT}</code>. This service builds the module for the running kernel and loads it, "
+            "now and at every boot. After a kernel update, the first boot builds it again, which takes a few "
+            "seconds. Turn off unloads the module and removes the service and the folder.<br><br>"
             "The module reads the regulator through the SuperIO chip. For every reading it writes the regulator's "
             "page register, which selects the CPU or the GPU supply. It writes no voltage, current or limit.")
 
@@ -436,9 +438,9 @@ class VrmWindow(SwitchWindow):
         if v.ours and not v.loaded:
             note = f"The module is not loaded. Turn on tries again. See why with: journalctl -b -u {system.VRM_UNIT}"
         elif v.loaded and not v.hwmon:
-            note = "The module is loaded, but the regulator did not answer: there are no sensors."
+            note = "The module is loaded, but the regulator did not answer. There are no sensors."
         elif v.loaded and not v.ours:
-            note = "The module was loaded by something else: Turn off does not unload it."
+            note = "The module was loaded by something else. Turn off does not unload it."
         elif not v.can_build:
             note = "The running kernel's build files are missing, so the module cannot be built on this image."
         else:
@@ -447,7 +449,7 @@ class VrmWindow(SwitchWindow):
 
 
 MAPCOUNT_INFO = ("<b>Game Memory Map</b> raises <code>vm.max_map_count</code>, the number of memory areas one program "
-                 "may map. Some games (and Proton) need many more than the kernel's default and crash without them; "
+                 "may map. Some games, and Proton, need many more than the kernel's default. Without them, they crash. "
                  f"SteamOS and Bazzite set {system.MAPCOUNT}.<br><br>Turn on writes it to "
                  f"<code>/etc/{system.MAPCOUNT_CONF}</code> and sets it now. Turn off removes that file and reads the "
                  "system's settings again. BC-250 Board Test's test 37 reports the value.")
@@ -474,10 +476,10 @@ class MapCountWindow(SwitchWindow):
 
 
 JOURNAL_INFO = ("<b>Persistent Journal</b> keeps the system journal on the disk, in <code>/var/log/journal</code>. "
-                "Without that folder journald keeps it in memory only, and the logs of a boot that crashed or froze "
-                "are gone after it: BC-250 Board Test's test 34 cannot read the previous boot's.<br><br>Turn on makes "
-                "the folder (<code>systemd-tmpfiles --create</code>) and moves the journal there "
-                "(<code>journalctl --flush</code>). Turn off works only on a folder this quickfix made: it moves the "
+                "Without that folder, journald keeps it in memory only. Then the logs of a boot that crashed or froze "
+                "are gone after it. BC-250 Board Test's test 34 cannot read the previous boot's logs then.<br><br>"
+                "Turn on makes the folder (<code>systemd-tmpfiles --create</code>) and moves the journal there "
+                "(<code>journalctl --flush</code>). Turn off works only on a folder this quickfix made. It moves the "
                 "journal back to memory and removes the folder, with the logs in it. journald keeps the folder's size "
                 "within its own limits.")
 
@@ -500,8 +502,9 @@ class JournalWindow(SwitchWindow):
         self.state.set_status("On" if j.persistent else "Off", "ok" if j.persistent else "info")
 
     def turn_off(self) -> None:
-        if QMessageBox.question(self, window_title("Turn off"), "Remove /var/log/journal, with the logs of every "
-                                "earlier boot in it?") == QMessageBox.StandardButton.Yes:
+        if QMessageBox.question(self, window_title("Turn off"), "Remove /var/log/journal?\n\nThe logs of every "
+                                "earlier boot in it are removed too.\nYou will be asked for your password."
+                                ) == QMessageBox.StandardButton.Yes:
             super().turn_off()
 
 
@@ -538,7 +541,7 @@ class KargWindow(SwitchWindow):
                           f"rpm-ostree kargs {'has' if k.next else 'lacks'} {k.arg}", k.next or None)
         self.show_box("Added by", "This quickfix" if k.ours else "The system" if k.now or k.next else "—",
                       f"/var/{system.KARGS_DIR}/{self.CHANGE}.karg" if k.ours else
-                      "Set by hand, or by the image: Turn off removes only what this quickfix added"
+                      "Set by hand, or by the image. Turn off removes only what this quickfix added"
                       if k.now or k.next else "", True if k.ours or k.now or k.next else None)
         otherwise = self.applied_otherwise(k)
         self.on_button.setEnabled(k.next is False and not otherwise)
@@ -556,24 +559,24 @@ class KargWindow(SwitchWindow):
         self.note.setText(f"{system.REBOOT}." if k.pending else otherwise)
 
 
-IOMMU_INFO = ("<b>IOMMU Off</b> keeps the kernel from using the board's AMD IOMMU (AMD-Vi), which is broken on the "
-              "BC-250 and makes the system unstable. The modded BIOS can switch it off; without it, the kernel "
-              f"argument <code>{system.KARGS['iommu']}</code> does the same from Linux's side.<br><br>Turn on adds "
-              "it with <code>rpm-ostree kargs</code>, which makes a new deployment, and notes in "
-              f"<code>/var/{system.KARGS_DIR}</code> that the quickfix added it; Turn off removes only an argument the "
-              "quickfix added. Either applies from the next boot: restart the board (<code>systemctl reboot</code>). "
-              "With the IOMMU off there are no IOMMU groups, which is what BC-250 Board Test's test 23 checks; "
-              "passing a PCI device to a virtual machine (VFIO) is then not possible. Turn on is not offered when "
-              "the BIOS has the IOMMU off already.")
+IOMMU_INFO = ("<b>IOMMU Off</b> keeps the kernel from using the board's AMD IOMMU (AMD-Vi). The IOMMU is broken on "
+              "the BC-250 and makes the system unstable. When the BIOS leaves it on, the kernel argument "
+              f"<code>{system.KARGS['iommu']}</code> switches it off from Linux's side.<br><br>Turn on "
+              "adds it with <code>rpm-ostree kargs</code>, which makes a new deployment. It notes in "
+              f"<code>/var/{system.KARGS_DIR}</code> that the quickfix added it. Turn off removes only an argument the "
+              "quickfix added. Either applies from the next boot. Restart the board with "
+              "<code>systemctl reboot</code>. With the IOMMU off, there are no IOMMU groups. BC-250 Board Test's "
+              "test 23 checks for that. You can no longer pass a PCI device to a virtual machine (VFIO) then. "
+              "Turn on is not offered when the BIOS has the IOMMU off already.")
 MITIGATIONS_INFO = ("<b>CPU Mitigations Off</b> turns off the kernel's protections against the CPU's speculative "
-                    "execution flaws (Spectre, Meltdown and the like), with the kernel argument "
-                    f"<code>{system.KARGS['mitigations']}</code>. They cost speed: roughly 18 FPS in games on this "
-                    "board. Without them a program could, in principle, read memory of other programs: keep them on "
-                    "where the board runs code you do not trust.<br><br>Turn on adds the argument with "
-                    "<code>rpm-ostree kargs</code>, which makes a new deployment, and notes in "
-                    f"<code>/var/{system.KARGS_DIR}</code> that the quickfix added it; Turn off removes only an "
-                    "argument the quickfix added. Either applies from the next boot: restart the board "
-                    "(<code>systemctl reboot</code>). BC-250 Board Test's test 24 reports it.")
+                    "execution flaws, such as Spectre and Meltdown. It uses the kernel argument "
+                    f"<code>{system.KARGS['mitigations']}</code>. The protections cost roughly 18 FPS in games on "
+                    "this board. Without them, a program could, in principle, read memory of other programs. Keep "
+                    "them on where the board runs code you do not trust.<br><br>Turn on adds the argument with "
+                    "<code>rpm-ostree kargs</code>, which makes a new deployment. It notes in "
+                    f"<code>/var/{system.KARGS_DIR}</code> that the quickfix added it. Turn off removes only an "
+                    "argument the quickfix added. Either applies from the next boot. Restart the board with "
+                    "<code>systemctl reboot</code>. BC-250 Board Test's test 24 reports it.")
 
 
 class IommuWindow(KargWindow):
@@ -585,7 +588,7 @@ class IommuWindow(KargWindow):
         self.refresh()
 
     def applied_otherwise(self, k: state.Karg) -> str:
-        return "The BIOS has the IOMMU off: there are no IOMMU groups." if k.iommu_groups == 0 and not k.now else ""
+        return "The BIOS has the IOMMU off. There are no IOMMU groups." if k.iommu_groups == 0 and not k.now else ""
 
     def show_more(self, k: state.Karg) -> None:
         groups = k.iommu_groups

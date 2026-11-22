@@ -91,22 +91,22 @@ SENSITIVITIES = (("1.100000", "PPSSPP's (1.10)"), ("1.000000", "As the stick (1.
 
 SETTINGS: tuple[Setting, ...] = (
     Setting("renderer", PICTURE, "Renderer", "Graphics", "GraphicsBackend", CHOICE, RENDERERS,
-            "How PPSSPP draws: Vulkan is its own choice on the BC-250; OpenGL when a game shows faults.",
+            "How PPSSPP draws. Vulkan is its own choice on the BC-250. Pick OpenGL when a game shows faults.",
             RENDERERS[0][0]),
     Setting("resolution", PICTURE, "Internal resolution", "Graphics", "InternalResolution", CHOICE, RESOLUTIONS,
-            "The size PPSSPP draws the picture at: Automatic follows the screen; 3x fills a 1080p screen sharply, "
+            "The size PPSSPP draws the picture at. Automatic follows the screen. 3x fills a 1080p screen sharply, "
             "6x a 4K one. A higher one asks more of the GPU.", "0"),
     Setting("stretch", PICTURE, "Stretch to the screen", "DisplayLayout.Landscape", "DisplayStretch", SWITCH,
-            tip="The picture fills the whole screen; off, it keeps the PSP's shape.", default="false"),
+            tip="The picture fills the whole screen. When off, it keeps the PSP's shape.", default="false"),
     Setting("integer", PICTURE, "Integer scaling", "DisplayLayout.Landscape", "DisplayIntegerScale", SWITCH,
-            tip="Scales the picture by whole numbers only, so every pixel stays the same size; it may leave a "
+            tip="Scales the picture by whole numbers only, so every pixel stays the same size. It may leave a "
                 "border.", default="false"),
     Setting("filtering", PICTURE, "Texture filtering", "Graphics", "TextureFiltering", CHOICE, FILTERS,
-            "How textures are smoothed: Nearest keeps pixel art sharp.", "1"),
+            "How textures are smoothed. Nearest keeps pixel art sharp.", "1"),
     Setting("anisotropy", PICTURE, "Anisotropic filtering", "Graphics", "AnisotropyLevel", CHOICE, ANISOTROPY,
             "Sharper textures seen at an angle, such as a road ahead.", "4"),
     Setting("vsync", PICTURE, "VSync", "Graphics", "VerticalSync", SWITCH,
-            tip="Waits for the screen's refresh before showing a frame: no tearing, a little more delay.",
+            tip="Waits for the screen's refresh before showing a frame. This means no tearing and a little more delay.",
             default="true"),
     Setting("frameskip", GAME, "Frame skipping", "Graphics", "FrameSkip", CHOICE, FRAMESKIPS,
             "Frames left out to keep a slow game at full speed.", "0"),
@@ -115,9 +115,9 @@ SETTINGS: tuple[Setting, ...] = (
     Setting("volume", SOUND, "Volume", "Sound", "GameVolume", PERCENT, tip="The game's sound, in percent.",
             default="100"),
     Setting("deadzone", CONTROLLER, "Stick dead zone", "Control", "AnalogDeadzone", CHOICE, DEADZONES,
-            "How far a stick moves before the game sees it: for a stick that drifts.", DEADZONES[0][0]),
+            "How far a stick moves before the game sees it. This helps with a stick that drifts.", DEADZONES[0][0]),
     Setting("sensitivity", CONTROLLER, "Stick sensitivity", "Control", "AnalogSensitivity", CHOICE, SENSITIVITIES,
-            "How far the PSP's stick goes for the stick's travel: PPSSPP's 1.10 reaches the edge a little sooner.",
+            "How far the PSP's stick goes for the stick's travel. PPSSPP's 1.10 reaches the edge a little sooner.",
             SENSITIVITIES[0][0]),
     Setting("fps", ON_SCREEN, "Show FPS", "Graphics", "iShowStatusFlags", FLAG,
             tip="The frames a second in a corner of the picture.", default="false", bit=2),

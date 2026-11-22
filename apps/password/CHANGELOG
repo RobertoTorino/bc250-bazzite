@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 10:07:33
+
+Fixed. The text of the wiki chapter, the README and the window's info text, tooltip, hint and status line was rewritten
+to the writing standard: short sentences with one fact each, no chains after a colon or semicolon, and the state of the
+password as a list. No labels were renamed and no facts were corrected. Nothing the app does has changed. No tests
+changed.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 1.6.1.

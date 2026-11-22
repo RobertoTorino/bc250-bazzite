@@ -16,7 +16,7 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     exit 0
 fi
 [ -x "$APPIMAGE" ] || {
-    echo "PPSSPP is not installed: open PPSSPP Manager and press Install." >&2
+    echo "PPSSPP is not installed. Open PPSSPP Manager and press Install." >&2
     exit 1
 }
 # The AppImage mounts itself with its own FUSE library and the system's fusermount (part of Bazzite); without

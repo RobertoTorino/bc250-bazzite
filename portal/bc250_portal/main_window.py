@@ -565,7 +565,7 @@ class MainWindow(QMainWindow):
             self.big.set_banner(f"Local build: this portal comes from the checkout {local_build}, "
                                 "not from a published release.")
         source = ("Development: apps install from the local checkout " + str(sources.checkout) if sources.local
-                  else "Apps install from the releases this portal version pins, verified by checksum.")
+                  else "Apps are installed from the releases pinned by this portal version and verified using checksums.")
         self.source_text = source
         self.big.set_about(f"<p><b>{APP_NAME} {__version__}</b> · core {CORE_VERSION}"
                            + (f"<br>{escape(STAGE_NOTE)}" if STAGE else "") + f"</p><p>{escape(source)}</p>")

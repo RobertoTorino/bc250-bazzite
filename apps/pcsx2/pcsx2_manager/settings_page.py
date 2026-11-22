@@ -33,8 +33,9 @@ PLAYER2 = Setting("player2", pcsx2_settings.CONTROLLERS, "Player 2 on the second
                               "PCSX2 has no player 2.")
 QUIT = Setting("quit", pcsx2_settings.CONTROLLERS, "Quit a game with Select + Start", "Hotkeys", ("ShutdownVM",),
                SWITCH, tip="Select (Share, Create or View) and Start (Options or Menu) pressed together on the first "
-                           "controller end the game and close PCSX2, without a question; on from the start. Off, a "
-                           "game is left through Steam's menu, or Esc on a keyboard for PCSX2's own menu.")
+                           "controller end the game and close PCSX2, without a question. It is on from the start. "
+                           "When it is off, you leave a game through Steam's menu, or press Esc on a keyboard for "
+                           "PCSX2's own menu.")
 OWN = (PLAYER2, QUIT)                                   # the switches with a function of their own
 
 

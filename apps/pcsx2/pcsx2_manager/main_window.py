@@ -54,7 +54,7 @@ from . import settings_page
 from .settings_page import SettingsPage
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/pcsx2/"
-STEAM_TIP = "Add the ticked games to Steam and take out the others; Steam closes for it and starts again"
+STEAM_TIP = "Add the checked games to Steam and take out the others. Steam closes for it and starts again"
 START_TIP = "Start the game chosen under Your games through Steam, as its shortcut in Steam does"
 CLEAR_TIP = "Empty the app's log file, with the older ones kept beside it, and the View logs tab"
 STEAM_URL = "steam://open/games"        # Steam's library; Steam starts when it does not run
@@ -73,8 +73,8 @@ VERSIONS_TIP = "Put another installed PCSX2 build in use, or download one in the
 
 RUNNING_REMOVE = "PCSX2 is running: close it first, then remove the game."
 RUNNING_START = "PCSX2 is running: close it first, then start the game."
-UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk: a window lists what would go, and you "
-                      "untick what to keep; nothing is deleted before you confirm")
+UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk. A window first lists what would go. "
+                      "Uncheck what you want to keep. Nothing is deleted before you confirm")
 
 
 class Pcsx2Settings(SettingsStore):
@@ -200,8 +200,8 @@ class MainWindow(QMainWindow):
         self.install_pill = style.action_pill("PCSX2", "Install", f"Download PCSX2 {emulator.VERSION} from GitHub "
                                                                   f"(about {emulator.SIZE_MB} MB) and check it")
         self.install_pill.clicked.connect(self.on_install)
-        self.remove_pill = style.action_pill("PCSX2", "Uninstall", "Remove the installed PCSX2; its own folder "
-                                                                   "(BIOS, memory cards, settings) stays")
+        self.remove_pill = style.action_pill("PCSX2", "Uninstall", "Remove the installed PCSX2. Its own folder "
+                                                                   "with the BIOS, memory cards and settings stays")
         self.remove_pill.clicked.connect(self.on_remove)
         self.bios_remove_pill = style.action_pill("BIOS", "Uninstall", "Take a BIOS dump out of PCSX2's BIOS "
                                                                        "folder and out of Games/PS2/BIOS, with the files "
@@ -255,7 +255,7 @@ class MainWindow(QMainWindow):
         columns.addLayout(second, 1)
 
         self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["In Steam", "Game title", "Id", "Type", "File name",
+        self.table.setHorizontalHeaderLabels(["In Steam", "Game title", "ID", "Type", "File name",
                                               "Screen setting"])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -273,12 +273,12 @@ class MainWindow(QMainWindow):
         self.table.itemChanged.connect(lambda _item: self._update_buttons())
 
         self.pcsx2_button = QPushButton("PCSX2 settings")
-        self.pcsx2_button.setToolTip("Open PCSX2's own window for what the Settings tab does not set: its other "
-                                     "settings, the controllers and its game list")
+        self.pcsx2_button.setToolTip("Open PCSX2's own window for its other settings, the controllers and its game "
+                                     "list. The Settings tab does not set these")
         self.pcsx2_button.clicked.connect(self.on_open_pcsx2)
         self.covers_button = QPushButton("Steam artwork…")
-        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite: with it, Update Steam "
-                                      "gives each game its cover, banner and logo from SteamGridDB in Steam")
+        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite. With it, Update Steam "
+                                      "gives each game in Steam its cover, banner and logo from SteamGridDB")
         self.covers_button.clicked.connect(self.on_covers)
         self.steam_button = style.primary_button("Update Steam", STEAM_TIP)
         self.steam_button.clicked.connect(self.on_update_steam)
@@ -310,8 +310,8 @@ class MainWindow(QMainWindow):
         log_page = QWidget()
         log = QVBoxLayout(log_page)
         log.setContentsMargins(0, 8, 0, 0)
-        log.addWidget(hint_label(f"Everything the app said and did, newest last, and each game started from Steam "
-                                 f"with what PCSX2 logged about the run; the same lines are in "
+        log.addWidget(hint_label(f"Everything the app said and did, newest last. Each game started from Steam is "
+                                 f"here too, with what PCSX2 logged about the run. The same lines are in "
                                  f"{escape(private(self.log_path))}, which turns over at 1 MB."))
         log.addWidget(self.output, 1)
         self.tabs = QTabWidget()
@@ -452,9 +452,9 @@ class MainWindow(QMainWindow):
                                        "reads it; Select + Start together quit the game.")
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected: switch it on, or press its PS button to wake "
-                                       "it, before starting a game from Steam. Without one, PCSX2 plays with the "
-                                       "keyboard only and Select + Start cannot quit the game.")
+                                       "No controller is connected. Switch it on, or press its PS button to wake "
+                                       "it, before you start a game from Steam. Without one, PCSX2 plays with the "
+                                       "keyboard only, and Select + Start cannot quit the game.")
 
     def say(self, text: str, ok: bool = True) -> None:
         """What the window has to say: the line under the tabs, the View logs tab and the log file."""
@@ -493,7 +493,7 @@ class MainWindow(QMainWindow):
         if self.open_url(STEAM_URL):
             self.note("Steam was opened.")
         else:
-            self.say("Steam could not be opened: xdg-open is missing.", ok=False)
+            self.say("Steam could not be opened. xdg-open is missing.", ok=False)
 
     def log_session(self, titles: dict[str, str]) -> None:
         """PCSX2's last run, as its own log tells it, into the app's log once: the game (named as the catalog
@@ -552,8 +552,8 @@ class MainWindow(QMainWindow):
                    "checks it and sets it up. The app says when a newer stable release is out.")
         elif self.version != pinned:
             self.emulator_box.set_value(self.version)
-            tip = (f"PCSX2 {self.version} is in use; it was not tried on the board. This version of the app was "
-                   f"tried with {pinned}: Install puts it back in use.")
+            tip = (f"PCSX2 {self.version} is in use. It was not tried on the board. This version of the app was "
+                   f"tried with {pinned}. Install puts it back in use.")
             if not self._pin_noted:
                 self.note(tip)
                 self._pin_noted = True
@@ -566,7 +566,7 @@ class MainWindow(QMainWindow):
             tip = f"PCSX2 {pinned}, the stable release this version of the app was tried with"
         if self.newer is not None:              # in the tip and the log, so the line stays the state (owner)
             tip += (f"\nPCSX2 {self.newer.version} is out ({self.newer.published}). A later version of this app "
-                    f"brings it, once it has been tried on the board: {self.newer.url}")
+                    f"brings it, once it has been tried on the board. What is new is at {self.newer.url}")
         self.emulator_state.setToolTip(tip)
         self.version_state.setText(escape(self.version) if self.version else "—")   # whole: the pill shortens it
         self.version_state.setToolTip(tip)
@@ -582,21 +582,21 @@ class MainWindow(QMainWindow):
             others = []
             self.bios_state.setText("Not installed.")
         # What the BIOS is for and where it goes: the info symbol (owner, 12-11-2026)
-        self.bios_info.set_text("PCSX2 needs the PS2's BIOS to start any game: dump it from your own console "
-                                f"({page} says how), then put the .bin, with the files beside it, in "
-                                f"{escape(private(library.bios_home(self.user_home)))}: the app copies it into "
+        self.bios_info.set_text("PCSX2 needs the PS2's BIOS to start any game. Dump it from your own console. "
+                                f"{page} says how. Then put the .bin and the files beside it in "
+                                f"{escape(private(library.bios_home(self.user_home)))}. The app copies it into "
                                 "PCSX2.")
-        self.bios_state.setToolTip((f"PCSX2 uses this BIOS; also there: {', '.join(others)}.\n" if others else "")
-                                   + f"PCSX2's BIOS folder: {self.bios_dir}")
+        self.bios_state.setToolTip((f"PCSX2 uses this BIOS. The folder also holds {', '.join(others)}.\n"
+                                    if others else "") + f"PCSX2's BIOS folder: {self.bios_dir}")
         self.bios_state.setOpenExternalLinks(True)
 
         # The app's own folders (owner, 03-11-2026): the home folder's, and a removable drive's when it has one.
         where = ", ".join(f"<b>{escape(private(f))}</b>" for f in self.folders)
         self.folders_state.setText(where)
-        self.folders_info.set_text(f"Drop your games in {escape(private(self.user_home / library.GAMES_HOME))}, .ISO, "
-                                   ".CHD, .CSO, .ZSO or .GZ. Drop your own BIOS in "
-                                   f"{escape(private(library.bios_home(self.user_home)))}. A USB drive or an SD card "
-                                   "with a Games/PS2 folder is also checked for content.")
+        self.folders_info.set_text(f"Put your games in {escape(private(self.user_home / library.GAMES_HOME))} as .ISO, "
+                                   ".CHD, .CSO, .ZSO or .GZ files. Put your own BIOS in "
+                                   f"{escape(private(library.bios_home(self.user_home)))}. The app also looks in the "
+                                   "Games/PS2 folder of a USB drive or an SD card.")
         self.folders_state.setToolTip("\n".join(private(f) for f in self.folders))
         found = {str(g.file) for g in self.games}
         self.steam_box.set_value(str(len(found & set(self.in_steam))))
@@ -607,7 +607,7 @@ class MainWindow(QMainWindow):
         elif not self.bios:
             self.pill.set_status("No BIOS", "warn", "PCSX2 needs the PS2's BIOS to start a game.")
         elif not self.games:
-            self.pill.set_status("No games", "neutral", "Add the folder with your games.")
+            self.pill.set_status("No games", "neutral", "Put your games in Games/PS2.")
         else:
             self.pill.set_status("Ready", "ok", "PCSX2 and a BIOS are installed and games were found.")
         # For the portal's notice: the release is pinned (a newer one comes with a new version of the app), so the
@@ -619,7 +619,7 @@ class MainWindow(QMainWindow):
         times = userdata.play_times(self.pcsx2_home)
         total = sum(seconds for seconds, _ in times.values())
         if not total:
-            self.time_box.set_value("—", "PCSX2 counts the time spent in each game; none yet.")
+            self.time_box.set_value("—", "PCSX2 counts the time spent in each game. There is none yet.")
             return
         titles = {g.serial: g.title for g in self.games if g.serial}
         lines = [f"{titles.get(serial, serial)}: {userdata.played(seconds)}, last played "
@@ -633,8 +633,8 @@ class MainWindow(QMainWindow):
         if result is not None:
             self._show_state()
             self._update_buttons()
-            self.note(f"PCSX2 {result.version} is out ({result.published}); a later version of this app brings it, "
-                      f"once it has been tried on the board: {result.url}")
+            self.note(f"PCSX2 {result.version} is out ({result.published}). A later version of this app brings it, "
+                      f"once it has been tried on the board. What is new is at {result.url}")
 
     def chosen(self) -> Game | None:
         """The game whose row is selected."""
@@ -651,7 +651,7 @@ class MainWindow(QMainWindow):
                               else Qt.CheckState.Unchecked)
             box.setToolTip(f"In Steam {self.doubles[str(game.file)] + 1} times: Update Steam leaves one"
                            if str(game.file) in self.doubles else "In Steam" if str(game.file) in self.in_steam else
-                           f"Found again under a new name: in Steam as {self.in_steam.get(self.moved[str(game.file)], '?')}; "
+                           f"Found again under a new name. In Steam as {self.in_steam.get(self.moved[str(game.file)], '?')}. "
                            "Update Steam brings the shortcut up to date" if str(game.file) in self.moved else "Not in Steam")
             self.table.setItem(row, STEAM, box)
             kind = KINDS.get(game.kind, game.kind)
@@ -659,8 +659,8 @@ class MainWindow(QMainWindow):
                 self.table.setItem(row, column, QTableWidgetItem(text))
             self.table.item(row, FILE).setToolTip(str(game.file))
             if game.kind != "iso":
-                self.table.item(row, KIND).setToolTip("A compressed image is not looked into: the name is the "
-                                                      "file's and there is no Id. PCSX2 plays it the same.")
+                self.table.item(row, KIND).setToolTip("A compressed image is not looked into. The name is the "
+                                                      "file's, and there is no ID. PCSX2 plays it the same.")
             self.table.setCellWidget(row, SCREEN, self._screen_box(game))
         self.table.blockSignals(False)
         self._update_buttons()
@@ -717,10 +717,10 @@ class MainWindow(QMainWindow):
                                       for g in add)
         self.steam_button.setEnabled(idle and changed and self.steam_dir is not None and not steam.game_mode())
         if self.steam_dir is None:
-            self.steam_button.setToolTip("Steam was never started on this system: start it once first")
+            self.steam_button.setToolTip("Steam was never started on this system. Start it once first")
         elif steam.game_mode():
-            self.steam_button.setToolTip("In Game Mode (a handheld's Steam session) Steam is the session itself: "
-                                         "change it in Desktop Mode")
+            self.steam_button.setToolTip("In Game Mode (a handheld's Steam session), Steam is the session itself. "
+                                         "Change it in Desktop Mode")
         else:
             self.steam_button.setToolTip(STEAM_TIP)
 
@@ -885,7 +885,7 @@ class MainWindow(QMainWindow):
         the address, came up and never started the game)."""
         game = self.chosen()
         if game is None:
-            self.say("Choose a game under Your games first: Start game starts the chosen one in Steam.", ok=False)
+            self.say("Choose a game under Your games first. Start game starts the chosen one in Steam.", ok=False)
             return
         if self.worker.running:
             self.say("Wait until what runs now has finished, then start the game.", ok=False)
@@ -893,7 +893,7 @@ class MainWindow(QMainWindow):
         number = (steam.shortcut_number(self.steam_dir, shortcuts.for_game(game))
                   if self.steam_dir is not None and str(game.file) in self.in_steam else None)
         if number is None:
-            self.say(f"{game.title} is not in Steam yet: tick it and press Update Steam first.", ok=False)
+            self.say(f"{game.title} is not in Steam yet. Check it and press Update Steam first.", ok=False)
             return
         if self.pcsx2_running():
             self.say(RUNNING_START, ok=False)
@@ -907,13 +907,13 @@ class MainWindow(QMainWindow):
             except steam.SteamError as error:
                 return False, f"{title} was not started: {error}"
             return True, f"{title} runs, started through Steam."
-        self._start(f"Starting {title} through Steam (Steam starts first when it does not run)…", job)
+        self._start(f"Starting {title} through Steam, which starts first when it does not run…", job)
 
     def on_update_steam(self) -> None:
         if self.steam_dir is None:
             return
         if not self.run_path.is_file():
-            self.say(f"The shortcuts run {self.run_path}, which is not there: install {APP_NAME} through the "
+            self.say(f"The shortcuts run {self.run_path}, which is not there. Install {APP_NAME} through the "
                      "portal first.", ok=False)
             return
         add, remove = self.steam_plan()
@@ -959,7 +959,7 @@ class MainWindow(QMainWindow):
                 missing = [g.title for g in add if str(g.file) not in found]
                 if missing:
                     extra.append(f"Read back from Steam's file, {len(add) - len(missing)} of the {len(add)} game(s) "
-                                 f"are there: not {', '.join(missing)}.")
+                                 f"are there. Missing: {', '.join(missing)}.")
             again = " Steam was closed for it and starts again in the background." if restarted else ""
             return True, "\n".join([*notes, f"{len(add)} game(s) in Steam, under Non-Steam in the library"
                                               f"{f'; {len(remove)} taken out' if remove else ''}.{again}", *extra])
@@ -971,7 +971,7 @@ class MainWindow(QMainWindow):
         if covers.edit_key(self, self.covers_key, "Update Steam"):
             self.refresh()
             self.say("The SteamGridDB key was changed." if covers.read_key(self.covers_key) else
-                     "The SteamGridDB key was taken out; the pictures kept stay in use.")
+                     "The SteamGridDB key was taken out. The app keeps using the pictures it already has.")
 
     def resizeEvent(self, event: QResizeEvent) -> None:  # noqa: N802 (Qt override)
         super().resizeEvent(event)

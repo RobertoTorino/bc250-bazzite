@@ -112,9 +112,9 @@ def find_cards(folder: Path) -> list[Card]:
             continue
         if path.is_dir():
             if (path / "_pcsx2_superblock").is_file():
-                cards.append(Card(path, error="A folder memory card: this window reads card files only."))
+                cards.append(Card(path, error="A folder memory card. This window reads card files only."))
         elif suffix in PS1_SUFFIXES:
-            cards.append(Card(path, error="A PS1 memory card: this window reads PS2 cards only."))
+            cards.append(Card(path, error="A PS1 memory card. This window reads PS2 cards only."))
         else:
             cards.append(read_card(path))
     return cards

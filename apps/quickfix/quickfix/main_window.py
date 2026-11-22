@@ -14,9 +14,9 @@ from . import APP_NAME, LOGO_PATH, __version__
 from .catalog import QUICKFIXES
 from .windows import WINDOWS, QuickfixWindow
 
-ABOUT = ("<b>BC-250 Quickfix</b> are small windows for one job each, which come with the suite. In the portal each "
-         "one is a tile of its own in Utilities; here they are all in one list.<br><br>The ones marked "
-         "<b>changes the board</b> ask for your password and change a setting of the system; each one says what "
+ABOUT = ("<b>BC-250 Quickfix</b> gives you small windows for one job each, which come with the suite. In the portal "
+         "each one is a tile of its own in Utilities. Here they are all in one list.<br><br>The ones marked "
+         "<b>changes the board</b> ask for your password and change a setting of the system. Each one says what "
          "it changes, and its Turn off undoes it.")
 
 

@@ -16,7 +16,7 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     exit 0
 fi
 [ -x "$APPIMAGE" ] || {
-    echo "PCSX2 is not installed: open PCSX2 Manager and press Install." >&2
+    echo "PCSX2 is not installed. Open PCSX2 Manager and press Install." >&2
     exit 1
 }
 # The AppImage mounts itself with its own FUSE library and the system's fusermount (part of Bazzite); without

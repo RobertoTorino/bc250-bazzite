@@ -6,13 +6,18 @@
 
 # PCSX2 Manager
 
-Plays PS2 games on the **AMD BC-250** on **Bazzite** with [PCSX2](https://pcsx2.net): installs the PCSX2 release it
-was tried with and sets it up, takes your PS2 BIOS, finds your games and adds them to Steam, so a game starts
-straight away, on the desktop or from Steam's Big Picture Mode. Everything about PCSX2 is done in the app, without
-PCSX2's own window: its settings, each game's screen, and the memory cards (import, export, copy, delete, new
-cards, format, check and the slot each is in). A log keeps what the app did.
+PCSX2 Manager plays PS2 games on the **AMD BC-250** on **Bazzite** with [PCSX2](https://pcsx2.net). It installs the
+PCSX2 release it was tried with and sets it up. It takes your PS2 BIOS, finds your games and adds them to Steam. A
+game then starts straight away, on the desktop or from Steam's Big Picture Mode. You do everything about PCSX2 in the
+app, without PCSX2's own window:
 
-How to install and use it: [PCSX2 Manager in the manual](https://robertotorino.github.io/bc250-bazzite/apps/pcsx2/).
+- its settings
+- each game's screen
+- the memory cards, with import, export, copy, delete, new cards, format, check and the slot each card is in
+
+A log keeps what the app did.
+
+How to install and use it: [PCSX2 Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/pcsx2/).
 
 ## Disclaimer
 

@@ -41,6 +41,10 @@ a line says otherwise.
 
 ## Decided during the rewrite (owner, 21-11-2026)
 
+- **The portal's line about where apps come from**, in the info of the home page, reads "Apps are installed from
+  the releases pinned by this portal version and verified using checksums." (owner, 22-11-2026). Every suite with
+  that line uses it.
+
 - **A dialog that leads to a password prompt** ends with "You will be asked for your password.", also where the old
   dialog had no such line. Where the app skips the prompt while sudo still has the password, the line says so.
 - **The installers' shared messages stay as they are** in an app's rewrite: "Run this as your own user, not with

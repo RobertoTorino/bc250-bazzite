@@ -97,34 +97,35 @@ STICK_RANGES = (("1.33", "PCSX2's (1.33)"), ("1", "As the stick (1.00)"), ("1.66
 OSD_SIZES = (("100", "Normal"), ("150", "Larger"), ("200", "Largest"))
 SETTINGS: tuple[Setting, ...] = (
     Setting("renderer", PICTURE, "Renderer", "EmuCore/GS", ("Renderer",), CHOICE, RENDERERS,
-            "How PCSX2 draws: Automatic picks Vulkan on the BC-250. Software draws on the CPU, exact but slow."),
+            "How PCSX2 draws. Automatic picks Vulkan on the BC-250. Software draws on the CPU, exact but slow."),
     Setting("resolution", PICTURE, "Internal resolution", "EmuCore/GS", ("upscale_multiplier",), CHOICE,
-            RESOLUTIONS, "The size PCSX2 draws the picture at: 3x fills a 1080p screen sharply, 6x a 4K one. A "
+            RESOLUTIONS, "The size PCSX2 draws the picture at. 3x fills a 1080p screen sharply, 6x a 4K one. A "
                          "higher one asks more of the GPU."),
     Setting("filter", PICTURE, "Texture filtering", "EmuCore/GS", ("filter",), CHOICE, FILTERS,
-            "How textures are smoothed. As the PS2: only where the game asked for it."),
+            "How textures are smoothed. Bilinear (as the PS2) smooths only where the game asked for "
+            "it."),
     Setting("anisotropy", PICTURE, "Anisotropic filtering", "EmuCore/GS", ("MaxAnisotropy",), CHOICE, ANISOTROPY,
             "Sharper textures seen at an angle, such as a road ahead."),
     Setting("fxaa", PICTURE, "FXAA", "EmuCore/GS", ("fxaa",), SWITCH,
-            tip="Smooths jagged edges in the finished picture; it also softens it a little."),
+            tip="Smooths jagged edges in the finished picture. It also softens the picture a little."),
     Setting("integer", PICTURE, "Integer scaling", "EmuCore/GS", ("IntegerScaling",), SWITCH,
-            tip="Scales the picture by whole numbers only, so every pixel stays the same size; it may leave a "
+            tip="Scales the picture by whole numbers only, so every pixel stays the same size. It may leave a "
                 "border."),
     Setting("vsync", PICTURE, "VSync", "EmuCore/GS", ("VsyncEnable",), SWITCH,
-            tip="Waits for the screen's refresh before showing a frame: no tearing, a little more delay."),
+            tip="Waits for the screen's refresh before it shows a frame. This stops tearing and adds a little delay."),
     Setting("blending", PICTURE, "Blending accuracy", "EmuCore/GS", ("accurate_blending_unit",), CHOICE, BLENDING,
-            "How exactly the PS2's blending of transparent layers is copied: Basic is right for most games, a "
-            "higher level fixes glitches in some at a cost to the GPU."),
+            "How exactly the PS2's blending of transparent layers is copied. Basic is right for most games. A "
+            "higher level fixes glitches in some, at a cost to the GPU."),
     Setting("fmv", PICTURE, "Video (FMV) shape", "EmuCore/GS", ("FMVAspectRatioSwitch",), CHOICE, FMV_SCREENS,
-            "The shape of a game's videos: as the game's screen setting, or 4:3 so a video is not stretched by Fill "
-            "screen."),
+            "The shape of a game's videos. As the game follows the game's screen setting. With 4:3, Fill "
+            "screen does not stretch them."),
     Setting("nointerlace", EMULATION, "No-interlacing patches", "EmuCore", ("EnableNoInterlacingPatches",), SWITCH,
-            tip="PCSX2's patch that makes a game draw a progressive picture instead of an interlaced one: sharper "
-                "and without shimmer, for the games PCSX2 has one for."),
+            tip="PCSX2's patch that makes a game draw a progressive picture instead of an interlaced one. The "
+                "picture is sharper and does not shimmer. It works for the games PCSX2 has a patch for."),
     Setting("fastboot", EMULATION, "Fast boot", "EmuCore", ("EnableFastBoot",), SWITCH,
             tip="Skips the PS2's start-up screen and goes into the game."),
     Setting("cheats", EMULATION, "Cheats", "EmuCore", ("EnableCheats",), SWITCH,
-            tip="PCSX2's cheat files (.pnach) for a game, from its cheats folder."),
+            tip="PCSX2's cheat files (.pnach) for a game. They come from the folder named cheats in PCSX2's folder."),
     Setting("savestate", EMULATION, "Save state when quitting", "EmuCore", ("SaveStateOnShutdown",), SWITCH,
             tip="A save state when a game ends, to load from PCSX2's pause menu (Esc) next time."),
     Setting("volume", SOUND, "Volume", "SPU2/Output", ("StandardVolume",), PERCENT,
@@ -132,9 +133,9 @@ SETTINGS: tuple[Setting, ...] = (
     Setting("vibration", CONTROLLERS, "Vibration", "Pad1", ("LargeMotorScale", "SmallMotorScale"), SWITCH,
             tip="The controller's rumble motors in a game that uses them."),
     Setting("deadzone", CONTROLLERS, "Stick dead zone", "Pad1", ("Deadzone",), CHOICE, DEADZONES,
-            "How far a stick moves before the game sees it: for a stick that drifts."),
+            "How far a stick moves before the game sees it. This helps with a stick that drifts."),
     Setting("stick_range", CONTROLLERS, "Stick range", "Pad1", ("AxisScale",), CHOICE, STICK_RANGES,
-            "How the stick's travel maps onto the PS2's: PCSX2's 1.33 reaches the edge sooner."),
+            "How the stick's travel maps onto the PS2's. PCSX2's 1.33 reaches the edge sooner."),
     Setting("fps", ON_SCREEN, "Show FPS", "EmuCore/GS", ("OsdShowFPS",), SWITCH,
             tip="The frames a second in a corner of the picture."),
     Setting("speed", ON_SCREEN, "Show speed", "EmuCore/GS", ("OsdShowSpeed",), SWITCH,

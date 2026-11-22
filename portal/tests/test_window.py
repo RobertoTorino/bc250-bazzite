@@ -1152,7 +1152,7 @@ def test_the_header_is_an_apps_header_with_symbols(window):
         ("No", "Icons on Desktop"), (sound, "Sound"), (sound, "Music"), ("Built-in", "Music track"),
         ("Gunmetal", "Theme switcher"), ("Example", "Wallpaper"),
         ("12 h", "Clock"), ("None", "Weather"), ("100 %", "Touchpad")]
-    assert "verified by checksum" in window.source_text
+    assert "verified using checksums" in window.source_text
 
 
 def test_the_sys_info_symbol_opens_one_window_read_each_time(window, qapp, monkeypatch):

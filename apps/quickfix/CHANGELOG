@@ -1,3 +1,15 @@
+Changelog: 22-11-2026 10:11:26
+
+Fixed. The text of the wiki chapter, the README, the menu entry's comment, the windows' info texts, hints, tooltips and
+notes, the Turn off question of Persistent Journal and the messages of the root part and the VRM service's script was
+rewritten to the writing standard: short sentences with one fact each, lists for three or more parts and the purpose
+first. No labels were renamed. The Turn off question of Persistent Journal now asks its question first and says that you
+will be asked for your password. A fact was corrected: the wiki said that every quickfix that changes the board turns
+off only what it turned on itself, but Fix GPU Metrics' Turn off sets fix-metrics back to false whoever turned it on.
+IOMMU Off's text in the wiki and in its info no longer
+names a modded BIOS. It says that the kernel argument switches the IOMMU off when the BIOS leaves it on. Nothing the
+app does has changed. No tests changed.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 1.7.1.

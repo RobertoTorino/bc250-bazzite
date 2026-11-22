@@ -36,7 +36,7 @@ class Group:
 # The groups of Board Test's development/tools/install-requirements.sh, in its order (tests/test_catalog.py reads the
 # script and keeps the two the same).
 GROUPS: tuple[Group, ...] = (
-    Group("--rpms", "RPM packages", "Layered with rpm-ostree: active after a reboot.", (
+    Group("--rpms", "RPM packages", "Layered with rpm-ostree, active after a restart.", (
         Tool("stress-ng", "stress-ng", "41 (CPU load), 42 (CPU score), 49 (memory bandwidth)"),
         Tool("sensors", "lm_sensors", "22 (temperatures and fans)"),
         Tool("vkmark", "vkmark", "41 (GPU load, when memtest_vulkan and vkpeak are missing)"),
@@ -47,14 +47,14 @@ GROUPS: tuple[Group, ...] = (
         Tool("memtest_vulkan", "memtest_vulkan", "41 (GPU load and a VRAM error check)"),
         Tool("vkpeak", "vkpeak", "42 (GPU score), 41 (GPU load, when memtest_vulkan is missing)"),
     )),
-    Group("--speedtest", "Speed test", "Ookla's CLI, into ~/.local/bin; running it accepts Ookla's license and "
+    Group("--speedtest", "Speed test", "Ookla's CLI, into ~/.local/bin. Running it accepts Ookla's license and "
           "privacy terms.", (
         Tool("speedtest", "Ookla speedtest", "44 (Internet Speed; speedtest-cli works too)"),
     )),
     Group("--mprime", "Prime95", "The latest mprime from mersenne.org, into ~/mprime, with a link in ~/.local/bin.", (
         Tool("mprime", "mprime", "no test: BC-250 CPU Tools' longer burn-in (load tool mprime)"),
     )),
-    Group("--dev", "Development extras", "Layered with rpm-ostree: active after a reboot.", (
+    Group("--dev", "Development extras", "Layered with rpm-ostree, active after a restart.", (
         Tool("sqlite3", "sqlite", "no test: the app's history database, during development"),
     )),
 )

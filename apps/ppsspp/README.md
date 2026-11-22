@@ -6,10 +6,11 @@
 
 # PPSSPP Manager
 
-Plays PSP games on the **AMD BC-250** on **Bazzite** with [PPSSPP](https://www.ppsspp.org): installs the PPSSPP
-release it was tried with, finds your games and adds them to Steam for Game Mode.
+PPSSPP Manager lets you play PSP games on the **AMD BC-250** with **Bazzite**. It uses
+[PPSSPP](https://www.ppsspp.org). It installs the PPSSPP release it was tested with. It finds your games and adds them
+to Steam for Game Mode.
 
-How to install and use it: [PPSSPP Manager in the manual](https://robertotorino.github.io/bc250-bazzite/apps/ppsspp/).
+How to install and use it: [PPSSPP Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/ppsspp/).
 
 ## Disclaimer
 
@@ -22,5 +23,5 @@ Vita3K, Xenia) and of Decky Loader, HelixSR and DirectMesh belong to their owner
 
 ## License
 
-GPL-3.0-or-later, see [LICENSE](LICENSE). PPSSPP is a separate program (GPL-2.0-or-later), downloaded from its own
-release.
+GPL-3.0-or-later, see [LICENSE](LICENSE). PPSSPP is a separate program (GPL-2.0-or-later). The app downloads it
+from its own release.

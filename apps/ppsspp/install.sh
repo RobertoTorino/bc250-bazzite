@@ -122,7 +122,7 @@ info "Installing $APP_NAME $VERSION"
 # Its settings folder stays: the app adopts the saved naming template from it.
 OLD_APP="bazzite-umd-file-renamer"
 if [ -e "$DATA_DIR/$OLD_APP" ] || [ -e "$HOME/.local/bin/$OLD_APP" ]; then
-    info "Removing the standalone Bazzite UMD File Renamer: renaming lives in this app now (Games, Rename)"
+    info "Removing the standalone Bazzite UMD File Renamer. This app renames the files now, with Games Rename"
     rm -f "$HOME/.local/bin/$OLD_APP" "$DATA_DIR/applications/$OLD_APP.desktop" "$DESKTOP_DIR/$OLD_APP.desktop"
     rm -rf "${DATA_DIR:?}/$OLD_APP"
     rm -f "$VENV_USERS/$OLD_APP"

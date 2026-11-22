@@ -269,3 +269,6 @@ taskset
 ras-mc-ctl
 SMU
 overvolting
+quickfixes
+Hexxeh
+Renamer

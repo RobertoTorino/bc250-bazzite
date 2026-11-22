@@ -207,8 +207,8 @@ def test_the_steam_link(qapp, folders):
     window.show()
     window.steam_info.click()
     label = window.steam_info.popup.findChild(QLabel)
-    assert re.sub(r"<[^>]+>", "", label.text()) == ("A checkmark before a game adds the game to Steam. When the Start "
-                                                    "game button is clicked the game starts from Steam.")
+    assert re.sub(r"<[^>]+>", "", label.text()) == ("A checkmark before a game adds the game to Steam. When you click "
+                                                    "the Start game button, the game starts from Steam.")
     assert ">Steam</a>" in label.text() and not label.openExternalLinks()
     label.linkActivated.emit("steam://open/games")
     assert opened == ["steam://open/games"] and "Steam was opened." in window.output.toPlainText()
@@ -291,7 +291,7 @@ def test_no_steam_game_mode_or_no_wrapper(qapp, folders, monkeypatch):
     window = _window(folders)
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
-    assert "install PPSSPP Manager through the portal first" in window.running.text()
+    assert "Install PPSSPP Manager through the portal first" in window.running.text()
     assert not window.worker.running
     window.close()
 
@@ -348,9 +348,9 @@ def test_another_ppsspp_is_installed(qapp, folders):
     window = _window(folders)
     assert window.version == "1.19.3" and window.emulator_box.value.text() == "1.19.3"
     assert window.emulator_state.text() == "Installed. Uninstall with the Uninstall button."
-    assert window.emulator_state.toolTip() == ("PPSSPP 1.19.3 is in use; it was not tried on the board. This "
-                                               f"version of the app was tried with {emulator.VERSION}: Install puts "
-                                               "it back in use.")
+    assert window.emulator_state.toolTip() == ("PPSSPP 1.19.3 is in use. It was not tried on the board. This "
+                                               f"version of the app was tried with {emulator.VERSION}. Install puts "
+                                               "that release back in use.")
     assert window.install_pill.isEnabled()
     window.refresh()
     assert window.output.toPlainText().count("PPSSPP 1.19.3 is in use") == 1
@@ -562,7 +562,7 @@ def test_start_game_starts_the_chosen_game_through_steam(qapp, folders, monkeypa
     window.table.selectRow(0)
     title = window.chosen().title
     tabs.tabBarClicked.emit(start)                                           # chosen, but not in Steam yet
-    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet: tick it and press Update Steam "
+    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet. Check it and press Update Steam "
                                                       "first.")
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()

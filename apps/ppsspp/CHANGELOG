@@ -1,3 +1,17 @@
+Changelog: 22-11-2026 10:11:54
+
+Fixed. The text is rewritten to the writing standard (.claude/writing.md): the wiki chapter, the README, the text in the
+window (tooltips, hints, the line under the tabs, the questions and the log lines), the Settings tab's tooltips, the
+Rename files window's hint, the Delete saves question, the message of bc250-ppsspp-run and install.sh's own message
+about the standalone Bazzite UMD File Renamer. Sentences are short and hold one fact, the spelling is American English,
+"tick" is "check", "afterwards" is "afterward" and "the manual" is "the wiki". The question before Install says what
+happens one fact per line. Labels renamed: the table's column Id is ID, and the naming template Title Id is Title ID.
+Facts corrected: the Rename files window said a renamed game needs "Update Game Mode", and the button is Update Steam.
+The wiki said the Steam link is in a line under the table, and it is in the info symbol's text under the list. Nothing
+the app does has changed. The tests that changed are test_the_steam_link, test_no_steam_game_mode_or_no_wrapper,
+test_start_game_starts_the_chosen_game_through_steam and test_another_ppsspp_is_installed in test_main_window.py, and
+test_the_tab_exports_imports_and_deletes in test_saves.py, for the new wording.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 5.7.1.
