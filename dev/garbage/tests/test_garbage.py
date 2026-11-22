@@ -36,6 +36,16 @@ def test_homebrew_only_where_it_is_installed(tmp_path):
     assert "homebrew" not in [place.key for place in garbage.places(tmp_path, None, tmp_path, which=lambda _: None)]
 
 
+
+def test_homebrews_own_cache_is_not_garbage(tmp_path):
+    cache = tmp_path / ".cache" / "Homebrew"
+    fill(cache / "api", 3 << 20)                                    # what brew cleanup keeps: never counted
+    fill(cache / "bootsnap" / "key", 2 << 20)
+    assert garbage.find(tmp_path, None, tmp_path / "dumps", which=lambda name: "/bin/" + name) == []
+    fill(cache / "downloads", 2 << 20)
+    found = garbage.find(tmp_path, None, tmp_path / "dumps", which=lambda name: "/bin/" + name)
+    assert [(place.key, place.size) for place in found] == [("homebrew", 2 << 20)]
+
 def test_it_tells_from_a_gigabyte_once_a_day():
     gb = garbage.NOTIFY_FROM
     assert not garbage.should_notify(gb - 1, 1000.0, {})

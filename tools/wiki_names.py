@@ -21,10 +21,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TOP = ("apps", "core", "portal", "tools", "dev", "docs", "icons", "design")
 CODE = ("*.py", "*.sh", "*.rs", "*.toml", "*.yml", "*.js", "*.c", "*.desktop", "*.ini", "*.service", "*.example")
-SKIP = ("/.venv", "/site/", "/node_modules/", "/target/", "/docs/", "/__pycache__/")
+SKIP = ("/.venv", "/.cache/", "/site/", "/node_modules/", "/target/", "/docs/", "/__pycache__/")
 # Names of things outside the suite that a page may name: name -> why
 OUTSIDE = {
     "GDK_BACKEND": "GTK's environment variable",
+    "self.tr()": "Qt's translation function, which the apps do not use",
     "Enable remote features": "the Xbox's own setting",
     "Watch → Custom → Releases": "GitHub's menu",
     "Add folder…": "PPSSPP Manager's button of version 1.0 and older, named as history",

@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 18:33:23
+
+Fixed. tools/wiki_names.py skips the .cache folder, as CI has none. A local run found self.tr() in the wiki's mermaid
+copy there and passed, while CI failed. The wiki names self.tr() as Qt's function that the apps do not use, and the tool
+now knows it as such. DESIGN.md is made again with tools/make_design.py. tools/installer-tests/garbage.sh is new, for
+Nexus Garbage Remover.
+
 Changelog: 22-11-2026 17:03:46
 
 Fixed. The wiki sections that tools/check_wiki.py listed after today's changes were read against them. The Development

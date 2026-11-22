@@ -475,6 +475,9 @@ The table lists each place that holds 1 MB of garbage or more, the largest first
 | **pip's download cache** | `~/.cache/pip` | `find ~/.cache/pip -mindepth 1 -delete` |
 | **Homebrew's downloads** | `~/.cache/Homebrew` | `brew cleanup --prune=all` |
 
+The size of Homebrew's row leaves out the folders `api`, `bootsnap` and `tool-selection`. `brew cleanup` keeps
+them, because Homebrew needs them to run.
+
 Each row shows its size, and its tooltip says what the files are. Every row is checked at first. Uncheck a row to
 keep that place. **Can be removed** shows the total, and **Checked** shows what **Delete** would remove. **Delete**
 asks first and lists each place with its size. The crash dumps belong to the system, so for them the app asks for

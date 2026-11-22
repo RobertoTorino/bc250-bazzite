@@ -30,13 +30,14 @@ SHOWN_FROM = 1 << 20                    # a place with less than this is left ou
 @dataclass
 class Garbage:
     """One place that can be emptied. *command* empties it; *root*: it runs through pkexec, which asks for the
-    password."""
+    password. *kept*: the folders in it that the command leaves, not measured."""
     key: str
     what: str
     where: Path
     why: str
     command: list[str]
     root: bool = False
+    kept: tuple[str, ...] = ()
     size: int = 0
     files: int = 0
     errors: list[str] = field(default_factory=list)
@@ -46,10 +47,13 @@ class Garbage:
         return shlex.join(["sudo", *self.command] if self.root else self.command)
 
 
-def measure(path: Path) -> tuple[int, int]:
-    """The bytes and files under *path*; what cannot be read counts as nothing. Links are not followed."""
+def measure(path: Path, kept: tuple[str, ...] = ()) -> tuple[int, int]:
+    """The bytes and files under *path*, without its folders named in *kept*; what cannot be read counts as nothing.
+    Links are not followed."""
     size = files = 0
-    for folder, _dirs, names in os.walk(path, onerror=lambda _error: None):
+    for folder, dirs, names in os.walk(path, onerror=lambda _error: None):
+        if folder == str(path):
+            dirs[:] = [name for name in dirs if name not in kept]
         for name in names:
             try:
                 size += os.lstat(os.path.join(folder, name)).st_size
@@ -89,9 +93,11 @@ def places(home: Path | None = None, steam: Path | None = None, dumps: Path = DU
                          "them again when you install them once more.", _empty(pip)))
     brew_cache = home / ".cache" / "Homebrew"
     if which("brew"):
+        # brew cleanup keeps Homebrew's package index (api) and its compiled Ruby (bootsnap): they would come back
+        # as garbage after every Delete
         found.append(Garbage("homebrew", "Homebrew's downloads", brew_cache, "Downloads and old versions Homebrew "
                              "keeps. brew cleanup removes them, and what is installed stays.",
-                             ["brew", "cleanup", "--prune=all"]))
+                             ["brew", "cleanup", "--prune=all"], kept=("api", "bootsnap", "tool-selection")))
     return found
 
 
@@ -100,7 +106,7 @@ def find(home: Path | None = None, steam: Path | None = None, dumps: Path = DUMP
     """The places that hold garbage now, measured, the largest first."""
     found = []
     for place in places(home, steam, dumps, which):
-        place.size, place.files = measure(place.where)
+        place.size, place.files = measure(place.where, place.kept)
         if place.size >= SHOWN_FROM:
             found.append(place)
     return sorted(found, key=lambda place: place.size, reverse=True)

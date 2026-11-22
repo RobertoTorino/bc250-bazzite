@@ -735,7 +735,6 @@ Drawn by MkDocs Material in the wiki's colors.
 | <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/clipboard-list-outline.svg" width="24" alt=""> | `material-clipboard-list-outline` | Basic tests and additional requirements to streamline the Qt GUI version |
 | <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/code-braces.svg" width="24" alt=""> | `material-code-braces` | Development |
 | <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/cog-outline.svg" width="24" alt=""> | `material-cog-outline` | BC-250 Board Test - development |
-| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/desktop-tower-monitor.svg" width="24" alt=""> | `material-desktop-tower-monitor` | The development machine |
 | <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/download.svg" width="24" alt=""> | `material-download` | Tools for every part of the board. { .home-hero__lead } |
 | <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/expansion-card.svg" width="24" alt=""> | `material-expansion-card` | Tools for every part of the board. { .home-hero__lead } |
 | <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/eye-off-outline.svg" width="24" alt=""> | `material-eye-off-outline` | Privacy |
@@ -766,7 +765,7 @@ Characters of the font that the apps use as icons in labels and buttons.
 | --- | --- |
 | Portal | ● ☰ |
 | BC-250 BIOS Reader | ▶ ↓ ↑ ← › |
-| BC-250 Board Test | ✔ ✖ ✕ ⚠ ▶ ■ ◀ ↓ ↑ › 💡 🎮 |
+| BC-250 Board Test | ✔ ✖ ✕ ⚠ ▶ ■ ↓ ↑ › 💡 🎮 |
 | BC-250 Controller | ✓ ✕ › △ ○ □ |
 | BC-250 GPU Manager | ✖ ⚠ ● |
 | BC-250 PS Remote Play | ✓ ✗ |

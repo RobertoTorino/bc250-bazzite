@@ -72,7 +72,8 @@ class MainWindow(QMainWindow):
         self.delete_pill.clicked.connect(self.on_delete)
         same_width([self.total_box, self.checked_box, self.delete_pill])
         for box in (self.total_box, self.checked_box, self.delete_pill):
-            header.add_second(box, 1)
+            header.add_second(box)
+        header.second_row.addStretch(1)                 # the boxes and the pill side by side, not spread
         layout.addLayout(header)
 
         self.table = QTableWidget(0, len(COLUMNS))

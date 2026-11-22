@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3426 test functions (4001 cases counting the parametrized ones) in 43 test folders, and 43 installer tests.
+3427 test functions (4002 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -45,7 +45,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
-| [dev/garbage](#devgarbage) | 1 | 6 |  |
+| [dev/garbage](#devgarbage) | 1 | 7 |  |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
 | [dev/nrt](#devnrt) | 4 | 135 | 24.8 s |
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
@@ -53,7 +53,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 16 | 212 | 29.0 s |
 | [tools](#tools) | 43 | 250 | 11.1 s |
-| **All** | | **3426** | **182 s** |
+| **All** | | **3427** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -79,6 +79,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `demo.sh` | Exercise dev/demo/install.sh, Nexus Demo Recorder's installer. |
 | `deps.sh` | Exercise dev/deps/install.sh, Nexus Deps' installer. |
 | `fan.sh` | Exercise apps/fan/install.sh. |
+| `garbage.sh` | Exercise dev/garbage/install.sh, Nexus Garbage Remover's installer. |
 | `gpu.sh` | Exercise apps/gpu/install.sh. |
 | `itests.sh` | Exercise dev/itests/install.sh, Nexus Installer Tests's installer. |
 | `mesh.sh` | Exercise apps/mesh/install.sh. |
@@ -3031,13 +3032,14 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/garbage
 
-6 tests in 1 files.
+7 tests in 1 files.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
 | `test_garbage.py` | `test_it_finds_the_full_places_largest_first` |  |  | It finds the full places largest first. |
 | `test_garbage.py` | `test_the_crash_dumps_take_root` |  |  | The crash dumps take root. |
 | `test_garbage.py` | `test_homebrew_only_where_it_is_installed` |  |  | Homebrew only where it is installed. |
+| `test_garbage.py` | `test_homebrews_own_cache_is_not_garbage` |  |  | Homebrews own cache is not garbage. |
 | `test_garbage.py` | `test_it_tells_from_a_gigabyte_once_a_day` |  |  | It tells from a gigabyte once a day. |
 | `test_garbage.py` | `test_the_users_places_go_alone_and_the_systems_with_one_password` |  |  | The users places go alone and the systems with one password. |
 | `test_garbage.py` | `test_the_window_lists_the_places_checked` |  |  | The window lists the places checked. |
