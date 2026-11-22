@@ -83,9 +83,9 @@ class ServerManagerTab(QWidget):
             local_title = QHBoxLayout()
             local_title.addWidget(QLabel("This computer as host:"))
             local_title.addWidget(InfoButton(
-                "Start sshd on this computer, so another computer can connect to it. Start enables sshd, so it "
-                "also starts at boot, and opens the firewall for ssh when it is closed. Stop disables sshd and "
-                "leaves the firewall as it is. Both ask for your password."))
+                "Start sshd on this computer, so another computer can connect to it. Start turns sshd on, so it "
+                "also starts at boot. It also opens the firewall for ssh when the firewall blocks it. Stop turns "
+                "sshd off and leaves the firewall as it is. Both ask for your password."))
             local_title.addStretch()
             controls.addLayout(local_title)
             controls.addWidget(self.local_status)
@@ -250,8 +250,8 @@ class ServerManagerTab(QWidget):
         answer = PlainMessageBox.question(
             self,
             "Save sshd_config",
-            "Validate and save the configuration to the server?\n"
-            "The previous file is kept as sshd_config.bak.",
+            "Check the configuration and save it to the server?\n"
+            "The app keeps the previous file as sshd_config.bak.",
         )
         if answer != QMessageBox.StandardButton.Yes:
             return

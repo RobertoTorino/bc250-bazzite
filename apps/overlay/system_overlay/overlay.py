@@ -22,11 +22,12 @@ DOT = " · "
 WARM, HOT = 80, 90                       # °C: a temperature turns orange, then red
 BACKGROUNDS = {"Solid": 95, "Light see-through": 75, "See-through": 55, "Very see-through": 35}   # % opacity
 ROWS = (("cpu", "CPU"), ("gpu", "GPU"), ("chip", "Chip power"), ("governor", "Governor"), ("gpu_volt", "GPU volt"), ("cpu_rail", "CPU rail"),
-        ("gpu_rail", "GPU rail"), ("vin", "12 V input"), ("vram", "VRAM"), ("ram", "RAM"), ("refresh", "Refresh"), ("fan", "Fan"),
+        ("gpu_rail", "GPU rail"), ("vin", "12 V input"), ("vram", "VRAM"), ("ram", "RAM"), ("refresh", "Screen"), ("fan", "Fan"),
         ("cpu_temp", "CPU temp"), ("gpu_temp", "GPU temp"), ("vrm_temp", "VRM temp"), ("cpu_vrm_temp", "CPU VRM temp"),
         ("gpu_vrm_temp", "GPU VRM temp"), ("nvme_temp", "NVMe temp"), ("net", "Network"), ("disk", "Disk"))
 RAIL_ROWS = ("cpu_rail", "gpu_rail", "vin", "cpu_vrm_temp", "gpu_vrm_temp")       # the rows the bc250_vrm module fills
 WIDEST = "↓ 100.0 MB/s · ↑ 100.0 MB/s"     # the longest value a row shows, for a steady width
+Screen = tuple[int, int, float, float]     # the screen the window is on: width, height (pixels), refresh (Hz), scale
 
 
 class OverlaySettings(SettingsStore):
@@ -63,7 +64,14 @@ def _rail(rail: Rail | None) -> str:
                  f"{rail.watts:.0f} W" if rail.watts is not None else None)
 
 
-def format_reading(reading: Reading, refresh_hz: float | None) -> dict[str, tuple[str, str]]:
+def _screen(screen: Screen | None) -> str:
+    if screen is None:
+        return DASH
+    width, height, hz, scale = screen
+    return _join(f"{width} × {height}", f"{scale * 100:.0f} %", f"{hz:.0f} Hz" if hz > 0 else None)
+
+
+def format_reading(reading: Reading, screen: Screen | None) -> dict[str, tuple[str, str]]:
     """Row key -> (text, color; "" = the normal text color)."""
     r = reading
     return {
@@ -81,7 +89,7 @@ def format_reading(reading: Reading, refresh_hz: float | None) -> dict[str, tupl
         "vin": (f"{r.vin_mv / 1000:.2f} V" if r.vin_mv else DASH, ""),
         "vram": (_gb(r.vram), ""),
         "ram": (_gb(r.ram), ""),
-        "refresh": (f"{refresh_hz:.0f} Hz" if refresh_hz else DASH, ""),
+        "refresh": (_screen(screen), ""),          # the key from when the row showed the refresh rate alone
         "fan": (f"{r.fan.rpm} RPM" if r.fan else DASH, ""),
         "cpu_temp": _temp(r.cpu_temp),
         "gpu_temp": _temp(r.gpu_temp),
@@ -133,13 +141,18 @@ class OverlayWindow(QWidget):
         self.refresh()
 
     # ----------------------------------------------------------------- values
-    def refresh_rate(self) -> float | None:
+    def screen_mode(self) -> Screen | None:
+        """The screen the window is on: its resolution in pixels (its size times the scale), refresh rate and
+        scale, as Qt reports them."""
         screen = self.screen()
-        return screen.refreshRate() if screen is not None and screen.refreshRate() > 0 else None
+        if screen is None:
+            return None
+        scale, size = screen.devicePixelRatio(), screen.geometry().size()
+        return round(size.width() * scale), round(size.height() * scale), screen.refreshRate(), scale
 
     def refresh(self) -> None:
         reading = self.sensors.read()
-        for key, (text, colour) in format_reading(reading, self.refresh_rate()).items():
+        for key, (text, colour) in format_reading(reading, self.screen_mode()).items():
             label = self.values[key]
             label.setText(text)
             label.setStyleSheet(f"{self._font} color:{colour or 'white'}; font-size:12px; font-weight:700;")

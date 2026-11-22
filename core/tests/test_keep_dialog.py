@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The keep page as a window (keep_dialog.py; owner, 03-11-2026): every row ticked at first, unticking keeps it, the
+"""The keep page as a window (keep_dialog.py; owner, 03-11-2026): every row checked at first, unchecking keeps it, the
 total follows, Delete marked needs a row still marked."""
 
 from __future__ import annotations

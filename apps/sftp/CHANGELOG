@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 10:43:08
+
+Fixed. The text was rewritten to the writing standard: the wiki chapter, the README, the installer's own messages, and
+the hints, tooltips and dialogs of the window. The sentences are shorter, with one fact each and no chains, and the
+README links to the wiki. No labels were renamed and no facts needed correcting. Nothing the app does has changed. No
+tests changed.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 4.6.1.

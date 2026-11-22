@@ -68,11 +68,11 @@ HEALTH_ATTRIBUTES = (
     (177, "Wear leveling count"),           # Samsung
 )
 
-NO_BUSCTL = "busctl is missing: it comes with systemd, which every Bazzite has."
+NO_BUSCTL = "busctl is missing. It comes with systemd, which every Bazzite has."
 NO_UDISKS = "udisks does not answer on the system bus"
 # Firmware updates, as fwupd answers (Drive.update)
 AVAILABLE, UP_TO_DATE, UNKNOWN, NOT_SUPPORTED = "Available", "Up to date", "Unknown", "Not supported"
-NO_METADATA = "fwupd has no firmware list yet: fwupdmgr refresh downloads it from the LVFS."
+NO_METADATA = "fwupd has no firmware list yet. fwupdmgr refresh downloads it from the LVFS."
 
 # argv -> (exit code, output); tests pass a fake
 Run = Callable[[list[str]], tuple[int, str]]
@@ -233,8 +233,9 @@ def usb_link(drive: Drive, device: Path) -> None:
         # Stuck at USB 2.0 in a USB 3 port: a cable or a hub, not the drive (a 5 Gb/s drive in a 10 Gb/s port is not)
         if speed and float(speed) <= 480 < 5000 <= float(most):
             drive.slow_link = (f"The drive linked at {USB_SPEEDS.get(speed, usb_text(speed))}, though its port does "
-                               f"{USB_SPEEDS.get(most, usb_text(most))} ({usb_text(most)}). Try another cable (many "
-                               "USB-C cables carry only USB 2.0), plug it straight into the board, or plug it in again.")
+                               f"{USB_SPEEDS.get(most, usb_text(most))} ({usb_text(most)}). Many USB-C cables carry "
+                               "only USB 2.0, so try another cable. You can also plug it straight into the board, or "
+                               "plug it in again.")
 
 
 def usb_text(speed: str) -> str:
@@ -432,7 +433,7 @@ def firmware_updates(run_: Run, drives: list[Drive]) -> None:
                 newest = ""
             drive.update = AVAILABLE
             drive.update_tip = (f"Firmware {newest} is on the LVFS" if newest else "A newer firmware is on the LVFS") \
-                + ": GNOME Software or fwupdmgr update installs it. Back up first."
+                + ". GNOME Software or fwupdmgr update installs it. Back up first."
             continue
         said = out.lower()
         if "silo" in said or "metadata" in said:

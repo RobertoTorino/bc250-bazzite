@@ -58,13 +58,15 @@ from .rpcn_dialog import RpcnDialog
 from .saves_page import SavesPage
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/rpcs3/"
-STEAM_TIP = "Add the ticked games to Steam and take out the others; Steam closes for it and starts again"
+STEAM_TIP = "Add the checked games to Steam and take out the others. Steam closes for it and starts again"
 START_TIP = "Start the game chosen under Your games through Steam, as its shortcut in Steam does"
 RPCN_WATCH_MS = 5000
-CLEAR_TIP = "Empty the app's log file, with the older ones kept beside it, and the View logs tab"
+CLEAR_TIP = "Empty the app's log file, the older ones beside it and the View logs tab"
+STEAM_ON = "Steam runs and is signed in. The games in Steam can start."
+STEAM_OFF = "Steam does not run or is not signed in. Start Steam and sign in before you start a game."
 NO_SFB = "PS3_DISC.SFB is missing or damaged in this disc game's folder: RPCS3 does not start it without"
 RUNNING = "RPCS3 is running: close it first, it writes its own settings over the change when it closes."
-RUNNING_INSTALL = "RPCS3 is running: close it first; packages are installed while RPCS3 is closed."
+RUNNING_INSTALL = "RPCS3 is running. Close it first. The app installs packages only while RPCS3 is closed."
 STEAM_URL = "steam://open/games"        # Steam's library; Steam starts when it does not run
 STEAM, GAME, SERIAL, VERSION, FOLDER, SCREEN = range(6)     # the table's columns (the screen last; owner)
 WIDTH = 900                             # the window opens this wide, and is never narrower (owner, 18-11-2026)
@@ -113,8 +115,8 @@ def install_message(report: userdata.InstallReport, new_games: int, new_licenses
 
 RUNNING_REMOVE = "RPCS3 is running: close it first, then remove the game."
 RUNNING_START = "RPCS3 is running: close it first, then start the game."
-UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk: a window lists what would go, and you "
-                      "untick what to keep; nothing is deleted before you confirm")
+UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk. A window first lists what would go. "
+                      "Uncheck what you want to keep. Nothing is deleted before you confirm")
 
 
 def _with_info(state: QLabel, info: InfoButton) -> QWidget:
@@ -227,18 +229,23 @@ class MainWindow(QMainWindow):
         header = AppHeader(LOGO_PATH, APP_NAME, __version__)
         # The states on the right of the title row, ending at the middle of the last pill below them (owner,
         # 24-10-2026): a spacer of half that pill's width after them, set whenever the window's size changes.
-        self.pill = StatusText()
+        self.pill = StatusText(name="Installed")
         header.add_action(self.pill)
-        self.rpcn_pill = StatusText()                   # RPCN Online, Offline or Off (owner, 18-11-2026)
+        self.rpcn_pill = StatusText(name="RPCN")          # RPCN Online, Offline or Off (owner, 18-11-2026)
         header.add_action(self.rpcn_pill)
-        self.controller = StatusText()                  # beside it: whether a controller is connected
+        self.controller = StatusText(name="Controller")   # beside it: whether a controller is connected
         header.add_action(self.controller)
+        self.steam_state = StatusText(name="Steam")       # and whether Steam runs and is signed in (owner,
+        header.add_action(self.steam_state)               # 22-11-2026): a game in Steam starts only then
+        self._steam_on: bool | None = None
         self.states_spacer = QWidget()
         self.states_spacer.setFixedSize(0, 1)
         header.add_action(self.states_spacer)
         self.controller_timer = QTimer(self)
         self.controller_timer.setInterval(self.CONTROLLER_POLL)
         self.controller_timer.timeout.connect(self.show_controller)
+        self.controller_timer.timeout.connect(self.show_steam)
+        self.show_steam()
         self.controller_timer.start()
         self.refresh_pill = style.action_pill("Refresh", "Click to refresh", "Read the state again and look for games")
         self.refresh_pill.clicked.connect(self.refresh)
@@ -261,13 +268,13 @@ class MainWindow(QMainWindow):
         self.install_pill = style.action_pill("RPCS3", "Install", f"Download RPCS3 {emulator.VERSION} from GitHub "
                                                                   f"(about {emulator.SIZE_MB} MB) and check it")
         self.install_pill.clicked.connect(self.on_install)
-        self.remove_pill = style.action_pill("RPCS3", "Uninstall", "Remove the installed RPCS3; its own folder "
-                                                                   "(firmware, saves, settings, installed games) "
-                                                                   "stays")
+        self.remove_pill = style.action_pill("RPCS3", "Uninstall", "Remove the installed RPCS3. Its own folder "
+                                                                   "with the firmware, saves, settings and installed "
+                                                                   "games stays")
         self.remove_pill.clicked.connect(self.on_remove)
-        self.package_pill = style.action_pill("Games", "Install", "Choose the folder with your .pkg files (and "
-                                                                  "the .rap license of a PSN game); RPCS3 installs "
-                                                                  "them, without opening its window")
+        self.package_pill = style.action_pill("Games", "Install", "Choose the folder with your .pkg files and "
+                                                                  "the .rap license of a PSN game. RPCS3 installs "
+                                                                  "them without opening its window")
         self.package_pill.clicked.connect(self.on_install_packages)
         # RPCN Account (owner, 18-11-2026: RPCS3 has RPCN as shadPS4 has shadNet)
         self.account_pill = style.action_pill("RPCN", "Account", "Your RPCN account: create one, try it, and "
@@ -326,7 +333,7 @@ class MainWindow(QMainWindow):
         columns.addLayout(second, 1)
 
         self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["In Steam", "Game title", "Id", "Version", "Folder", "Screen setting"])
+        self.table.setHorizontalHeaderLabels(["In Steam", "Game title", "ID", "Version", "Folder", "Screen setting"])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -343,12 +350,12 @@ class MainWindow(QMainWindow):
         self.table.itemChanged.connect(lambda _item: self._update_buttons())
 
         self.rpcs3_button = QPushButton("RPCS3 settings")
-        self.rpcs3_button.setToolTip("Open RPCS3's own window for what the app does not set yet: its settings, "
-                                     "the controllers (Pads) and game updates (File > Install Packages)")
+        self.rpcs3_button.setToolTip("Open RPCS3's own window for what the app does not set yet. That is its "
+                                     "settings, the controllers (Pads) and game updates (File > Install Packages)")
         self.rpcs3_button.clicked.connect(self.on_open_rpcs3)
         self.covers_button = QPushButton("Steam artwork…")
-        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite: with it, Update Steam "
-                                      "gives each game its cover from SteamGridDB in Steam; the wide picture, the "
+        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite. With it, Update Steam "
+                                      "gives each game in Steam its cover from SteamGridDB. The wide picture, the "
                                       "banner and the logo stay the game's own")
         self.covers_button.clicked.connect(self.on_covers)
         self.steam_button = style.primary_button("Update Steam", STEAM_TIP)
@@ -357,7 +364,7 @@ class MainWindow(QMainWindow):
         # What the boxes, Screen setting and Start game do, behind an info symbol (owner, 18-11-2026, in place of a
         # line of text)
         self.steam_info = InfoButton("A checkmark before a game adds the game to Steam. Screen setting sets how it "
-                                     "fills the screen. When the Start game button is clicked the game starts from "
+                                     "fills the screen. Start game starts the chosen game from "
                                      f"{style.link(self, STEAM_URL, 'Steam')}.", "About the games and Steam")
         self.steam_info.opens = lambda _url: self.open_steam()      # the app opens Steam itself (open_steam)
         buttons.addWidget(self.steam_info)
@@ -380,8 +387,9 @@ class MainWindow(QMainWindow):
         log_page = QWidget()
         log = QVBoxLayout(log_page)
         log.setContentsMargins(0, 8, 0, 0)
-        log.addWidget(hint_label(f"Everything the app said and did, newest last, and each game started from Steam; "
-                                 f"the same lines are in {escape(private(self.log_path))}, which turns over at 1 MB."))
+        log.addWidget(hint_label(f"Everything the app said and did, newest last. Each game started from Steam is "
+                                 f"here too. The same lines are in {escape(private(self.log_path))}, which turns "
+                                 "over at 1 MB."))
         log.addWidget(self.output, 1)
         self.tabs = QTabWidget()
         # The six tabs share the whole width, the last one up to the window\'s margin (owner, 18-11-2026)
@@ -509,6 +517,15 @@ class MainWindow(QMainWindow):
             self.say(text, ok=False)
         self._sound_said = off
 
+    def show_steam(self) -> None:
+        """Steam's state beside the title, green while it runs and is signed in, red otherwise."""
+        on = steam.signed_in(self.steam_dir)
+        if on == self._steam_on:
+            return
+        self._steam_on = on
+        self.steam_state.set_status("Steam signed in" if on else "Steam not signed in", "ok" if on else "bad",
+                                    STEAM_ON if on else STEAM_OFF)
+
     def show_controller(self) -> None:
         """The controller state beside the title: a game started from Steam reads the controller that is there
         when it starts, so the window says when none is (switched off, asleep, not paired)."""
@@ -519,15 +536,15 @@ class MainWindow(QMainWindow):
         if found:
             self.controller.set_status("Controller connected" if len(found) == 1 else f"{len(found)} controllers",
                                        "ok", "Connected: " + ", ".join(found) + ". A game started from Steam "
-                                       "reads it; Share + Options together open RPCS3's menu in the game, with "
-                                       "Exit Game in it. Switched off or asleep during a game (its idle timer, "
-                                       "its battery), this RPCS3 build does not pick it up again when it comes "
-                                       "back: quit the game and start it again.")
+                                       "reads it. Share + Options together open RPCS3's menu in the game, with "
+                                       "Exit Game in it. A controller can switch off or fall asleep during a "
+                                       "game, from its idle timer or its battery. This RPCS3 build does not pick "
+                                       "it up again when it comes back. Then quit the game and start it again.")
             self.prepare_pads()
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected: switch it on, or press its PS button to wake "
-                                       "it, before starting a game from Steam. Without one, RPCS3 plays with the "
+                                       "No controller is connected. Switch it on, or press its PS button to wake "
+                                       "it, before you start a game from Steam. Without one, RPCS3 plays with the "
                                        "keyboard only.")
 
     def prepare_rpcs3(self) -> bool:
@@ -609,8 +626,8 @@ class MainWindow(QMainWindow):
                    "it before installing it. The app says when a newer RPCS3 is out.")
         elif self.version != pinned:
             self.emulator_box.set_value(self.version.split("-")[0])     # the landmark: the box is not wide enough
-            tip = (f"RPCS3 {self.version} is in use; it was not tried on the board. This version of the app was "
-                   f"tried with {pinned}: Install puts it back in use.")
+            tip = (f"RPCS3 {self.version} is in use. It was not tried on the board. This version of the app was "
+                   f"tried with {pinned}. Install puts it back in use.")
             if not self._pin_noted:
                 self.note(tip)
                 self._pin_noted = True
@@ -623,7 +640,7 @@ class MainWindow(QMainWindow):
             tip = f"RPCS3 {pinned}, the build this version of the app was tried with"
         if self.newer is not None:              # in the tip and the log, so the line stays the state (owner)
             tip += (f"\nRPCS3 {self.newer.version} is out ({self.newer.published}). A later version of this app "
-                    f"brings it, once it has been tried on the board: {self.newer.url}")
+                    f"brings it, once it has been tried on the board. What is new is at {self.newer.url}")
         self.emulator_state.setToolTip(tip)
         self.version_state.setText(escape(self.version) if self.version else "—")   # whole: the pill shortens it
         self.version_state.setToolTip(tip)
@@ -632,8 +649,8 @@ class MainWindow(QMainWindow):
         page = style.link(self, userdata.FIRMWARE_PAGE, "PlayStation's firmware page")
         # The version alone (owner, 18-11-2026), as PCSX2 Manager's BIOS line is the dump's name alone
         self.firmware_state.setText(f"<b>{escape(self.firmware)}</b>" if self.firmware else "Uninstalled.")
-        self.firmware_info.set_text(f"Download PS3UPDAT.PUP from {page} and drop it in "
-                                    f"<b>{escape(private(library.firmware_home(self.user_home)))}</b>: the app "
+        self.firmware_info.set_text(f"Download PS3UPDAT.PUP from {page} and put it in "
+                                    f"<b>{escape(private(library.firmware_home(self.user_home)))}</b>. The app "
                                     "installs it. RPCS3 needs the PS3's firmware to start any game.")
         self.firmware_state.setToolTip(f"PS3 firmware {self.firmware or 'none'} in RPCS3's firmware folder: "
                                        f"{self.dev_flash}")
@@ -644,9 +661,9 @@ class MainWindow(QMainWindow):
         where = ", ".join(f"<b>{escape(private(f))}</b>" for f in self.folders)
         self.disc_state.setText(where)
         self.disc_state.setToolTip("\n".join(private(f) for f in self.folders) + f"\n{len(discs)} disc game(s) found.")
-        self.disc_info.set_text(f"Drop your games in {escape(private(self.user_home / library.GAMES_HOME))}, each in a "
-                                "folder of its own (with PS3_GAME and PS3_DISC.SFB). A USB drive or an SD card with a "
-                                "Games/PS3 folder is also checked for content.")
+        self.disc_info.set_text(f"Put your games in {escape(private(self.user_home / library.GAMES_HOME))}, each in a "
+                                "folder of its own with PS3_GAME and PS3_DISC.SFB. The app also looks in the "
+                                "Games/PS3 folder of a USB drive or an SD card.")
         # RPCS3's games folder by its path within RPCS3's own folder (dev_hdd0/game/; the whole path when it is
         # elsewhere) while a game is installed in it, "—" while none is (owner, 24-10-2026); the count and what
         # Install takes in the tip.
@@ -655,8 +672,8 @@ class MainWindow(QMainWindow):
         else:
             self.pkg_state.setText("—")
         self.pkg_state.setToolTip(f"{len(pkgs)} game(s) installed in RPCS3's games folder: {self.hdd0_game}\n"
-                                  "Install takes the folder with your .pkg files (a PSN game also needs its .rap "
-                                  "license beside them); RPCS3 installs them without opening its window.")
+                                  "Install takes the folder with your .pkg files. A PSN game also needs its .rap "
+                                  "license beside them. RPCS3 installs them without opening its window.")
         found = {str(g.eboot) for g in self.games}
         self.steam_box.set_value(str(len(found & set(self.in_steam))))
         self._show_play_time()
@@ -667,7 +684,7 @@ class MainWindow(QMainWindow):
         elif not self.firmware:
             self.pill.set_status("No firmware", "warn", "RPCS3 needs the PS3's firmware to start a game.")
         elif not self.games:
-            self.pill.set_status("No games", "neutral", "Add the folder with your games.")
+            self.pill.set_status("No games", "neutral", "Put your games in Games/PS3.")
         else:
             self.pill.set_status("Ready", "ok", "RPCS3 and its firmware are installed and games were found.")
 
@@ -683,7 +700,7 @@ class MainWindow(QMainWindow):
         times = userdata.play_times(self.rpcs3_home)
         total = sum(seconds for seconds, _ in times.values())
         if not total:
-            self.time_box.set_value("—", "RPCS3 counts the time spent in each game; none yet.")
+            self.time_box.set_value("—", "RPCS3 counts the time spent in each game. There is none yet.")
             return
         titles = {g.title_id: g.title for g in self.games if g.title_id}
         lines = [f"{titles.get(serial, serial)}: {userdata.played(seconds)}"
@@ -697,8 +714,8 @@ class MainWindow(QMainWindow):
         if release is not None:
             self._show_state()
             self._update_buttons()
-            self.note(f"RPCS3 {release.version} is out ({release.published}); a later version of this app brings "
-                      f"it, once it has been tried on the board: {release.url}")
+            self.note(f"RPCS3 {release.version} is out ({release.published}). A later version of this app brings "
+                      f"it, once it has been tried on the board. What is new is at {release.url}")
 
     def chosen(self) -> Game | None:
         """The game whose row is selected."""
@@ -715,7 +732,7 @@ class MainWindow(QMainWindow):
                               else Qt.CheckState.Unchecked)
             box.setToolTip(f"In Steam {self.doubles[str(game.eboot)] + 1} times: Update Steam leaves one"
                            if str(game.eboot) in self.doubles else "In Steam" if str(game.eboot) in self.in_steam else
-                           f"Found again under a new name: in Steam as {self.in_steam.get(self.moved[str(game.eboot)], '?')}; "
+                           f"Found again under a new name. In Steam as {self.in_steam.get(self.moved[str(game.eboot)], '?')}. "
                            "Update Steam brings the shortcut up to date" if str(game.eboot) in self.moved else "Not in Steam")
             self.table.setItem(row, STEAM, box)
             for column, text in ((GAME, game.title), (SERIAL, game.title_id), (VERSION, game.version),
@@ -738,12 +755,12 @@ class MainWindow(QMainWindow):
             box.addItem(text, key)
         if not game.title_id:
             box.setEnabled(False)
-            box.setToolTip("Without an Id in its PARAM.SFO the game has no settings of its own in RPCS3")
+            box.setToolTip("Without an ID in its PARAM.SFO, the game has no settings of its own in RPCS3")
             return box
         current = userdata.read_screen(userdata.game_config(self.rpcs3_home, game.title_id))
         box.setCurrentIndex(max(box.findData(current), 0))
-        box.setToolTip("16:9: the PS3's picture for a wide screen, RPCS3's default. 4:3: the picture for a 4:3 "
-                       "screen, with borders on a wide one. Fill screen: the picture stretched to fill the window.")
+        box.setToolTip("16:9 is the PS3's picture for a wide screen, RPCS3's default. 4:3 is the picture for a 4:3 "
+                       "screen, with borders on a wide one. Fill screen stretches the picture to fill the window.")
         box.currentIndexChanged.connect(lambda _index, g=game, b=box: self.set_screen(g, b.currentData()))
         return box
 
@@ -777,10 +794,10 @@ class MainWindow(QMainWindow):
                                       or str(g.eboot) in self.no_cover for g in add)
         self.steam_button.setEnabled(idle and changed and self.steam_dir is not None and not steam.game_mode())
         if self.steam_dir is None:
-            self.steam_button.setToolTip("Steam was never started on this system: start it once first")
+            self.steam_button.setToolTip("Steam was never started on this system. Start it once first")
         elif steam.game_mode():
-            self.steam_button.setToolTip("In Game Mode (a handheld's Steam session) Steam is the session itself: "
-                                         "change it in Desktop Mode")
+            self.steam_button.setToolTip("In Game Mode (a handheld's Steam session), Steam is the session itself. "
+                                         "Change it in Desktop Mode")
         else:
             self.steam_button.setToolTip(STEAM_TIP)
 
@@ -804,8 +821,8 @@ class MainWindow(QMainWindow):
 
     def on_install(self) -> None:
         if not (self.home / emulator.VERSION / emulator.MEMBER).is_file() and not self._ask(
-                "Install", f"Download RPCS3 {emulator.VERSION} from GitHub (about {emulator.SIZE_MB} MB)?\n\nIt is "
-                f"checked against the SHA-256 this app was tried with before it is installed in {self.home}."):
+                "Install", f"Download RPCS3 {emulator.VERSION} from GitHub (about {emulator.SIZE_MB} MB)?\n\nThe app "
+                f"checks it against the SHA-256 this app was tried with. Then it installs it in {self.home}."):
             return
         home, fetch = self.home, self.fetch
 
@@ -875,11 +892,11 @@ class MainWindow(QMainWindow):
             # RPCS3's window asked before it installed an older firmware; without its window nothing asks.
             self.settings.set("firmware_given", key)
             self.note(f"PS3 firmware {version} in {private(library.firmware_home(self.user_home))} is older than the "
-                      f"installed {self.firmware}: not given to RPCS3.")
+                      f"installed {self.firmware}. The app does not give it to RPCS3.")
             return
         self.settings.set("firmware_given", key)
-        self.note(f"PS3 firmware {version or pup.name} found in {private(library.firmware_home(self.user_home))}: "
-                  "given to RPCS3.")
+        self.note(f"PS3 firmware {version or pup.name} found in {private(library.firmware_home(self.user_home))}. "
+                  "The app gives it to RPCS3.")
         self.install_firmware(pup)
 
     def install_firmware(self, pup: Path) -> None:
@@ -963,7 +980,7 @@ class MainWindow(QMainWindow):
         if self.open_url(STEAM_URL):
             self.note("Steam was opened.")
         else:
-            self.say("Steam could not be opened: xdg-open is missing.", ok=False)
+            self.say("Steam could not be opened. xdg-open is missing.", ok=False)
 
     def rpcs3_command(self, *args: str) -> list[str]:
         """The installed RPCS3 through the run wrapper (from the app folder when it is not installed yet)."""
@@ -980,7 +997,7 @@ class MainWindow(QMainWindow):
         else:
             self.rpcn_state.setText("Off")
             self.rpcn_state.setToolTip("RPCS3's online service, for online play, friends and scores in the games it "
-                                       "supports: RPCN Account sets it up.")
+                                       "supports. RPCN Account sets it up.")
         self._show_rpcn_pill()
 
     def _show_rpcn_pill(self) -> None:
@@ -989,7 +1006,7 @@ class MainWindow(QMainWindow):
         account = self.rpcn_account
         if not account.signs_in:
             self.rpcn_watch.stop()
-            self.rpcn_pill.set_status("RPCN Off", "neutral", "RPCN is off: set it up with RPCN Account.")
+            self.rpcn_pill.set_status("RPCN Off", "neutral", "RPCN is off. Set it up with RPCN Account.")
             return
         self.rpcn_watch.start()
         self._rpcs3_was_running = self.rpcs3_running()
@@ -1001,7 +1018,7 @@ class MainWindow(QMainWindow):
                 self.rpcn_pill.set_status("RPCN Offline", "bad", f"{detail}.")
             else:
                 self.rpcn_pill.set_status("RPCN …", "neutral",
-                                          f"RPCS3 runs; it signs in as {account.npid} when a game starts.")
+                                          f"RPCS3 runs. It signs in as {account.npid} when a game starts.")
             return
         try:
             target = rpcn.parse_server(account.host)
@@ -1015,7 +1032,7 @@ class MainWindow(QMainWindow):
                 rpcn.server_answers(target, connect)
             except rpcn.RpcnError as error:
                 return False, f"{error} RPCS3 cannot sign in now."
-            return True, f"{target} answers: RPCS3 signs in as {npid} when a game starts."
+            return True, f"{target} answers. RPCS3 signs in as {npid} when a game starts."
         if self.rpcn_check.start(job) and self.rpcn_pill.kind not in ("ok", "bad"):
             self.rpcn_pill.set_status("RPCN …", "neutral", f"Asking {target}…")
 
@@ -1097,7 +1114,7 @@ class MainWindow(QMainWindow):
         the address, came up and never started the game)."""
         game = self.chosen()
         if game is None:
-            self.say("Choose a game under Your games first: Start game starts the chosen one in Steam.", ok=False)
+            self.say("Choose a game under Your games first. Start game starts the chosen one in Steam.", ok=False)
             return
         if self.worker.running:
             self.say("Wait until what runs now has finished, then start the game.", ok=False)
@@ -1105,7 +1122,7 @@ class MainWindow(QMainWindow):
         number = (steam.shortcut_number(self.steam_dir, shortcuts.for_game(game))
                   if self.steam_dir is not None and str(game.eboot) in self.in_steam else None)
         if number is None:
-            self.say(f"{game.title} is not in Steam yet: tick it and press Update Steam first.", ok=False)
+            self.say(f"{game.title} is not in Steam yet. Check it and press Update Steam first.", ok=False)
             return
         if self.rpcs3_running():
             self.say(RUNNING_START, ok=False)
@@ -1119,22 +1136,22 @@ class MainWindow(QMainWindow):
             except steam.SteamError as error:
                 return False, f"{title} was not started: {error}"
             return True, f"{title} runs, started through Steam."
-        self._start(f"Starting {title} through Steam (Steam starts first when it does not run)…", job)
+        self._start(f"Starting {title} through Steam, which starts first when it does not run…", job)
 
     def on_update_steam(self) -> None:
         if self.steam_dir is None:
             return
         if not self.run_path.is_file():
-            self.say(f"The shortcuts run {self.run_path}, which is not there: install {APP_NAME} through the "
+            self.say(f"The shortcuts run {self.run_path}, which is not there. Install {APP_NAME} through the "
                      "portal first.", ok=False)
             return
         add, remove = self.steam_plan()
         if add and not self.version:
-            self.say("Install RPCS3 first: the games in Steam start it.", ok=False)
+            self.say("Install RPCS3 first. The games in Steam start it.", ok=False)
             return
         text = f"{len(add)} game(s) in Steam" + (f", {len(remove)} taken out." if remove else ".")
         if self.doubles:
-            text += f"\n{sum(self.doubles.values())} double shortcut(s) taken out: each game stays in Steam once."
+            text += f"\n{sum(self.doubles.values())} double shortcut(s) taken out. Each game stays in Steam once."
         if self.steam_running():
             text += "\n\nSteam closes for it and starts again in the background."
         if not self._ask("Steam", text):
@@ -1171,7 +1188,7 @@ class MainWindow(QMainWindow):
                 missing = [g.title for g in add if str(g.eboot) not in found]
                 if missing:
                     extra.append(f"Read back from Steam's file, {len(add) - len(missing)} of the {len(add)} game(s) "
-                                 f"are there: not {', '.join(missing)}.")
+                                 f"are there. Missing: {', '.join(missing)}.")
             again = " Steam was closed for it and starts again in the background." if restarted else ""
             return True, "\n".join([*notes, f"{len(add)} game(s) in Steam, under Non-Steam in the library"
                                               f"{f'; {len(remove)} taken out' if remove else ''}.{again}", *extra])
@@ -1183,7 +1200,7 @@ class MainWindow(QMainWindow):
         if covers.edit_key(self, self.covers_key, "Update Steam"):
             self.refresh()
             self.say("The SteamGridDB key was changed." if covers.read_key(self.covers_key) else
-                     "The SteamGridDB key was taken out; the covers kept stay in use.")
+                     "The SteamGridDB key was taken out. The app keeps using the covers it already has.")
 
     def resizeEvent(self, event: QResizeEvent) -> None:  # noqa: N802 (Qt override)
         super().resizeEvent(event)

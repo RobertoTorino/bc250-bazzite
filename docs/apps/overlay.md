@@ -19,7 +19,7 @@ A small window that stays on top of your desktop and shows the **AMD BC-250**'s 
 | 12 V input | the board's 12 V input, as the voltage regulator measures it | `bc250_vrm` |
 | VRAM | used / total of the GPU's share of the memory | `amdgpu` |
 | RAM | used / total | `/proc/meminfo` |
-| Refresh | the refresh rate of the screen the window is on | Qt |
+| Screen | the resolution, scale and refresh rate of the screen the window is on | Qt |
 | Fan | the fastest spinning fan. Hover it to see every fan. | `nct6686` and any other fan sensor |
 | CPU temp | Tctl | `k10temp` |
 | GPU temp | edge | `amdgpu` |

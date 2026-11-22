@@ -61,7 +61,7 @@ leave_shared_venv() {
     rm -f "$VENV_USERS/$APP_ID"
     rmdir "$VENV_USERS" 2>/dev/null || true
     if [ -d "$VENV_USERS" ]; then
-        info "Leaving the suite venv: other suite apps still use it"
+        info "Keeping the suite venv: other suite apps still use it"
     else
         info "Removing the suite venv: no other suite app uses it"
         rm -rf "$SHARED_VENV"
@@ -113,7 +113,7 @@ if $UNINSTALL; then
         rm -rf "${CONFIG_DIR:?}/$APP_ID" "${APP_HOME:?}"
     fi
     rmdir "$APP_HOME" 2>/dev/null || true
-    info "$APP_NAME is uninstalled. shadPS4's own folder ($DATA_DIR/shadPS4) and your games were left as they are."
+    info "$APP_NAME is removed. shadPS4's own folder ($DATA_DIR/shadPS4) and your games stay as they are."
     exit 0
 fi
 
@@ -136,7 +136,7 @@ info "Installing $APP_NAME $VERSION"
 # Its settings folder stays: the app adopts the last used folders from it.
 OLD_APP="bazzite-pkgxtractor"
 if [ -e "$DATA_DIR/$OLD_APP" ] || [ -e "$HOME/.local/bin/$OLD_APP" ]; then
-    info "Removing the standalone Bazzite pkgxtractor: extracting lives in this app now (Extract PKG…)"
+    info "Removing the standalone Bazzite pkgxtractor. Extracting is part of this app now (Extract PKG…)"
     rm -f "$HOME/.local/bin/$OLD_APP" "$HOME/.local/bin/$OLD_APP-cli" "$DATA_DIR/applications/$OLD_APP.desktop" \
         "$DESKTOP_DIR/$OLD_APP.desktop"
     rm -rf "${DATA_DIR:?}/$OLD_APP"
@@ -163,7 +163,7 @@ if [ ! -x "$VENV/bin/python" ] || ! "$VENV/bin/python" -c "$VENV_FITS" 2>/dev/nu
     rm -rf "$VENV"
     python3 -m venv "$VENV"
 fi
-info "Installing PyQt6 and cryptography into the venv (downloads ~100 MB the first time)"
+info "Installing PyQt6 and cryptography into the venv. The first time, this downloads ~100 MB"
 "$VENV/bin/python" -m pip install -q --disable-pip-version-check --upgrade pip
 "$VENV/bin/python" -m pip install -q --disable-pip-version-check --upgrade -r "$APP_DIR/requirements.txt"
 "$VENV/bin/python" -c 'import PyQt6.QtWidgets, cryptography' || die "PyQt6 or cryptography does not load from the venv."

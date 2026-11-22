@@ -291,7 +291,8 @@ synthesized background), the video tours and the icons. Start it from the checko
 - **Sys info**, a symbol at the top: a small window with what the system reports about the board: the board, the BIOS
   (with UEFI and Secure Boot), the CPU (model, cores and threads online, top clock, microcode), each GPU (name,
   driver, VRAM, shared memory, clock levels, VBIOS, PCIe link), the memory, the drives with the free space in your
-  home folder, the displays (each output, the monitor's name and its preferred mode), the sound cards, the network
+  home folder, the displays (each output, the monitor's name and its preferred mode), the resolution, refresh rate and scale
+  of each screen in use, the sound cards, the network
   adapters and Bluetooth controllers (driver and link), the USB devices, the input devices (keyboards, mice and
   controllers, each with the bus it is on: USB, Bluetooth, PS/2), the sensors (temperatures, fan speeds,
   power, voltages and currents at that moment) and the OS (version, Bazzite image, kernel, desktop). It is read each time the

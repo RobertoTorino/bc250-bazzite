@@ -1,3 +1,14 @@
+Changelog: 22-11-2026 10:42:37
+
+Fixed. The text of the wiki chapter and of the window now follows the suite's writing standard. Its sentences are short,
+with one fact each. The wiki chapter now uses lists for the values the app shows, the problems a drive can flag, what
+stays empty over USB, what to try on a slow USB link and the drives left out of the rated list. The info text and the
+tooltips of Screenshot, the Test pill, Board link and No SMART over USB now use whole sentences. So do the advice for a
+slow USB link, the firmware update tooltip and the messages for a missing busctl, a missing firmware list and too little
+free space. No labels were renamed. The info text now writes the Health box's “Not reported” with a capital N, as the
+window shows it. The speed test's file is 1 GiB and its space check needs 2 GiB, so the wiki and the tooltip now say
+about 1 GB and about 2 GB. Nothing the app does has changed. No tests changed.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 3.6.1.

@@ -150,8 +150,8 @@ def run_compare(left: Path, right: Path, *, use_hash: bool = False,
 
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Compare two extracted PKG outputs quickly.")
-    parser.add_argument("left", type=Path, help="First extraction folder (e.g. pkgxtractor output)")
-    parser.add_argument("right", type=Path, help="Second extraction folder (e.g. LibOrbisPkg output)")
+    parser.add_argument("left", type=Path, help="First extraction folder (e.g., pkgxtractor output)")
+    parser.add_argument("right", type=Path, help="Second extraction folder (e.g., LibOrbisPkg output)")
     parser.add_argument("--hash", action="store_true", help="Also compare SHA-256 for common files")
     parser.add_argument("--left-filelist", type=Path, default=None)
     parser.add_argument("--right-filelist", type=Path, default=None)

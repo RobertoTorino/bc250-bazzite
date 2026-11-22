@@ -6,11 +6,12 @@
 
 # RPCS3 Manager
 
-Plays PS3 games on the **AMD BC-250** on **Bazzite** with [RPCS3](https://rpcs3.net): installs the RPCS3 build it was
-tried with, installs your PS3 firmware through RPCS3, finds your games and adds them to Steam, so a game starts
-straight away, on the desktop or from Steam's Big Picture Mode. A log keeps what the app did.
+RPCS3 Manager plays PS3 games on the **AMD BC-250** on **Bazzite** with [RPCS3](https://rpcs3.net). It installs the
+RPCS3 build it was tried with. It installs your PS3 firmware through RPCS3. It finds your games and adds them to
+Steam. A game then starts straight away, on the desktop or from Steam's Big Picture Mode. A log keeps what the app
+did.
 
-How to install and use it: [RPCS3 Manager in the manual](https://robertotorino.github.io/bc250-bazzite/apps/rpcs3/).
+How to install and use it: [RPCS3 Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/rpcs3/).
 
 ## Disclaimer
 

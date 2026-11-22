@@ -272,3 +272,4 @@ overvolting
 quickfixes
 Hexxeh
 Renamer
+paramiko

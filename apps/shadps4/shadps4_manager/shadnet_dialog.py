@@ -75,14 +75,14 @@ class ShadNetDialog(QDialog):
         self.result_label.setWordWrap(True)
         lay = QVBoxLayout(self)
         lay.addWidget(hint_label(
-            "shadNet is shadPS4's online service: online trophies, friends and online play in the games it "
+            "shadNet is shadPS4's online service, for online trophies, friends and online play in the games it "
             "supports. shadPS4 signs in by itself when a game starts. No account yet? Fill in a name, a password "
             f"and your email, and press Create account. {style.link(self, SHADNET_PAGE, 'About shadNet')}"))
         lay.addWidget(self.use)
         lay.addLayout(form)
         lay.addWidget(hint_label(
-            "shadPS4 keeps the password as it is in its users.json, and shadNet sends it over the network "
-            "unencrypted: use a password you use nowhere else."))
+            "shadPS4 keeps the password as plain text in its users.json. shadNet sends it over the network "
+            "unencrypted. Use a password you use nowhere else."))
         lay.addWidget(self.result_label)
         lay.addLayout(buttons)
         style.apply(self)

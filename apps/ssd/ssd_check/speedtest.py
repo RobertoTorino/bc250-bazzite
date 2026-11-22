@@ -56,7 +56,7 @@ def measure(folder: Path, size: int = SIZE, block: int = BLOCK, limit: float = L
     except OSError as exc:
         raise SpeedError(f"The test folder cannot be used: {exc.strerror or exc}") from exc
     if free < 2 * size:
-        raise SpeedError(f"Not enough free space on the drive: the test needs {2 * size / 1e9:.1f} GB")
+        raise SpeedError(f"Not enough free space on the drive. The test needs {2 * size / 1e9:.1f} GB")
     path = folder / NAME
     buffer = mmap.mmap(-1, block)               # page aligned, as O_DIRECT needs
     buffer.write(os.urandom(block))

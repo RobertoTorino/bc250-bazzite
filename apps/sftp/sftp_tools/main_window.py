@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         # Connect is a pill beside the states (owner, 26-10-2026): it connects the SFTP Client with the fields in its
         # tab, and reads Disconnect while connected.
         self.connect_pill = Pill("Connect", "SFTP client",
-                                 "Connect to the host filled in under SFTP Client; click again to disconnect.")
+                                 "Connect to the host filled in under SFTP Client. Click again to disconnect.")
         self.connect_pill.setSizePolicy(self.sftp_box.sizePolicy())        # as wide as the boxes beside it
         header.add_second(self.connect_pill)
         self.connect_pill.clicked.connect(self.sftp_tab.toggle_connection)

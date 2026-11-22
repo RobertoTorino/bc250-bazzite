@@ -61,9 +61,11 @@ from .shadnet_dialog import ShadNetDialog
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/shadps4/"
 FOLDER_TIMEOUT = 60
 SHADNET_WATCH_MS = 5000
-STEAM_TIP = "Add the ticked games to Steam and take out the others; Steam closes for it and starts again"
+STEAM_TIP = "Add the checked games to Steam and take out the others. Steam closes for it and starts again"
 START_TIP = "Start the game chosen under Your games through Steam, as its shortcut in Steam does"
-CLEAR_TIP = "Empty the app's log file, with the older ones kept beside it, and the View logs tab"
+CLEAR_TIP = "Empty the app's log file, the older ones beside it and the View logs tab"
+STEAM_ON = "Steam runs and is signed in. The games in Steam can start."
+STEAM_OFF = "Steam does not run or is not signed in. Start Steam and sign in before you start a game."
 RUNNING = "shadPS4 is running: close it first, it writes its own settings over the change when it closes."
 STEAM_URL = "steam://open/games"        # Steam's library; Steam starts when it does not run
 STEAM, GAME, SERIAL, VERSION, FOLDER = range(5)             # the table's columns
@@ -80,8 +82,8 @@ _NUMBERED = re.compile(r"\d+(\.\d+)*")
 
 RUNNING_REMOVE = "shadPS4 is running: close it first, then remove the game."
 RUNNING_START = "shadPS4 is running: close it first, then start the game."
-UNINSTALL_GAME_TIP = ("Delete the game or package chosen under Your games from the disk: a window lists what "
-                      "would go, and you untick what to keep; nothing is deleted before you confirm")
+UNINSTALL_GAME_TIP = ("Delete the game or package chosen under Your games from the disk. A window first lists "
+                      "what would go, and you uncheck what to keep. Nothing is deleted before you confirm")
 UNPACKED_KEY = "packages/unpacked"      # the packages unpacked whole (path|size|time): no longer waiting rows
 PROGRESS_MS = 500                       # how often the line under the tabs counts an unpacking package's files
 
@@ -199,18 +201,23 @@ class MainWindow(QMainWindow):
         header = AppHeader(LOGO_PATH, APP_NAME, __version__)
         # The states on the right of the title row, ending at the middle of the last pill below them (owner,
         # 24-10-2026): a spacer of half that pill's width after them, set whenever the window's size changes.
-        self.pill = StatusText()
+        self.pill = StatusText(name="Installed")
         header.add_action(self.pill)
-        self.shadnet_pill = StatusText()                # shadNet Online, Offline or Off
+        self.shadnet_pill = StatusText(name="shadNet")    # shadNet Online, Offline or Off
         header.add_action(self.shadnet_pill)
-        self.controller = StatusText()                  # beside them: whether a controller is connected
+        self.controller = StatusText(name="Controller")   # beside them: whether a controller is connected
         header.add_action(self.controller)
+        self.steam_state = StatusText(name="Steam")       # and whether Steam runs and is signed in (owner,
+        header.add_action(self.steam_state)               # 22-11-2026): a game in Steam starts only then
+        self._steam_on: bool | None = None
         self.states_spacer = QWidget()
         self.states_spacer.setFixedSize(0, 1)
         header.add_action(self.states_spacer)
         self.controller_timer = QTimer(self)
         self.controller_timer.setInterval(self.CONTROLLER_POLL)
         self.controller_timer.timeout.connect(self.show_controller)
+        self.controller_timer.timeout.connect(self.show_steam)
+        self.show_steam()
         self.controller_timer.start()
         self.refresh_pill = style.action_pill("Refresh", "Click to refresh", "Read the state again and look for games")
         self.refresh_pill.clicked.connect(self.refresh)
@@ -233,12 +240,12 @@ class MainWindow(QMainWindow):
                                                                     f"GitHub (about {emulator.SIZE_MB} MB) and "
                                                                     "check it")
         self.install_pill.clicked.connect(self.on_install)
-        self.remove_pill = style.action_pill("shadPS4", "Uninstall", "Remove the installed shadPS4; its own folder "
-                                                                     "(saves, settings, system modules) stays")
+        self.remove_pill = style.action_pill("shadPS4", "Uninstall", "Remove the installed shadPS4. Its own folder "
+                                                                     "stays, with saves, settings and system modules")
         self.remove_pill.clicked.connect(self.on_remove)
-        self.package_pill = style.action_pill("Games", "Install", "Choose a package file (.pkg: a game, its update "
-                                                                  "or add-on content); Extract PKG unpacks it into "
-                                                                  "a game folder, in the layout shadPS4 loads")
+        self.package_pill = style.action_pill("Games", "Install", "Choose a package file (.pkg) with a game, its "
+                                                                  "update or add-on content. Extract PKG unpacks it "
+                                                                  "into a game folder, in the layout shadPS4 loads")
         self.package_pill.clicked.connect(lambda: self.open_extract())
         self.extract_dialog = None                      # the Extract PKG window while it is open
         # Games Uninstall (owner, 20-11-2026): a pill in place of the Remove game… button under the table
@@ -295,7 +302,7 @@ class MainWindow(QMainWindow):
         columns.addLayout(second, 1)
 
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["In Steam", "Game title", "Id", "Version", "Folder"])
+        self.table.setHorizontalHeaderLabels(["In Steam", "Game title", "ID", "Version", "Folder"])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -311,28 +318,28 @@ class MainWindow(QMainWindow):
         self.table.itemChanged.connect(lambda _item: self._update_buttons())
 
         self.shad_button = QPushButton("shadPS4 settings")
-        self.shad_button.setToolTip("Open shadPS4's own window (Big Picture) for what the app does not set: the "
-                                    "controller's buttons, a game's own settings, its game list")
+        self.shad_button.setToolTip("Open shadPS4's own window (Big Picture) for what the app does not set. That is "
+                                    "the controller's buttons, a game's own settings and its game list")
         self.shad_button.clicked.connect(self.on_open_shadps4)
         self.covers_button = QPushButton("Steam artwork…")
-        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite: with it, Update Steam "
-                                      "gives each game its cover from SteamGridDB in Steam; the wide picture, the "
+        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite. With it, Update Steam "
+                                      "gives each game its cover from SteamGridDB in Steam. The wide picture, the "
                                       "banner and the logo stay the game's own")
         self.covers_button.clicked.connect(self.on_covers)
         self.steam_button = style.primary_button("Update Steam", STEAM_TIP)
         self.steam_button.clicked.connect(self.on_update_steam)
         buttons = QHBoxLayout()
         # What the boxes and Start game do, behind an info symbol (owner, 18-11-2026, in place of a line of text)
-        self.steam_info = InfoButton("A checkmark before a game adds the game to Steam. When the Start game button "
-                                     f"is clicked the game starts from {style.link(self, STEAM_URL, 'Steam')}.",
+        self.steam_info = InfoButton("A checkmark before a game adds the game to Steam. When you click the Start "
+                                     f"game button, the game starts from {style.link(self, STEAM_URL, 'Steam')}.",
                                      "About the games and Steam")
         self.steam_info.opens = lambda _url: self.open_steam()      # the app opens Steam itself (open_steam)
         self.unpack_button = QPushButton("Unpack")
         self.unpack_button.setToolTip("Unpack the chosen package (a PKG row) into its game folder")
         self.unpack_button.clicked.connect(self.on_unpack)
         self.unpack_all_button = QPushButton("Unpack all")
-        self.unpack_all_button.setToolTip("Unpack every package that waits, one after the other: the games first, "
-                                          "then their updates")
+        self.unpack_all_button.setToolTip("Unpack every package that waits, one after the other. The games come "
+                                          "first, then their updates")
         self.unpack_all_button.clicked.connect(self.on_unpack_all)
         buttons.addWidget(self.steam_info)
         buttons.addStretch(1)
@@ -356,8 +363,8 @@ class MainWindow(QMainWindow):
         log_page = QWidget()
         log = QVBoxLayout(log_page)
         log.setContentsMargins(0, 8, 0, 0)
-        log.addWidget(hint_label(f"Everything the app said and did, newest last, and each game started from Steam; "
-                                 f"the same lines are in {escape(private(self.log_path))}, which turns over at 1 MB."))
+        log.addWidget(hint_label(f"Everything the app said and did, newest last, and each game started from Steam. "
+                                 f"The same lines are in {escape(private(self.log_path))}, which turns over at 1 MB."))
         log.addWidget(self.output, 1)
         self.tabs = QTabWidget()
         # The six tabs share the whole width, the last one up to the window\'s margin (owner, 18-11-2026)
@@ -499,6 +506,15 @@ class MainWindow(QMainWindow):
             self.say(text, ok=False)
         self._sound_said = off
 
+    def show_steam(self) -> None:
+        """Steam's state beside the title, green while it runs and is signed in, red otherwise."""
+        on = steam.signed_in(self.steam_dir)
+        if on == self._steam_on:
+            return
+        self._steam_on = on
+        self.steam_state.set_status("Steam signed in" if on else "Steam not signed in", "ok" if on else "bad",
+                                    STEAM_ON if on else STEAM_OFF)
+
     def show_controller(self) -> None:
         """The controller state beside the title: a game started from Steam reads the controller that is there
         when it starts, so the window says when none is (switched off, asleep, not paired)."""
@@ -513,8 +529,8 @@ class MainWindow(QMainWindow):
                                        "game.")
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected: switch it on, or press its PS button to wake "
-                                       "it, before starting a game from Steam. Without one, shadPS4 plays with the "
+                                       "No controller is connected. Switch it on, or press its PS button to wake "
+                                       "it, before you start a game from Steam. Without one, shadPS4 plays with the "
                                        "keyboard only.")
 
     def say(self, text: str, ok: bool = True) -> None:
@@ -624,7 +640,7 @@ class MainWindow(QMainWindow):
         if not self.version:
             self.pill.set_status("Not installed", "warn", "Install shadPS4 first.")
         elif not self.games:
-            self.pill.set_status("No games", "neutral", "Add the folder with your games.")
+            self.pill.set_status("No games", "neutral", "Put your games in Games/PS4.")
         elif not m.complete:
             self.pill.set_status("Modules missing", "warn", "Some games need system modules from your own PS4.")
         else:
@@ -650,7 +666,7 @@ class MainWindow(QMainWindow):
         server = userdata.shadnet_server(self.config)
         if not self.users:
             self.shadnet_state.setText("—")
-            self.shadnet_state.setToolTip("shadPS4 has not run yet: start it once (shadPS4 settings), then set up "
+            self.shadnet_state.setToolTip("shadPS4 has not run yet. Start it once with shadPS4 settings. Then set up "
                                           "your account with shadNet Account.")
         elif signing_in:
             self.shadnet_state.setText(", ".join(f"<b>{escape(u.npid)}</b>" for u in signing_in))
@@ -659,7 +675,7 @@ class MainWindow(QMainWindow):
         else:
             self.shadnet_state.setText("Off")
             self.shadnet_state.setToolTip("shadPS4's online service, for online trophies, friends and online play in "
-                                          "the games it supports: shadNet Account sets it up.")
+                                          "the games it supports. shadNet Account sets it up.")
         self._show_shadnet_pill()
 
     def _signing_in(self) -> list[userdata.User]:
@@ -743,7 +759,7 @@ class MainWindow(QMainWindow):
                               else Qt.CheckState.Unchecked)
             box.setToolTip(f"In Steam {self.doubles[str(game.eboot)] + 1} times: Update Steam leaves one"
                            if str(game.eboot) in self.doubles else "In Steam" if str(game.eboot) in self.in_steam else
-                           f"Found again under a new name: in Steam as {self.in_steam.get(self.moved[str(game.eboot)], '?')}; "
+                           f"Found again under a new name. In Steam as {self.in_steam.get(self.moved[str(game.eboot)], '?')}. "
                            "Update Steam brings the shortcut up to date" if str(game.eboot) in self.moved else "Not in Steam")
             self.table.setItem(row, STEAM, box)
             for column, text in ((GAME, game.title), (SERIAL, game.title_id), (VERSION, game.version),
@@ -804,10 +820,10 @@ class MainWindow(QMainWindow):
                                       for g in add)
         self.steam_button.setEnabled(idle and changed and self.steam_dir is not None and not steam.game_mode())
         if self.steam_dir is None:
-            self.steam_button.setToolTip("Steam was never started on this system: start it once first")
+            self.steam_button.setToolTip("Steam was never started on this system. Start it once first")
         elif steam.game_mode():
-            self.steam_button.setToolTip("In Game Mode (a handheld's Steam session) Steam is the session itself: "
-                                         "change it in Desktop Mode")
+            self.steam_button.setToolTip("In Game Mode (a handheld's Steam session), Steam is the session itself. "
+                                         "Change it in Desktop Mode")
         else:
             self.steam_button.setToolTip(STEAM_TIP)
 
@@ -896,7 +912,7 @@ class MainWindow(QMainWindow):
         try:
             from .extract_dialog import ExtractDialog
         except ImportError as error:                    # cryptography missing: an install from before it
-            self.say(f"Extract PKG needs the cryptography package ({error}): install {APP_NAME} again through the "
+            self.say(f"Extract PKG needs the cryptography package ({error}). Install {APP_NAME} again through the "
                      "portal.", ok=False)
             return
         self.extract_dialog = ExtractDialog(self.settings, self.folders, self, pkgs)
@@ -907,7 +923,7 @@ class MainWindow(QMainWindow):
             self.extract_dialog = None
         if extracted:
             self.refresh()
-            self.note("Extract PKG extracted a package; the games were looked for again.")
+            self.note("Extract PKG extracted a package. The app looked for games again.")
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:  # noqa: N802 (Qt override)
         if any(url.toLocalFile().lower().endswith(".pkg") for url in event.mimeData().urls()):
@@ -936,7 +952,7 @@ class MainWindow(QMainWindow):
         if self.open_url(STEAM_URL):
             self.note("Steam was opened.")
         else:
-            self.say("Steam could not be opened: xdg-open is missing.", ok=False)
+            self.say("Steam could not be opened, because xdg-open is missing.", ok=False)
 
     def on_open_shadps4(self) -> None:
         command = self.shadps4_command("-b")
@@ -1069,7 +1085,7 @@ class MainWindow(QMainWindow):
             failed: list[str] = []
             for n, package in enumerate(todo, 1):
                 what = package.title or package.title_id or package.path.name
-                self.unpacking = (f"Unpacking {n} of {len(todo)}: {what}…" if len(todo) > 1 else
+                self.unpacking = (f"Unpacking {what}, package {n} of {len(todo)}…" if len(todo) > 1 else
                                   f"Unpacking {what}…", (0, 0))
                 folder, game = extract.place(package, unpacked)
                 log.info(f"Unpack: {package.path} ({package.title_id}, {package.kind}) into {folder}.")
@@ -1119,8 +1135,8 @@ class MainWindow(QMainWindow):
         items = [keep.Item(f"path:{package.path}", f"{package.path.name} ({package.title or package.title_id})",
                            (package.path,)) for package in whole]
         if KeepDialog("Delete the packages?", items, self,
-                      lead="The games are unpacked; their packages are not needed to play now. Untick what you "
-                           "want to keep. Nothing is deleted before you press Delete marked.").exec() \
+                      lead="The games are unpacked. You do not need their packages to play now. Uncheck what "
+                           "you want to keep. Nothing is deleted before you press Delete marked.").exec() \
                 != QDialog.DialogCode.Accepted:
             self.note("The packages were kept.")
             return
@@ -1158,13 +1174,13 @@ class MainWindow(QMainWindow):
             except steam.SteamError as error:
                 return False, f"{title} was not started: {error}"
             return True, f"{title} runs, started through Steam."
-        self._start(f"Starting {title} through Steam (Steam starts first when it does not run)…", job)
+        self._start(f"Starting {title} through Steam, which starts first when it does not run…", job)
 
     def on_update_steam(self) -> None:
         if self.steam_dir is None:
             return
         if not self.run_path.is_file():
-            self.say(f"The shortcuts run {self.run_path}, which is not there: install {APP_NAME} through the "
+            self.say(f"The shortcuts run {self.run_path}, which is not there. Install {APP_NAME} through the "
                      "portal first.", ok=False)
             return
         add, remove = self.steam_plan()
@@ -1210,7 +1226,7 @@ class MainWindow(QMainWindow):
                 missing = [g.title for g in add if str(g.eboot) not in found]
                 if missing:
                     extra.append(f"Read back from Steam's file, {len(add) - len(missing)} of the {len(add)} game(s) "
-                                 f"are there: not {', '.join(missing)}.")
+                                 f"are there. Missing: {', '.join(missing)}.")
             again = " Steam was closed for it and starts again in the background." if restarted else ""
             return True, "\n".join([*notes, f"{len(add)} game(s) in Steam, under Non-Steam in the library"
                                               f"{f'; {len(remove)} taken out' if remove else ''}.{again}", *extra])
@@ -1222,7 +1238,7 @@ class MainWindow(QMainWindow):
         if covers.edit_key(self, self.covers_key, "Update Steam"):
             self.refresh()
             self.say("The SteamGridDB key was changed." if covers.read_key(self.covers_key) else
-                     "The SteamGridDB key was taken out; the covers kept stay in use.")
+                     "The SteamGridDB key was taken out. The app still uses the covers it kept.")
 
     def resizeEvent(self, event: QResizeEvent) -> None:  # noqa: N802 (Qt override)
         super().resizeEvent(event)

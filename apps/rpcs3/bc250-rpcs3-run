@@ -19,7 +19,7 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     exit 0
 fi
 [ -x "$APPIMAGE" ] || {
-    echo "RPCS3 is not installed: open RPCS3 Manager and press Install." >&2
+    echo "RPCS3 is not installed. Open RPCS3 Manager and press Install." >&2
     exit 1
 }
 # RPCS3's AppImage mounts itself with its own FUSE library and the system's fusermount (part of Bazzite); without

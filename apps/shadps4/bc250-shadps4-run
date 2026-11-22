@@ -16,7 +16,7 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     exit 0
 fi
 [ -x "$APPIMAGE" ] || {
-    echo "shadPS4 is not installed: open shadPS4 Manager and press Install." >&2
+    echo "shadPS4 is not installed. Open shadPS4 Manager and press Install." >&2
     exit 1
 }
 # shadPS4 takes a folder named "user" in the current folder as its own folder (portable mode), so start it where

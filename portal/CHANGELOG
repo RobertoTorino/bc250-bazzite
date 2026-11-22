@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 11:10:14
+
+Added. Sys info's Display section has a row for each screen the desktop uses, such as DP-1 now. It shows the
+screen's resolution, refresh rate and scale, as the desktop reports them. The preferred mode stays on the output's
+own row. The wiki's Sys info text names it. test_sysinfo.py has a test for it, and test_window.py passes the screens
+to its stand-in.
+
 Changelog: 22-11-2026 10:31:15
 
 Release 26.10.4. Pins bc250-quickfix-v1.7.2, bc250-ppsspp-v5.7.2, bc250-pcsx2-v7.7.2, bc250-password-v1.6.2.

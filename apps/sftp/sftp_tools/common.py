@@ -84,7 +84,7 @@ def trust_unknown_host(parent: QWidget, error: UnknownHostKeyError) -> bool:
     answer = PlainMessageBox.question(
         parent,
         "Trust SSH server?",
-        "Do you trust this server and do you want to add this server to known_hosts?\n\n"
+        "Do you trust this server and want to add it to known_hosts?\n\n"
         f"Server: {error.known_hosts_name}\n"
         f"Host key fingerprint: {error.key.get_fingerprint().hex(':')}",
         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -161,8 +161,8 @@ class TaskRunner(QThread):
 
 PASSWORD_RULES = ("Password advice: 8 characters, 1 uppercase letter, 1 number, 1 special character "
                   "(!@#$%^&*()_+-=[]{}|;:,.<>?.)")
-PASSWORD_ADVICE = ("Your password is unsafe. It is advised to use a password with a minimum length of 8 characters, "
-                   "at least 1 special character, at least 1 capital letter and at least 1 number.")
+PASSWORD_ADVICE = ("Your password is unsafe. Use a password with at least 8 characters, at least 1 special "
+                   "character, at least 1 capital letter and at least 1 number.")
 
 
 def advise_on_password(parent, password: str, key_filename: str) -> None:
@@ -194,7 +194,7 @@ class ConnectionFields(QGroupBox):
         self.password = QLineEdit()
         self.password.setEchoMode(QLineEdit.EchoMode.Password)
         self.password_warning = QLabel(
-            "⚠ Password login is less secure. An SSH key is preferred."
+            "⚠ Password login is less secure. Use an SSH key if you can."
         )
         self.password_warning.setStyleSheet("color: #ffb74d;")
         self.password_warning.setTextFormat(Qt.TextFormat.PlainText)
@@ -205,15 +205,15 @@ class ConnectionFields(QGroupBox):
         self.password_requirements.setWordWrap(True)        # may shrink: it takes no width from the form
         self._update_password_requirements()
         self.password.setToolTip(
-            "Password login is less secure. Use an SSH key where possible; "
-            "with a key, this field is only its passphrase."
+            "Password login is less secure. Use an SSH key where possible. "
+            "With a key, this field is only its passphrase."
         )
         self.password.textChanged.connect(self._update_password_warning)
         self.password.textChanged.connect(self._update_password_requirements)
         self.key_filename = QLineEdit()
         self.key_filename.textChanged.connect(self._update_password_warning)
         self.key_filename.textChanged.connect(self._update_password_requirements)   # a passphrase has no rules
-        self.key_filename.setPlaceholderText("Optional; uses SSH agent/default keys if blank")
+        self.key_filename.setPlaceholderText("Optional. Leave it empty to use the SSH agent or default keys")
         browse_key = QPushButton("Browse…")
         browse_key.clicked.connect(self.select_key)
 

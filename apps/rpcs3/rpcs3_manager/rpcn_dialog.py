@@ -57,8 +57,8 @@ class RpcnDialog(QDialog):
         form.addRow("Token", self.token)
 
         self.create_button = QPushButton("Create account")
-        self.create_button.setToolTip("Create this account on the server (needs the email address): the server "
-                                      "mails the token")
+        self.create_button.setToolTip("Create this account on the server. It needs the email address. The server "
+                                      "then mails the token")
         self.create_button.clicked.connect(self.on_create)
         self.try_button = QPushButton("Try sign-in")
         self.try_button.setToolTip("Sign in once to the server with this name, password and token, and out again")
@@ -82,15 +82,15 @@ class RpcnDialog(QDialog):
         self.result_label.setWordWrap(True)
         lay = QVBoxLayout(self)
         lay.addWidget(hint_label(
-            "RPCN is RPCS3's online service: online play, friends and scores in the games it supports. RPCS3 signs "
-            "in by itself when a game starts. No account yet? Fill in a name, a password and your email, and press "
-            "Create account; the server mails a token, which goes in Token. "
+            "RPCN is RPCS3's online service for online play, friends and scores in the games it supports. RPCS3 "
+            "signs in by itself when a game starts. No account yet? Fill in a name, a password and your email, and "
+            "press Create account. The server mails a token, which goes in Token. "
             f"{style.link(self, RPCN_PAGE, 'About RPCN')}"))
         lay.addWidget(self.use)
         lay.addLayout(form)
         lay.addWidget(hint_label(
-            "The password is kept and sent as RPCS3 does it: scrambled, never as you typed it. The email address is "
-            "sent to the server once, to create the account, and is not kept."))
+            "The app keeps and sends the password scrambled, as RPCS3 does, never as you typed it. The email address "
+            "goes to the server once, to create the account. The app does not keep it."))
         lay.addWidget(self.result_label)
         lay.addLayout(buttons)
         style.apply(self)
@@ -156,7 +156,7 @@ class RpcnDialog(QDialog):
                 rpcn.create_account(server, npid, rpcn.derive_password(typed), email, connect)
             except rpcn.RpcnError as error:
                 return False, str(error)
-            return True, (f"The account {npid} was created on {server}. The server mails a token: fill it in under "
+            return True, (f"The account {npid} was created on {server}. The server mails a token. Fill it in under "
                           "Token and press Save.")
         self._start(f"Creating {npid} on {server}…", job)
 
@@ -190,7 +190,7 @@ class RpcnDialog(QDialog):
                 rpcn.resend_token(server, npid, rpcn.derive_password(typed) if typed else kept, connect)
             except rpcn.RpcnError as error:
                 return False, str(error)
-            return True, f"{server} mails the token of {npid} again: fill it in under Token and press Save."
+            return True, f"{server} mails the token of {npid} again. Fill it in under Token and press Save."
         self._start(f"Asking {server} for the token…", job)
 
     def on_save(self) -> None:
@@ -206,7 +206,7 @@ class RpcnDialog(QDialog):
             self._say(str(error), False)
             return
         if self.running():
-            self._say("RPCS3 is running: close it first, as it writes its own settings back when it ends.", False)
+            self._say("RPCS3 is running. Close it first, because it writes its own settings back when it ends.", False)
             return
         try:
             rpcn.save_account(self.rpcs3_home, server, npid, self._password(), self.token.text().strip(), on)

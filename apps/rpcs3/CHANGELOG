@@ -1,3 +1,28 @@
+Changelog: 22-11-2026 11:29:38
+
+Added. The row beside the title has a new state, Steam. Its dot is green while Steam runs and is signed in, and red when
+it is not, because a game in Steam starts only then. The app looks again every few seconds. The states now show their
+names alone, Installed, RPCN, Controller and Steam, and the dot's color shows the state. Each tooltip opens with the
+state in full, such as Not installed or No controller. The wiki describes the row. test_main_window.py tests the Steam
+state and follows the new order.
+
+Changelog: 22-11-2026 10:48:10
+
+Fixed. The text is rewritten to the writing standard (.claude/writing.md): the wiki chapter, the README, the tooltips,
+hints and messages in the window, the settings' tooltips, the RPCN Account window, the memory card page and the message
+of bc250-rpcs3-run. Sentences are short and hold one fact, the spelling is American English, "tick" is "check", and "the
+manual" is "the wiki". The label of the game table's Id column is renamed to ID. Facts corrected: the wiki said the
+button to use is under the RPCS3 line, but the line names the button, and RPCS3 Install and RPCS3 Uninstall are pills in
+the header. The wiki said Steam in the line under the table is a link, but the link is in the text of the info symbol
+under the table. The No games state said to add the folder with your games, but the folders are fixed, so it now says to
+put your games in Games/PS3. The Clear logs tooltip said that the older log files are kept beside the app's log file.
+Clear logs empties them too, and the tooltip now reads "Empty the app's log file, the older ones beside it and the View
+logs tab". The question before removing a game comes from core, and its line now says "Uncheck" instead of "Untick".
+Nothing the app does has changed. The tests in test_main_window.py that check the column labels, the game folder info
+text, the firmware log lines, the tooltip of a build that was not tried, the info text about the games and Steam, the
+message about the Steam link, the message before Start game and the message about a missing run wrapper follow the new
+wording, and so does the test in test_saves.py that checks the question before deleting saves.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 7.7.1.

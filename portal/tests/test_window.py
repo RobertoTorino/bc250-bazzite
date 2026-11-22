@@ -1160,7 +1160,7 @@ def test_the_sys_info_symbol_opens_one_window_read_each_time(window, qapp, monke
     Copy puts it on the clipboard as text."""
     reads = iter([[("Board", [("Board", "ASRock AMD BC-250")])],
                   [("Board", [("Board", "ASRock AMD BC-250")]), ("BIOS", [("Version", "P5.00")])]])
-    monkeypatch.setattr(mw.sysinfo, "collect", lambda: next(reads))
+    monkeypatch.setattr(mw.sysinfo, "collect", lambda **_: next(reads))
     window.sysinfo_button.click()
     first = window.sysinfo_window
     assert first.isVisible() and [h for h, _ in first.sections] == ["Board"]

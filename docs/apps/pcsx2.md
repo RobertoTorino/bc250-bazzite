@@ -45,10 +45,17 @@ The header has four pills:
 - **PCSX2 Uninstall**
 - **Refresh**, which reads everything again
 
-Beside the title, next to the app's state, you see the controller's state. It says **Controller connected**, or **No
-controller** when none is. The app looks again every few seconds. A game started from Steam reads the controller that
-is connected when it starts. So switch yours on before you start a game, or press its PS button to wake it. When
-Steam starts a game without a controller, the app also says so in a desktop notification.
+Beside the title is a row of states. Each shows its name and a colored dot. Green is good, orange is a
+warning and red is a problem. Hold the pointer over a state to read it in full.
+
+- **Installed**: the app's own state, such as **Not installed**
+- **Controller**: **Controller connected**, or **No controller** when none is, checked again every few seconds
+- **Steam**: green while Steam runs and is signed in, red when it is not
+
+A game started from Steam reads the controller that is connected when it starts. So switch yours on before you
+start a game, or press its PS button to wake it. When Steam starts a game without a controller, the app also says
+so in a desktop notification. A game in Steam starts only while Steam is signed in. So start Steam and sign in
+before you start a game.
 
 Under the header are links to **PCSX2's release notes** and to this wiki. Below them is a second row of four pills.
 Each pill shows what it is for on top, and what it does under it:

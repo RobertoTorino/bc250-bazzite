@@ -84,7 +84,7 @@ if $UNINSTALL; then
         info "Keeping your profiles and settings in $CONFIG_DIR/$APP_ID and the log in $APP_HOME"
         rmdir "$APP_HOME" 2>/dev/null || true
     fi
-    info "$APP_NAME is uninstalled. Trusted hosts in ~/.ssh/known_hosts were left untouched."
+    info "Removed $APP_NAME. Your trusted hosts in ~/.ssh/known_hosts stay as they were."
     exit 0
 fi
 
@@ -122,7 +122,7 @@ if [ ! -x "$VENV/bin/python" ] || ! "$VENV/bin/python" -c "$VENV_FITS" 2>/dev/nu
     rm -rf "$VENV"
     python3 -m venv "$VENV" || die "Could not create the app's Python venv."
 fi
-info "Installing PyQt6 and paramiko into the venv (downloads ~100 MB the first time)"
+info "Installing PyQt6 and paramiko into the venv. The first time, this downloads ~100 MB."
 "$VENV/bin/python" -m pip install -q --disable-pip-version-check --upgrade pip
 "$VENV/bin/python" -m pip install -q --disable-pip-version-check --upgrade -r "$APP_DIR/requirements.txt"
 "$VENV/bin/python" -c 'import PyQt6.QtWidgets, paramiko' || die "PyQt6 or paramiko does not load from the venv."

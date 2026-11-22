@@ -196,6 +196,16 @@ def shell_line(folder: PurePath, commands: tuple[str, ...]) -> str:
     return " && ".join([f"cd {shlex.quote(str(folder))}", *commands])
 
 
+def screens_in_use() -> dict[str, sysinfo.Mode]:
+    """The screens the desktop shows now, by output name, as Qt reports them: the resolution in pixels (its size
+    times the scale), the refresh rate and the scale."""
+    found = {}
+    for screen in QApplication.screens():
+        scale, size = screen.devicePixelRatio(), screen.geometry().size()
+        found[screen.name()] = (round(size.width() * scale), round(size.height() * scale), screen.refreshRate(), scale)
+    return found
+
+
 def short_name(name: str) -> str:
     """The name on a tile: the suite's prefix is understood in the portal ("BC-250 Board Test": "Board Test")."""
     for prefix in ("BC-250 ", "BC250 "):
@@ -1249,7 +1259,7 @@ class MainWindow(QMainWindow):
         """The Sys info window, read again each time it opens; one at a time."""
         if self.sysinfo_window is None:
             self.sysinfo_window = SysInfoDialog(self)
-        self.sysinfo_window.fill(sysinfo.collect())
+        self.sysinfo_window.fill(sysinfo.collect(in_use=screens_in_use()))
         self.sysinfo_window.show()
         self.sysinfo_window.raise_()
         self.sysinfo_window.activateWindow()

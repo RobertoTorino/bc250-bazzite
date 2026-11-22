@@ -208,9 +208,9 @@ def unpack(package: Package, output_root: Path, replace_update: bool = False, pr
                                "over a folder that is there.")
         folder = final.with_name(f".{final.name}.new")  # the new update first, beside the old one
         shutil.rmtree(folder, ignore_errors=True)
-        log(f"Replacing the update in {final}: extracting into {folder.name} first.")
+        log(f"Replacing the update in {final}. The new one goes into {folder.name} first.")
     elif update:
-        log(f"An update for the game in {final.with_name(final.name.removesuffix('-UPDATE'))}: extracting into "
+        log(f"An update for the game in {final.with_name(final.name.removesuffix('-UPDATE'))}. It goes into "
             f"{final.name}, which shadPS4 lays over the game.")
     with PKG() as pkg:
         try:
@@ -232,7 +232,7 @@ def unpack(package: Package, output_root: Path, replace_update: bool = False, pr
         for index in range(total):
             ok, reason = pkg.can_extract_file(index)
             if not ok:
-                errors.append(f"File {index + 1}: {reason}; the extraction stopped there.")
+                errors.append(f"File {index + 1}: {reason}. The extraction stopped there.")
                 progress(index + 1, total)
                 break
             try:
@@ -255,8 +255,8 @@ def unpack(package: Package, output_root: Path, replace_update: bool = False, pr
     if folder != final:
         if errors:
             shutil.rmtree(folder, ignore_errors=True)
-            raise ExtractError(f"The new update could not be extracted ({len(errors)} file(s) failed): the update in "
-                               f"{final.name} stays as it was.")
+            raise ExtractError(f"The new update could not be extracted, because {len(errors)} file(s) failed. The "
+                               f"update in {final.name} stays as it was.")
         old = final.with_name(f".{final.name}.old")
         shutil.rmtree(old, ignore_errors=True)
         final.rename(old)

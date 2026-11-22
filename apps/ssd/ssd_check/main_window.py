@@ -27,15 +27,15 @@ from bc250_core.widgets import (AppHeader, InfoButton, MetricBox, Pill, RoundedT
 
 from . import APP_NAME, LOGO_PATH, __version__, smart, speedtest
 
-ABOUT = ("<b>Health</b>: how much of its rated life the drive has left, by the drive's own count. An NVMe drive "
-         "reports how much it has used (health is 100 minus that); a SATA SSD reports it in an attribute of its "
-         "maker's, so a drive without a known one shows “not reported”.<br><b>Power cycles</b>: how often "
-         "the drive was switched on. <b>Power-on hours</b>: how long it has run in all.<br>udisks reads the "
-         "values from the drive now and then; Refresh shows what it read last. A drive on USB often hides them "
-         "behind its adapter: then only its specs show.<br><b>Update</b>: whether fwupd knows a newer firmware "
-         "for the drive. <b>Serial</b>: hidden; click it to show it.<br><b>Board link</b>: the most the board's "
-         "port carries, orange when that is less than the drive can do. <b>Rated</b>: the maker's read and write "
-         "speeds. <b>Measured</b>: click it to measure what the drive does in this board.")
+ABOUT = ("<b>Health</b> is how much of its rated life the drive has left, by the drive's own count. An NVMe drive "
+         "reports how much it has used, and health is 100 minus that. A SATA SSD reports it in an attribute its "
+         "maker chose. A drive without a known attribute shows “Not reported”.<br><b>Power cycles</b> is how "
+         "often the drive was turned on. <b>Power-on hours</b> is how long it has run in all.<br>udisks reads the "
+         "values from the drive now and then. Refresh shows what it read last. A drive on USB often hides them "
+         "behind its adapter. Then only its specs show.<br><b>Update</b> says whether fwupd knows a newer "
+         "firmware for the drive. <b>Serial</b> is hidden until you click it.<br><b>Board link</b> is the most "
+         "the board's port carries. It turns orange when that is less than the drive can do. <b>Rated</b> is the "
+         "maker's read and write speed. Click <b>Measured</b> to measure what the drive does in this board.")
 WARNINGS = {"spare": "little spare space left", "temperature": "too hot or too cold", "degraded": "less reliable",
             "readonly": "read-only", "volatile_mem": "its backup power failed", "pmr_readonly": "read-only",
             "failing": "SMART says the drive is failing"}
@@ -150,8 +150,8 @@ class MainWindow(QMainWindow):
         self.drive_box.currentIndexChanged.connect(self.drive_chosen)
         # Screenshot on the same line (owner, 05-11-2026): the window with its values, as a PNG.
         self.shot_button = QPushButton("Screenshot")
-        self.shot_button.setToolTip("Save the window with the values it shows as a PNG in your Pictures folder "
-                                    "(the serial stays hidden)")
+        self.shot_button.setToolTip("Save the window with the values it shows as a PNG in your Pictures folder. "
+                                    "The serial stays hidden")
         self.shot_button.clicked.connect(self.screenshot)
         self.shot_note = hint_label("")
         drive_row = QHBoxLayout()
@@ -283,8 +283,8 @@ class MainWindow(QMainWindow):
             self.state.set_status("Partly read", "warn", drive.error)
         elif not drive.smart:
             self.state.set_status("No SMART over USB", "neutral",
-                                  "udisks cannot read the SMART values through the drive's USB adapter (some "
-                                  "adapters pass them only to smartctl, which needs root): health, power cycles, "
+                                  "udisks cannot read the SMART values through the drive's USB adapter. Some "
+                                  "adapters pass them only to smartctl, which needs root. Health, power cycles, "
                                   "hours and the data read and written stay empty")
         elif drive.health is None:
             self.state.set_status("Health not reported", "neutral")
@@ -325,12 +325,12 @@ class MainWindow(QMainWindow):
         if held is None:
             verdict = ""
         elif drive.rated_read:
-            verdict = (f"The drive is rated {drive.rated_read:,} MB/s read: "
-                       + ("the board holds it back." if held else "the board's port is fast enough for it."))
+            verdict = (f"The drive is rated {drive.rated_read:,} MB/s read. "
+                       + ("The board holds it back." if held else "The board's port is fast enough for it."))
         else:
-            verdict = (f"The drive's fastest link carries about {drive.drive_mbps:,} MB/s: "
-                       + ("the board holds it back." if held else "the board's port is fast enough for it."))
-        self.board_box.set_value(drive.board_link or NONE, f"The board's port: {board}. {verdict}" if board else "")
+            verdict = (f"The drive's fastest link carries about {drive.drive_mbps:,} MB/s. "
+                       + ("The board holds it back." if held else "The board's port is fast enough for it."))
+        self.board_box.set_value(drive.board_link or NONE, f"The board's port is {board}. {verdict}" if board else "")
         self.board_box.set_colour(ORANGE if held else GREEN if held is False else GREY)
         if drive.rated_read is not None:
             self.rated_box.set_value(rw(drive.rated_read, drive.rated_write),
@@ -350,16 +350,16 @@ class MainWindow(QMainWindow):
         if busy:
             self.measure_pill.set_value("Testing…", "Writing a test file and reading it back")
         elif folder is None and drive.mounts:
-            self.measure_pill.set_value(NONE, "The test needs a folder on the drive that you may write to; its file "
-                                              "systems belong to root (another system's, for example)")
+            self.measure_pill.set_value(NONE, "The test needs a folder on the drive that you can write to. Its "
+                                              "file systems belong to root (another system's, for example)")
         elif folder is None:
-            self.measure_pill.set_value(NONE, "Mount the drive to measure it: the test needs a folder on it")
+            self.measure_pill.set_value(NONE, "Mount the drive to measure it. The test needs a folder on it")
         elif drive.path in self.measured:
             self.measure_pill.set_value(rw(*self.measured[drive.path]),
                                         "Measured in this board. Click to measure again.")
         else:
-            self.measure_pill.set_value("Test", "Click to measure: writes a test file of 1 GB to the drive, reads it "
-                                                "back and deletes it. A few seconds.")
+            self.measure_pill.set_value("Test", "Click to measure. SSD Check writes a test file of about 1 GB to the "
+                                                "drive, reads it back and deletes it. It takes a few seconds.")
 
     def measure(self) -> None:
         """The chosen drive's read and write speed in this board, off the GUI thread."""

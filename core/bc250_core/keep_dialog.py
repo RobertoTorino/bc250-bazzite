@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The keep page as a window of its own, for the BC250 suite's desktop apps (owner, 03-11-2026, from the Windows
 Portable Suite's managers, 01-11-2026: before deleting anything, let the user decide what to keep): what would go,
-a row each with its size, every row ticked (Delete) at first; unticking a row keeps it; Delete marked deletes the
-rows still ticked, Cancel deletes nothing. The rows are core's keep.Item; the caller deletes what is chosen
+a row each with its size, every row checked (Delete) at first; unchecking a row keeps it; Delete marked deletes the
+rows still checked, Cancel deletes nothing. The rows are core's keep.Item; the caller deletes what is chosen
 (keep.chosen) off the window's thread."""
 
 from __future__ import annotations
@@ -15,11 +15,11 @@ from . import keep
 
 
 class KeepDialog(QDialog):
-    """*items* are shown as they are and changed in place: a row's tick is its Delete mark. exec() answers Accepted
+    """*items* are shown as they are and changed in place: a row's check is its Delete mark. exec() answers Accepted
     for Delete marked (only with a row still marked), Rejected for Cancel."""
 
     def __init__(self, title: str, items: Sequence[keep.Item], parent: QWidget | None = None,
-                 lead: str = "Untick what you want to keep. Nothing is deleted before you press Delete marked."):
+                 lead: str = "Uncheck what you want to keep. Nothing is deleted before you press Delete marked."):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setMinimumWidth(520)

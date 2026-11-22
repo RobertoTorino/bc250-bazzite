@@ -1,3 +1,23 @@
+Changelog: 22-11-2026 11:29:38
+
+Added. The row beside the title has a new state, Steam. Its dot is green while Steam runs and is signed in, and red when
+it is not, because a game in Steam starts only then. The app looks again every few seconds. The states now show their
+names alone, Installed, shadNet, Controller and Steam, and the dot's color shows the state. Each tooltip opens with the
+state in full, such as Not installed or No controller. The wiki describes the row. test_main_window.py tests the Steam
+state and follows the new order.
+
+Changelog: 22-11-2026 10:47:25
+
+Fixed. The text of the wiki chapter, the README, the installer, the run wrapper and the window's tooltips, hints and
+messages was rewritten to the writing standard, with short sentences, one fact each, and lists. The games table's column
+Id is now ID. The wiki said Install downloads about 31 MB, and the app's download is about 32 MB. Extract PKG's line
+under Output and the wiki said to add a folder with Add folder, a button the app no longer has. They now say to extract
+into one of the game folders to see the game in the list. The No games tooltip said to add the folder with your games,
+and now says to put them in Games/PS4. The Clear logs tooltip said that the older log files are kept beside the app's
+log file. Clear logs empties them too, and the tooltip now reads "Empty the app's log file, the older ones beside it and
+the View logs tab". The question before removing a game comes from core, and its line now says "Uncheck" instead of
+"Untick". Nothing the app does has changed. The tests test_main_window.py and test_saves.py follow the new wording.
+
 Changelog: 21-11-2026 19:56:43
 
 Release 7.6.1.

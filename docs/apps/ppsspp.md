@@ -32,9 +32,15 @@ The header has four pills:
 - **PPSSPP Uninstall**
 - **Refresh**, which reads everything again
 
-Beside the title you see the app's state. Next to it, you see the controller's state. It says **Controller
-connected**, or **No controller** when none is connected. The app looks again every few seconds. A game started
-from Steam reads the controller that is connected when the game starts. So switch your controller on first.
+Beside the title is a row of states. Each shows its name and a colored dot. Green is good, orange is a
+warning and red is a problem. Hold the pointer over a state to read it in full.
+
+- **Installed**: the app's own state, such as **Not installed**
+- **Controller**: **Controller connected**, or **No controller** when none is, checked again every few seconds
+- **Steam**: green while Steam runs and is signed in, red when it is not
+
+A game started from Steam reads the controller that is connected when it starts. So switch your controller on
+first. A game in Steam starts only while Steam is signed in. So start Steam and sign in before you start a game.
 
 Under the header are the links to **PPSSPP's release notes** and to this wiki. A second row of four pills follows.
 Each pill shows what it is for on top and what it does under it:

@@ -483,7 +483,7 @@ class ExtractionWorker(QObject):
 
         output_folder, update = extraction_target(output_folder, folder_name, pkg_category(pkg))
         if update:
-            self.log(f"An update (CATEGORY gp) for the game in {output_folder.with_name(sanitized)}: extracting into "
+            self.log(f"An update (CATEGORY gp) for the game in {output_folder.with_name(sanitized)}. It goes into "
                      f"{output_folder.name}, which shadPS4 lays over the game.")
         else:
             self.log("Creating TITLE_ID extraction subfolder...")
@@ -494,7 +494,7 @@ class ExtractionWorker(QObject):
             # The new update goes into a folder beside the old one and takes its place only when it is complete.
             output_folder = final_folder.with_name(f".{final_folder.name}.new")
             shutil.rmtree(output_folder, ignore_errors=True)
-            self.log(f"Replacing the update in {final_folder}: extracting into {output_folder.name} first.")
+            self.log(f"Replacing the update in {final_folder}. The new one goes into {output_folder.name} first.")
         elif has_entries:
             self.log("Guardrail: target output folder is not empty.")
             self.log(f"Target folder: {output_folder}")
@@ -788,21 +788,19 @@ class ExtractDialog(QDialog):
         if not text:
             self.output_note.setText("")
         elif any(same_path(Path(text), folder) for folder in self.game_folders):
-            self.output_note.setText("A game folder of shadPS4: an extracted game shows up in the list.")
+            self.output_note.setText("A game folder of shadPS4. An extracted game shows up in the list.")
         elif self.game_folders:
-            self.output_note.setText("Not one of shadPS4's game folders: add it (Add folder…) to see the game in "
-                                     "the list, or extract into " + ", ".join(str(f) for f in self.game_folders)
-                                     + ".")
+            self.output_note.setText("Not one of shadPS4's game folders. To see the game in the list, extract into "
+                                     + ", ".join(str(f) for f in self.game_folders) + ".")
         else:
-            self.output_note.setText("shadPS4 has no game folder yet: add this one (Add folder…) to see the game "
-                                     "in the list.")
+            self.output_note.setText("shadPS4 has no game folder yet, so the game does not show up in the list.")
 
     def is_busy(self) -> bool:
         return self._thread is not None
 
     def closeEvent(self, event: QCloseEvent) -> None:  # noqa: N802 (Qt override)
         if self.is_busy():
-            QMessageBox.information(self, window_title(TITLE), "An extraction is running: close this window when "
+            QMessageBox.information(self, window_title(TITLE), "An extraction is running. Close this window when "
                                                                "it has finished.")
             event.ignore()
             return

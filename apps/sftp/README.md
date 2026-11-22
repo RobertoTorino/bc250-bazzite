@@ -6,11 +6,11 @@
 
 # BC-250 SFTP Tools
 
-An SFTP client and an SSH server manager for the **AMD BC-250** on **Bazzite**: move files between your computer
-and the board (or any SFTP server) with a transfer queue, and start, stop and configure the board's `sshd` from
-the other side.
+An SFTP client and an SSH server manager for the **AMD BC-250** on **Bazzite**. It moves files between your
+computer and the board, or any SFTP server, with a transfer queue. From the other computer, it also starts, stops
+and configures the board's `sshd`.
 
-How to install and use it: [BC-250 SFTP Tools in the manual](https://robertotorino.github.io/bc250-bazzite/apps/sftp/).
+How to install and use it: [BC-250 SFTP Tools in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/sftp/).
 
 ## License
 

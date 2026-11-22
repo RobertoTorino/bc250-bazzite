@@ -46,7 +46,7 @@ class SettingsDialog(QDialog):
         self.logging_max_mb.setSuffix(" MB")
         self.logging_max_mb.setValue(settings.logging_max_mb)
         self.logging_max_mb.setToolTip(
-            "Maximum log file size before rotation. Log is kept in 3 rolling backup files."
+            "The log rotates when it reaches this size. The app keeps 3 old log files."
         )
 
         self.overwrite = QComboBox()
@@ -98,7 +98,7 @@ class SettingsDialog(QDialog):
         self.filter_invalid_chars = QCheckBox("Filter invalid Windows filename characters")
         self.filter_invalid_chars.setChecked(settings.filter_invalid_chars)
         self.filter_invalid_chars.setToolTip(
-            "Replaces invalid characters (: ? < > | * \") with a safe character when downloading files"
+            "A download replaces the characters : ? < > | * \" in file names with a safe character"
         )
         self.char_replacement = QLineEdit(settings.invalid_char_replacement)
         self.char_replacement.setMaxLength(1)

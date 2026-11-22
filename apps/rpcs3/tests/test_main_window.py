@@ -139,8 +139,8 @@ def test_before_installing(qapp, folders):
     window.place_states()                               # the states end at the middle of the last pill (owner)
     window.centralWidget().layout().activate()
     centre = window.refresh_pill.mapTo(window, window.refresh_pill.rect().center()).x()
-    right = window.controller.mapTo(window, window.controller.rect().topRight()).x()
-    assert abs(right - centre) <= 8 and window.pill.x() < window.rpcn_pill.x() < window.controller.x()
+    right = window.steam_state.mapTo(window, window.steam_state.rect().topRight()).x()   # Steam last
+    assert abs(right - centre) <= 8 and window.pill.x() < window.rpcn_pill.x() < window.controller.x() < window.steam_state.x()
     assert "RPCS3's release notes" in window.intro.text() and emulator.RELEASE_PAGE in window.intro.text()
     assert ">Wiki</a>" in window.intro.text() and "Manual" not in window.intro.text()
     assert "Game Mode" not in window.intro.text()
@@ -177,7 +177,7 @@ def test_installed_with_firmware_and_games(qapp, folders):
     assert not window.install_pill.isEnabled() and window.remove_pill.isEnabled() and window.package_pill.isEnabled()
     head = window.table.horizontalHeader().model()
     assert [head.headerData(c, Qt.Orientation.Horizontal) for c in range(6)] == [
-        "In Steam", "Game title", "Id", "Version", "Folder", "Screen setting"]
+        "In Steam", "Game title", "ID", "Version", "Folder", "Screen setting"]
     assert window.table.item(1, 2).text() == "NPUB00002" and window.table.item(1, 4).text() == "NPUB00002"
     assert window.table.item(1, 4).toolTip() == str(folders["rpcs3_home"] / "dev_hdd0" / "game" / "NPUB00002")
     assert window.table.item(0, 2).text() == "BLUS00001"                        # the disc game in Games/PS3 first
@@ -394,15 +394,15 @@ def test_the_steam_link(qapp, folders):
     window.steam_info.click()
     label = window.steam_info.popup.findChild(QLabel)
     assert re.sub(r"<[^>]+>", "", label.text()) == ("A checkmark before a game adds the game to Steam. Screen setting "
-                                                    "sets how it fills the screen. When the Start game button is "
-                                                    "clicked the game starts from Steam.")
+                                                    "sets how it fills the screen. Start game starts the chosen game "
+                                                    "from Steam.")
     assert f"href='{STEAM_URL}'" in label.text() and not label.openExternalLinks()
     label.linkActivated.emit(STEAM_URL)
     assert opened == [STEAM_URL] and "Steam was opened." in window.output.toPlainText()
     window.close()
     window = _window(folders, open_url=lambda url: False)
     window.open_steam()
-    assert window.running.text() == "Steam could not be opened: xdg-open is missing."
+    assert window.running.text() == "Steam could not be opened. xdg-open is missing."
     window.close()
 
 
@@ -472,8 +472,8 @@ def test_the_apps_own_game_folders(qapp, folders, tmp_path, monkeypatch):
     text = window.disc_state.text()
     assert text == "<b>~/Games/PS3</b>, <b>~/sd/Games/PS3</b>"                 # what goes there: the info symbol
     assert window.disc_state.toolTip() == "~/Games/PS3\n~/sd/Games/PS3\n2 disc game(s) found."
-    assert window.disc_info.text_.startswith("Drop your games in ~/Games/PS3, each in a folder of its own")
-    assert "Games/PS3 folder is also checked" in window.disc_info.text_ and str(tmp_path) not in window.disc_info.text_
+    assert window.disc_info.text_.startswith("Put your games in ~/Games/PS3, each in a folder of its own")
+    assert "looks in the Games/PS3 folder" in window.disc_info.text_ and str(tmp_path) not in window.disc_info.text_
     assert "folders" not in window.settings.DEFAULTS and "forget:" not in text
     window.close()
 
@@ -499,7 +499,7 @@ def test_the_firmware_is_taken_from_the_apps_folder(qapp, folders, tmp_path, mon
         time.sleep(0.01)
     assert log.read_text().strip() == f"--headless --installfw {pup}"
     assert window.settings.get("firmware_given") == library.file_key(pup)
-    assert "PS3 firmware 4.92 found in ~/Games/PS3/Firmware: given to RPCS3." in window.output.toPlainText()
+    assert "PS3 firmware 4.92 found in ~/Games/PS3/Firmware. The app gives it to RPCS3." in window.output.toPlainText()
     _wait(window, qapp)
     log.unlink()
     window.refresh()
@@ -511,7 +511,7 @@ def test_the_firmware_is_taken_from_the_apps_folder(qapp, folders, tmp_path, mon
     pup.write_bytes(_pup("4.91"))                                               # older: nothing asks, not given
     window.refresh()
     assert not log.exists() and window.settings.get("firmware_given") == library.file_key(pup)
-    assert "PS3 firmware 4.91 in ~/Games/PS3/Firmware is older than the installed 4.92: not given to RPCS3." \
+    assert "PS3 firmware 4.91 in ~/Games/PS3/Firmware is older than the installed 4.92. The app does not give it to RPCS3." \
         in window.output.toPlainText()
     window.close()
 
@@ -666,7 +666,7 @@ def test_no_steam_game_mode_or_no_wrapper(qapp, folders, monkeypatch):
     window = _window(folders)
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
-    assert "install RPCS3 Manager through the portal first" in window.running.text()
+    assert "Install RPCS3 Manager through the portal first" in window.running.text()
     assert not window.worker.running
     window.close()
 
@@ -913,8 +913,8 @@ def test_another_build_installed_than_the_app_brings(qapp, folders):
     (folders["home"] / "current").symlink_to("0.0.43-20133")
     window = _window(folders)
     assert window.emulator_state.text() == "Installed. Uninstall with the Uninstall button." and window.emulator_box.value.text() == "0.0.43"
-    assert window.emulator_state.toolTip() == ("RPCS3 0.0.43-20133 is in use; it was not tried on the board. This "
-                                               f"version of the app was tried with {emulator.VERSION}: Install puts "
+    assert window.emulator_state.toolTip() == ("RPCS3 0.0.43-20133 is in use. It was not tried on the board. This "
+                                               f"version of the app was tried with {emulator.VERSION}. Install puts "
                                                "it back in use.")
     assert window.install_pill.isEnabled()
     window.refresh()
@@ -1036,7 +1036,7 @@ def test_start_game_starts_the_chosen_game_through_steam(qapp, folders, monkeypa
     window.table.selectRow(0)
     title = window.chosen().title
     tabs.tabBarClicked.emit(start)                                           # chosen, but not in Steam yet
-    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet: tick it and press Update Steam "
+    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet. Check it and press Update Steam "
                                                       "first.")
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
@@ -1155,4 +1155,20 @@ def test_a_game_in_steam_more_than_once_is_said_and_update_steam_leaves_one(qapp
     left = [i for i in steam.read_vdf(path.read_bytes())["shortcuts"].values() if shortcuts.ours(i)]
     assert len(left) == 1 and window.doubles == {} and not window.steam_button.isEnabled()
     assert window.table.item(0, 0).toolTip() == "In Steam"
+    window.close()
+
+
+def test_the_steam_state_follows_the_sign_in(qapp, folders, monkeypatch):
+    """Steam beside the title (owner, 22-11-2026): a green dot while Steam runs and is signed in, a red one
+    otherwise, looked at again with the controller."""
+    import rpcs3_manager.main_window as module
+    signed = [False]
+    monkeypatch.setattr(module.steam, "signed_in", lambda folder: signed[0])
+    window = _window(folders)
+    assert window.steam_state.shown() == "Steam" and window.steam_state.kind == "bad"
+    assert window.steam_state.toolTip() == "Steam not signed in\n" + module.STEAM_OFF
+    assert window.pill.shown() == "Installed" and window.controller.shown() == "Controller"
+    signed[0] = True
+    window.show_steam()
+    assert window.steam_state.kind == "ok" and window.steam_state.toolTip() == "Steam signed in\n" + module.STEAM_ON
     window.close()

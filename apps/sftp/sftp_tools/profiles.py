@@ -30,7 +30,7 @@ class ConnectionProfileStore:
             data = json.loads(self.path.read_text(encoding="utf-8"))
             profiles = data["profiles"]
             if not isinstance(profiles, list):
-                raise ValueError("The profiles entry must be a list.")
+                raise ValueError('The "profiles" entry must be a list.')
             return [self._parse_profile(item) for item in profiles]
         except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
             raise ValueError(f"Could not read connection profiles: {error}") from error

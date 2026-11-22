@@ -61,10 +61,10 @@ def summarize_delta(before: dict, after: dict) -> str:
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Compare two compare_report JSON files (before vs after).")
+    parser = argparse.ArgumentParser(description="Compare two compare_report JSON files (before vs. after).")
     parser.add_argument("before", type=Path, help="Path to the before report JSON")
     parser.add_argument("after", type=Path, help="Path to the after report JSON")
-    parser.add_argument("--out", type=Path, default=None, help="Optional output txt file")
+    parser.add_argument("--out", type=Path, default=None, help="Optional output text file")
     args = parser.parse_args(argv)
 
     text = summarize_delta(load_report(args.before), load_report(args.after))

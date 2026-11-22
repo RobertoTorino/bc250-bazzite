@@ -1,3 +1,9 @@
+Changelog: 22-11-2026 11:10:14
+
+Added. The Refresh row is now the Screen row. It shows the resolution, scale and refresh rate of the screen the
+window is on, as the desktop reports them. A Refresh row you hid stays hidden as the Screen row. The wiki's table
+names the new row. test_overlay.py checks the new value.
+
 Changelog: 21-11-2026 21:12:00
 
 Release 4.6.2.

@@ -52,37 +52,37 @@ SETTINGS: tuple[Setting, ...] = (
     Setting("renderer", PICTURE, "Renderer", "Video", "Renderer", "Vulkan", CHOICE, RENDERERS,
             "How RPCS3 draws: Vulkan on the BC-250. OpenGL is slower and helps only when Vulkan fails."),
     Setting("scale", PICTURE, "Resolution scale", "Video", "Resolution Scale", "100", CHOICE, SCALES,
-            "The size RPCS3 draws the picture at, in percent of the PS3's 1280 × 720: 150 % fills a 1080p screen "
+            "The size RPCS3 draws the picture at, in percent of the PS3's 1280 × 720. 150 % fills a 1080p screen "
             "sharply, 300 % a 4K one. A higher one asks more of the GPU and breaks some games."),
     Setting("anisotropy", PICTURE, "Anisotropic filtering", "Video", "Anisotropic Filter Override", "0", CHOICE,
-            ANISOTROPY, "Sharper textures seen at an angle, such as a road ahead; As the game leaves it to the game."),
+            ANISOTROPY, "Sharper textures seen at an angle, such as a road ahead. As the game leaves it to the game."),
     Setting("msaa", PICTURE, "Anti-aliasing (MSAA)", "Video", "MSAA", "Auto", CHOICE, MSAA,
-            "Smooths jagged edges as the game asks for it; Off draws without, faster."),
+            "Smooths jagged edges as the game asks for it. Off draws without it, which is faster."),
     Setting("vsync", PICTURE, "VSync", "Video", "VSync Mode", "Disabled", CHOICE, VSYNC,
-            "Waits for the screen's refresh before showing a frame: no tearing, a little more delay. Adaptive "
-            "waits only while the game keeps up."),
+            "Waits for the screen's refresh before it shows a frame. That stops tearing and adds a little delay. "
+            "Adaptive waits only while the game keeps up."),
     Setting("framelimit", PICTURE, "Frame limit", "Video", "Frame limit", "Auto", CHOICE, FRAME_LIMITS,
-            "How many frames a second RPCS3 lets a game draw: Automatic follows the game, As the PS3 its own "
-            "pace."),
+            "How many frames a second RPCS3 lets a game draw. Automatic follows the game, and As the PS3 keeps "
+            "the PS3's own pace."),
     Setting("scaling", PICTURE, "Output scaling", "Video", "Output Scaling Mode", "Bilinear", CHOICE, SCALING,
-            "How the drawn picture is scaled to the screen: Bilinear smooth, Nearest sharp pixels, FidelityFX "
-            "Super Resolution AMD's upscaler, sharper from a lower resolution scale."),
+            "How RPCS3 scales the drawn picture to the screen. Bilinear is smooth, and Nearest keeps sharp pixels. "
+            "FidelityFX Super Resolution is AMD's upscaler, sharper from a lower resolution scale."),
     Setting("stretch", PICTURE, "Fill the screen", "Video", "Stretch To Display Area", "false", SWITCH,
             tip="The picture stretched to fill the window for every game that has no Screen setting of its own "
                 "in the Your games tab."),
     Setting("ppu", EMULATION, "PPU decoder", "Core", "PPU Decoder", "Recompiler (LLVM)", CHOICE, PPU,
-            "How the PS3's main processor is run: the recompiler is fast, the interpreter exact and slow."),
+            "How RPCS3 runs the PS3's main processor. The recompiler is fast, the interpreter exact and slow."),
     Setting("spu", EMULATION, "SPU decoder", "Core", "SPU Decoder", "Recompiler (LLVM)", CHOICE, SPU,
-            "How the PS3's SPU cores are run: the LLVM recompiler is fastest once a game's code is compiled, "
-            "ASMJIT compiles quicker, an interpreter is slow."),
+            "How RPCS3 runs the PS3's SPU cores. The LLVM recompiler is fastest once it has compiled a game's "
+            "code. ASMJIT compiles quicker. An interpreter is slow."),
     Setting("audio", SOUND, "Sound output", "Audio", "Renderer", "Cubeb", CHOICE, AUDIO,
-            "Through which library RPCS3 plays sound; Cubeb is RPCS3's own choice on Linux."),
+            "The library RPCS3 plays sound through. Cubeb is RPCS3's own choice on Linux."),
     Setting("volume", SOUND, "Volume", "Audio", "Master Volume", "100", PERCENT, top=200,
-            tip="The game's sound, in percent; above 100 louder than the game."),
+            tip="The game's sound, in percent. Above 100 is louder than the game."),
     Setting("buffering", SOUND, "Buffering", "Audio", "Enable Buffering", "true", SWITCH,
-            tip="Sound kept a little ahead so it does not crackle; off, less delay."),
+            tip="Keeps the sound a little ahead, so it does not crackle. Off gives less delay."),
     Setting("trophies", MESSAGES, "Trophy messages", "Miscellaneous", "Show trophy popups", "true", SWITCH,
-            tip="A message in the game when a trophy is won."),
+            tip="A message in the game when you win a trophy."),
     Setting("shaders", MESSAGES, "Shader compilation message", "Miscellaneous", "Show shader compilation hint",
             "false", SWITCH, tip="A message in the game while RPCS3 compiles shaders, which it does the first "
                                  "time a game shows something new."),

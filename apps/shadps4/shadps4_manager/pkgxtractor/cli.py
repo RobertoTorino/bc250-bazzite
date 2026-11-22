@@ -26,7 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Extract a package (.pkg) file into the shadPS4 folder layout.")
     parser.add_argument("pkg_file", type=Path, help="Path to the PKG file to extract")
     parser.add_argument("output_folder", type=Path, nargs="?", default=None,
-                        help="Output directory (default: the PKG file's folder)")
+                        help="Output directory. The default is the PKG file's folder")
     parser.add_argument("--salvage", action="store_true",
                         help="Skip entries with invalid metadata instead of aborting")
     parser.add_argument("--preview-only", action="store_true",
@@ -115,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"Preflight failed for file {index + 1} ({reason})")
                 if args.salvage:
                     continue
-                print("Aborting extraction (use --salvage to skip bad entries).")
+                print("Aborting extraction. Use --salvage to skip bad entries.")
                 return 1
             try:
                 pkg.extract_files(index)

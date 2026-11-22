@@ -164,7 +164,7 @@ def test_the_tab_exports_imports_and_deletes(qapp, stick, tmp_path, monkeypatch)
     page.import_file(tmp_path / "one.zip")                                      # there already: it asks first
     assert "on the disk already" in asked[0] and page.status.text() == "Nothing was imported."
     page.on_delete()
-    assert "export it first" in asked[1] and len(page.saves) == 1               # No: nothing deleted
+    assert "Export it first" in asked[1] and len(page.saves) == 1               # No: nothing deleted
     monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
     page.table.selectRow(0)
     page.on_delete()
