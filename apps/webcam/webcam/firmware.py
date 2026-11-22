@@ -114,7 +114,7 @@ def check(model: str, data: bytes) -> None:
     if not data:
         raise FirmwareError("The file is empty.")
     if len(data) > MAX_SIZE:
-        raise FirmwareError(f"The file is {len(data) // 1024} KiB: too large for the camera's firmware.")
+        raise FirmwareError(f"The file is {len(data) // 1024} KiB. That is too large for the camera's firmware.")
     found = known(data)
     if found and found.model != model:
         raise FirmwareError(f"This is the firmware of another camera ({found.name}).")
@@ -145,6 +145,6 @@ def download(model: str, home: Path | None = None, get: Get = _get) -> Path:
         reason = getattr(exc, "reason", None) or exc
         raise FirmwareError(f"The download from {pinned.source} failed: {reason}.") from None
     if len(data) != pinned.size or hashlib.sha256(data).hexdigest() != pinned.sha256:
-        raise FirmwareError(f"The file from {pinned.source} is not the expected one (size or SHA-256 differs), so it "
-                            "was not used.")
+        raise FirmwareError(f"The file from {pinned.source} is not the expected one. Its size or SHA-256 differs, so "
+                            "the app did not use it.")
     return store(model, data, home)

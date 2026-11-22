@@ -17,9 +17,9 @@ from collections.abc import Callable
 SERVICE, PATH, INTERFACE = "org.kde.KWin", "/VirtualKeyboard", "org.kde.kwin.VirtualKeyboard"
 PROPERTIES = "org.freedesktop.DBus.Properties"
 ANY_INPUT = 2                   # KWin's VirtualKeyboardVisibility::AnyInput
-NOT_CHOSEN = ("No on-screen keyboard is chosen for the desktop: choose Plasma Keyboard in System Settings, Keyboard, "
-              "Virtual Keyboard, then press R3 again.")
-NO_KWIN = "The on-screen keyboard is KDE's, on a Wayland desktop: this desktop does not offer it."
+NOT_CHOSEN = ("The desktop has no on-screen keyboard chosen. Choose Plasma Keyboard in System Settings, Keyboard, "
+              "Virtual Keyboard. Then press R3 again.")
+NO_KWIN = "This desktop does not offer the on-screen keyboard. It is KDE's, on a Wayland desktop."
 
 # (interface, method, arguments) -> the reply's arguments; raises KeyboardError on an error reply
 Call = Callable[[str, str, list], list]

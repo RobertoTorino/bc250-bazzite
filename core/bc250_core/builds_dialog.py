@@ -79,10 +79,10 @@ class BuildsDialog(QDialog):
         self.use_pill = pill("Use", "Put in use", f"Put the chosen build in use: {emulator} and the games in Steam "
                                                   "start it from then on")
         self.use_pill.clicked.connect(self.on_use)
-        self.delete_pill = pill("Delete", "Remove build", "Delete the chosen build; the one in use stays")
+        self.delete_pill = pill("Delete", "Remove build", "Delete the chosen build. The one in use stays")
         self.delete_pill.clicked.connect(self.on_delete)
-        self.custom_pill = pill("Add", "Custom build", f"Add an {emulator} AppImage of your own as a build; it is "
-                                                       "not checked")
+        self.custom_pill = pill("Add", "Custom build", f"Add your own {emulator} AppImage as a build. The app "
+                                                       "does not check it")
         self.custom_pill.clicked.connect(self.on_custom)
         self.remote_table = _table(["Version", "Name", "Date", "Kind"])
         self.remote_table.itemSelectionChanged.connect(self._update_buttons)
@@ -110,7 +110,7 @@ class BuildsDialog(QDialog):
                 row.addWidget(each, 1)
             grid.addLayout(row, 2, column)
         grid.setRowStretch(1, 1)
-        self.where = QLabel(f"Builds are kept in {private(home)}")
+        self.where = QLabel(f"The app keeps the builds in {private(home)}")
         self.where.setStyleSheet("color:palette(placeholder-text);")
         self.where.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.status = WrappedLabel()
@@ -253,7 +253,7 @@ class BuildsDialog(QDialog):
             return
         self.load()
         self._select(build.version)
-        self.say(f"{build.version} was added; Use puts it in use. It is your own file and was not checked.")
+        self.say(f"{build.version} was added. Use puts it in use. It is your own file, and the app did not check it.")
         self.changed.emit()
 
     def on_refresh(self) -> None:
@@ -280,11 +280,11 @@ class BuildsDialog(QDialog):
         if build is None or not self.download_pill.isEnabled():
             return
         size = f" (about {round(build.size / (1 << 20))} MB)" if build.size else ""
-        text = f"Download {self.emulator} {build.version}{size} from GitHub?\n\nIt is checked against its SHA-256 " \
-               f"before it is installed beside the other builds."
+        text = f"Download {self.emulator} {build.version}{size} from GitHub?\n\nThe app checks it against its " \
+               f"SHA-256. Then it installs it beside the other builds."
         if self.kind(build) != builds.TESTED:
-            text += (f"\n\nThis build was not tried on the board: this version of the app was tried with "
-                     f"{self.tested.version}, which stays one click away.")
+            text += (f"\n\nThis build was not tried on the board. This version of the app was tried with "
+                     f"{self.tested.version}. That build stays one click away.")
         if QMessageBox.question(self, window_title("Download"), text) != QMessageBox.StandardButton.Yes:
             return
         install = self.install
@@ -305,7 +305,7 @@ class BuildsDialog(QDialog):
             self.say(f"{self.emulator} {build.version} was not installed: {private(error)}", ok=False)
             return
         self._select(build.version)
-        self.say(f"{self.emulator} {build.version} is installed; Use puts it in use.")
+        self.say(f"{self.emulator} {build.version} is installed. Use puts it in use.")
         self.changed.emit()
 
     def _select(self, version: str) -> None:
@@ -317,7 +317,7 @@ class BuildsDialog(QDialog):
     def done(self, result: int) -> None:  # noqa: D401 (Qt override)
         """Closing waits for a download that runs (it would be cut off half way)."""
         if self.worker.running:
-            self.say("Wait until the download is finished.", ok=False)
+            self.say("Wait until the download finishes.", ok=False)
             return
         super().done(result)
 

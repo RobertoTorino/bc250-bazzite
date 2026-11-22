@@ -62,19 +62,20 @@ class FullPicture(QWidget):
                                               self.screenshot)
         self.record_button = self._button(row, RECORD, "Record what shows as an MP4 in your Videos folder, and stop "
                                                        "it (R)", self.record)
-        self.gray_button = self._button(row, GRAY, "Black and white, or color again; remembered (G)", self.gray)
-        self.zoom_out_button = self._button(row, "Zoom −", "Zoom out (−, or the mouse wheel)",
+        self.gray_button = self._button(row, GRAY, "Black and white, or color again. The app remembers your choice (G)",
+                                        self.gray)
+        self.zoom_out_button = self._button(row, "Zoom −", "Zoom out (−, mouse wheel)",
                                             lambda: self.zoomed.emit(-1))
-        self.zoom_in_button = self._button(row, "Zoom +", "Zoom in: 1x, 1.5x, 2x, 3x and 4x (+, or the mouse wheel); "
-                                                          "the arrow keys or a drag move the zoomed picture",
+        self.zoom_in_button = self._button(row, "Zoom +", "Zoom in: 1x, 1.5x, 2x, 3x and 4x (+, mouse wheel). The "
+                                                          "arrow keys or a drag move the zoomed picture",
                                            lambda: self.zoomed.emit(1))
-        self.mode_down_button = self._button(row, "Mode −", "The mode before (PageUp); not while it records",
+        self.mode_down_button = self._button(row, "Mode −", "The mode before (PageUp). Not while it records",
                                              lambda: self.mode_step.emit(-1))
-        self.mode_up_button = self._button(row, "Mode +", "The next mode (PageDown); not while it records",
+        self.mode_up_button = self._button(row, "Mode +", "The next mode (PageDown). Not while it records",
                                            lambda: self.mode_step.emit(1))
         row.addStretch(1)
-        self.close_button = self._button(row, "Close", "Back to the window (Esc); a recording stops and is kept",
-                                         self.close)
+        self.close_button = self._button(row, "Close", "Back to the window (Esc). A recording stops, and the app "
+                                                       "keeps it", self.close)
         column.addLayout(row)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 

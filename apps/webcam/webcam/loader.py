@@ -145,9 +145,9 @@ def load(boot: Camera, firmware: bytes, *, open_device: Callable[[Path], object]
         return Outcome(False, str(exc))
     except OSError as exc:
         if exc.errno in (errno.EACCES, errno.EPERM):
-            return Outcome(False, "Your user may not use the camera yet: Allow access gives it the camera.")
+            return Outcome(False, "Your user may not use the camera yet. Allow access gives it the camera.")
         if exc.errno == errno.ENOENT:
-            return Outcome(False, "The camera is gone: it was unplugged, or something else loaded its firmware.")
+            return Outcome(False, "The camera is gone. Someone unplugged it, or something else loaded its firmware.")
         return Outcome(False, f"The upload failed: {exc.strerror or exc}.")
     ready = wait_ready(boot, find, before, timeout_s, sleep)
     if ready is None:

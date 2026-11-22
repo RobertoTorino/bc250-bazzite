@@ -1,3 +1,12 @@
+Changelog: 22-11-2026 20:45:14
+
+Fixed. The Beta note in README.md and on the wiki's Home page is now two sentences, the same as the portal's.
+
+Changelog: 22-11-2026 20:40:33
+
+Fixed. The rewrite-text workflow no longer runs the whole ./test.sh for core's unit. It runs core's own tests, and the
+tests of each app, dev app or the portal that name a string the rewrite changed.
+
 Changelog: 22-11-2026 18:49:28
 
 Fixed. The release workflow's portal job stopped with "release not found" right after the app releases were made,

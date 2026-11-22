@@ -66,3 +66,13 @@ a line says otherwise.
   apply it again.
 - **A message that only a test reads** may be reworded. Change the test with it, also a test that runs only where the
   native core is built (PS Remote Play's `test_stream.py` and `test_senkusha.py`).
+
+## Decided during the rewrite (owner, 22-11-2026)
+
+- **The Beta note** reads "The suite is in active development. Features and layout may still change between
+  releases." in the portal, the root README and the wiki's Home page.
+- **The category tooltips** in the portal's `CATEGORY_HINTS` set the wording. `docs/apps/categories.md` takes it when
+  its own unit is rewritten.
+- **An app's README introduction** may stay as a list when it keeps every fact of the old one.
+- **Code comments, docstrings and an installer's comment header** keep their words, also where the window's text now
+  spells a term another way, such as "bootloader".

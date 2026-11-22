@@ -33,7 +33,7 @@ EXAMPLE = ROOT / "images" / "wallpaper-example.webp"
 USE_EXAMPLE = "wallpaper-example"       # in the state folder of a portal up to 21.0.2: the example was chosen
 NONE = "wallpaper-none"                 # in the portal's state folder: no wallpaper was chosen
 RULES = (f"A wallpaper must be a PNG, JPEG or WebP picture of at least {MIN_WIDTH} x {MIN_HEIGHT} pixels, "
-         "in 16:9 (as 1920 x 1080, 2560 x 1440 or 3840 x 2160).")
+         "in 16:9. Examples are 1920 x 1080, 2560 x 1440 and 3840 x 2160.")
 
 
 def problem(path: Path) -> str:

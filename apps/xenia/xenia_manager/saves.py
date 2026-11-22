@@ -175,8 +175,8 @@ def import_saves(home: Path, file: Path) -> str:
     names = zip_saves(file)
     root = save_folder(home)
     if root is None:
-        raise SaveError("Xenia has no profile yet to keep a save under: start Xenia once (Xenia settings) and make "
-                        "one, then import again.")
+        raise SaveError("Xenia has no profile yet to keep a save under. Start Xenia once with Xenia settings and "
+                        "make a profile. Then import again.")
     try:
         with zipfile.ZipFile(file) as archive:
             found, headers = _members(archive)

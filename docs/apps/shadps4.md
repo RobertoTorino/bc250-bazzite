@@ -208,6 +208,10 @@ from SteamGridDB](covers.md) says how to get the key, how a game is looked up an
 - a game's own settings
 - shadPS4's game list
 
+**Exit shadPS4**, the first button under the games, closes shadPS4 from the app. Use it when the line under the tabs
+asks you to close shadPS4 first. The button is on only while shadPS4 runs. A click ends shadPS4 at once, with no
+question. A game that is running ends without saving.
+
 #### A game in Steam more than once
 
 The app checks whether a game has more than one shortcut in Steam. When one has, the line under the tabs names the

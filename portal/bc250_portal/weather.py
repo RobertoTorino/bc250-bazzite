@@ -106,12 +106,12 @@ def http_fetch(user_agent: str) -> Fetch:
         except urllib.error.HTTPError as exc:
             reason = _reason(exc)
             if exc.code in BUSY:
-                raise WeatherError(f"Open-Meteo is unavailable for now ({exc.code}: {reason}).") from exc
+                raise WeatherError(f"Open-Meteo is unavailable for now. It answered {exc.code}, {reason}.") from exc
             raise WeatherError(f"Open-Meteo answered {exc.code}: {reason}.") from exc
         except (urllib.error.URLError, OSError) as exc:
-            raise WeatherError("Open-Meteo cannot be reached: check the network.") from exc
+            raise WeatherError("The portal cannot reach Open-Meteo. Check the network.") from exc
         except ValueError as exc:
-            raise WeatherError("Open-Meteo's answer could not be read.") from exc
+            raise WeatherError("The portal could not read Open-Meteo's answer.") from exc
     return fetch
 
 

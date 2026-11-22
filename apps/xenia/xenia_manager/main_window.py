@@ -48,8 +48,9 @@ from .games import Game, scan
 from .saves_page import SavesPage
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/xenia/"
-STEAM_TIP = "Add the ticked games to Steam and take out the others; Steam closes for it and starts again"
+STEAM_TIP = "Add the checked games to Steam and take out the others. Steam closes for it and starts again"
 START_TIP = "Start the game chosen under Your games through Steam, as its shortcut in Steam does"
+EXIT_TIP = "End Xenia at once, with no question. A game that is running ends without saving"
 CLEAR_TIP = "Empty the app's log file, the older ones beside it and the View logs tab"
 STEAM_ON = "Steam runs and is signed in. The games in Steam can start."
 STEAM_OFF = "Steam does not run or is not signed in. Start Steam and sign in before you start a game."
@@ -65,8 +66,8 @@ NOT_INSTALLED = "Not installed. Install it with the Install button."
 INSTALLED = "Installed. Uninstall with the Uninstall button."
 VERSIONS_TIP = "Put another installed Xenia build in use, or download one in the version manager"
 RUNNING_START = "Xenia is running. Close it first, then start the game."
-UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk: a window lists what would go, and you "
-                      "untick what to keep; nothing is deleted before you confirm")
+UNINSTALL_GAME_TIP = ("Delete the game chosen under Your games from the disk. A window first lists what would go, "
+                      "and you uncheck what to keep. Nothing is deleted before you confirm")
 
 class XeniaSettings(SettingsStore):
     DEFAULTS: dict = {}
@@ -94,8 +95,8 @@ class MainWindow(QMainWindow):
                  steam_running=steam.steam_running, newer_release=emulator.newer_release,
                  covers_home: Path | None = None, covers_get: covers.Get = covers._get, covers_key: Path | None = None,
                  user_home: Path | None = None, drives: Callable[[], list[Path]] = library.removable_drives,
-                 xenia_home: Path | None = None, xenia_running=emulator.running, log_path: Path | None = None,
-                 open_url=xdg_open,
+                 xenia_home: Path | None = None, xenia_running=emulator.running, xenia_end=emulator.end,
+                 log_path: Path | None = None, open_url=xdg_open,
                  devices: Path = controllers.DEVICES,
                  steam_play=steam.play):
         """*home*: where the app installs Xenia; *xenia_home*: Xenia's own folder, with its settings file;
@@ -114,6 +115,7 @@ class MainWindow(QMainWindow):
         self.home = home or emulator.emulator_home()
         self.xenia_home = xenia_home or emulator.xenia_home()
         self.xenia_running = xenia_running
+        self.xenia_end = xenia_end
         self.steam_dir = steam_dir if steam_dir is not None else steam.find_steam()
         self.run_path = run or bin_home() / shortcuts.RUN_NAME
         self.fetch = fetch
@@ -161,6 +163,7 @@ class MainWindow(QMainWindow):
         self.controller_timer.setInterval(self.CONTROLLER_POLL)
         self.controller_timer.timeout.connect(self.show_controller)
         self.controller_timer.timeout.connect(self.show_steam)
+        self.controller_timer.timeout.connect(self.show_exit)
         self.show_steam()
         self.controller_timer.start()
         self.states_spacer = QWidget()
@@ -186,7 +189,7 @@ class MainWindow(QMainWindow):
         self.install_pill = style.action_pill("Xenia", "Install", f"Download Xenia {emulator.VERSION} from GitHub "
                                                                   "and check it")
         self.install_pill.clicked.connect(self.on_install)
-        self.remove_pill = style.action_pill("Xenia", "Uninstall", "Remove the installed Xenia; its settings, saves "
+        self.remove_pill = style.action_pill("Xenia", "Uninstall", "Remove the installed Xenia. Its settings, saves "
                                                                    "and installed content stay")
         self.remove_pill.clicked.connect(self.on_remove)
         # Games Uninstall (owner, 20-11-2026): a pill in place of the Remove game… button under the table
@@ -248,24 +251,30 @@ class MainWindow(QMainWindow):
         self.table.itemChanged.connect(lambda _item: self._update_buttons())
         self.table.itemSelectionChanged.connect(self._update_buttons)
 
+        # Exit Xenia (owner, 22-11-2026): the first button of the row, on while Xenia runs; a click ends it at once
+        self.exit_button = QPushButton("Exit Xenia")
+        self.exit_button.setToolTip(EXIT_TIP)
+        self.exit_button.clicked.connect(self.on_exit_xenia)
+        self.show_exit()
         self.xenia_button = QPushButton("Xenia settings")
-        self.xenia_button.setToolTip("Open Xenia's own window for what the Settings tab does not set: its other "
-                                     "settings, profiles and installed content")
+        self.xenia_button.setToolTip("Open Xenia's own window for what the Settings tab does not set. It has "
+                                     "Xenia's other settings, profiles and installed content")
         self.xenia_button.clicked.connect(self.on_open_xenia)
         self.covers_button = QPushButton("Steam artwork…")
-        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite: with it, Update Steam "
+        self.covers_button.setToolTip("The SteamGridDB API key, one for the whole suite. With it, Update Steam "
                                       "gives each game its cover, banner and logo from SteamGridDB in Steam")
         self.covers_button.clicked.connect(self.on_covers)
         self.steam_button = style.primary_button("Update Steam", STEAM_TIP)
         self.steam_button.clicked.connect(self.on_update_steam)
         buttons = QHBoxLayout()
         # What the boxes and Start game do, behind an info symbol (owner, 18-11-2026, in place of a line of text)
-        self.steam_info = InfoButton("A checkmark before a game adds the game to Steam. When the Start game button "
-                                     f"is clicked the game starts from {style.link(self, STEAM_URL, 'Steam')}.",
+        self.steam_info = InfoButton("A checkmark before a game adds the game to Steam. When you click the Start game "
+                                     f"button, the game starts from {style.link(self, STEAM_URL, 'Steam')}.",
                                      "About the games and Steam")
         self.steam_info.opens = lambda _url: self.open_steam()      # the app opens Steam itself (open_steam)
         buttons.addWidget(self.steam_info)
         buttons.addStretch(1)
+        buttons.addWidget(self.exit_button)
         buttons.addWidget(self.xenia_button)
         buttons.addWidget(self.covers_button)
         buttons.addWidget(self.steam_button)
@@ -286,7 +295,7 @@ class MainWindow(QMainWindow):
         log_page = QWidget()
         log = QVBoxLayout(log_page)
         log.setContentsMargins(0, 8, 0, 0)
-        log.addWidget(hint_label(f"Everything the app said and did, newest last; the same lines are in "
+        log.addWidget(hint_label(f"Everything the app said and did, newest last. The same lines are in "
                                  f"{escape(private(self.log_path))}, which turns over at 1 MB."))
         log.addWidget(self.output, 1)
         self.tabs = QTabWidget()
@@ -419,8 +428,8 @@ class MainWindow(QMainWindow):
                                        "reads it.")
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected: switch it on, or press its PS button to wake "
-                                       "it, before starting a game from Steam.")
+                                       "No controller is connected. Switch it on, or press its PS button to wake "
+                                       "it, before you start a game from Steam.")
 
     def say(self, text: str, ok: bool = True) -> None:
         """What the window has to say: the line under the tabs, the View logs tab and the log file."""
@@ -455,17 +464,17 @@ class MainWindow(QMainWindow):
             self.emulator_state.setText(INSTALLED)
             self.emulator_box.set_value(self.version)
             if self.version != pinned:
-                tip = (f"Xenia {self.version} is in use; it was not tried on the board. This version of the app was "
-                       f"tried with {pinned}: Install puts it back in use.")
+                tip = (f"Xenia {self.version} is in use. It was not tried on the board. This version of the app was "
+                       f"tried with {pinned}. Install puts that build back in use.")
                 if not self._pin_noted:
                     self.note(tip)
                     self._pin_noted = True
             else:
-                tip = (f"Xenia {pinned}, the build this version of the app was tried with: Xenia Canary, experimental "
-                       "on Linux, so not every game starts")
+                tip = (f"Xenia {pinned}, the build this version of the app was tried with. It is Xenia Canary, "
+                       "which is experimental on Linux. Not every game starts")
         if self.newer is not None:
             tip += (f"\nXenia {self.newer.version} is out ({self.newer.published}). A later version of this app "
-                    f"brings it, once it has been tried on the board: {self.newer.url}")
+                    f"brings a newer build, once it has been tried on the board.\nWhat is new: {self.newer.url}")
         self.emulator_state.setToolTip(tip)
         self.version_state.setText(escape(self.version) if self.version else "—")   # whole: the pill shortens it
         self.version_state.setToolTip(tip)
@@ -473,9 +482,10 @@ class MainWindow(QMainWindow):
         # The app's own folders (owner, 03-11-2026): the home folder's, and a removable drive's when it has one.
         where = ", ".join(f"<b>{escape(private(f))}</b>" for f in self.folders)
         self.folders_state.setText(where)
-        self.folders_info.set_text(f"Drop your games in {escape(private(self.user_home / library.GAMES_HOME))}, .ISO, "
-                                   "unpacked discs, .zar archives, Games on Demand and Arcade packages. A USB drive "
-                                   "or an SD card with a Games/XBOX360 folder is also checked for content.")
+        self.folders_info.set_text(f"Put your games in {escape(private(self.user_home / library.GAMES_HOME))}. They "
+                                   "can be disc images (.iso), unpacked discs, .zar archives, and Games on Demand and "
+                                   "Arcade packages. The app also looks in a Games/XBOX360 folder on a USB drive or SD "
+                                   "card.")
         self.folders_state.setToolTip("\n".join(private(f) for f in self.folders))
         found = {str(g.file) for g in self.games}
         self.steam_box.set_value(str(len(found & set(self.in_steam))))
@@ -491,8 +501,8 @@ class MainWindow(QMainWindow):
         self.newer = release
         if release is not None:
             self._show_state()
-            self.note(f"Xenia {release.version} is out ({release.published}); a later version of this app brings it, "
-                      f"once it has been tried on the board: {release.url}")
+            self.note(f"Xenia {release.version} is out ({release.published}). A later version of this app brings a "
+                      f"newer build, once it has been tried on the board. What is new: {release.url}")
 
     def _fill_table(self) -> None:
         self.table.blockSignals(True)
@@ -545,9 +555,9 @@ class MainWindow(QMainWindow):
                                       or str(g.file) in self.no_cover for g in add)
         self.steam_button.setEnabled(idle and changed and self.steam_dir is not None and not steam.game_mode())
         if self.steam_dir is None:
-            self.steam_button.setToolTip("Steam was never started on this system: start it once first")
+            self.steam_button.setToolTip("Steam was never started on this system. Start it once first")
         elif steam.game_mode():
-            self.steam_button.setToolTip("In Game Mode Steam is the session itself: change it in Desktop Mode")
+            self.steam_button.setToolTip("In Game Mode, Steam is the session itself. Change it in Desktop Mode")
         else:
             self.steam_button.setToolTip(STEAM_TIP)
 
@@ -571,8 +581,8 @@ class MainWindow(QMainWindow):
 
     def on_install(self) -> None:
         if not (self.home / emulator.VERSION / emulator.MEMBER).is_file() and not self._ask(
-                "Install", f"Download Xenia {emulator.VERSION} from GitHub (about {emulator.SIZE_MB} MB)?\n\nIt is "
-                f"checked against the SHA-256 this app was tried with before it is installed in {self.home}."):
+                "Install", f"Download Xenia {emulator.VERSION} from GitHub (about {emulator.SIZE_MB} MB)?\n\nThe app "
+                f"checks the file against the SHA-256 it was tried with.\nThen it installs Xenia in {self.home}."):
             return
         home, fetch = self.home, self.fetch
 
@@ -625,6 +635,18 @@ class MainWindow(QMainWindow):
         run = self.run_path if self.run_path.is_file() else ROOT / shortcuts.RUN_NAME
         return [str(run), *args]
 
+    def show_exit(self) -> None:
+        """Exit Xenia is on while Xenia runs."""
+        self.exit_button.setEnabled(self.xenia_running())
+
+    def on_exit_xenia(self) -> None:
+        """Exit Xenia (owner, 22-11-2026): Xenia and everything it started end at once, with no question."""
+        if self.xenia_end():
+            self.say("Xenia was ended.")
+        else:
+            self.say("Xenia was not running.")
+        self.show_exit()
+
     def on_open_xenia(self) -> None:
         command = self.xenia_command()
         if QProcess.startDetached(command[0], command[1:])[0]:
@@ -637,7 +659,7 @@ class MainWindow(QMainWindow):
         if self.open_url(STEAM_URL):
             self.note("Steam was opened.")
         else:
-            self.say("Steam could not be opened: xdg-open is missing.", ok=False)
+            self.say("Steam could not be opened. xdg-open is missing.", ok=False)
 
     def on_remove_game(self) -> None:
         """Games Uninstall (Remove game… until 20-11-2026; owner, 03-11-2026, from the Windows Portable Suite's managers: before deleting anything, let
@@ -711,13 +733,13 @@ class MainWindow(QMainWindow):
             except steam.SteamError as error:
                 return False, f"{title} was not started: {error}"
             return True, f"{title} runs, started through Steam."
-        self._start(f"Starting {title} through Steam (Steam starts first when it does not run)…", job)
+        self._start(f"Starting {title} through Steam, which starts first when it does not run…", job)
 
     def on_update_steam(self) -> None:
         if self.steam_dir is None:
             return
         if not self.run_path.is_file():
-            self.say(f"The shortcuts run {self.run_path}, which is not there: install {APP_NAME} through the "
+            self.say(f"The shortcuts run {self.run_path}, which is not there. Install {APP_NAME} through the "
                      "portal first.", ok=False)
             return
         add, remove = self.steam_plan()
@@ -763,7 +785,7 @@ class MainWindow(QMainWindow):
                 missing = [g.title for g in add if str(g.file) not in found]
                 if missing:
                     extra.append(f"Read back from Steam's file, {len(add) - len(missing)} of the {len(add)} game(s) "
-                                 f"are there: not {', '.join(missing)}.")
+                                 f"are there. Not there: {', '.join(missing)}.")
             again = " Steam was closed for it and starts again in the background." if restarted else ""
             return True, "\n".join([*notes, f"{len(add)} game(s) in Steam, under Non-Steam in the library"
                                               f"{f'; {len(remove)} taken out' if remove else ''}.{again}", *extra])
@@ -775,7 +797,7 @@ class MainWindow(QMainWindow):
         if covers.edit_key(self, self.covers_key, "Update Steam"):
             self.refresh()
             self.say("The SteamGridDB key was changed." if covers.read_key(self.covers_key) else
-                     "The SteamGridDB key was taken out; the pictures kept stay in use.")
+                     "The SteamGridDB key was taken out. The pictures the app already has stay in use.")
 
     def resizeEvent(self, event: QResizeEvent) -> None:  # noqa: N802 (Qt override)
         super().resizeEvent(event)

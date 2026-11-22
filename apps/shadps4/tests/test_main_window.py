@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import QLabel, QMessageBox
 
 from conftest import make_game
 
-from bc250_core import steam
+from bc250_core import processes, steam
 from bc250_core.theme import GREEN, RED
 from shadps4_manager import library, LOGO_PATH, emulator, shortcuts, style, userdata
 from shadps4_manager.games import Game
@@ -1101,3 +1101,49 @@ def test_the_steam_state_follows_the_sign_in(qapp, folders, monkeypatch):
     window.show_steam()
     assert window.steam_state.kind == "ok" and window.steam_state.toolTip() == "Steam signed in\n" + module.STEAM_ON
     window.close()
+
+
+def test_exit_shadps4_is_on_while_shadps4_runs_and_ends_it_at_once(qapp, folders):
+    """Exit shadPS4 (owner, 22-11-2026): the first button beside shadPS4 settings, on only while shadPS4 runs; a click
+    ends it with no question and the line under the tabs says so."""
+    runs = [True]
+    ended: list[int] = []
+
+    def end() -> list[int]:
+        ended.append(1)
+        runs[0] = False
+        return [10]
+
+    window = _window(folders, shad_running=lambda: runs[0], shad_end=end)
+    row = window.exit_button.parentWidget().layout()
+    buttons = next(row.itemAt(i).layout() for i in range(row.count())
+                   if row.itemAt(i).layout() is not None and row.itemAt(i).layout().indexOf(window.exit_button) >= 0)
+    first = next(i for i in range(buttons.count()) if buttons.itemAt(i).widget() is not None
+                 and buttons.itemAt(i).widget() is not window.steam_info)
+    assert buttons.indexOf(window.exit_button) == first
+    assert buttons.indexOf(window.exit_button) < buttons.indexOf(window.shad_button)
+    assert window.exit_button.text() == "Exit shadPS4"
+    assert "without saving" in window.exit_button.toolTip()
+    assert window.exit_button.isEnabled()
+    window.exit_button.click()
+    assert ended == [1]
+    assert window.running.text() == "shadPS4 was ended."
+    assert not window.exit_button.isEnabled()
+    window.shad_end = lambda: []
+    window.on_exit_shadps4()
+    assert window.running.text() == "shadPS4 was not running."
+    window.close()
+
+
+def test_shadps4_processes_are_found_and_ended_with_what_they_started(tmp_path):
+    """The matcher finds shadPS4's process; end() ends what it started first, then shadPS4."""
+    proc = tmp_path / "proc"
+    for pid, name, state, parent in ((10, "shadps4", "S", 1), (20, "child", "S", 10), (30, "bash", "S", 1)):
+        (proc / str(pid)).mkdir(parents=True)
+        (proc / str(pid) / "comm").write_text(name + "\n")
+        (proc / str(pid) / "stat").write_text(f"{pid} ({name}) {state} {parent} 0\n")
+        (proc / str(pid) / "exe").symlink_to(f"/x/usr/bin/{name}")
+    sent: list[int] = []
+    assert processes.find(userdata.is_shadps4, proc) == [10]
+    assert processes.end(processes.find(userdata.is_shadps4, proc), proc, kill=lambda pid, sig: sent.append(pid))
+    assert sent == [20, 10]

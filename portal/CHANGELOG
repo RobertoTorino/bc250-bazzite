@@ -1,3 +1,25 @@
+Changelog: 22-11-2026 21:24:16
+
+Added. The header shows a battery for each connected device that has one, left of the settings symbol. It
+covers controllers, mice, keyboards and headsets, as UPower reports them. The level is under each battery, the fill
+turns red at 20 % or less, and a yellow bolt shows while the device charges. The tooltip names the device. Without
+such a device, no battery shows. New: batteries.py and its tests.
+
+Changelog: 22-11-2026 20:45:14
+
+Fixed. The Beta note in the title row's tooltip and the info is now two sentences: "The suite is in active
+development. Features and layout may still change between releases." Nothing the portal does has changed.
+
+Changelog: 22-11-2026 20:34:42
+
+Fixed. The text of the portal was rewritten to the writing standard: the Portal chapter of the wiki, the README, the
+window's tooltips, dialogs, hints and messages, and the messages of install.sh. Sentences are shorter, with one fact
+each and no chains, and the dialogs ask their question first. No label was renamed. The README said that only BC-250
+Board Test is always installed with the portal, but BC-250 Quickfix is too. The Utilities tab's tooltip left out the
+password generator. The Gaming category's short line under the title named Game Mode plugins, but no app of the suite is
+one, so it now names PlayStation trivia, as the tab's tooltip does. Nothing the app does has changed. test_weather.py
+matches the new wording of the message when Open-Meteo cannot be reached.
+
 Changelog: 22-11-2026 18:57:56
 
 Release 26.12.0.

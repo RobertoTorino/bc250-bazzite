@@ -229,7 +229,7 @@ def test_the_version_manager(qapp, tmp_path, monkeypatch):
     assert dialog.download_pill.isEnabled()
     dialog.on_download()
     _wait(dialog, qapp)
-    assert dialog.status.text() == "Emu 2.0 is installed; Use puts it in use." and changed == [True]
+    assert dialog.status.text() == "Emu 2.0 is installed. Use puts it in use." and changed == [True]
     assert dialog.chosen().version == "2.0" and builds.current(home, MEMBER) == "1.0"
     assert dialog.use_pill.isEnabled() and dialog.delete_pill.isEnabled()
     dialog.on_use()
@@ -268,7 +268,8 @@ def test_a_custom_build_in_the_version_manager(qapp, tmp_path):
     own.write_bytes(b"mine")
     dialog = _dialog(home, _build("1.0", b"one"), list, lambda build: None, pick_file=lambda: str(own))
     dialog.on_custom()
-    assert [b.version for b in dialog.builds] == ["custom-emu-dev"] and "was not checked" in dialog.status.text()
+    assert [b.version for b in dialog.builds] == ["custom-emu-dev"]
+    assert "the app did not check it" in dialog.status.text()
     assert dialog.installed_table.item(0, 4).text() == builds.CUSTOM and dialog.use_pill.isEnabled()
     dialog.on_use()
     assert builds.current(home, MEMBER) == "custom-emu-dev"

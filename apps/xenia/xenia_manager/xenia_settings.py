@@ -76,36 +76,37 @@ LICENSES = (("0", "None"), ("1", "Full version"), ("-1", "All licenses"))
 
 SETTINGS: tuple[Setting, ...] = (
     Setting("gpu", PICTURE, "Graphics", "GPU", ("gpu",), "any", CHOICE, GRAPHICS,
-            "How Xenia draws: Vulkan is the Linux build's, and Automatic picks it."),
+            "How Xenia draws. Vulkan is the Linux build's, and Automatic picks it."),
     Setting("scale", PICTURE, "Resolution scale", "GPU", ("draw_resolution_scale_x", "draw_resolution_scale_y"), "1",
             NUMBER, SCALES,
-            "The size Xenia draws the picture at, a multiple of the game's own (mostly 1280 × 720); a higher one "
+            "The size Xenia draws the picture at, a multiple of the game's own (mostly 1280 × 720). A higher one "
             "asks much more of the GPU, and breaks some games."),
     Setting("antialiasing", PICTURE, "Anti-aliasing", "Display", ("postprocess_antialiasing",), "", CHOICE,
-            ANTIALIASING, "Smooths jagged edges after the game has drawn its picture; FXAA, extreme smooths more."),
+            ANTIALIASING, "Smooths jagged edges after the game has drawn its picture. The choice FXAA, extreme "
+                          "smooths more."),
     Setting("scaling", PICTURE, "Scaling and sharpening", "Display", ("postprocess_scaling_and_sharpening",), "",
-            CHOICE, SCALING, "How the picture is scaled to the screen: Bilinear smooth, Contrast Adaptive "
-                             "Sharpening sharper, FidelityFX Super Resolution AMD's upscaler."),
+            CHOICE, SCALING, "How Xenia scales the picture to the screen. Bilinear is smooth, Contrast Adaptive "
+                             "Sharpening is sharper, and FidelityFX Super Resolution is AMD's upscaler."),
     Setting("letterbox", PICTURE, "Keep the picture's shape", "Display", ("present_letterbox",), TRUE, SWITCH,
-            tip="Bars beside or above the picture where the screen's shape differs; off, the picture is stretched "
-                "to fill the screen."),
+            tip="Bars beside or above the picture where the screen's shape differs. Off, Xenia stretches the "
+                "picture to fill the screen."),
     Setting("vsync", PICTURE, "VSync", "GPU", ("vsync",), TRUE, SWITCH,
-            tip="Waits for the screen's refresh before showing a frame: no tearing, a little more delay."),
+            tip="Waits for the screen's refresh before it shows a frame. No tearing, but a little more delay."),
     Setting("framelimit", SPEED, "Frame limit", "GPU", ("framerate_limit",), "0", NUMBER, FRAME_LIMITS,
-            "The most frames a second Xenia lets a game draw; As the game is 60 with VSync on."),
+            "The most frames a second Xenia lets a game draw. With VSync on, As the game means 60."),
     Setting("readback", SPEED, "Readback resolve", "GPU", ("readback_resolve",), "none", CHOICE, READBACK,
-            "For a game that shows wrong or missing effects: Fast reads them a frame late, Full exactly and "
-            "slowly."),
+            "For a game that shows wrong or missing effects. Fast reads them a frame late. Full reads them "
+            "exactly and slowly."),
     Setting("apu", SOUND, "Sound output", "APU", ("apu",), "any", CHOICE, AUDIO,
-            "Through which library Xenia plays sound: SDL is the Linux build's, and Automatic picks it."),
+            "The library Xenia plays sound through. SDL is the Linux build's, and Automatic picks it."),
     Setting("mute", SOUND, "Mute", "APU", ("mute",), FALSE, SWITCH, tip="The game without sound."),
     Setting("license", CONSOLE, "Arcade license", "Content", ("license_mask",), "0", NUMBER, LICENSES,
-            "For an XBOX Live Arcade game: Full version unlocks the whole game where its package has the trial "
-            "alone licensed; All licenses also its other content."),
+            "For an XBOX Live Arcade game. Full version unlocks the whole game where its package licenses only "
+            "the trial. All licenses also unlocks its other content."),
     Setting("achievements", CONSOLE, "Achievement messages", "UI", ("show_achievement_notification",), FALSE,
-            SWITCH, tip="A message in the game when an achievement is won."),
+            SWITCH, tip="A message in the game when you win an achievement."),
     Setting("guide", CONSOLE, "Guide button to the game", "HID", ("guide_button",), TRUE, SWITCH,
-            tip="The controller's guide button reaches the game (the XBOX 360's guide); off, Steam keeps it."),
+            tip="The controller's guide button, the XBOX 360's guide, reaches the game. Off, Steam keeps it."),
 )
 GROUPS = (PICTURE, SPEED, SOUND, CONSOLE)
 

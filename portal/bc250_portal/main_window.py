@@ -101,7 +101,7 @@ from bc250_core.updates import ReleaseInfo, UpdateChecker, version_tuple
 from bc250_core.app import switch_theme
 from bc250_core.widgets import Pill, current_theme
 
-from . import audio, desktop_icons, glyphs, keyboard, kwin, music, pointer, shortcuts, status, sysinfo, tour
+from . import audio, batteries, desktop_icons, glyphs, keyboard, kwin, music, pointer, shortcuts, status, sysinfo, tour
 from . import wallpaper, weather
 from .bigpicture import INTRO_BANNER, UPDATE_BANNER, BigPicture, HeaderPill, Intro, SymbolButton
 from .gamepad import TOUCH_SPEED, Gamepad
@@ -170,10 +170,11 @@ LAUNCH_ICON_FILES: dict[tuple[str, str], str] = {}  # (key, label): an icon of o
 # What each category holds (docs/apps/categories.md says the same): the tooltip of its tab.
 CATEGORY_HINTS = {
     "sustainable": "The board itself: test it, tune it, unlock it, cool it, and keep it running well for a long time.",
-    "graphics": "Graphics features for games: upscaling, async compute and mesh shaders on the board's GPU.",
+    "graphics": "Upscaling, async compute and mesh shaders for games on the board's GPU.",
     "gaming": "Playing: emulators, Remote Play with your console, and PlayStation trivia.",
-    "utilities": "Handy tools around the board: an overlay, a USB stats screen, the PS5 HD Camera as a webcam, the "
-                 "DualSense's firmware, the BIOS settings, the TV over HDMI-CEC and file transfer.",
+    "utilities": "Handy tools around the board. They include an overlay, a USB stats screen and the PS5 HD Camera "
+                 "as a webcam. Others cover the DualSense's firmware, the BIOS settings, the TV over HDMI-CEC, file "
+                 "transfer and a password generator.",
 }
 
 BOARD_WARNING = (
@@ -276,8 +277,8 @@ class AppState:
             self.status = "Reinstall needed"
             detail = (("Reinstall needed: an earlier portal installed it from a suite checkout without recording "
                        "its version, so it is unknown. ") if from_other_checkout else
-                      ("Reinstall needed: it is installed, but not by this portal (by hand, or under an earlier name "
-                       "of the app), so its version is unknown. ")
+                      ("Reinstall needed: this portal did not install it, so its version is unknown. It was "
+                       "installed by hand, or under an earlier name of the app. ")
                       ) + "Reinstall it from its menu."
         else:
             self.status = "Installed"
@@ -419,8 +420,8 @@ class PlaceDialog(QDialog):
         self.results = QComboBox()
         self.results.setEnabled(False)
         layout.addWidget(self.results)
-        self.note = QLabel("The name you search for goes to Open-Meteo, then the place's coordinates every 30 "
-                           "minutes while the portal shows. Nothing else about you is sent.")
+        self.note = QLabel("The name you search for goes to Open-Meteo. After that, the place's coordinates go there "
+                           "every 30 minutes while the portal shows. The portal sends nothing else about you.")
         self.note.setWordWrap(True)
         self.note.setStyleSheet(f"color:{muted(current_theme())};")
         layout.addWidget(self.note)
@@ -631,14 +632,14 @@ class MainWindow(QMainWindow):
         self.sound_box = TogglePill("Sound", self.sound_tip, self.sounds.enabled)
         self.sound_box.toggled.connect(self._set_sound)
         self.music_tip = ("Music that plays quietly, over and over, while the portal is in front. It has its own "
-                          "switch, apart from Sound: either can be off while the other is on. Click to switch.")
+                          "switch, apart from Sound. Either can be off while the other is on. Click to switch.")
         self.music_box = TogglePill("Music", self.music_tip, self.music_on)
         self.music_box.toggled.connect(self._set_music)
         self.track_pill = HeaderPill("Built-in", "Music track")
         self.track_pill.clicked.connect(self._track_menu)
         self.theme_pill = HeaderPill(THEMES[theme_name()].label, "Theme switcher",
-                                     "The look of every app in the suite. Click for the next theme: the portal "
-                                     "shows it at once, each app the next time it starts.")
+                                     "The look of every app in the suite. Click for the next theme. The portal "
+                                     "shows it at once, and each app the next time it starts.")
         self.theme_pill.clicked.connect(self._next_theme)
         self.wallpaper_pill = HeaderPill("None", "Wallpaper")
         self.wallpaper_pill.clicked.connect(self._wallpaper_menu)
@@ -663,6 +664,12 @@ class MainWindow(QMainWindow):
         self.status_timer.timeout.connect(self.show_status)
         self.status_timer.start()
         self._show_clock()
+        # The devices' batteries left of ☰ (owner, 22-11-2026): read from UPower every BATTERY_MS (batteries.py)
+        self.battery_timer = QTimer(self)
+        self.battery_timer.setInterval(batteries.BATTERY_MS)
+        self.battery_timer.timeout.connect(self.show_batteries)
+        self.battery_timer.start()
+        self.show_batteries()
         self.weather_timer = QTimer(self)
         self.weather_timer.setInterval(weather.INTERVAL_S * 1000)
         self.weather_timer.timeout.connect(self.update_weather)
@@ -828,8 +835,8 @@ class MainWindow(QMainWindow):
             self.updates_button.set_badge(str(count) if count else "")
             self.updates_button.setToolTip("Install all updates. " + ((
                 f"Click to install {'all ' * (count > 1)}{count} the notice names (updates and reinstalls), one after "
-                "the other. When an installer asks for your password, the next one waits "
-                "until you typed it in its terminal and it has ended.") if count else
+                "the other. When an installer asks for your password, type it in its terminal. The next one "
+                "waits until it has ended.") if count else
                 "No updates: every installed app is the version this portal pins."))
             self.updates_button.setEnabled(bool(count) and not self.busy())
         self._show_apps_button()
@@ -841,7 +848,7 @@ class MainWindow(QMainWindow):
         self.batch_button.set_badge(f"{done}/{self.batch_size}", BLUE)
         self.batch_button.setToolTip(
             f"Installing {self.batch_what[:-1]} {done} of {self.batch_size}, each in its own terminal. When one asks "
-            "for your password, type it there: the next one starts when it has ended.")
+            "for your password, type it there. The next one starts when it has ended.")
         self.batch_button.setEnabled(False)
 
     def shown_category(self) -> str:
@@ -864,8 +871,8 @@ class MainWindow(QMainWindow):
         count = len(self.missing(category))
         if count:
             tip = (f"Install all apps. Click to install {'all ' * (count > 1)}{count} app{'s' * (count != 1)} on {label} not installed "
-                   "yet, one after the other, each in its own terminal. When an installer asks for your password, the "
-                   "next one waits until you typed it there and it has ended.")
+                   "yet, one after the other, each in its own terminal. When an installer asks for your password, "
+                   "type it there. The next one waits until it has ended.")
         else:
             tip = f"Install all apps. Every app on {label} is installed."
         self.apps_button.set_badge("")
@@ -899,10 +906,11 @@ class MainWindow(QMainWindow):
         count = ", ".join([f"{updates} update{'s' if updates != 1 else ''}"] * bool(updates)
                           + [f"{reinstalls} reinstall{'s' if reinstalls != 1 else ''}"] * bool(reinstalls))
         self.big.notice.set_notice(f"● {count}" if marked else "", (
-            "Updates: apps whose installed version differs from the one this portal pins; each has a red dot in "
-            "its icon, and Update in its menu installs the pinned version. Reinstalls: apps the portal did not "
-            "install (by hand, or under an earlier name of the app), so their version is unknown; each has a red "
-            "circular arrow in its icon, and Reinstall in its menu. Click to list them; choose one to go to its tile.")
+            "Updates are apps whose installed version differs from the one this portal pins. Each has a red dot in "
+            "its icon, and Update in its menu installs the pinned version. Reinstalls are apps the portal did not "
+            "install, so their version is unknown. They were installed by hand, or under an earlier name of the app. "
+            "Each has a red circular arrow in its icon, and Reinstall in its menu. Click to list them, then choose "
+            "one to go to its tile.")
             if marked else "")
         for state in self.states.values():
             state.outside = ""
@@ -917,9 +925,10 @@ class MainWindow(QMainWindow):
                 tile.outside = f"{update.name} {update.latest} is out"
         n = len(self.outside_lines)
         self.big.outside.set_notice(f"● {n} outside the suite" if n else "", (
-            "Outside the suite: a newer release of a program an app installs in its newest version (not one it "
-            "pins), as the app found when it last checked. The app installs it; click to list them, and choose one "
-            "to go to its tile and open the app there.") if n else "")
+            "Outside the suite: a newer release of a program that an app installs in its newest version. A program "
+            "the app pins is not listed. The list shows what each app found when it last checked. The app installs "
+            "the new release. Click to list them, then choose one to go to its tile and open the app there.")
+            if n else "")
         counts: dict[str, int] = {}
         for entry, _ in marked:
             counts[entry.category] = counts.get(entry.category, 0) + 1
@@ -982,8 +991,8 @@ class MainWindow(QMainWindow):
                 else f"Portal {release.version} is available")
         released = f" Released {release.published}." if release.published else ""
         if update.changes:
-            brings = ("App updates come with the portal: once it is updated, the installed apps among these show "
-                      f"Update.\n\n{update.details()}")
+            brings = ("App updates come with the portal. After the portal's update, each installed app listed here "
+                      f"shows Update.\n\n{update.details()}")
         elif update.changes == []:
             brings = "It pins the same app versions as this portal."
         else:
@@ -999,7 +1008,7 @@ class MainWindow(QMainWindow):
             self.big.update_banner.set_banner(f"DOWNLOADING THE UPDATE…{size}", "The portal's update downloads.")
         elif self.portal_stage == "install":
             self.big.update_banner.set_banner("INSTALLING THE UPDATE…", "The portal's installer runs in its terminal "
-                                              "window; when it asks for your password, type it there. The portal "
+                                              "window. When it asks for your password, type it there. The portal "
                                               "starts again when it has ended.")
         elif self.update_available():
             self.big.update_banner.set_banner(UPDATE_BANNER, self.portal_tooltip())
@@ -1088,7 +1097,7 @@ class MainWindow(QMainWindow):
             return
         self.refresh()
         QMessageBox.warning(self, APP_NAME, f"The portal's update ended with exit status {status or '?'}. Its "
-                            "terminal window shows what happened; Y tries again.")
+                            "terminal window shows what happened. Press Y to try again.")
 
     def check_installed(self) -> None:
         """A newer portal installed while this one runs (its install.sh, in a terminal): this window still runs the
@@ -1105,8 +1114,8 @@ class MainWindow(QMainWindow):
         busy = self.busy()
         self.restart_button.setEnabled(not busy)
         self.restart_button.setToolTip(
-            f"Portal {version} was installed while this window runs portal {__version__}. Restart to use it: its "
-            "app versions, and the red dot on the apps it updates."
+            f"Portal {version} was installed while this window runs portal {__version__}. Restart to use it. "
+            "Then you get its app versions, and the red dot on the apps it updates."
             + ("\n\nAfter the install or uninstall that is running now." if busy else ""))
         self.restart_button.show()
 
@@ -1137,6 +1146,11 @@ class MainWindow(QMainWindow):
         if now - self.loads_at >= STATUS_MS / 1000 - 0.1:
             self.loads, self.loads_at = self.status.loads(), now
         self.big.set_status(self.loads, status.clock_text(style=self.clock_style()))
+
+    def show_batteries(self) -> None:
+        """A battery left of ☰ for each connected device with one; none read while the portal is minimized."""
+        if not self.isMinimized():
+            self.big.set_batteries(batteries.read())
 
     def changeEvent(self, event) -> None:  # noqa: N802 (Qt override)
         if event.type() == QEvent.Type.WindowStateChange and not self.isMinimized() and self.weather_skipped:
@@ -1704,7 +1718,7 @@ class MainWindow(QMainWindow):
             self.install(entry)
             return
         answer = QMessageBox.question(
-            self, APP_NAME, f"Install {entry.name}?\n\nIts installer runs in a terminal window; the portal refreshes "
+            self, APP_NAME, f"Install {entry.name}?\n\nIts installer runs in a terminal window.\nThe portal refreshes "
             "when it has ended.", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes)
         if answer == QMessageBox.StandardButton.Yes:
@@ -1871,8 +1885,8 @@ class MainWindow(QMainWindow):
         entry = self.app_of(entry)
         if self.busy():
             return
-        answer = QMessageBox.question(self, APP_NAME, f"Uninstall {entry.name}? Its own uninstaller runs in a "
-                                      "terminal; settings and results are kept unless it asks otherwise.")
+        answer = QMessageBox.question(self, APP_NAME, f"Uninstall {entry.name}?\n\nIts own uninstaller runs in a "
+                                      "terminal.\nIt keeps your settings and results, unless it asks otherwise.")
         if answer == QMessageBox.StandardButton.Yes:
             self._start(entry, "uninstall")
 
@@ -2014,8 +2028,9 @@ class MainWindow(QMainWindow):
         if self.pending is not None:
             rest = f" The rest of the batch ({len(self.batch)}) is not installed then." if self.batch else ""
             answer = QMessageBox.question(
-                self, APP_NAME, f"Still waiting for the {self.pending.action} of {self.pending.entry.name} to end in "
-                f"its terminal window. Stop waiting (for example because that window was closed)?{rest}")
+                self, APP_NAME, f"Stop waiting for the {self.pending.action} of {self.pending.entry.name}?"
+                "\n\nIt has not ended in its terminal window yet. Stop waiting if that window was closed, for "
+                f"example.{rest}")
             if answer == QMessageBox.StandardButton.Yes:
                 self.cancel_pending()
                 return

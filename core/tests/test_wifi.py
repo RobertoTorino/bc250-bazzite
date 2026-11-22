@@ -229,7 +229,7 @@ def test_a_stick_no_driver_claims(sys_root, modules):
     (stick,) = wifi.find_adapters(sys_root, modules)
     assert stick.name == "Realtek device" and stick.verdict == "no-driver"
     lines = wifi.report((stick,), modules)
-    assert lines[1] == ("WARNING", f"Kernel {KERNEL} has no driver for 0bda:c999: this adapter does not work on "
+    assert lines[1] == ("WARNING", f"Kernel {KERNEL} has no driver for 0bda:c999. This adapter does not work on "
                                    "Bazzite as it is.")
     # A device of another maker that nothing claims is not taken for a Wi-Fi stick.
     usb(sys_root, "1-4", "1234", "5678", "Gadget", {"1.0": ("ff", None, None)})

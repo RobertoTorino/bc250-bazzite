@@ -1,3 +1,21 @@
+Changelog: 22-11-2026 21:22:46
+
+Added. Exit Xenia is the first button under the games (owner, 22-11-2026). It is on only while Xenia runs. A click ends
+Xenia and everything it started at once, with no question. Its tooltip says that a game that is running ends without
+saving. The check whether Xenia runs now finds its processes with core's processes module, by the same name. The wiki
+chapter describes the button. New tests cover the button and finding and ending the processes.
+
+Changelog: 22-11-2026 20:26:52
+
+Fixed. The text of the wiki chapter, the README, the run wrapper's message, the window's tooltips, hints and messages,
+the Settings tab's tooltips and the Memory cards tab's messages was rewritten to the writing standard: short sentences,
+one fact each, lists where three or more things are named, and the purpose first. The wiki chapter says check and
+uncheck in place of tick and untick, and the README links to the wiki in place of the manual. A wrong fact was
+corrected: the wiki chapter said Xenia needs FUSE because it comes as an AppImage, but the AppImage also runs without
+fusermount and then unpacks itself to a temporary folder on every start. No label was renamed. Nothing the app does has
+changed. tests/test_main_window.py asserts the new wording of the Xenia line's tooltip, the game folder's info text, the
+info text about Steam and the message about a missing run wrapper.
+
 Changelog: 22-11-2026 18:40:26
 
 Release 5.9.1.

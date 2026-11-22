@@ -501,7 +501,7 @@ def test_full_screen_screenshot_and_recording(make, tmp_path, shown):
     window = _full_window(make, tmp_path, recording)
     full = window.full
     full.screenshot_button.click()
-    assert full.status.text() == "There is no picture to save yet." and shown == []
+    assert full.status.text() == "No picture to save yet." and shown == []
     frame = QImage(1920, 1080, QImage.Format.Format_RGB32)
     frame.fill(QColor("green"))
     window.preview.frame.emit(frame)

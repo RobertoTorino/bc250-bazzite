@@ -29,10 +29,10 @@ READ_TIMEOUT_S = 0.5
 SHOWN_PER_S = 30
 # The camera sends nothing at all in some modes, damaged or not: on the owner's board every 1080-line mode at 15 fps
 # (1920x1080, 3840x1080, 5148x1088; 23-10-2026), while the same sizes work at 30 or 8 fps.
-NO_PICTURE = ("The camera sends no picture in this mode. Choose another mode or rate; if none gives a picture, unplug "
+NO_PICTURE = ("The camera sends no picture in this mode. Choose another mode or rate. If none gives a picture, unplug "
               "the camera and plug it in again.")
-DAMAGED = ("The frames arrive damaged: this mode needs more USB bandwidth than the camera has. Choose a slower rate "
-           "or a smaller mode; with Full bandwidth, try Reduced and plug the camera in again.")
+DAMAGED = ("The frames arrive damaged. This mode needs more USB bandwidth than the camera has. Choose a slower rate "
+           "or a smaller mode. With Full bandwidth, try Reduced and plug the camera in again.")
 BUSY = "Another app is using the camera. Close it, then start the preview again."
 FORMATS = {"YUYV": QVideoFrameFormat.PixelFormat.Format_YUYV}
 ZOOMS = (1.0, 1.5, 2.0, 3.0, 4.0)           # Zoom − and Zoom + go through these

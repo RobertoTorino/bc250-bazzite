@@ -18,7 +18,7 @@ WELCOME = "welcome"             # when the intro has ended; not after a skip
 ACTION = "blob"                 # a controller action: a move, a button
 VOLUME = 0.7
 VOLUMES = {WELCOME: 1.0}        # a sound with a volume of its own (owner, 20-11-2026: the welcome louder)
-NO_OUTPUT = "No audio output was found, so the portal stays silent."
+NO_OUTPUT = "The portal found no audio output. It stays silent."
 
 
 class Sounds:

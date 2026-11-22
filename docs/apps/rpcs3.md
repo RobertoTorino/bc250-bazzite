@@ -330,6 +330,10 @@ The app sets these by itself, before RPCS3's window first opens:
 
 What the app set up goes to the log.
 
+**Exit RPCS3**, the first button under the games, closes RPCS3 from the app. Use it when the line under the tabs asks
+you to close RPCS3 first. The button is on only while RPCS3 runs. A click ends RPCS3 at once, with no question. A game
+that is running ends without saving.
+
 RPCS3's Settings may open with a `config.yml` that another build of RPCS3 wrote. RPCS3 then asks **Remove obsolete
 settings?**, because the two builds know different settings. That happened on the board after RPCS3 updated itself
 in its own window. With its update check off, it no longer does. Answer **Yes** to let RPCS3 tidy its file for the

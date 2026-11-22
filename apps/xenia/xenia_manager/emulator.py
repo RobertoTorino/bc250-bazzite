@@ -27,7 +27,7 @@ import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
-from bc250_core import builds
+from bc250_core import builds, processes
 from bc250_core.builds import Build
 from bc250_core.platform import data_home
 from bc250_core.updates import Fetch, ReleaseInfo, github_fetch
@@ -67,20 +67,21 @@ def xenia_home() -> Path:
     return data_home() / "Xenia"
 
 
+def is_xenia(comm: str, _folder: Path) -> bool:
+    """Whether a process is the installed Xenia: the AppImage's own process, named after the file (comm holds the
+    first 15 characters: "xenia.AppImage")."""
+    return comm == MEMBER[:15]
+
+
 def running(proc: Path = Path("/proc")) -> bool:
-    """Whether the installed Xenia runs: the AppImage's own process, named after the file (comm holds the first 15
-    characters: "xenia.AppImage"). A finished one not collected yet (a zombie) does not count. Xenia writes its
+    """Whether the installed Xenia runs. A finished one not collected yet (a zombie) does not count. Xenia writes its
     settings when it starts and keeps them while it runs, so nothing in them is written then."""
-    for folder in proc.glob("[0-9]*"):
-        try:
-            if (folder / "comm").read_text().strip() != MEMBER[:15]:
-                continue
-            state = (folder / "stat").read_text().rsplit(")", 1)[1].split()[0]
-        except (OSError, IndexError):
-            continue
-        if state not in ("Z", "X"):
-            return True
-    return False
+    return bool(processes.find(is_xenia, proc))
+
+
+def end(proc: Path = Path("/proc")) -> list[int]:
+    """Ends Xenia at once, with everything it started (Exit Xenia); the processes it was sent to."""
+    return processes.end(processes.find(is_xenia, proc), proc)
 
 
 def appimage(home: Path) -> Path:

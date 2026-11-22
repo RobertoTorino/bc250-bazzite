@@ -138,6 +138,10 @@ another game. The line under the tabs says so. Delete such a game by hand.
 **PPSSPP settings**, under the games, opens PPSSPP's own window. It has PPSSPP's other settings, its controller
 settings and its game list. A game runs from Steam. [**Start game**](#start-game) starts the chosen game there.
 
+**Exit PPSSPP**, the first button under the games, closes PPSSPP from the app. Use it when the line under the tabs asks
+you to close PPSSPP first. The button is on only while PPSSPP runs. A click ends PPSSPP at once, with no question. A
+game that is running ends without saving.
+
 #### Steam
 
 Check the games you want in Steam and press **Update Steam**. The app adds them to Steam as non-Steam games. Each

@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import QLabel, QMessageBox
 
 from conftest import make_iso, make_package
 
-from bc250_core import steam
+from bc250_core import processes, steam
 from xenia_manager import emulator, shortcuts, style
 from xenia_manager.games import Game
 from xenia_manager.main_window import MainWindow
@@ -104,8 +104,8 @@ def test_an_older_build_is_offered_the_pinned_one(qapp, folders):
     (folders["home"] / "current").symlink_to("f42147a")
     window = _window(folders)
     assert window.emulator_state.text() == "Installed. Uninstall with the Uninstall button."
-    assert "Xenia f42147a is in use; it was not tried on the board" in window.emulator_state.toolTip()
-    assert "tried with 54386cb: Install puts it back in use" in window.emulator_state.toolTip()
+    assert "Xenia f42147a is in use. It was not tried on the board" in window.emulator_state.toolTip()
+    assert "tried with 54386cb. Install puts that build back in use" in window.emulator_state.toolTip()
     assert window.install_pill.isEnabled()
     window.refresh()
     assert window.output.toPlainText().count("Xenia f42147a is in use") == 1           # logged once
@@ -124,9 +124,9 @@ def test_the_apps_own_game_folders(qapp, folders, tmp_path, monkeypatch):
     assert window.folders == [tmp_path / "Games" / "XBOX360", tmp_path / "sd" / "Games" / "XBOX360"]
     text = window.folders_state.text()
     assert text == "<b>~/Games/XBOX360</b>, <b>~/sd/Games/XBOX360</b>"         # what goes there: the info symbol
-    assert window.folders_info.text_ == ("Drop your games in ~/Games/XBOX360, .ISO, unpacked discs, .zar archives, "
-                                         "Games on Demand and Arcade packages. A USB drive or an SD card with a "
-                                         "Games/XBOX360 folder is also checked for content.")
+    assert window.folders_info.text_ == ("Put your games in ~/Games/XBOX360. They can be disc images (.iso), unpacked "
+                                         "discs, .zar archives, and Games on Demand and Arcade packages. The app also "
+                                         "looks in a Games/XBOX360 folder on a USB drive or SD card.")
     assert str(tmp_path) not in text and "folders" not in window.settings.DEFAULTS
     window.close()
 
@@ -189,8 +189,8 @@ def test_the_steam_link(qapp, folders):
     window.show()
     window.steam_info.click()
     label = window.steam_info.popup.findChild(QLabel)
-    assert re.sub(r"<[^>]+>", "", label.text()) == ("A checkmark before a game adds the game to Steam. When the Start "
-                                                    "game button is clicked the game starts from Steam.")
+    assert re.sub(r"<[^>]+>", "", label.text()) == ("A checkmark before a game adds the game to Steam. When you click the "
+                                                    "Start game button, the game starts from Steam.")
     assert ">Steam</a>" in label.text() and not label.openExternalLinks()
     label.linkActivated.emit("steam://open/games")
     assert opened == ["steam://open/games"] and "Steam was opened." in window.output.toPlainText()
@@ -257,7 +257,7 @@ def test_no_steam_game_mode_or_no_wrapper(qapp, folders, tmp_path, monkeypatch):
     window = _window(folders)
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
-    assert "install Xenia Manager through the portal first" in window.running.text()
+    assert "Install Xenia Manager through the portal first" in window.running.text()
     assert not window.worker.running
     window.close()
 
@@ -652,3 +652,52 @@ def test_the_steam_state_follows_the_sign_in(qapp, folders, monkeypatch):
     window.show_steam()
     assert window.steam_state.kind == "ok" and window.steam_state.toolTip() == "Steam signed in\n" + module.STEAM_ON
     window.close()
+
+
+def test_exit_xenia_is_on_while_xenia_runs_and_ends_it_at_once(qapp, folders):
+    """Exit Xenia (owner, 22-11-2026): the first button beside Xenia settings, on only while Xenia runs; a click
+    ends it with no question and the line under the tabs says so."""
+    runs = [True]
+    ended: list[int] = []
+
+    def end() -> list[int]:
+        ended.append(1)
+        runs[0] = False
+        return [10]
+
+    window = _window(folders, xenia_running=lambda: runs[0], xenia_end=end)
+    row = window.exit_button.parentWidget().layout()
+    buttons = next(row.itemAt(i).layout() for i in range(row.count())
+                   if row.itemAt(i).layout() is not None and row.itemAt(i).layout().indexOf(window.exit_button) >= 0)
+    first = next(i for i in range(buttons.count()) if buttons.itemAt(i).widget() is not None
+                 and buttons.itemAt(i).widget() is not window.steam_info)
+    assert buttons.indexOf(window.exit_button) == first
+    assert buttons.indexOf(window.exit_button) < buttons.indexOf(window.xenia_button)
+    assert window.exit_button.text() == "Exit Xenia"
+    assert "without saving" in window.exit_button.toolTip()
+    assert window.exit_button.isEnabled()
+    window.exit_button.click()
+    assert ended == [1]
+    assert window.running.text() == "Xenia was ended."
+    assert not window.exit_button.isEnabled()
+    window.xenia_end = lambda: []
+    window.on_exit_xenia()
+    assert window.running.text() == "Xenia was not running."
+    window.close()
+
+
+def test_xenia_processes_are_found_and_ended_with_what_they_started(tmp_path):
+    """The matcher finds Xenia's process; end() ends what it started first, then Xenia."""
+    proc = tmp_path / "proc"
+    for pid, name, state, parent in ((10, emulator.MEMBER[:15], "S", 1), (20, "child", "S", 10), (30, "bash", "S", 1)):
+        (proc / str(pid)).mkdir(parents=True)
+        (proc / str(pid) / "comm").write_text(name + "\n")
+        (proc / str(pid) / "stat").write_text(f"{pid} ({name}) {state} {parent} 0\n")
+        (proc / str(pid) / "exe").symlink_to(f"/x/usr/bin/{name}")
+    sent: list[int] = []
+    assert processes.find(emulator.is_xenia, proc) == [10]
+    assert processes.end(processes.find(emulator.is_xenia, proc), proc, kill=lambda pid, sig: sent.append(pid))
+    assert sent == [20, 10]
+    assert emulator.running(proc)
+    (proc / "10" / "stat").write_text(f"10 ({emulator.MEMBER[:15]}) Z 1 0\n")
+    assert not emulator.running(proc)

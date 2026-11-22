@@ -6,10 +6,10 @@
 
 # Portal
 
-The BC250 Bazzite Suite's front door: one window that installs, opens, updates and removes the suite's apps.
-BC-250 Board Test is always installed with it; every other app is optional.
+The portal is the BC250 Bazzite Suite's front door. In one window, it installs, opens, updates and removes the
+suite's apps. BC-250 Board Test and BC-250 Quickfix are always installed with it. Every other app is optional.
 
-How to install and use it: [Portal in the manual](https://robertotorino.github.io/bc250-bazzite/portal/).
+How to install and use it: [Portal in the wiki](https://robertotorino.github.io/bc250-bazzite/portal/).
 
 ## License
 

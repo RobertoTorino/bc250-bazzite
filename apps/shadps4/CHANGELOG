@@ -1,3 +1,10 @@
+Changelog: 22-11-2026 21:22:46
+
+Added. Exit shadPS4 is the first button under the games (owner, 22-11-2026). It is on only while shadPS4 runs. A click
+ends shadPS4 and everything it started at once, with no question. Its tooltip says that a game that is running ends
+without saving. The check whether shadPS4 runs is unchanged. The wiki chapter describes the button. New tests cover the
+button and finding and ending the processes.
+
 Changelog: 22-11-2026 18:40:26
 
 Release 7.7.1.

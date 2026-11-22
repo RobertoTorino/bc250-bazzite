@@ -19,6 +19,7 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
+from bc250_core import processes
 from bc250_core.platform import data_home
 
 from .shadnet import DEFAULT_SERVER
@@ -378,3 +379,13 @@ def shadps4_running(proc: Path = Path("/proc")) -> bool:
         if name == "shadps4" or name.startswith("Shadps4-sdl"):
             return True
     return False
+
+
+def is_shadps4(comm: str, _folder: Path) -> bool:
+    """Whether a process is shadPS4: its AppImage, or the program inside it."""
+    return comm == "shadps4" or comm.startswith("Shadps4-sdl")
+
+
+def shadps4_end(proc: Path = Path("/proc")) -> list[int]:
+    """Ends shadPS4 at once, with everything it started (Exit shadPS4); the processes it was sent to."""
+    return processes.end(processes.find(is_shadps4, proc), proc)

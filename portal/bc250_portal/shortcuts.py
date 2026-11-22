@@ -59,7 +59,7 @@ def steam(which: Which | None = None) -> Start:
 def files(which: Which | None = None, home: Path | None = None) -> Start:
     """The desktop's own file manager, on the home folder."""
     if (which or shutil.which)("xdg-open") is None:
-        raise Missing("No file manager could be opened: xdg-open is not on this system.")
+        raise Missing("No file manager could be opened. This system has no xdg-open.")
     return Start(["xdg-open", str(home or Path.home())], ("org.kde.dolphin", "org.gnome.Nautilus"))
 
 
@@ -95,7 +95,7 @@ def default_browser(run: Run | None = None) -> tuple[str, ...]:
 def github(which: Which | None = None, run: Run | None = None) -> Start:
     """GitHub in the desktop's own browser: a window with its tabs and address bar, not a kiosk."""
     if (which or shutil.which)("xdg-open") is None:
-        raise Missing("GitHub could not be opened: xdg-open is not on this system.")
+        raise Missing("GitHub could not be opened. This system has no xdg-open.")
     return Start(["xdg-open", GITHUB_URL], default_browser(run))
 
 
@@ -104,8 +104,8 @@ def settings(page: str, which: Which | None = None) -> Start:
     for program, arguments, app_id in SETTINGS[page]:
         if (which or shutil.which)(program) is not None:
             return Start([program, *arguments], (app_id,))
-    raise Missing(f"The {'Bluetooth' if page == 'bluetooth' else page} settings of this desktop could not be found "
-                  "(KDE Plasma's System Settings or GNOME's Settings).")
+    raise Missing(f"The {'Bluetooth' if page == 'bluetooth' else page} settings of this desktop could not be found. "
+                  "The portal looks for KDE Plasma's System Settings or GNOME's Settings.")
 
 
 def bluetooth_settings() -> Start:

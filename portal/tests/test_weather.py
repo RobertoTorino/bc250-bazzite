@@ -55,5 +55,5 @@ def test_open_meteo_down_or_unreachable_says_so(monkeypatch):
     def offline(request, timeout):
         raise urllib.error.URLError("no route")
     monkeypatch.setattr(weather.urllib.request, "urlopen", offline)
-    with pytest.raises(weather.WeatherError, match="cannot be reached"):
+    with pytest.raises(weather.WeatherError, match="cannot reach Open-Meteo"):
         weather.http_fetch("test/1")(weather.FORECAST_URL, {})

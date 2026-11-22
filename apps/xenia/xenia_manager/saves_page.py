@@ -201,7 +201,7 @@ class SavesPage(QWidget):
             return
         listed = "\n".join(f"  {s.label}" for s in chosen[:10]) + ("\n  …" if len(chosen) > 10 else "")
         if self._ask("Delete saves", f"Delete {len(chosen)} save(s) from Xenia's content folder?\n\n{listed}\n\n"
-                                     "A deleted save is gone: export it first to keep a copy."):
+                                     "A deleted save is gone. Export it first to keep a copy."):
             self.delete(chosen)
 
     def delete(self, chosen: list[Save]) -> None:

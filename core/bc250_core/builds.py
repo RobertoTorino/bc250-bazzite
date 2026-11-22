@@ -137,7 +137,7 @@ def use(home: Path, folder: str, member: str) -> None:
 def delete(home: Path, folder: str, member: str) -> None:
     """Deletes a build that is not in use."""
     if folder == current(home, member):
-        raise BuildError(f"Build {folder} is in use: put another build in use first.")
+        raise BuildError(f"Build {folder} is in use. Put another build in use first.")
     target = home / folder
     if not folder or folder.startswith(".") or folder == CURRENT or target.parent != home or not target.is_dir():
         raise BuildError(f"Build {folder} is not installed.")

@@ -307,12 +307,12 @@ def report(adapters: tuple[Adapter, ...], modules: Modules) -> list[tuple[str, s
     """The findings as (level, text): SUCCESS, INFO, NOTE, WARNING or HINT, the levels of BC-250 Board Test."""
     lines: list[tuple[str, str]] = []
     if not modules.found:
-        lines.append(("NOTE", f"The module tables of kernel {modules.kernel} are missing (modules.dep): whether "
-                              "the kernel has a driver for an adapter cannot be told."))
+        lines.append(("NOTE", f"The module tables of kernel {modules.kernel} are missing (modules.dep). Without "
+                              "them, this report cannot tell whether the kernel has a driver for an adapter."))
     if not adapters:
-        lines.append(("INFO", "No Wi-Fi adapter. The BC-250 has none of its own; the network cable needs nothing."))
-        lines.append(("HINT", "A USB Wi-Fi stick adds it; plugged in, whether the kernel has a driver for it shows "
-                              "here. " + KERNEL_STICKS))
+        lines.append(("INFO", "No Wi-Fi adapter. The BC-250 has none of its own. A network cable works without one."))
+        lines.append(("HINT", "A USB Wi-Fi stick adds Wi-Fi. Plug one in, and this report shows whether the kernel "
+                              "has a driver for it. " + KERNEL_STICKS))
         return lines
     for a in adapters:
         drivers = ", ".join(a.drivers) or "none"
@@ -332,31 +332,31 @@ def report(adapters: tuple[Adapter, ...], modules: Modules) -> list[tuple[str, s
             hard = any(i.hard_blocked for i in a.interfaces)
             lines.append(("WARNING", f"{a.interfaces[0].name} is switched off (rfkill, "
                                      + ("a hardware switch" if hard else "in software") + ")."))
-            lines.append(("HINT", "Switch Wi-Fi on in the network settings, or: rfkill unblock wifi"
-                                  if not hard else "Turn on the adapter's own switch; software cannot."))
+            lines.append(("HINT", "Turn Wi-Fi on in the network settings. Or turn it on with: rfkill unblock wifi"
+                                  if not hard else "Turn on the adapter's own switch. Software cannot turn it on."))
         elif verdict == "storage":
             if a.aic_d80:
-                lines.append(("WARNING", "The stick sits in its storage mode (a small disk with the Windows driver). "
-                                         "Bazzite's kernel has no driver for its AIC8800D80 chip: this stick does not "
-                                         "work on Bazzite as it is."))
+                lines.append(("WARNING", "The stick is in its storage mode. In this mode it shows a small disk with "
+                                         "the Windows driver. Bazzite's kernel has no driver for its AIC8800D80 chip. "
+                                         "This stick does not work on Bazzite as it is."))
                 lines.append(("HINT", KERNEL_STICKS))
             else:
-                lines.append(("NOTE", "The stick sits in its storage mode (a small disk with the Windows driver); "
-                                      "its Wi-Fi comes up once that disk is ejected."))
+                lines.append(("NOTE", "The stick is in its storage mode. In this mode it shows a small disk with the "
+                                      "Windows driver. Its Wi-Fi comes up once you eject that disk."))
                 lines.append(("HINT", "sudo eject /dev/sdX (the stick's disk, see lsblk), then look again."))
         elif verdict == "aic":
             if any(d in AIC_MODULES for d in a.drivers):
-                lines.append(("NOTE", "An installed AIC8800 driver has the stick but made no interface: the chip "
-                                      "refused it."))
+                lines.append(("NOTE", "An installed AIC8800 driver has the stick. It made no interface, because the "
+                                      "chip refused it."))
                 lines.append(("HINT", "Read why with: journalctl -k -b | grep -i aic"))
             else:
-                lines.append(("WARNING", "Bazzite's kernel has no driver for the AIC8800D80 chip: this stick does not "
+                lines.append(("WARNING", "Bazzite's kernel has no driver for the AIC8800D80 chip. This stick does not "
                                          "work on Bazzite as it is."))
                 lines.append(("HINT", KERNEL_STICKS))
         elif verdict == "firmware":
             lines.append(("WARNING", f"{', '.join(a.wifi_drivers)} has the adapter but not its firmware: "
                                      + ", ".join(a.firmware_missing) + "."))
-            lines.append(("HINT", "Bazzite ships firmware in its image (read-only): a newer image may have the file. "
+            lines.append(("HINT", "Bazzite ships firmware in its image (read-only). A newer image may have the file. "
                                   "Until then this adapter does not work."))
         elif verdict == "no-interface":
             lines.append(("WARNING", f"{', '.join(a.wifi_drivers)} has the adapter but made no network interface."))
@@ -364,10 +364,10 @@ def report(adapters: tuple[Adapter, ...], modules: Modules) -> list[tuple[str, s
         elif verdict == "not-loaded":
             lines.append(("WARNING", f"Kernel {modules.kernel} has a driver for it ({', '.join(a.claiming)}), "
                                      + ("loaded but not bound to it." if a.loaded else "but it is not loaded.")))
-            lines.append(("HINT", f"Load it with: sudo modprobe {a.claiming[0]}   (when that says nothing and no "
-                                  "interface comes, the module may be blacklisted in /etc/modprobe.d)"))
+            lines.append(("HINT", f"Load it with: sudo modprobe {a.claiming[0]}   If that says nothing and no "
+                                  "interface comes, a file in /etc/modprobe.d may blacklist the module."))
         else:
-            lines.append(("WARNING", f"Kernel {modules.kernel} has no driver for {a.usb_id}: this adapter does not "
+            lines.append(("WARNING", f"Kernel {modules.kernel} has no driver for {a.usb_id}. This adapter does not "
                                      "work on Bazzite as it is."))
             lines.append(("HINT", KERNEL_STICKS))
     return lines

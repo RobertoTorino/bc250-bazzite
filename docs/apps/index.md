@@ -16,6 +16,20 @@ needs the app to have the focus, and is left out where the controller belongs to
 Play apps (a stream's window keeps all its keys too, Escape among them), in BC-250 Controller and in System Overlay. A
 controller Steam Input owns sends what its desktop layout says, by default Escape for B.
 
+**The controller in an app.** You can work every app with a controller, as you work the portal:
+
+- The d-pad and the left stick move the focus to the nearest control in that direction. Hold a direction to repeat
+  it. In a list they move through its rows first, and in an open menu through its entries.
+- **A** presses what has the focus. It presses a button or a pill, checks a box, opens a list or picks the entry of
+  an open menu.
+- **LB** and **RB** open the tab before or after. They pass over a tab that acts at once, such as **Clear logs**.
+- **B** closes an open menu, then a question or a dialog, then the window.
+- The touchpad of a DualShock 4, a DualSense or a DualSense Edge moves the mouse pointer. Press the pad to click,
+  and press it with two fingers on it for a right click. **Touchpad** on the portal's Settings page sets the speed.
+
+The controller only works in the app that has the focus, and only after a moment. So the press that opened an app
+never acts in it. The same apps as above leave the controller to what they do.
+
 **Sustainable**: the board itself: test it, tune it, unlock it, cool it, and keep it running well.
 
 | App | What it does |

@@ -35,12 +35,12 @@ from .settings import BANDWIDTH_NAMES, CONTROL_DEFAULTS, VIEWS, CameraSettings
 INTERVAL_MS = 1000
 AUTO_GRACE_S = 3.0                  # the load service sends the firmware at plug-in; the window takes what it left
 PICTURE_MIN = (640, 360)
-ACCESS_NEW = ("Before its firmware is loaded, the camera is a boot loader that only root may use. Allow access adds a "
-              "udev rule for it (it asks for your password, once): then your user sends the firmware, by itself each "
-              "time the camera is plugged in, and the camera stays powered, so it keeps its picture settings.")
-ACCESS_OUTDATED = ("The camera's udev rule is from an earlier version of the app. Allow access updates it (it asks for "
-                   "your password): the camera then stays powered while it is plugged in, so it keeps its picture "
-                   "settings; without it, the picture falls back to dark a moment after an app lets go of it.")
+ACCESS_NEW = ("Until it has its firmware, the camera is a bootloader that only root may use. Allow access adds a "
+              "udev rule for it. It asks for your password, once. Then your user sends the firmware, by itself each "
+              "time you plug in the camera. The camera also stays powered, so it keeps its picture settings.")
+ACCESS_OUTDATED = ("The camera's udev rule is from an earlier version of the app. Allow access updates it, and asks "
+                   "for your password. The camera then stays powered while it is plugged in, so it keeps its picture "
+                   "settings. Without the update, the picture turns dark again a moment after an app lets go of it.")
 
 
 def _job(function: Callable, *args) -> Callable[[], object]:
@@ -144,9 +144,9 @@ class MainWindow(QWidget):
         firmware_group = QGroupBox("Firmware")
         firmware_layout = QVBoxLayout(firmware_group)
         firmware_layout.addWidget(hint_label(
-            "The camera has no memory of its own: it needs its firmware each time it is plugged in, as a PlayStation "
-            "sends it. The firmware is Sony's, so the suite does not include it: Download gets it from a project that "
-            "publishes it and checks that it is the expected file, or use a file of your own."))
+            "The camera has no memory of its own. It needs its firmware each time you plug it in, as on a PlayStation. "
+            "The firmware is Sony's, so the suite does not include it. Download gets it from a project that "
+            "publishes it, and checks that it is the expected file. Or use a file of your own."))
         self.firmware_text = QLabel()
         self.firmware_text.setWordWrap(True)
         self.firmware_text.setTextFormat(Qt.TextFormat.RichText)
@@ -173,10 +173,10 @@ class MainWindow(QWidget):
             self.bandwidth_combo.addItem(text, key)
         self.bandwidth_combo.setCurrentIndex(max(0, self.bandwidth_combo.findData(self.settings.get("bandwidth"))))
         self.bandwidth_combo.setToolTip(
-            "The firmware asks for the most video bandwidth USB 3 has, which some USB controllers refuse: then the "
-            "camera sends no picture at all. Reduced asks for two thirds of it; every one-camera mode still runs at "
-            "its full rate. It takes effect the next time the firmware is sent: unplug the camera and plug it in "
-            "again.")
+            "The firmware asks for the most video bandwidth USB 3 has. Some USB controllers refuse that, and then "
+            "the camera sends no picture at all. Reduced asks for two thirds of it. Every one-camera mode still runs "
+            "at its full rate. A change takes effect the next time the app sends the firmware. So unplug the camera "
+            "and plug it in again.")
         self.bandwidth_combo.activated.connect(lambda _i: self.settings.set("bandwidth",
                                                                             self.bandwidth_combo.currentData()))
         bandwidth.addWidget(QLabel("USB bandwidth"))
@@ -190,7 +190,8 @@ class MainWindow(QWidget):
         controls = QGridLayout()
         self.mode_combo = QComboBox()
         self.mode_combo.setMinimumContentsLength(32)
-        self.mode_combo.setToolTip("Every mode the camera reports: one camera's picture, or both side by side.")
+        self.mode_combo.setToolTip("Every mode the camera reports. A mode gives one camera's picture, or both side by "
+                                   "side.")
         self.mode_combo.activated.connect(self.set_mode)
         self.view_combo = QComboBox()
         for key, text in VIEWS.items():
@@ -208,7 +209,7 @@ class MainWindow(QWidget):
         self.save_button.clicked.connect(self.save_picture)
         self.full_button = QPushButton("Full screen")
         self.full_button.setToolTip("The picture over the whole screen, with screenshots, recordings, zoom and black "
-                                    "and white; Esc comes back")
+                                    "and white. Esc brings you back.")
         self.full_button.clicked.connect(self.enter_full)
         controls.addWidget(QLabel("Mode"), 0, 0)
         controls.addWidget(self.mode_combo, 0, 1)
@@ -290,15 +291,16 @@ class MainWindow(QWidget):
         if self.loading:
             state = ("Loading the firmware", "info", "The camera comes back as a camera in a few seconds.")
         elif found is None:
-            state = ("No camera", "neutral", "Plug in the PS5 HD Camera, into a USB 3 port; the app finds "
+            state = ("No camera", "neutral", "Plug the PS5 HD Camera into a USB 3 port. The app finds "
                                              f"it by itself. {camera.NOT_FOUND}")
         elif found.booted:
-            state = (("Ready", "ok", f"The {found.name} is a camera: other apps can use it while the preview is off.")
-                     if found.videos else ("Starting", "info", "The camera is back; its video node follows."))
+            state = (("Ready", "ok", f"The {found.name} is a camera now. Other apps can use it while the preview is "
+                                     "off.")
+                     if found.videos else ("Starting", "info", "The camera is back. Its video node follows."))
         elif data is None:
             state = ("Needs its firmware", "warn", "Download it or use a file of your own, below.")
         elif not self.writable(found.node(self.dev)):
-            state = ("No access", "warn", "Allow access gives your user the camera's boot loader.")
+            state = ("No access", "warn", "Allow access gives your user the camera's bootloader.")
         elif found.port in self.problem:
             state = ("Firmware not loaded", "bad", self.problem[found.port])
         else:
@@ -308,7 +310,7 @@ class MainWindow(QWidget):
         self.camera_box.set_value(found.name if found else "—", f"Port {found.port}" if found else "")
         slow = found is not None and found.slow
         self.usb_box.set_value(_speed(found.speed_mbps) if found else "—",
-                               "The camera's video needs a USB 3 port (5 Gbit/s); this one is slower. Use a blue "
+                               "The camera's video needs a USB 3 port (5 Gbit/s). This one is slower. Use a blue "
                                "port." if slow else "")
         self.usb_box.set_colour(STATE_COLORS["warn"] if slow else GREY)
         self._show_firmware(data)
@@ -320,7 +322,7 @@ class MainWindow(QWidget):
         self.download_button.setEnabled(not self.download_job.running and pinned is not None)
         self.download_button.setToolTip(f"Downloads the {model_name}'s firmware ({pinned.size // 1024} KB) from "
                                         f"{pinned.source} and checks it." if pinned else
-                                        "There is no download for this camera's firmware: use a file.")
+                                        "No download exists for this camera's firmware. Use a file instead.")
 
     # --------------------------------------------------------------- firmware
     def _show_firmware(self, data: bytes | None) -> None:
@@ -334,7 +336,7 @@ class MainWindow(QWidget):
         found, digest = firmware.known(data), firmware.sha256(data)
         where = firmware.path(self.model(), self.firmware_home)
         check = (f"SHA-256 checked: it is the known file {found.name}." if found else
-                 "SHA-256 checked: not a file the app knows. It is your choice; the camera may not take it.")
+                 "SHA-256 checked: not a file the app knows. Using it is your choice. The camera may not take it.")
         colour = STATE_COLORS["ok" if found else "warn"]
         self.firmware_box.set_value(firmware.short(data), f"{check}\nSHA-256 {digest}")
         self.firmware_box.set_colour(colour)
@@ -374,8 +376,10 @@ class MainWindow(QWidget):
         pinned = firmware.PINNED[model]
         answer = QMessageBox.question(
             self, window_title("Download the firmware"),
-            f"This downloads the {camera.MODELS[model]}'s firmware ({pinned.size // 1024} KB) from {pinned.source} "
-            "and checks that it is the expected file. It is the app's only use of the network.")
+            f"Download the {camera.MODELS[model]}'s firmware?\n\n"
+            f"The file is {pinned.size // 1024} KB, from {pinned.source}.\n"
+            "The app checks that it is the expected file.\n"
+            "This is the app's only use of the network.")
         if answer == QMessageBox.StandardButton.Yes:
             self.download_job.start(_job(firmware.download, model, self.firmware_home, self.get))
             self.show_state()
@@ -413,11 +417,12 @@ class MainWindow(QWidget):
         self.controls_grid = QGridLayout()
         box.addLayout(self.controls_grid)
         self.controls_text = hint_label("The camera's own settings, as it reports them. The app sets them again each "
-                                        "time the camera is plugged in; other apps get the same picture.")
+                                        "time you plug in the camera. Other apps get the same picture.")
         box.addWidget(self.controls_text)
         self.defaults_button = QPushButton("Defaults")
-        self.defaults_button.setToolTip("Puts every setting back to its default: the camera's own, with the exposure "
-                                        "on Auto Mode, which the camera's own default leaves dark.")
+        self.defaults_button.setToolTip("Puts every setting back to its default. That is the camera's own default, but "
+                                        "with the exposure on Auto Mode. The camera's own default exposure leaves the "
+                                        "picture dark.")
         self.defaults_button.clicked.connect(self.reset_controls)
         box.addWidget(self.defaults_button, 0, Qt.AlignmentFlag.AlignLeft)
         box.addStretch(1)
@@ -463,8 +468,8 @@ class MainWindow(QWidget):
         self.controls_box.setEnabled(True)
         self.controls_text.setText(
             f"The camera refused {', '.join(refused)}." if refused else
-            "The camera's own settings, as it reports them. The app sets them again each time the camera is plugged "
-            "in; other apps get the same picture.")
+            "The camera's own settings, as it reports them. The app sets them again each time you plug in the "
+            "camera. Other apps get the same picture.")
 
     def _show_controls(self, listed: list[controls.Control]) -> None:
         """Values and what may be changed: a setting the camera does not let be changed is grayed, the whole row
@@ -714,7 +719,7 @@ class MainWindow(QWidget):
         if self.full is None:
             return
         if self.recording.running:
-            self.full.say("Stop the recording first: the mode does not change while it records.")
+            self.full.say("Stop the recording first. The mode does not change while it records.")
             return
         at = self.mode_combo.currentIndex() + delta
         if at < 0 or at >= self.mode_combo.count():
@@ -733,7 +738,7 @@ class MainWindow(QWidget):
         if self.full is None:
             return
         if self.last is None:
-            self.full.say("There is no picture to save yet.", ok=False)
+            self.full.say("No picture to save yet.", ok=False)
             return
         path = record.new_path(self.pictures(), ".png")
         try:
@@ -754,7 +759,7 @@ class MainWindow(QWidget):
             return
         chosen = self.mode()
         if not self.preview.running or chosen is None or self.image is None:
-            self.full.say("There is no picture to record: choose a mode that gives one.", ok=False)
+            self.full.say("No picture to record. Choose a mode that gives one.", ok=False)
             return
         _x, _y, width, height = modes.crop(self.image.width(), self.image.height(), self.view())
         problem = self.recording.start(record.new_path(self.videos(), ".mp4"), width, height)

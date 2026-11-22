@@ -62,19 +62,20 @@ def stream_sound(name: str, path: Path | None = None) -> tuple[float, bool] | No
 
 def tip(app: str) -> str:
     """The tooltip of the row that shows it."""
-    return (f"The volume Bazzite's sound settings remember for {app}, apart from {app}'s own volume beside it and "
-            "the system's: the sound applet (the speaker in the panel) under Applications while a game plays. "
-            f"Bazzite keeps it for {app} after that; the app only reads it.")
+    return (f"The volume that Bazzite's sound settings remember for {app}. {app}'s own volume beside it and the "
+            "system's volume are separate from it. You set it in the sound applet, the speaker in the panel, under "
+            f"Applications while a game plays. Bazzite keeps it for {app} after that. The app only reads it.")
 
 
 def muted_text(app: str) -> str:
-    return (f"{app}'s sound is muted in Bazzite's sound settings, which remember it: Unmute beside it in the "
+    return (f"{app}'s sound is muted in Bazzite's sound settings, which remember it. Unmute beside it in the "
             "Settings tab turns it on again.")
 
 
 def down_text(app: str) -> str:
-    return (f"{app}'s sound is turned down to 0 % in Bazzite's sound settings, which remember it: turn {app} up in "
-            "the sound applet (the speaker in the panel, under Applications) while a game plays.")
+    return (f"{app}'s sound is turned down to 0 % in Bazzite's sound settings, which remember it. To change it, "
+            f"turn {app} up in the sound applet while a game plays. The applet is the speaker in the panel, and "
+            f"{app} is under Applications.")
 
 
 def describe(app: str, sound: tuple[float, bool] | None) -> tuple[str, str]:

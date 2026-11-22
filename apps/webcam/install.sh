@@ -86,7 +86,7 @@ if $UNINSTALL; then
         exit 0
     fi
     if [ -e "$UDEV_RULE" ]; then
-        info "Removing the udev rule for the camera's boot loader (sudo)"
+        info "Removing the udev rule for the camera's bootloader (sudo)"
         as_root rm -f "$UDEV_RULE"
         as_root udevadm control --reload >/dev/null 2>&1 || true
     fi
@@ -219,6 +219,6 @@ chmod 644 "$UNIT_DIR/$SERVICE"
 ln -sfn "../$SERVICE" "$UNIT_DIR/default.target.wants/$SERVICE"
 systemctl --user daemon-reload >/dev/null 2>&1 || true
 
-[ -e "$UDEV_RULE" ] || info "The first time, the app asks for your password once to give your user the camera's boot loader (Allow access)."
+[ -e "$UDEV_RULE" ] || info "The first time, Allow access in the app asks for your password once. It gives your user the camera's bootloader."
 info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run: $APP_ID"
 case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) info "Note: ~/.local/bin is not on your PATH, so the terminal command needs the full path: $LAUNCHER" ;; esac

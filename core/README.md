@@ -6,10 +6,18 @@
 
 # bc250_core
 
-Code shared by the suite's apps: theme, widgets, settings, help, update checks and platform helpers. Each app's
-release carries the core it was tested with.
+bc250_core holds the code that the suite's apps share:
 
-What is in it: [bc250_core in the wiki](https://robertotorino.github.io/bc250-bazzite/development/#bc250_core).
+- the theme
+- the widgets
+- the settings
+- help
+- update checks
+- platform helpers
+
+Each app's release carries the core it was tested with.
+
+[bc250_core in the wiki](https://robertotorino.github.io/bc250-bazzite/development/#bc250_core) lists what is in it.
 
 ## License
 

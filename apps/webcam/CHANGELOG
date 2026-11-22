@@ -1,3 +1,15 @@
+Changelog: 22-11-2026 20:26:16
+
+Fixed. The text of the wiki chapter, the README, the window's hints, tooltips, states and messages, the full screen's
+tooltips and messages, the preview's, loader's and firmware's messages and two installer messages was rewritten to the
+writing standard: short sentences, one fact each, no chains, the purpose first. "Boot loader" is now written
+"bootloader", and the wiki and the README explain it the first time. The question before Download now asks first and
+gives one fact per line. The README links to the wiki, where it said manual. No label was renamed. The wiki said that
+the open window also sends the firmware itself while Load it by itself when the camera is plugged in is off. It does
+that only while the option is on, and the wiki now says so. The installer's shared messages and "Not authorized: the
+password dialog was canceled or refused." keep their wording. Nothing the app does has changed. In
+tests/test_main_window.py the test of the screenshot without a picture now looks for the new wording.
+
 Changelog: 22-11-2026 18:40:26
 
 Release 2.7.1.

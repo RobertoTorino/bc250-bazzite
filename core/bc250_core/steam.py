@@ -176,7 +176,7 @@ def play(url: str, open_url: Callable[[str], bool], started: Callable[[], bool],
                 return
             sleep(1)
             waited += 1
-    raise SteamError("Steam did not start it: look in Steam, which may be asking something.")
+    raise SteamError("Steam did not start it. Look in Steam, which may be asking something.")
 
 
 # What a controller reader of ours gives SDL while it starts. Steam started with them opened no window: its web
@@ -214,7 +214,7 @@ def with_steam_closed(change: Callable[[], None], run: Run = _run, running: Call
         waited = 0.0
         while running():
             if waited >= timeout:
-                raise SteamError(f"Steam did not close within {timeout:g} seconds; nothing was changed.")
+                raise SteamError(f"Steam did not close within {timeout:g} seconds. Nothing changed.")
             sleep(0.5)
             waited += 0.5
     try:

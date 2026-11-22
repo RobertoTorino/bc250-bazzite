@@ -91,9 +91,9 @@ def edit_key(parent=None, path: Path | None = None, button: str = "Update Game M
         "Steam's library shows each game with a cover, its page with a banner. Where a game brings no pictures in "
         f"Steam's shapes, the app draws them. With a SteamGridDB API key, {button} looks each game up on "
         "SteamGridDB by its title and takes the pictures with the most votes instead.\n\n"
-        "The key is free with a SteamGridDB account: in your account click Preferences, then the API tab at the "
-        f"top, then Generate API Key, and copy the key ({KEY_PAGE}).\n"
-        "It is one key for every app of the suite. Leave it empty to look nothing up.")
+        "The key is free with a SteamGridDB account. In your account, click Preferences, then the API tab at the "
+        f"top, then Generate API Key. Copy the key ({KEY_PAGE}).\n"
+        "One key serves every app of the suite. Leave it empty to look nothing up.")
     # The text wrapped at a readable width, which also sets the field's width; as one line it made the dialog as
     # wide as the screen (owner, 24-10-2026). QInputDialog makes its label when the text is set.
     label = dialog.findChild(QLabel)
@@ -198,7 +198,7 @@ def _api(path: str, key: str, get: Get) -> list[dict]:
         if error.code == 404:
             return []
         if error.code in (401, 403):
-            raise CoverError("SteamGridDB refused the API key: check it under Covers…") from error
+            raise CoverError("SteamGridDB refused the API key. Check it under Covers…") from error
         raise CoverError(f"SteamGridDB answered {error.code}.") from error
     except (urllib.error.URLError, OSError, ValueError) as error:
         reason = str(getattr(error, "reason", error))
@@ -261,7 +261,7 @@ def fetch(games: Iterable[tuple[str, str]], kinds: Sequence[str], key: str, home
                 part.replace(path)
                 got = True
         except CoverError as error:
-            notes.append(f"Covers: {error} The drawn pictures are used for the games without them.")
+            notes.append(f"Covers: {error} The games without pictures get the drawn ones.")
             break
         asked += 1
         found += got

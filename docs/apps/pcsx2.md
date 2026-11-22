@@ -167,6 +167,10 @@ A game PCSX2 does not know gets its file's name, without a serial in it. So `SLU
 **PCSX2 settings**, left of it, opens PCSX2's own window. Use it for what the Settings tab does not set: PCSX2's other
 settings, the controllers and its game list.
 
+**Exit PCSX2**, the first button under the games, closes PCSX2 from the app. Use it when the line under the tabs asks
+you to close PCSX2 first. The button is on only while PCSX2 runs. A click ends PCSX2 at once, with no question. A game
+that is running ends without saving.
+
 **Games Uninstall**, the pill above, deletes the chosen game from the disk.
 
 1. A window first lists what would go, a row each with its size. These are the disc image, and its Steam shortcut

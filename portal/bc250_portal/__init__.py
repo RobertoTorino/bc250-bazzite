@@ -7,7 +7,7 @@ __version__ = "26.12.0"
 # The suite's stage, shown beside the version in the header and in a portal release's notes; "" when it leaves
 # active development. The README's badge and the wiki's home page say the same (tools/tests/test_stage.py).
 STAGE = "Beta"
-STAGE_NOTE = "The suite is in active development: features and layout may still change between releases."
+STAGE_NOTE = "The suite is in active development. Features and layout may still change between releases."
 
 from pathlib import Path
 

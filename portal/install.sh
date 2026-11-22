@@ -143,7 +143,7 @@ def present(paths):
 
 
 def installer_value(folder, name):
-    """APP_ID or APP_NAME as the install.sh in *folder* sets it; "" when it does not."""
+    """APP_ID or APP_NAME as the install.sh in *folder* sets it, or "" when it does not."""
     try:
         text = (folder / "install.sh").read_text(encoding="utf-8", errors="replace")
     except OSError:
@@ -168,7 +168,7 @@ def suite_installer(folder):
 
 
 def kept_folder(key, record):
-    """The release folder the portal kept for *key*: <tag>, or local-<key> for an install from the checkout."""
+    """The release folder the portal kept for *key*. It is <tag>, or local-<key> when the app came from the checkout."""
     return state / "releases" / (f"local-{key}" if record.startswith("local") else record)
 
 
@@ -224,7 +224,7 @@ uninstall_other_apps() {
     local -a chosen=() failed=()
     list=$(installed_apps "$STAGING/apps") || die "Could not read the list of installed apps."
     if $ALL && [ -n "$list" ]; then
-        { [ -t 0 ] || [ -n "${BC250_INTERACTIVE:-}" ]; } || die "--all needs a terminal to confirm; nothing was uninstalled."
+        { [ -t 0 ] || [ -n "${BC250_INTERACTIVE:-}" ]; } || die "--all needs a terminal to confirm. Nothing was uninstalled."
         names=$(cut -f2 <<<"$list" | paste -sd, - | sed 's/,/, /g')
         info "WARNING: --all removes the whole suite from this computer: $names, with the portal, Board Test and Quickfix."
         $PURGE && info "WARNING: --purge removes their settings, history and results as well."
@@ -252,7 +252,7 @@ uninstall_other_apps() {
     while IFS=$'\t' read -r key name folder commands; do
         [ -n "$key" ] && [[ " ${chosen[*]} " == *" $key "* ]] || continue
         if [ -z "$folder" ]; then
-            info "No uninstaller found for $name: remove it with its own install.sh --uninstall."
+            info "No uninstaller found for $name. Remove it with its own install.sh --uninstall."
             failed+=("$name")
             continue
         fi
@@ -262,13 +262,13 @@ uninstall_other_apps() {
         if (cd "$folder" && bash -c "$commands"); then
             forget_app "$key" "$folder"
         else
-            info "The uninstall of $name failed; see above."
+            info "The uninstall of $name failed. See above."
             failed+=("$name")
         fi
     done <<<"$list"
     [ ${#failed[@]} -eq 0 ] || info "Not uninstalled: ${failed[*]}"
     if $PURGE && [ ${#chosen[@]} -gt 0 ] && ! $ALL; then
-        info "Their own settings are kept: --purge applies to the portal, Board Test and Quickfix (with --all, to every app)."
+        info "Their own settings stay. --purge applies to the portal, Board Test and Quickfix. With --all, it applies to every app."
     fi
 }
 
@@ -529,5 +529,5 @@ case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) info "Note: ~/.local/bin is not 
 # A portal window that is still open keeps running the old version, and starting the portal again only brings that
 # window to the front: say so.
 if command -v pgrep >/dev/null 2>&1 && pgrep -u "$(id -u)" -f -- '-m bc250_portal' >/dev/null 2>&1; then
-    info "A $APP_NAME window is still open with the version from before: close it, then start it again."
+    info "A $APP_NAME window is still open with the version from before. Close it, then start it again."
 fi

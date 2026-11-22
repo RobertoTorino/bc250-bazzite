@@ -154,6 +154,10 @@ game by hand.
 **Vita3K settings**, under the games, opens Vita3K's own window. It has Vita3K's other settings, its controls and
 its game list. A game runs from Steam. [**Start game**](#start-game) starts the chosen game there.
 
+**Exit Vita3K**, the first button under the games, closes Vita3K from the app. Use it when the line under the tabs asks
+you to close Vita3K first. The button is on only while Vita3K runs. A click ends Vita3K at once, with no question. A
+game that is running ends without saving.
+
 #### Game updates and extra content
 
 You install an update or extra content (DLC) as a game. Press **Games Install** and choose its `.pkg` with its zRIF

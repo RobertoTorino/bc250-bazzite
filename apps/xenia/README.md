@@ -6,10 +6,11 @@
 
 # Xenia Manager
 
-Plays XBOX 360 games on the **AMD BC-250** on **Bazzite** with [Xenia](https://xenia.jp), in its Xenia Canary
-builds: installs a tested build, finds your games and adds them to Steam for Game Mode.
+Xenia Manager lets you play XBOX 360 games on the **AMD BC-250** with **Bazzite**. It uses
+[Xenia](https://xenia.jp), in its Xenia Canary builds. It installs the Xenia build it was tried with. It finds your
+games and adds them to Steam for Game Mode.
 
-How to install and use it: [Xenia Manager in the manual](https://robertotorino.github.io/bc250-bazzite/apps/xenia/).
+How to install and use it: [Xenia Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/xenia/).
 
 ## Disclaimer
 

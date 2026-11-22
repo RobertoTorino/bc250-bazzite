@@ -9,7 +9,7 @@
 Tools for the AMD BC-250 running Bazzite. The **[portal](portal)** installs, opens, updates and removes them:
 BC-250 Board Test is always installed, every other app is optional.
 
-**Beta:** The suite is in active development: features and layout may still change between releases.
+**Beta:** The suite is in active development. Features and layout may still change between releases.
 
 ![The wiki](portal/images/wiki.webp)
 
