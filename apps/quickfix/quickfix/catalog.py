@@ -18,9 +18,10 @@ class Quickfix:
 
 QUICKFIXES: tuple[Quickfix, ...] = (
     Quickfix("tools", "Quickfix",
-           "The optional tools Board Test's tests use: which are there, and their installer."),
+           "Shows the optional tools Board Test's tests use and which of them are there. "
+           "It installs the missing ones."),
     Quickfix("mangohud", "MangoHud Config",
-           "Open or create MangoHud's config, edit and save it; turn on the FPS log Board Test reads."),
+           "Open or create MangoHud's config, edit and save it. Turn on the FPS log Board Test reads."),
     Quickfix("metrics", "Fix GPU Metrics",
            "Let the GPU governor write the real GPU load into gpu_metrics, for the overlays.", changes_board=True),
     Quickfix("sensors", "Sensors Module",

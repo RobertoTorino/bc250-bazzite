@@ -1,3 +1,9 @@
+Changelog: 23-11-2026 05:10:40
+
+Fixed. The summaries of Quickfix and MangoHud Config in the app's list are the portal's rewritten ones now. The
+two texts had stayed behind when the portal's summaries were rewritten, so the catalog test failed. Nothing the app
+does has changed.
+
 Changelog: 23-11-2026 02:16:05
 
 Fixed. The "Changes the board" texts of the quickfixes in the portal and the wiki chapter are rewritten to the writing
