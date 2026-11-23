@@ -1,3 +1,172 @@
+Changelog: 23-11-2026 02:38:19
+
+Fixed. The App categories page in the wiki takes the portal's new tooltips for Gaming and Utilities. The Utilities
+row now also names the SSD check, Bluetooth pairing at boot and the small quickfixes.
+
+Changelog: 23-11-2026 02:25:58
+
+Fixed. The wiki's App categories page is rewritten to the writing standard, in shorter sentences with one fact each.
+The four kinds of app are now a list. The Graphics and Utilities rows of the legend take the wording of the portal's
+category tooltips. No label was renamed. No fact was wrong. Nothing the app does has changed. No test changed.
+
+Changelog: 23-11-2026 01:46:54
+
+Fixed. The README and the Apps page of the wiki say that the six emulator managers add the games to Steam, not to
+Game Mode. That is what each manager's own wiki chapter says.
+
+Changelog: 23-11-2026 01:42:25
+
+Fixed. The root README is rewritten to the writing standard, in shorter sentences with one fact each. BC-250 Quickfix's
+quickfixes and the development tools are now lists. No label was renamed. The introduction said only BC-250 Board Test
+is always installed. BC-250 Quickfix is always installed too, as portal/apps.toml requires it. The list of tools Nexus
+Dashboard opens left out Nexus Deps and Nexus Garbage Remover. The dashboard finds them in dev/ like the others. The
+disclaimer is kept word for word. Nothing the app does has changed. No test changed.
+
+Changelog: 23-11-2026 01:41:09
+
+Fixed. CONTRIBUTING.md is rewritten to the writing standard, in shorter sentences with one fact each. The license
+list, the icon steps and the checklist before a pull request say the same as before. No label was renamed. No fact
+was corrected. Nothing the app does has changed. No test changed.
+
+Changelog: 23-11-2026 01:37:31
+
+Fixed. The Board Test page in the Development chapter lists test 46, CPU Voltage, under CPU and firmware. The script
+runs it, and test 25's hint points to it, but no table on the page named it. The row says what the app's own chapter
+says.
+
+Fixed. The Board Test plan page no longer holds notes from one test run. The upload latency of that run is gone, and
+so is the note that the app assumes where the GPU load sits in its sensor file. The check against MangoHud's GPU %
+stays.
+
+Changelog: 23-11-2026 00:30:13
+
+Fixed. The Development chapter's index page is rewritten to the writing standard, in shorter sentences with one
+fact each. The pages it points to, what CI checks, when every job runs, what clean_caches.py removes, the colors
+DESIGN.md places, the files record-tour.sh --wiki writes and what check_upstream.py reports per upstream are now
+lists. The bc250_core table says the same in short sentences. No label was renamed. One fact was corrected: when the
+Upstream review issue is closed before its items are handled, the next Monday's run opens a new issue for them, not
+the same one again. The processes row of the bc250_core table now shows Exit <emulator>. The wiki read <emulator>
+as a tag and left it out. Nothing the app does has changed. No test changed.
+
+Changelog: 23-11-2026 00:26:26
+
+Fixed. The Development chapter's Releases page is rewritten to the writing standard, in shorter sentences with one
+fact each. What a release writes, the step signs, the steps' parts, the window's tabs, the tests' cleanup, the
+polling times, the ticker's contents and the refusals of tag-release.sh are now lists. The page says afterward and
+anymore. No label was renamed. No fact was corrected. Nothing the app does has changed. No test changed.
+
+Changelog: 23-11-2026 00:26:11
+
+Fixed. The Development chapter's Memory Manager internals page is rewritten to the writing standard, in shorter
+sentences with one fact each. The page's introduction and the GTT limit's presets are now lists. No label was
+renamed. No fact was corrected. Nothing the app does has changed. No test changed.
+
+Changelog: 23-11-2026 00:25:15
+
+Fixed. The Development chapter's GitHub settings page is rewritten to the writing standard, in shorter sentences
+with one fact each. The workflows' own permissions, the guards on a release, Dependabot's other comments and GitHub's
+two API limits are now lists. The page says check instead of tick. No label was renamed. No fact was corrected.
+Nothing the app does has changed. No test changed.
+
+Changelog: 22-11-2026 23:36:33
+
+Fixed. The Development chapter's Board Test script page is rewritten to the writing standard, in shorter sentences
+with one fact each. The speed test history columns, the sources test 53 reads, the warning levels for VRAM and GTT,
+the sources test 45 counts, the checks of a long stress test, the stress run's memory safety, the properties of the
+ACPI fix and the verdicts of the CU bisect are now lists. The page says restart instead of reboot and turn on instead
+of enable outside the commands. No label was renamed. No fact was corrected. Nothing the app does has changed. No test
+changed.
+
+Changelog: 22-11-2026 23:36:12
+
+Fixed. The Development chapter's Dashboard page is rewritten to the writing standard, in shorter sentences with one
+fact each. Sound Lab's sliders, the updates Nexus Deps shows, the care notes on its cards, the steps of a new Fedora
+release, the CVE marks and the hourly reminder's notices are now lists. The page says check and uncheck instead of
+tick and untick, and checkbox instead of tick box. No label was renamed. No fact was corrected. Nothing the app does
+has changed. No test changed.
+
+Changelog: 22-11-2026 23:35:43
+
+Fixed. The Development chapter's Architecture and consistency page is rewritten to the writing standard, in shorter
+sentences with one fact each. The app folder's naming rules, the native core, the start-up, the window's widgets, the
+theme, the controller keys, the icons, the code style, the tests and the steps for a new app are now lists. The page
+says wiki instead of manual. The words clippy, uinput and docstring are added to tools/text_check/words.txt. No label
+was renamed. Two facts were corrected. The page named a CI layout job, and the checks for the four files, LF line
+endings and executable scripts now name CI's shell job, which runs them. The page said CI runs each installer test in
+its own step, and it now says CI runs them side by side, each in a log group of its own. Nothing the app does has
+changed. No test changed.
+
+Changelog: 22-11-2026 23:33:22
+
+Fixed. The Development chapter's page on BC-250 Board Test's internals is rewritten to the writing standard, in
+shorter sentences with one fact each. How the GUI calls the script, the button colors, the health score, the Settings
+sections, the Privacy options and the System overview boxes are now lists. No label was renamed. One fact was
+corrected: the page named the Privacy options in its own words, such as "run with sudo", and now names them as the
+window shows them, such as **Run the tests with admin privileges (sudo)** and **Forget sudo authentication now**.
+Nothing the app does has changed. No test changed.
+
+Changelog: 22-11-2026 23:32:51
+
+Fixed. The Development chapter's page on PS Remote Play's stream threads is rewritten to the writing standard, in
+shorter sentences with one fact each. The effects of the GIL, the slow calls and the recovery from lost packets are
+now lists. The page calls the app's manual its chapter in the wiki, and names chiaki-ng where it said "the
+reference". No label was renamed. No fact was corrected.
+Nothing the app does has changed. No test changed.
+
+Changelog: 22-11-2026 23:29:55
+
+Fixed. The wiki's Home page is rewritten to the writing standard, in shorter sentences with one fact each. The FAQ
+lists the apps that change the board, and the License section lists the sounds made without AI. It says "remove" for
+uninstall and "restart" for reboot. No label was renamed. One fact was corrected: the FAQ's list of what changes the
+board left out Quickfix, most of whose fixes the portal marks as changing the board. Nothing the app does has
+changed. No test changed.
+
+Changelog: 22-11-2026 23:29:31
+
+Fixed. The wiki's Board Test plan page is rewritten to the writing standard, in shorter sentences with one fact
+each, and with lists for the disk write test and the speed test's graph. It says "check" for a box, as the window
+does, and "restart" for reboot outside the commands. It names the write test's box in full, **Disk speed test (43):
+also test writes**, as the window shows it. No label was renamed and no fact was corrected. Nothing the app does has
+changed. No test changed.
+
+Changelog: 22-11-2026 23:29:16
+
+Fixed. The wiki's Privacy page is rewritten to the writing standard, in shorter sentences with one fact each,
+and with lists for Nexus Deps' cards, the details that can identify you and the apps that mask them. No label was
+renamed and no fact was corrected. Nothing the app does has changed. No test changed.
+
+Changelog: 22-11-2026 23:29:23
+
+Fixed. The wiki's Security page (docs/SECURITY.md) is rewritten to the writing standard, in shorter sentences with
+one fact each and lists for what Nexus Deps checks, what its Fix changes and what the board-changing apps change.
+Every command, path, link and heading stays. No label was renamed. One fact is corrected: the page said "the app"
+checks its "test files" before every run, and it is Board Test that checks its test engine. Nothing the app does has
+changed. No test changed.
+
+Changelog: 22-11-2026 23:29:02
+
+Fixed. The wiki's "What is Bazzite?" page is rewritten to the writing standard, in shorter sentences with one fact
+each. No label was renamed and no fact was corrected. Nothing the app does has changed. No test changed.
+
+Changelog: 22-11-2026 23:29:06
+
+Fixed. The wiki's page What is the BC-250? (docs/history/bc250.md) is rewritten to the writing standard: shorter
+sentences with one fact each, no chains after colons or semicolons, and the community's work as a list. Every number,
+link and heading stays. No labels are renamed and no facts are corrected. Nothing the app does has changed. No tests
+changed.
+
+Changelog: 22-11-2026 23:29:00
+
+Fixed. The wiki's Install page is rewritten to the writing standard, in shorter sentences with no chains. It says
+"remove" where it said "uninstall", explains the word venv, and names the portal's **Reinstall** action in bold. No
+label was renamed and no fact was corrected. Nothing the app does has changed. No test changed.
+
+Changelog: 22-11-2026 23:28:58
+
+Fixed. The wiki's Portal Tour page is rewritten to the writing standard: what the video shows is now a list, and
+the line for a browser that cannot play the video is two sentences. No labels were renamed, and no facts were
+corrected. Nothing the app does has changed. No tests changed.
+
 Changelog: 22-11-2026 23:11:14
 
 Added. The wiki's portal chapter says that the TV remote moves the focus in the portal over HDMI, with no setup.

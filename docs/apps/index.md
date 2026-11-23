@@ -57,12 +57,12 @@ never acts in it. The same apps as above leave the controller to what they do.
 |---|---|
 | ![](../assets/apps/consoles.webp){ .app-icon } [BC-250 PS Remote Play](consoles.md) | Find, wake and register PS4 and PS5 consoles on the network, and start a Remote Play session. |
 | ![](../assets/apps/clb.webp){ .app-icon } [BC-250 XB Remote Play](clb.md) | Stream your XBOX (Remote Play) or games from XBOX Cloud Gaming to the board, signed in with your Microsoft account. |
-| ![](../assets/apps/shadps4.webp){ .app-icon } [shadPS4 Manager](shadps4.md) | PS4 games with the shadPS4 emulator: a tested shadPS4 release, your games found (or unpacked from .pkg files) and added to Game Mode. |
+| ![](../assets/apps/shadps4.webp){ .app-icon } [shadPS4 Manager](shadps4.md) | PS4 games with the shadPS4 emulator: a tested shadPS4 release, your games found (or unpacked from .pkg files) and added to Steam. |
 | ![](../assets/apps/rpcs3.webp){ .app-icon } [RPCS3 Manager](rpcs3.md) | PS3 games with the RPCS3 emulator: a tested RPCS3 build, the firmware, your games found and added to Steam. |
-| ![](../assets/apps/ppsspp.webp){ .app-icon } [PPSSPP Manager](ppsspp.md) | PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Game Mode. |
-| ![](../assets/apps/pcsx2.webp){ .app-icon } [PCSX2 Manager](pcsx2.md) | PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Game Mode. |
-| ![](../assets/apps/vita3k.webp){ .app-icon } [Vita3K Manager](vita3k.md) | PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Game Mode. |
-| ![](../assets/apps/xenia.webp){ .app-icon } [Xenia Manager](xenia.md) | XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Game Mode. |
+| ![](../assets/apps/ppsspp.webp){ .app-icon } [PPSSPP Manager](ppsspp.md) | PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Steam. |
+| ![](../assets/apps/pcsx2.webp){ .app-icon } [PCSX2 Manager](pcsx2.md) | PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Steam. |
+| ![](../assets/apps/vita3k.webp){ .app-icon } [Vita3K Manager](vita3k.md) | PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Steam. |
+| ![](../assets/apps/xenia.webp){ .app-icon } [Xenia Manager](xenia.md) | XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Steam. |
 | ![](../assets/apps/datstation.webp){ .app-icon } [Bazzite DatStation](datstation.md) | PlayStation quiz, console history, system versions, region codes, user guides and news, with your scores. |
 
 **Utilities**: handy tools around the board.

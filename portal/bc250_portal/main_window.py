@@ -171,10 +171,12 @@ LAUNCH_ICON_FILES: dict[tuple[str, str], str] = {}  # (key, label): an icon of o
 CATEGORY_HINTS = {
     "sustainable": "The board itself: test it, tune it, unlock it, cool it, and keep it running well for a long time.",
     "graphics": "Upscaling, async compute and mesh shaders for games on the board's GPU.",
-    "gaming": "Playing: emulators, Remote Play with your console, and PlayStation trivia.",
+    "gaming": "Apps for playing games. They include the emulators, Remote Play with your console and PlayStation "
+              "trivia.",
     "utilities": "Handy tools around the board. They include an overlay, a USB stats screen and the PS5 HD Camera "
-                 "as a webcam. Others cover the DualSense's firmware, the BIOS settings, the TV over HDMI-CEC, file "
-                 "transfer and a password generator.",
+                 "as a webcam. Others cover the DualSense's firmware, the BIOS settings, the TV over HDMI-CEC and "
+                 "file transfer. They also include an SSD check, Bluetooth pairing at boot, small quickfixes and a "
+                 "password generator.",
 }
 
 BOARD_WARNING = (

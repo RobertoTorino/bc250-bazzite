@@ -48,20 +48,20 @@ launch = [["Open", "~/.local/bin/bc250-board-test"]]
 
 [apps.gpu]
 name = "BC-250 GPU Manager"
-summary = "Manage the cyan-skillfish GPU governor: tuning, safe points, profiles, backups."
+summary = "Manage the cyan-skillfish GPU governor, with tuning, safe points, profiles and backups."
 tag = "bc250-gpu-v0.7.0"
 sha256 = "355a07e90eac9e2fefed615a720cdf6835155443763372d2abb054e3a093e8d9"
 required = false
 changes_board = true
 board_change = """
-The app edits the governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml, and makes a dated
-backup of it beside it before every write; it starts, stops, enables and disables the governor's service, and
-sends it clock, voltage and range requests over D-Bus. The governor is what sets the GPU's clocks and voltages;
-the app never writes a register itself. The settings file stays across reboots and power offs, and the governor
-reads it whenever it starts; what the app sets over D-Bus, test mode included, lasts until the governor
-restarts. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Restore on the
-Backups page makes any earlier settings file the current one again, and Stop test ends a test; uninstalling the
-app leaves the settings file and its backups as they are.
+The app edits the governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml. Before every write it
+makes a dated backup of the file beside it. It starts, stops, enables and disables the governor's service. It sends
+the governor clock, voltage and range requests over D-Bus. The governor is what sets the GPU's clocks and voltages.
+The app never writes a register itself. The settings file stays across reboots and power offs. The governor reads it
+whenever it starts. What the app sets over D-Bus, test mode included, lasts until the governor restarts. Nothing is
+written to the BIOS, the firmware, the CMOS or the kernel's arguments. Restore selected on the Backups page makes
+any earlier settings file the current one again. Stop test ends a test. Removing the app leaves the settings file
+and its backups as they are.
 """
 category = "sustainable"
 install = ["bash install.sh"]
@@ -71,7 +71,7 @@ launch = [["Open", "~/.local/bin/bc250-governor-manager"]]
 
 [apps.upscaler]
 name = "BC-250 Upscaler Manager"
-summary = "Deploy HelixSR (FSR 3.1 drop-in upscaler with DLSS-style networks) into games."
+summary = "Deploy HelixSR into games. HelixSR is a drop-in upscaler for FSR 3.1 with DLSS-style networks."
 tag = "bc250-upscaler-v5.8.0"
 sha256 = "cbd1b24c0f87f94d3f69875cdc3c6c1bf252557125e8e5a35482e512c295fb47"
 required = false
@@ -90,14 +90,14 @@ sha256 = "9c4331774cfc38a08d76394741b199e31e6683fa2a83d9dc19c9734d75d5ed38"
 required = false
 changes_board = true
 board_change = """
-The app writes the GPU's shader array and WGP mask registers with umr, as root, while the driver runs: that is
-the CU unlock. The registers are volatile: any reboot puts the stock 24 CUs back, and nothing is burned into the
-chip. The unlock stays across reboots and power offs only through the root service that CU Tools installs,
-bc250-cu-unlock.service with the masks in /etc/bc250-cu-bisect, which writes the registers again early at every
-boot. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Uninstall in CU Tools
-disables the service and removes its files; the unlock lasts until the next reboot, and the board is then stock.
-CU Tools reboots the board between its rounds, by itself with the unattended option, after a question
-otherwise.
+For the CU unlock, the app writes the GPU's shader array and WGP mask registers with umr. It does so as root, while
+the driver runs. The registers are volatile. Any reboot puts the stock 24 CUs back, and nothing is burned into the
+chip. The unlock stays across reboots and power offs only through the root service that CU Tools installs. That
+service is bc250-cu-unlock.service, with the masks in /etc/bc250-cu-bisect. It writes the registers again early at
+every boot. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Uninstall in CU Tools
+disables the service and removes its files. The unlock then lasts until the next reboot, and after it the board is
+stock. CU Tools restarts the board between its rounds. With the unattended option it does so by itself, otherwise
+after a question.
 """
 category = "sustainable"
 install = ["bash packaging/bazzite/install-bisect-gui.sh"]
@@ -113,15 +113,15 @@ sha256 = "e8c75c6a37f2dcdeef6543972210293f10de847060f59179168f0c99c223f359"
 required = false
 changes_board = true
 board_change = """
-The app sends the SoC's SMU one mailbox message over PCI configuration space with setpci, which sets the core
-presence mask to 0xFF in the SMU's own memory; the governor's service is stopped around the message, as it
-shares the mailbox, and started again. The mask takes effect on the next warm reboot, survives warm reboots, and
-a full power off reverts it to the stock 6 cores. The 8 cores stay across power offs only through the root
-service that CPU Tools installs, bc250-cores-unlock.service, which sends the message again after a cold boot
-and warm-reboots once, with a guard against reboot loops. Nothing is written to the BIOS, the firmware, the CMOS
-or the kernel's arguments. Uninstall in CPU Tools disables the service and removes its files; the cores stay
-on until the next full power off, and the board is then stock. CPU Tools reboots the board between its
-rounds, by itself with the unattended option, after a question otherwise.
+The app sends the SoC's SMU one mailbox message over PCI configuration space with setpci. The message sets the core
+presence mask to 0xFF in the SMU's own memory. The governor's service shares the mailbox, so the app stops it around
+the message and starts it again. The mask takes effect on the next warm reboot and survives warm reboots. A full
+power off reverts it to the stock 6 cores. The 8 cores stay across power offs only through the root service that CPU
+Tools installs, bc250-cores-unlock.service. After a cold boot the service sends the message again and warm-reboots
+once. A guard keeps it from reboot loops. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's
+arguments. Uninstall in CPU Tools disables the service and removes its files. The cores stay on until the next full
+power off, and after it the board is stock. CPU Tools restarts the board between its rounds. With the unattended
+option it does so by itself, otherwise after a question.
 """
 category = "sustainable"
 install = ["bash install.sh"]
@@ -137,14 +137,13 @@ sha256 = "7ca3de0a040c2ebe80f99fde17365060baa34da4893969fd52a81751b98fbe99"
 required = false
 changes_board = true
 board_change = """
-The app only changes the GPU governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml: for each
-attempt it puts a test clock and voltage in it and restarts the governor, which applies them, and puts your own
-file back after the attempt, on a temperature abort and when it exits. It never writes a register itself.
-Install writes the found safe point into the file, with a copy of the file from before it beside it, and
-restarts the governor; the file stays across reboots and power offs. A crash during an attempt can leave the
-test settings in the file until the script runs again and restores it first. Nothing is written to the BIOS, the
-firmware, the CMOS or the kernel's arguments. Uninstall copies the file from before the install back and
-restarts the governor.
+The app changes only the GPU governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml. For each
+attempt it puts a test clock and voltage in the file and restarts the governor, which applies them. It puts your own
+file back after the attempt, on a temperature abort and when it exits. It never writes a register itself. Install
+result writes the found safe point into the file and restarts the governor. It keeps a copy of the earlier file
+beside it. The file stays across reboots and power offs. A crash during an attempt can leave the test settings in
+the file. The script then restores the file first when it runs again. Nothing is written to the BIOS, the firmware,
+the CMOS or the kernel's arguments. Uninstall puts that copy back and restarts the governor.
 """
 category = "sustainable"
 install = ["bash install.sh"]
@@ -160,12 +159,12 @@ sha256 = "de350c507cb3f0af3d6b728db14dd0dd63332087c6f7993f9653658913d16b0c"
 required = false
 changes_board = true
 board_change = """
-The app copies three ACPI tables to /boot/acpi_override.cpio and adds one line to /etc/default/grub, then
-regenerates the GRUB configuration. At every boot GRUB hands the tables to the kernel, which uses them in memory
-instead of the BIOS's own. Both files stay across reboots, power offs and Bazzite updates. Nothing is written to
-the BIOS, the firmware or the CMOS: the BIOS keeps its own tables, and the override is gone the moment the two
-files are. Uninstall removes the file and the line, puts back any line that was there before, and regenerates
-GRUB; after the next reboot the board runs on the BIOS's tables again.
+The app copies three ACPI tables to /boot/acpi_override.cpio and adds one line to /etc/default/grub. Then it
+regenerates the GRUB configuration. At every boot GRUB hands the tables to the kernel. The kernel uses them in
+memory instead of the BIOS's own. Both files stay across reboots, power offs and Bazzite updates. Nothing is written
+to the BIOS, the firmware or the CMOS. The BIOS keeps its own tables, and the override is gone the moment the two
+files are. Uninstall removes the file and the line, puts back any line that was there before, and regenerates GRUB.
+After the next restart the board runs on the BIOS's tables again.
 """
 category = "sustainable"
 install = ["bash install.sh"]
@@ -201,20 +200,20 @@ launch = [["Open", "~/.local/bin/bc250-bios-reader"]]
 
 [apps.ace]
 name = "BC-250 ACE Queues"
-summary = "Async compute for games: a patched RADV beside the system Mesa, built on the board and tested before use."
+summary = "Async compute for games with a patched RADV beside the system Mesa. The driver is built on the board and tested before use."
 tag = "bc250-ace-v4.8.0"
 sha256 = "1688f3ccc2e0d9e10141692aca8e8443f67a29154cb415a533eaeb133ef45ad2"
 required = false
 changes_board = true
 board_change = """
-The app builds a patched RADV, Mesa's Vulkan driver, in a container and installs it under
-/usr/local/lib/bc250-ace-queues, beside the system Mesa, which is never changed, with a wrapper in
-/usr/local/bin. A game uses it only through the wrapper in its launch options, and only after the app's test
-passed on the running kernel. All apps adds an environment file under /etc and a small boot service that
-switches it off again when the kernel or the driver changes. The files stay across reboots, power offs and
-Bazzite updates. Nothing is written to the BIOS, the firmware, the kernel or its arguments. Remove takes the
-driver, the wrapper and the All apps files away: every app is back on the system Mesa, and the launch options
-you gave games must go by hand.
+The app builds a patched RADV, Mesa's Vulkan driver, in a container. It installs the driver under
+/usr/local/lib/bc250-ace-queues, beside the system Mesa, with a wrapper in /usr/local/bin. The system Mesa is never
+changed. A game uses the driver only through the wrapper in its launch options. It does so only after the app's test
+passed on the running kernel. All apps adds two environment files under /etc and a small boot service. The service
+switches them off again when the kernel or the driver changes. The files stay across reboots, power offs and Bazzite
+updates. Nothing is written to the BIOS, the firmware, the kernel or its arguments. Remove takes away the driver,
+the wrapper and the files of All apps. Every app is then back on the system Mesa. You must remove the launch options
+you gave games by hand.
 """
 category = "graphics"
 install = ["bash install.sh"]
@@ -224,18 +223,18 @@ launch = [["Open", "~/.local/bin/bc250-ace-queues"]]
 
 [apps.mesh]
 name = "BC-250 Mesh Shaders"
-summary = "Mesh shaders for games: RADV with DirectMesh beside the system Mesa, built on the board and tested before use."
+summary = "Mesh shaders for games with RADV and DirectMesh beside the system Mesa. The driver is built on the board and tested before use."
 tag = "bc250-mesh-v4.9.0"
 sha256 = "c6c08b57610937c7fc49110597b808ae05d8a86c3fa52eb688e707520cdd6f9e"
 required = false
 changes_board = true
 board_change = """
-The app builds RADV, Mesa's Vulkan driver, with DirectMesh in a container and installs it under
-/usr/local/lib/bc250-mesh-shaders, beside the system Mesa, which is never changed, with a wrapper in
-/usr/local/bin. A game uses it only through the wrapper in its launch options, and only after the app's test
-passed on the running kernel; nothing is set for every app. The files stay across reboots, power offs and
-Bazzite updates. Nothing is written to the BIOS, the firmware, the kernel or its arguments. Remove takes the
-driver and the wrapper away: games are back on the system Mesa, and the launch options you gave them must go by
+The app builds RADV, Mesa's Vulkan driver, with DirectMesh in a container. It installs the driver under
+/usr/local/lib/bc250-mesh-shaders, beside the system Mesa, with a wrapper in /usr/local/bin. The system Mesa is
+never changed. A game uses the driver only through the wrapper in its launch options. It does so only after the
+app's test passed on the running kernel. Nothing is set for every app. The files stay across reboots, power offs and
+Bazzite updates. Nothing is written to the BIOS, the firmware, the kernel or its arguments. Remove takes away the
+driver and the wrapper. Games are then back on the system Mesa. You must remove the launch options you gave them by
 hand.
 """
 category = "graphics"
@@ -252,18 +251,17 @@ sha256 = "375ab28584dac9b0ccc02ee8571b695f99ac37868e6ec61bb43a09500327a5e9"
 required = false
 changes_board = true
 board_change = """
-The app writes the VRAM split into the board's CMOS: the firmware's own memory block of 28 bytes in bank 2, with
-its checksum, and never a byte outside it. The firmware reads the split at the next boot. CMOS is kept by the
-board's battery, so the split stays across reboots and power offs until it is written again or the CMOS is
-cleared with the jumper or the battery, which brings the firmware's 512 MB back. The GTT limit is a kernel
-argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself, the firmware
-or the real-time clock, and the app refuses to write when the block's signature or checksum does not match or
-the kernel is locked down. Undo writes the previous split back, and the Default profile writes 512 MB and
-removes the kernel argument; both take effect after a reboot. The swap layout is a few files of the app's own in
-/etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit. The zswap
-layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started
-or stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap
-file.
+The app writes the VRAM split into the board's CMOS. It writes only the firmware's own memory block of 28 bytes in
+bank 2, with its checksum, and never a byte outside it. The firmware reads the split at the next boot. The board's
+battery keeps the CMOS. So the split stays across reboots and power offs until it is written again, or until the
+CMOS is cleared. Clearing the CMOS with the jumper or the battery brings the firmware's 512 MB back. The GTT limit
+is a kernel argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself, the
+firmware or the real-time clock. The app refuses to write when the block's signature or checksum does not match. It
+also refuses when the kernel is locked down. Undo writes the previous split back. The Default profile writes 512 MB
+and removes the kernel argument. Both take effect after a restart. The swap layout is a few files of the app's own
+in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit. The zswap
+layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started or
+stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap file.
 """
 category = "sustainable"
 install = ["bash install.sh"]
@@ -273,20 +271,20 @@ launch = [["Open", "~/.local/bin/bc250-memory-manager"]]
 
 [apps.fan]
 name = "BC-250 Fan Control"
-summary = "A thermal guard that warns, cools and shuts down cleanly at a critical temperature, and the fans."
+summary = "The fans, and a thermal guard that warns, cools and shuts down cleanly at a critical temperature."
 tag = "bc250-fan-v4.8.0"
 sha256 = "7ac7c7a893ee924f4a2d2b0d1ba952ba7e8717f58ba1e54853dd48569b5b24c9"
 required = false
 changes_board = true
 board_change = """
-The thermal guard is a root system service, bc250-fan-control-guard.service with its files in
-/etc/bc250-fan-control, that reads the temperatures every two seconds. At the cool limit it sets every fan to
-full speed in sysfs and switches the GPU governor's performance mode off; at the shutdown limit, held for the
+The thermal guard is a root system service that reads the temperatures every two seconds. It is
+bc250-fan-control-guard.service, with its files in /etc/bc250-fan-control. At the cool limit it sets every fan to
+full speed in sysfs. It also switches the GPU governor's performance mode off. At the shutdown limit, held for the
 set number of seconds, it powers the board off cleanly with systemctl poweroff. The service stays enabled across
-reboots and power offs. The fan settings are written in memory only, and the guard puts the saved values back
-when it re-arms or stops. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Turn
-off disables the service and removes its files; the fans are back on their previous setting, and performance
-mode, once the guard switched it off, stays off until you switch it on again.
+reboots and power offs. The fan settings are written in memory only. The guard puts the saved values back when it
+re-arms or stops. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Turn off
+disables the service and removes its files. The fans are then back on their previous setting.
+If the guard switched performance mode off, performance mode stays off until you switch it on again.
 """
 category = "sustainable"
 install = ["bash install.sh"]
@@ -336,7 +334,7 @@ launch = [["Open", "~/.local/bin/bc250-turing-screen"]]
 
 [apps.webcam]
 name = "BC-250 Webcam"
-summary = "The PS5 HD Camera (CFI-ZEY1) as a webcam: loads its firmware at every plug-in and shows its picture."
+summary = "The PS5 HD Camera (CFI-ZEY1) as a webcam. It loads its firmware at every plug-in and shows its picture."
 tag = "bc250-webcam-v2.8.0"
 sha256 = "fb13fb440549987f560462879b549595e7c373f5d7f641ff7748e069a6495aea"
 required = false
@@ -349,7 +347,7 @@ launch = [["Open", "~/.local/bin/bc250-webcam"]]
 
 [apps.controller]
 name = "BC-250 Controller"
-summary = "The DualSense and DualSense Edge on the board: battery, firmware updates from the official server, and the Edge's profiles."
+summary = "The DualSense and DualSense Edge on the board, with battery, firmware updates from the official server and the Edge's profiles."
 tag = "bc250-controller-v2.8.0"
 sha256 = "14b5ad1c02ae055107e1c8cf2f796cf8d0b9a261ec6c70ad825a81631dbc2a78"
 required = false
@@ -362,7 +360,7 @@ launch = [["Open", "~/.local/bin/bc250-controller"]]
 
 [apps.rpcs3]
 name = "RPCS3 Manager"
-summary = "PS3 games with the RPCS3 emulator: a tested RPCS3 build, the firmware, your games found and added to Game Mode."
+summary = "PS3 games with the RPCS3 emulator. It sets up a tested RPCS3 build and the firmware, finds your games and adds them to Steam."
 tag = "bc250-rpcs3-v7.9.0"
 sha256 = "73f06daf1d8cf36023a4ab7a68dacd7a131e45832773c129d5b4becdeedbe70c"
 required = false
@@ -403,7 +401,7 @@ launch = [["Open", "~/.local/bin/bc250-console-linkb"]]
 
 [apps.shadps4]
 name = "shadPS4 Manager"
-summary = "PS4 games with the shadPS4 emulator: a tested shadPS4 release, your games found (or unpacked from .pkg files) and added to Game Mode."
+summary = "PS4 games with the shadPS4 emulator. It sets up a tested shadPS4 release, finds your games or unpacks them from .pkg files, and adds them to Steam."
 tag = "bc250-shadps4-v7.8.0"
 sha256 = "8d93459c334db8ba19a5b0afbe60995ac14e4d766bca9010b0aea24b47f49e79"
 required = false
@@ -430,7 +428,7 @@ launch = [["Open", "~/.local/bin/bazzite-datstation"]]
 
 [apps.ppsspp]
 name = "PPSSPP Manager"
-summary = "PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Game Mode."
+summary = "PSP games with the PPSSPP emulator. It sets up a tested PPSSPP release, finds your games and adds them to Steam."
 tag = "bc250-ppsspp-v5.9.0"
 sha256 = "a458bad740099fc00675815c9303b09f4f38e474c48072669bcbae9b2eda516f"
 required = false
@@ -443,7 +441,7 @@ launch = [["Open", "~/.local/bin/bc250-ppsspp-manager"]]
 
 [apps.pcsx2]
 name = "PCSX2 Manager"
-summary = "PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Game Mode."
+summary = "PS2 games with the PCSX2 emulator. It sets up a tested PCSX2 release and your PS2 BIOS, finds your games and adds them to Steam."
 tag = "bc250-pcsx2-v7.9.0"
 sha256 = "652f4c198c830725b00765596658f739d151fbddbea76926470bf7bd37bfed2a"
 required = false
@@ -456,7 +454,7 @@ launch = [["Open", "~/.local/bin/bc250-pcsx2-manager"]]
 
 [apps.vita3k]
 name = "Vita3K Manager"
-summary = "PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Game Mode."
+summary = "PS Vita games with the Vita3K emulator. It sets up a tested Vita3K build and the firmware, installs your games through it and adds them to Steam."
 tag = "bc250-vita3k-v5.10.0"
 sha256 = "e82a838f530f27961748577bcd1c2072039ac0e7a0ec5d9ef3890d8131d5e4bd"
 required = false
@@ -469,7 +467,7 @@ launch = [["Open", "~/.local/bin/bc250-vita3k-manager"]]
 
 [apps.xenia]
 name = "Xenia Manager"
-summary = "XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Game Mode."
+summary = "XBOX 360 games with the Xenia emulator, which is experimental on Linux. It sets up a tested Xenia build, finds your games and adds them to Steam."
 tag = "bc250-xenia-v5.10.0"
 sha256 = "617f31fa68b626ee012e684a6852d6e24c2e011945808a47008f73d127837283"
 required = false
@@ -508,7 +506,7 @@ launch = [["Open", "~/.local/bin/bc250-bluetooth-pairing"]]
 
 [apps.quickfix]
 name = "BC-250 Quickfix"
-summary = "Small quickfixes for one job each: Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the regulator's sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
+summary = "Small quickfixes for one job each. They cover Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the regulator's sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
 tag = "bc250-quickfix-v1.9.0"
 sha256 = "dd4b5e6ae09b0807bac1e3ae65750a8ba9e7c318cbab7c2a0d4892d953819de7"
 required = true
@@ -522,13 +520,13 @@ launch = [["Open", "~/.local/bin/bc250-quickfix"]]
 [[apps.quickfix.quickfixes]]
 key = "tools"
 name = "Quickfix"
-summary = "The optional tools Board Test's tests use: which are there, and their installer."
+summary = "Shows the optional tools Board Test's tests use and which of them are there. It installs the missing ones."
 launch = "~/.local/bin/bc250-quickfix tools"
 
 [[apps.quickfix.quickfixes]]
 key = "mangohud"
 name = "MangoHud Config"
-summary = "Open or create MangoHud's config, edit and save it; turn on the FPS log Board Test reads."
+summary = "Open or create MangoHud's config, edit and save it. Turn on the FPS log Board Test reads."
 launch = "~/.local/bin/bc250-quickfix mangohud"
 
 [[apps.quickfix.quickfixes]]
@@ -539,10 +537,11 @@ launch = "~/.local/bin/bc250-quickfix metrics"
 changes_board = true
 board_change = """
 Turn on sets fix-metrics and the load method in the [gpu-usage] table of the GPU governor's settings file,
-/etc/cyan-skillfish-governor-smu/config.toml, after a dated backup of it beside it, and restarts the governor when
-it runs; the governor then mounts a patched copy of gpu_metrics over the sysfs file while it runs. The setting stays
-across reboots and power offs. Nothing is written to the BIOS, the firmware or the kernel's arguments. Turn off sets
-fix-metrics back to false and restarts the governor; any earlier settings file is in its backups.
+/etc/cyan-skillfish-governor-smu/config.toml. It first makes a dated backup of the file beside it. It restarts the
+governor when the governor runs. The governor then mounts a patched copy of gpu_metrics over the sysfs file while it
+runs. The setting stays across reboots and power offs. Nothing is written to the BIOS, the firmware or the kernel's
+arguments. Turn off sets fix-metrics back to false and restarts the governor. Any earlier settings file is in its
+backups.
 """
 
 [[apps.quickfix.quickfixes]]
@@ -552,10 +551,10 @@ summary = "Load a driver for the board's SuperIO chip at every boot, for its tem
 launch = "~/.local/bin/bc250-quickfix sensors"
 changes_board = true
 board_change = """
-Turn on writes one line, options nct6683 force=true, to /etc/modprobe.d/bc250-quickfix-nct6683.conf and loads the
-nct6683 driver, which reads the board's SuperIO chip: its temperatures and fan speeds. The file stays across reboots
-and power offs, so the driver loads at every boot. Nothing is written to the BIOS, the firmware or the chip. Turn off
-removes the file; the driver stays loaded until the next boot.
+Turn on writes one line to /etc/modprobe.d/bc250-quickfix-nct6683.conf. The line is options nct6683 force=true. It
+also loads the nct6683 driver, which reads the temperatures and fan speeds of the board's SuperIO chip. The file
+stays across reboots and power offs, so the driver loads at every boot. Nothing is written to the BIOS, the firmware
+or the chip. Turn off removes the file. The driver stays loaded until the next boot.
 """
 
 [[apps.quickfix.quickfixes]]
@@ -582,10 +581,10 @@ summary = "Raise vm.max_map_count, the number of memory areas a game may map."
 launch = "~/.local/bin/bc250-quickfix mapcount"
 changes_board = true
 board_change = """
-Turn on writes vm.max_map_count = 2147483642 to /etc/sysctl.d/90-bc250-quickfix-max-map-count.conf and sets it now:
-the number of memory areas one program may map. The file stays across reboots and power offs. Nothing is written to
-the BIOS, the firmware or the kernel's arguments. Turn off removes the file and reads the system's settings again,
-so the value the other settings files give, else the kernel's own, is back.
+Turn on writes vm.max_map_count = 2147483642 to /etc/sysctl.d/90-bc250-quickfix-max-map-count.conf and sets it now.
+The value is the number of memory areas one program may map. The file stays across reboots and power offs. Nothing
+is written to the BIOS, the firmware or the kernel's arguments. Turn off removes the file and reads the system's
+settings again. Then the value the other settings files give is back, or else the kernel's own.
 """
 
 [[apps.quickfix.quickfixes]]
@@ -595,10 +594,10 @@ summary = "Keep the system journal on the disk, so the logs of a boot that crash
 launch = "~/.local/bin/bc250-quickfix journal"
 changes_board = true
 board_change = """
-Turn on makes the folder /var/log/journal, with systemd-tmpfiles, and moves the journal there: journald then keeps
-the system's logs on the disk, within its own size limits, instead of in memory only. The folder stays across reboots
-and power offs. Nothing is written to the BIOS or the firmware. Turn off works only on a folder this quickfix made: it
-moves the journal back to memory and removes the folder, with the logs in it.
+Turn on makes the folder /var/log/journal with systemd-tmpfiles and moves the journal there. Then journald keeps the
+system's logs on the disk instead of in memory only. It keeps them within its own size limits. The folder stays
+across reboots and power offs. Nothing is written to the BIOS or the firmware. Turn off works only on a folder this
+quickfix made. It moves the journal back to memory and removes the folder, with the logs in it.
 """
 
 [[apps.quickfix.quickfixes]]
@@ -608,11 +607,12 @@ summary = "Keep the kernel from using the board's IOMMU, which is broken on the 
 launch = "~/.local/bin/bc250-quickfix iommu"
 changes_board = true
 board_change = """
-Turn on adds the kernel argument amd_iommu=off with rpm-ostree kargs, which makes a new deployment with it, and
-notes in /var/lib/bc250-quickfix/iommu.karg that the quickfix added it; from the next boot the kernel leaves the AMD
-IOMMU unused. The argument stays across reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or
-the firmware. Turn off works only on an argument this quickfix added: it removes it with rpm-ostree kargs, and the
-kernel uses the IOMMU again from the next boot. Both need a reboot, which the quickfix advises and never does.
+Turn on adds the kernel argument amd_iommu=off with rpm-ostree kargs, which makes a new deployment with it. It notes
+in /var/lib/bc250-quickfix/iommu.karg that the quickfix added the argument. From the next boot the kernel leaves the
+AMD IOMMU unused. The argument stays across reboots, power offs and Bazzite's updates. Nothing is written to the
+BIOS or the firmware. Turn off works only on an argument this quickfix added. It removes the argument with
+rpm-ostree kargs, and the kernel uses the IOMMU again from the next boot. Both need a restart, which the quickfix
+advises and never does.
 """
 
 [[apps.quickfix.quickfixes]]
@@ -622,17 +622,17 @@ summary = "Turn off the kernel's CPU mitigations, which cost speed in games (mit
 launch = "~/.local/bin/bc250-quickfix mitigations"
 changes_board = true
 board_change = """
-Turn on adds the kernel argument mitigations=off with rpm-ostree kargs, which makes a new deployment with it, and
-notes in /var/lib/bc250-quickfix/mitigations.karg that the quickfix added it; from the next boot the kernel no longer
-guards against the CPU's speculative execution flaws (Spectre, Meltdown and the like). The argument stays across
-reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or the firmware. Turn off works only on an
-argument this quickfix added: it removes it with rpm-ostree kargs, and the mitigations are back from the next boot.
-Both need a reboot, which the quickfix advises and never does.
+Turn on adds the kernel argument mitigations=off with rpm-ostree kargs, which makes a new deployment with it. It
+notes in /var/lib/bc250-quickfix/mitigations.karg that the quickfix added the argument. From the next boot the
+kernel no longer guards against the CPU's speculative execution flaws, such as Spectre and Meltdown. The argument
+stays across reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or the firmware. Turn off
+works only on an argument this quickfix added. It removes the argument with rpm-ostree kargs, and the mitigations
+are back from the next boot. Both need a restart, which the quickfix advises and never does.
 """
 
 [apps.password]
 name = "BC-250 Password Generator"
-summary = "Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere."
+summary = "Makes a random password of 8 or 15 characters, with a capital letter, a small letter, a number and a special character. It keeps the password nowhere."
 tag = "bc250-password-v1.8.0"
 sha256 = "4218000f40527b4ed0df781a6fdd7b039531fe27dff05a7e10552cba945c0eb2"
 required = false

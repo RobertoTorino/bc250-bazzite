@@ -1,3 +1,9 @@
+Changelog: 23-11-2026 02:16:05
+
+Fixed. The "Changes the board" text in the portal and the wiki chapter is rewritten to the writing standard. No label
+was renamed. It now names the Restore selected button on the Backups page, not Restore. Nothing the app does has
+changed. No test changed.
+
 Changelog: 22-11-2026 22:17:31
 
 Release 0.7.0.

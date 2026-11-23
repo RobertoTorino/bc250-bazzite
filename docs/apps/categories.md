@@ -4,30 +4,35 @@
 
 # App categories
 
-Every app in the suite belongs to one of four categories, and every app in a category has the same icon. The icon
-tells you what kind of app it is: one that keeps the board running well, one for graphics in games, one for playing,
-or a utility.
+An app's icon tells you what kind of app it is. Every app in the suite belongs to one of four categories. Every app
+in a category has the same icon. The four categories are for these kinds of app:
+
+- An app that keeps the board running well
+- An app for graphics in games
+- An app for playing
+- A utility
 
 ## Why categories
 
 - **You see at a glance what an app is for.** In the portal, the menu, on the Desktop and in Steam, the icon shows
   its kind before you read the name.
 - **The suite looks like one suite.** Thirty-odd apps with thirty-odd styles would look like a pile of separate
-  tools; four icons look like one family.
-- **One place to change them.** Each category's icon is kept once, in `icons/<category>/`. A new app picks a
-  category and gets its icon; a new icon for a category reaches every app in it. How that works is in
+  tools. Four icons look like one family.
+- **One place to change them.** The suite keeps each category's icon once, in `icons/<category>/`. A new app picks a
+  category and gets its icon. A new icon for a category reaches every app in it. How that works is in
   [Architecture and consistency](../development/architecture.md#icons).
 
-The categories are also the [portal's](../portal.md) categories: an app's tile is under its category's name.
+The categories are also the [portal's](../portal.md) categories. In the portal, an app's tile is under its category's
+name.
 
 ## Legend
 
 | Icon | Category | What it stands for |
 |---|---|---|
 | ![](../assets/categories/sustainable.webp){ .app-icon } | **Sustainable** | The board itself: test it, tune it, unlock it, cool it, and keep it running well for a long time. Most of these apps change how the board runs. |
-| ![](../assets/categories/graphics.webp){ .app-icon } | **Graphics** | Graphics features for games: upscaling, async compute and mesh shaders on the board's GPU. |
-| ![](../assets/categories/gaming.webp){ .app-icon } | **Gaming** | Playing: emulators, Remote Play with your console, and PlayStation trivia. |
-| ![](../assets/categories/utilities.webp){ .app-icon } | **Utilities** | Handy tools around the board: an overlay, a USB stats screen, the PS5 HD Camera as a webcam, the DualSense's firmware, the BIOS settings, the TV over HDMI-CEC, file transfer and a password generator. |
+| ![](../assets/categories/graphics.webp){ .app-icon } | **Graphics** | Upscaling, async compute and mesh shaders for games on the board's GPU. |
+| ![](../assets/categories/gaming.webp){ .app-icon } | **Gaming** | Apps for playing games. They include the emulators, Remote Play with your console and PlayStation trivia. |
+| ![](../assets/categories/utilities.webp){ .app-icon } | **Utilities** | Handy tools around the board. They include an overlay, a USB stats screen and the PS5 HD Camera as a webcam. Others cover the DualSense's firmware, the BIOS settings, the TV over HDMI-CEC and file transfer. They also include an SSD check, Bluetooth pairing at boot, small quickfixes and a password generator. |
 
 ## Apps by category
 

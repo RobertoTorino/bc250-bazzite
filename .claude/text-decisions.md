@@ -89,3 +89,7 @@ a line says otherwise.
 - **An installer's `--help` text** in its comment header keeps its words, as the rest of that header does.
 - **A development app's README** says "How to use it:" before its wiki link. The app READMEs' "How to install and
   use it:" does not apply there.
+- **ALL-TESTS.md** is not rewritten. It is written from the tests' docstrings.
+- **The README's app lines** are written on their own. They don't have to match the summaries in `portal/apps.toml`
+  or the rows in `docs/apps/index.md`.
+- **The emulator managers** add the games to Steam. Their texts say "Steam", not "Game Mode".

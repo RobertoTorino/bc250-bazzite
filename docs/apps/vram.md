@@ -5,18 +5,17 @@
 # BC-250 Memory Manager
 
 !!! warning "Changes the board"
-    The app writes the VRAM split into the board's CMOS: the firmware's own memory block of 28 bytes in bank 2,
-    with its checksum, and never a byte outside it. The firmware reads the split at the next boot. CMOS is kept
-    by the board's battery, so the split stays across reboots and power offs until it is written again or the
-    CMOS is cleared with the jumper or the battery, which brings the firmware's 512 MB back. The GTT limit is a
-    kernel argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself,
-    the firmware or the real-time clock, and the app refuses to write when the block's signature or checksum
-    does not match or the kernel is locked down. Undo writes the previous split back, and the Default profile
-    writes 512 MB and removes the kernel argument; both take effect after a reboot. The swap layout is a few
-    files of the app's own in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap
-    and a swap unit. The zswap layout also makes the swap file /var/swap/swapfile. They stay across reboots and
-    power offs. Nothing is started or stopped before the next boot. Bazzite's own layout removes the files, and
-    Delete swap file removes the swap file.
+    The app writes the VRAM split into the board's CMOS. It writes only the firmware's own memory block of 28 bytes in
+    bank 2, with its checksum, and never a byte outside it. The firmware reads the split at the next boot. The board's
+    battery keeps the CMOS. So the split stays across reboots and power offs until it is written again, or until the
+    CMOS is cleared. Clearing the CMOS with the jumper or the battery brings the firmware's 512 MB back. The GTT limit
+    is a kernel argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself, the
+    firmware or the real-time clock. The app refuses to write when the block's signature or checksum does not match. It
+    also refuses when the kernel is locked down. Undo writes the previous split back. The Default profile writes 512 MB
+    and removes the kernel argument. Both take effect after a restart. The swap layout is a few files of the app's own
+    in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit. The zswap
+    layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started or
+    stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap file.
 
 BC-250 Memory Manager sets up the memory of the **AMD BC-250** on **Bazzite**. It sets three things:
 

@@ -5,14 +5,14 @@
 # BC-250 ACE Queues
 
 !!! warning "Changes the board"
-    The app builds a patched RADV, Mesa's Vulkan driver, in a container and installs it under
-    /usr/local/lib/bc250-ace-queues, beside the system Mesa, which is never changed, with a wrapper in
-    /usr/local/bin. A game uses it only through the wrapper in its launch options, and only after the app's test
-    passed on the running kernel. All apps adds an environment file under /etc and a small boot service that
-    switches it off again when the kernel or the driver changes. The files stay across reboots, power offs and
-    Bazzite updates. Nothing is written to the BIOS, the firmware, the kernel or its arguments. Remove takes the
-    driver, the wrapper and the All apps files away: every app is back on the system Mesa, and the launch
-    options you gave games must go by hand.
+    The app builds a patched RADV, Mesa's Vulkan driver, in a container. It installs the driver under
+    /usr/local/lib/bc250-ace-queues, beside the system Mesa, with a wrapper in /usr/local/bin. The system Mesa is never
+    changed. A game uses the driver only through the wrapper in its launch options. It does so only after the app's test
+    passed on the running kernel. All apps adds two environment files under /etc and a small boot service. The service
+    switches them off again when the kernel or the driver changes. The files stay across reboots, power offs and Bazzite
+    updates. Nothing is written to the BIOS, the firmware, the kernel or its arguments. Remove takes away the driver,
+    the wrapper and the files of All apps. Every app is then back on the system Mesa. You must remove the launch options
+    you gave games by hand.
 
 BC-250 ACE Queues lets games on the **AMD BC-250** use the GPU's dedicated compute queues. This is called
 **async compute**. Games split a frame into graphics work and compute work. Compute work is lighting, particles,

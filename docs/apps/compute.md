@@ -5,14 +5,14 @@
 # BC-250 CU Tools
 
 !!! warning "Changes the board"
-    The app writes the GPU's shader array and WGP mask registers with umr, as root, while the driver runs: that
-    is the CU unlock. The registers are volatile: any reboot puts the stock 24 CUs back, and nothing is burned
-    into the chip. The unlock stays across reboots and power offs only through the root service that CU Tools
-    installs, bc250-cu-unlock.service with the masks in /etc/bc250-cu-bisect, which writes the registers again
-    early at every boot. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments.
-    Uninstall in CU Tools disables the service and removes its files; the unlock lasts until the next reboot,
-    and the board is then stock. CU Tools reboots the board between its rounds, by itself with the unattended
-    option, after a question otherwise.
+    For the CU unlock, the app writes the GPU's shader array and WGP mask registers with umr. It does so as root, while
+    the driver runs. The registers are volatile. Any reboot puts the stock 24 CUs back, and nothing is burned into the
+    chip. The unlock stays across reboots and power offs only through the root service that CU Tools installs. That
+    service is bc250-cu-unlock.service, with the masks in /etc/bc250-cu-bisect. It writes the registers again early at
+    every boot. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Uninstall in CU Tools
+    disables the service and removes its files. The unlock then lasts until the next reboot, and after it the board is
+    stock. CU Tools restarts the board between its rounds. With the unattended option it does so by itself, otherwise
+    after a question.
 
 BC-250 CU Tools tells **bad CUs** apart from an **unstable CU unlock** on the AMD BC-250 (Cyan Skillfish, gfx1013).
 A CU is a compute unit of the GPU. CUs come in pairs, and a pair is a WGP.

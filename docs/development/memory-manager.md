@@ -4,17 +4,22 @@
 
 # Memory Manager internals
 
-How BC-250 Memory Manager reads and writes the VRAM split in CMOS and the GTT limit on the kernel command line,
-and the board dumps the CMOS layout was checked against. The user's side is in [its chapter](../apps/vram.md).
+This page explains how BC-250 Memory Manager works inside. It covers these parts:
+
+- how the app reads and writes the VRAM split in CMOS
+- how it reads and writes the GTT limit on the kernel command line
+- the board dumps the CMOS layout was checked against
+
+How you use the app is in [its chapter](../apps/vram.md).
 
 ## Where the split is stored
 
-The firmware (AMI Aptio, AMD's ABL for the memory setup) keeps the memory configuration in **CMOS bank 2**: the
-battery-backed RAM behind I/O ports **0x72** (index) and **0x73** (data). Bank 1 (0x70/0x71) is the RTC and the
-usual CMOS settings; the kernel's `cmos_nvram0` device only covers bank 1, so bank 2 is reached through
-`/dev/port`, where file offset N is I/O port N.
+The firmware is AMI Aptio, with AMD's ABL for the memory setup. It keeps the memory configuration in **CMOS bank
+2**. That is battery-backed RAM behind the I/O ports **0x72** (index) and **0x73** (data). Bank 1 (0x70/0x71) holds
+the RTC and the usual CMOS settings. The kernel's `cmos_nvram0` device only covers bank 1. So the app reaches bank 2
+through `/dev/port`, where file offset N is I/O port N.
 
-The memory block is 28 bytes at 0x90-0xAB, little-endian:
+The memory block is 28 bytes at 0x90-0xAB, little-endian.
 
 | Offset | Size | Field | Allowed range |
 |---|---|---|---|
@@ -44,8 +49,8 @@ Signatures:
 |---|---|---|---|
 | 0x4C424124 | `24 41 42 4C` ("$ABL") | ABL | written by the firmware |
 | 0x42435041 | `41 50 43 42` | LINUX_TOOL | written by a Linux tool (bc250_memcfg, this app) |
-| 0x42534D43 | | CMOS_BAD | notes the firmware leaves in the field when a boot went wrong: CMOS found bad |
-| 0x46544457 | | WATCH_DOG_TIMER_FIRED | its watchdog fired during the memory setup (seen on the owner's board, 01-11-2026, with the values intact and the board booting as before) |
+| 0x42534D43 | | CMOS_BAD | A note the firmware leaves in the field when a boot went wrong. This one says the firmware found CMOS bad. |
+| 0x46544457 | | WATCH_DOG_TIMER_FIRED | The firmware's watchdog fired during the memory setup. The owner's board showed it on 01-11-2026. The values were intact, and the board booted as before. |
 | 0x454B4843 | | CHECKSUM_ERROR | the block's checksum was wrong |
 | 0x45474953 | | SIGNATURE_ERROR | the block's signature was wrong |
 
@@ -54,7 +59,7 @@ The layout, the ranges and the signatures come from
 
 ## The layout on two boards
 
-Bank 2 was read on two BC-250 boards (BIOS P5.00 05/03/2022, kernel lockdown off, both with a 6 GB split). The
+Bank 2 was read on two BC-250 boards. Both have BIOS P5.00 05/03/2022, kernel lockdown off and a 6 GB split. The
 reads only set the index port and read the data port.
 
 The memory block is byte for byte the same on both:
@@ -81,10 +86,10 @@ Every timing is inside its range, and UMA_SIZE matches the split the kernel got.
 The rest of bank 2:
 
 - **0x00-0x0F and 0x40-0x46** are the same on both boards (`FF 00 00 00 00 00 00 00 98 42 EE 7D FF 30 3F 00` and
-  `00 00 01 02 56 90 F0`): the firmware keeps something else there.
+  `00 00 01 02 56 90 F0`). The firmware keeps something else there.
 - **0x47-0x7F** is zero on both.
-- **0x10-0x3F, 0x80-0x8F and 0xAC-0xFF** are mostly `FF` with single bits cleared in different places on each
-  board: unused memory that was never written.
+- **0x10-0x3F, 0x80-0x8F and 0xAC-0xFF** are mostly `FF`, with single bits cleared in different places on each
+  board. This is unused memory that was never written.
 
 So nothing outside 0x90-0xAB belongs to the memory configuration, and the app never writes there. The tests use
 both reads as fixtures (`apps/vram/tests/dumps.py`).
@@ -99,7 +104,7 @@ pkexec /usr/bin/python3 -I .../vram_manager/cmos.py --read
 pkexec /usr/bin/python3 -I .../vram_manager/cmos.py --set-uma 6144
 ```
 
-`-I` keeps the user's environment and the current folder out of the root process; the helper only needs the
+`-I` keeps the user's environment and the current folder out of the root process. The helper only needs the
 standard library. It prints one JSON object: `{"ok": true, ...}` or `{"ok": false, "error": "..."}`.
 
 Before it opens `/dev/port`, the helper checks that the DMI board name is `AMD BC-250` and that kernel lockdown is
@@ -107,20 +112,24 @@ off.
 
 `--set-uma MB`:
 
-1. Checks the split: a multiple of 16 MB, from 512 to 10240 MB. Above 10 GB the system keeps less than 6 GB.
-2. Reads the block and checks that it can be trusted: a matching checksum, every timing in range, UMA_SIZE
-   256-16383, and one of the six signatures. If not, it writes nothing. bc250_memcfg writes back whatever it read,
-   so a damaged block would reach the firmware with its wrong timings. The block's own numbers decide (owner,
-   01-11-2026: by the case, not a generic rule): a firmware note in the signature field with intact numbers is
-   written, and the write replaces the note; a read shows the note as a `note` line. Only a signature that is none
-   of the six refuses, since the block may not be a memory block at all.
-3. Builds the new block: the same timings, the new UMA_SIZE, the LINUX_TOOL signature and a new checksum.
+1. Checks the split. It must be a multiple of 16 MB, from 512 to 10240 MB. Above 10 GB the system keeps less
+   than 6 GB.
+2. Reads the block and checks that it can be trusted. The checksum must match, and every timing must be in range.
+   UMA_SIZE must be 256-16383, and the signature one of the six. If the block fails a check, the helper writes
+   nothing. bc250_memcfg writes back whatever it read. So with that tool, a damaged block would reach the firmware
+   with its wrong timings. The block's own numbers decide, case by case and not by a generic rule (owner,
+   01-11-2026). A block with a firmware note in the signature field and intact numbers is written. Writing it
+   replaces the note. A read shows the note as a `note` line. Only a signature that is none of the six makes the
+   helper refuse. Such a block may not be a memory block at all.
+3. Builds the new block. It keeps the same timings and gets the new UMA_SIZE, the LINUX_TOOL signature and a new
+   checksum.
 4. Writes the whole block from 0x90 upwards, as bc250_memcfg does, so the bytes the firmware finds are the same as
    with that tool.
 5. Reads the block back and compares all 28 bytes.
 
-It answers with the block before and after; the GUI saves both in `backups/cmos-<time>.json`. `--read` answers
-with the decoded block and all 256 bytes of bank 2, which the GUI shows and saves as `backups/cmos-dump-<time>.txt`.
+It answers with the block before and after. The GUI saves both in `backups/cmos-<time>.json`. `--read` answers
+with the decoded block and all 256 bytes of bank 2. The GUI shows them and saves them as
+`backups/cmos-dump-<time>.txt`.
 
 ## After a reboot
 
@@ -141,14 +150,14 @@ whether the kernel got it. Undo writes back the UMA_SIZE of the block before the
 | Swap | `/proc/swaps` (zram and disk swap) and `/sys/module/zswap/parameters/enabled`, as Board Test's test 14 |
 | Swappiness | `/proc/sys/vm/swappiness` |
 
-amdgpu sizes GTT from the TTM limit and caps it at the RAM on this APU (`amdgpu_ttm_init`: "Capping GTT to …M to
-not exceed available system memory"). When the split is smaller than GTT, amdgpu also prefers GTT for the GPU's
-allocations (`apu_prefer_gtt`).
+amdgpu sizes GTT from the TTM limit and caps it at the RAM on this APU. `amdgpu_ttm_init` logs this as "Capping
+GTT to …M to not exceed available system memory". When the split is smaller than GTT, amdgpu also prefers GTT for the
+GPU's allocations (`apu_prefer_gtt`).
 
 ## The swap layout
 
 `vram_manager/swap.py` holds the three layouts and is also the root helper that writes one, run through pkexec with
-the system Python like `cmos.py`. A layout is files of the app's own, so the image's files stay untouched:
+the system Python like `cmos.py`. A layout is a set of the app's own files, so the image's files stay untouched.
 
 | File | What it does |
 |---|---|
@@ -161,9 +170,9 @@ The helper starts and stops nothing. zram-generator, sysctl, tmpfiles and the sw
 boot. Bazzite's kernel arguments have `zswap.enabled=0`. The tmpfiles line turns zswap on after that, so the layout
 needs no new deployment.
 
-The swap file is made before any file in `/etc` is written, so a failure there changes nothing. On btrfs,
-`/var/swap` is a subvolume and `btrfs filesystem mkswapfile` makes the file, which turns copy-on-write off for
-it. On another file system it is `fallocate` and `mkswap`. With SELinux on, the file gets the `swapfile_t` label,
+The helper makes the swap file before it writes any file in `/etc`. So a failure there changes nothing. On btrfs,
+`/var/swap` is a subvolume and `btrfs filesystem mkswapfile` makes the file. That turns copy-on-write off for it.
+On another file system, `fallocate` and `mkswap` make it. With SELinux on, the file gets the `swapfile_t` label,
 by a `semanage fcontext` rule and `chcon`. systemd's `swapon` runs as `fsadm_t` and may not use a file with
 another label. A swap file that is in `/proc/swaps` is never resized or deleted.
 
@@ -172,8 +181,8 @@ picked, and Apply is off while they are equal.
 
 ## The GTT limit on the kernel command line
 
-`vram_manager/kargs.py` reads and changes `ttm.pages_limit` in the next boot's kernel arguments with rpm-ostree,
-which keeps the arguments per deployment:
+`vram_manager/kargs.py` reads and changes `ttm.pages_limit` in the next boot's kernel arguments with rpm-ostree.
+rpm-ostree keeps the arguments per deployment.
 
 ```
 rpm-ostree kargs --deploy-index=0                                           # the next boot's arguments, no root
@@ -182,24 +191,31 @@ rpm-ostree kargs --replace=ttm.pages_limit=N --unchanged-exit-77            # it
 rpm-ostree kargs --delete=ttm.pages_limit=OLD --unchanged-exit-77           # the kernel default: the whole argument
 ```
 
-The delete names the whole argument, key and value. `--delete-if-present=ttm.pages_limit` with the key alone
-matched nothing on the owner's board (01-11-2026): rpm-ostree answered "unchanged" within a second, wrote no
-deployment, and the app took that for done. So every change is checked: the app reads the next boot's arguments
-again and they must hold what was asked, else it reports that nothing changed, with the command to run by hand.
+The `--delete` command names the whole argument, key and value. On the owner's board,
+`--delete-if-present=ttm.pages_limit` with the key alone matched nothing (01-11-2026). rpm-ostree answered
+"unchanged" within a second and wrote no deployment. The app took that for done. So the app checks every change.
+It reads the next boot's arguments again, and they must hold what was asked. Otherwise, it reports that nothing
+changed, with the command to run by hand.
 
-A change makes a new deployment with the argument, on top of a staged update when one waits. rpm-ostree's daemon
-asks polkit for it (`org.projectatomic.rpmostree1.bootconfig`, `auth_admin_keep` on Bazzite), so the desktop's
-password dialog appears by itself; the app runs rpm-ostree as the user, without pkexec. Exit code 77 means nothing
-changed and counts as done. The window runs every command through `privileged.run_command`, a QProcess with its
-own event loop, so the window keeps painting under the password dialog; a command that is not installed answers
-without starting, and one that does not end in ten minutes is stopped (84 seconds were seen on a board with 11
-layered packages: rpm-ostree puts them on the new deployment again).
+A change makes a new deployment with the argument. When a staged update waits, the deployment goes on top of it.
+rpm-ostree's daemon asks polkit for the change. The polkit action is `org.projectatomic.rpmostree1.bootconfig`, with
+`auth_admin_keep` on Bazzite. So the desktop's password dialog appears by itself. The app runs rpm-ostree as the
+user, without pkexec. Exit code 77 means nothing changed and counts as done.
 
-The value is in 4 KiB pages (256 per MiB): the presets are 3014656 (11.5 GiB, Board Test's value) and 4194304
-(16 GiB, all the RAM with any split); the kernel default removes the argument. The GTT amdgpu then makes is
-`min(limit, RAM)`, which the memory map's preview shows with `gtt_ceiling()`.
+The window runs every command through `privileged.run_command`. That is a QProcess with its own event loop, so the
+window keeps painting under the password dialog. A command that is not installed answers without starting. The
+window stops a command that does not end in ten minutes. One change took 84 seconds on a board with 11 layered
+packages. rpm-ostree puts those packages on the new deployment again.
 
-"Waiting for a reboot" is not a setting: it is the next boot's value differing from `/proc/cmdline`, so a limit
-set by hand with `rpm-ostree kargs` shows the same way. The settings keep only what the app itself wrote
-(`pending_ttm`, with the boot ID), for the message after the reboot: the command line got the limit, or the board
-started another deployment.
+The value is in 4 KiB pages (256 per MiB). The app offers these presets:
+
+- 3014656 (11.5 GiB), Board Test's value
+- 4194304 (16 GiB), all the RAM with any split
+- the kernel default, which removes the argument
+
+amdgpu then makes a GTT of `min(limit, RAM)`. The memory map's preview shows that with `gtt_ceiling()`.
+
+"Waiting for a reboot" is not a setting. It means the next boot's value differs from `/proc/cmdline`. So a limit
+set by hand with `rpm-ostree kargs` shows the same way. The settings keep only what the app itself wrote. That is
+`pending_ttm`, with the boot ID. The app uses it for the message after the restart. The message says that the
+command line got the limit, or that the board started another deployment.

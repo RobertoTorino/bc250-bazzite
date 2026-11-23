@@ -5,14 +5,14 @@
 # BC-250 Fan Control
 
 !!! warning "Changes the board"
-    The thermal guard is a root system service, bc250-fan-control-guard.service with its files in
-    /etc/bc250-fan-control, that reads the temperatures every two seconds. At the cool limit it sets every fan
-    to full speed in sysfs and switches the GPU governor's performance mode off; at the shutdown limit, held for
-    the set number of seconds, it powers the board off cleanly with systemctl poweroff. The service stays
-    enabled across reboots and power offs. The fan settings are written in memory only, and the guard puts the
-    saved values back when it re-arms or stops. Nothing is written to the BIOS, the firmware, the CMOS or the
-    kernel's arguments. Turn off disables the service and removes its files; the fans are back on their previous
-    setting, and performance mode, once the guard switched it off, stays off until you switch it on again.
+    The thermal guard is a root system service that reads the temperatures every two seconds. It is
+    bc250-fan-control-guard.service, with its files in /etc/bc250-fan-control. At the cool limit it sets every fan to
+    full speed in sysfs. It also switches the GPU governor's performance mode off. At the shutdown limit, held for the
+    set number of seconds, it powers the board off cleanly with systemctl poweroff. The service stays enabled across
+    reboots and power offs. The fan settings are written in memory only. The guard puts the saved values back when it
+    re-arms or stops. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Turn off
+    disables the service and removes its files. The fans are then back on their previous setting.
+    If the guard switched performance mode off, performance mode stays off until you switch it on again.
 
 BC-250 Fan Control shows the temperatures and fan speeds of the **AMD BC-250** on **Bazzite**. It can also turn on
 a **thermal guard**, a background service that protects the board from overheating. The guard keeps watching when

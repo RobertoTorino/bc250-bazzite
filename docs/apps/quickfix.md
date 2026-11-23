@@ -89,11 +89,11 @@ CPU and GPU share.
 
 !!! warning "Changes the board"
     Turn on sets fix-metrics and the load method in the [gpu-usage] table of the GPU governor's settings file,
-    /etc/cyan-skillfish-governor-smu/config.toml, after a dated backup of it beside it, and restarts the governor
-    when it runs; the governor then mounts a patched copy of gpu_metrics over the sysfs file while it runs. The
-    setting stays across reboots and power offs. Nothing is written to the BIOS, the firmware or the kernel's
-    arguments. Turn off sets fix-metrics back to false and restarts the governor; any earlier settings file is in
-    its backups.
+    /etc/cyan-skillfish-governor-smu/config.toml. It first makes a dated backup of the file beside it. It restarts the
+    governor when the governor runs. The governor then mounts a patched copy of gpu_metrics over the sysfs file while it
+    runs. The setting stays across reboots and power offs. Nothing is written to the BIOS, the firmware or the kernel's
+    arguments. Turn off sets fix-metrics back to false and restarts the governor. Any earlier settings file is in its
+    backups.
 
 With **Fix GPU Metrics**, the Steam performance overlay, MangoHud and radeontop show a real GPU %. The GPU governor,
 cyan-skillfish-governor-smu, measures the real GPU load to drive the clock. With `fix-metrics` on, it also writes that
@@ -121,10 +121,10 @@ governor acts up, click **Turn off** again. A kernel that reports the load itsel
 ## Sensors Module
 
 !!! warning "Changes the board"
-    Turn on writes one line, options nct6683 force=true, to /etc/modprobe.d/bc250-quickfix-nct6683.conf and loads the
-    nct6683 driver, which reads the board's SuperIO chip: its temperatures and fan speeds. The file stays across
-    reboots and power offs, so the driver loads at every boot. Nothing is written to the BIOS, the firmware or the
-    chip. Turn off removes the file; the driver stays loaded until the next boot.
+    Turn on writes one line to /etc/modprobe.d/bc250-quickfix-nct6683.conf. The line is options nct6683 force=true. It
+    also loads the nct6683 driver, which reads the temperatures and fan speeds of the board's SuperIO chip. The file
+    stays across reboots and power offs, so the driver loads at every boot. Nothing is written to the BIOS, the firmware
+    or the chip. Turn off removes the file. The driver stays loaded until the next boot.
 
 **Sensors Module** makes sure a driver reads the temperatures and fan speeds of the board's SuperIO chip. The chip is
 a Nuvoton NCT6686D. Board Test's test 22 and the `sensors` command of `lm_sensors` show its values. Bazzite loads the
@@ -185,10 +185,10 @@ When the service is on and the module is not loaded, the window names the comman
 ## Game Memory Map
 
 !!! warning "Changes the board"
-    Turn on writes vm.max_map_count = 2147483642 to /etc/sysctl.d/90-bc250-quickfix-max-map-count.conf and sets it
-    now: the number of memory areas one program may map. The file stays across reboots and power offs. Nothing is
-    written to the BIOS, the firmware or the kernel's arguments. Turn off removes the file and reads the system's
-    settings again, so the value the other settings files give, else the kernel's own, is back.
+    Turn on writes vm.max_map_count = 2147483642 to /etc/sysctl.d/90-bc250-quickfix-max-map-count.conf and sets it now.
+    The value is the number of memory areas one program may map. The file stays across reboots and power offs. Nothing
+    is written to the BIOS, the firmware or the kernel's arguments. Turn off removes the file and reads the system's
+    settings again. Then the value the other settings files give is back, or else the kernel's own.
 
 **Game Memory Map** keeps games from crashing for lack of memory areas. `vm.max_map_count` is the number of memory
 areas one program may map. Some games, and Proton, need far more than the kernel's default. Without them, they
@@ -201,10 +201,10 @@ in `/etc/sysctl.d`, or the image's own setting. **Turn on** is offered only when
 ## Persistent Journal
 
 !!! warning "Changes the board"
-    Turn on makes the folder /var/log/journal, with systemd-tmpfiles, and moves the journal there: journald then
-    keeps the system's logs on the disk, within its own size limits, instead of in memory only. The folder stays
-    across reboots and power offs. Nothing is written to the BIOS or the firmware. Turn off works only on a folder
-    this quickfix made: it moves the journal back to memory and removes the folder, with the logs in it.
+    Turn on makes the folder /var/log/journal with systemd-tmpfiles and moves the journal there. Then journald keeps the
+    system's logs on the disk instead of in memory only. It keeps them within its own size limits. The folder stays
+    across reboots and power offs. Nothing is written to the BIOS or the firmware. Turn off works only on a folder this
+    quickfix made. It moves the journal back to memory and removes the folder, with the logs in it.
 
 **Persistent Journal** keeps the logs of a boot that crashed or froze. Without `/var/log/journal`, journald keeps the
 system journal in memory only. Then the logs of a boot that crashed or froze are gone after it. Board Test's test 34
@@ -216,11 +216,12 @@ not there. **Turn off** asks first, because it removes the logs of every earlier
 ## IOMMU Off
 
 !!! warning "Changes the board"
-    Turn on adds the kernel argument amd_iommu=off with rpm-ostree kargs, which makes a new deployment with it, and
-    notes in /var/lib/bc250-quickfix/iommu.karg that the quickfix added it; from the next boot the kernel leaves the AMD
-    IOMMU unused. The argument stays across reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or
-    the firmware. Turn off works only on an argument this quickfix added: it removes it with rpm-ostree kargs, and the
-    kernel uses the IOMMU again from the next boot. Both need a reboot, which the quickfix advises and never does.
+    Turn on adds the kernel argument amd_iommu=off with rpm-ostree kargs, which makes a new deployment with it. It notes
+    in /var/lib/bc250-quickfix/iommu.karg that the quickfix added the argument. From the next boot the kernel leaves the
+    AMD IOMMU unused. The argument stays across reboots, power offs and Bazzite's updates. Nothing is written to the
+    BIOS or the firmware. Turn off works only on an argument this quickfix added. It removes the argument with
+    rpm-ostree kargs, and the kernel uses the IOMMU again from the next boot. Both need a restart, which the quickfix
+    advises and never does.
 
 **IOMMU Off** keeps the BC-250 stable. The board's AMD IOMMU (AMD-Vi) is broken on the BC-250. A system that uses
 it is unstable. When the BIOS leaves it on, the kernel argument `amd_iommu=off` keeps the kernel from using it. That
@@ -243,12 +244,12 @@ argument `amd_iommu=off` that you added yourself counts too. **Turn off** remove
 ## CPU Mitigations Off
 
 !!! warning "Changes the board"
-    Turn on adds the kernel argument mitigations=off with rpm-ostree kargs, which makes a new deployment with it, and
-    notes in /var/lib/bc250-quickfix/mitigations.karg that the quickfix added it; from the next boot the kernel no longer
-    guards against the CPU's speculative execution flaws (Spectre, Meltdown and the like). The argument stays across
-    reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or the firmware. Turn off works only on an
-    argument this quickfix added: it removes it with rpm-ostree kargs, and the mitigations are back from the next boot.
-    Both need a reboot, which the quickfix advises and never does.
+    Turn on adds the kernel argument mitigations=off with rpm-ostree kargs, which makes a new deployment with it. It
+    notes in /var/lib/bc250-quickfix/mitigations.karg that the quickfix added the argument. From the next boot the
+    kernel no longer guards against the CPU's speculative execution flaws, such as Spectre and Meltdown. The argument
+    stays across reboots, power offs and Bazzite's updates. Nothing is written to the BIOS or the firmware. Turn off
+    works only on an argument this quickfix added. It removes the argument with rpm-ostree kargs, and the mitigations
+    are back from the next boot. Both need a restart, which the quickfix advises and never does.
 
 **CPU Mitigations Off** gives games more speed. The kernel guards against the CPU's speculative execution flaws, such
 as Spectre and Meltdown. These guards cost roughly 18 FPS in games on this board. The kernel argument

@@ -6,8 +6,8 @@
 
 # BC250 Bazzite Suite
 
-Tools for the AMD BC-250 running Bazzite. The **[portal](portal)** installs, opens, updates and removes them:
-BC-250 Board Test is always installed, every other app is optional.
+These tools are for the AMD BC-250 running Bazzite. The **[portal](portal)** installs, opens, updates and removes
+them. BC-250 Board Test and BC-250 Quickfix are always installed. Every other app is optional.
 
 **Beta:** The suite is in active development. Features and layout may still change between releases.
 
@@ -15,12 +15,12 @@ BC-250 Board Test is always installed, every other app is optional.
 
 ## Install
 
-**Install the portal, not the apps one by one.** It installs, updates and removes every app below for you, and
+**Install the portal, not the apps one by one.** It installs, updates and removes every app below for you. It
 checks each download against its checksum.
 
-1. Open the **[latest release](https://github.com/RobertoTorino/bc250-bazzite/releases/latest)**, the newest portal,
-   and download `bc250-portal-v<version>.tar.gz` and `SHA256SUMS`.
-2. In a terminal, in the folder you downloaded them to:
+1. Open the **[latest release](https://github.com/RobertoTorino/bc250-bazzite/releases/latest)**, which is the
+   newest portal. Download `bc250-portal-v<version>.tar.gz` and `SHA256SUMS`.
+2. Open a terminal in the folder you downloaded them to, and run this:
 
    ```bash
    sha256sum --check --ignore-missing SHA256SUMS
@@ -29,70 +29,93 @@ checks each download against its checksum.
 
 3. Start **BC250 Bazzite Suite** from the app menu or the Desktop, and install the apps you want from there.
 
-The other releases on the Releases page (`bc250-gpu-v…`, `bc250-upscaler-v…` and so on) are the app downloads the portal
-uses. You do not need them.
+The other releases on the Releases page are the app downloads the portal uses. Their names start with
+`bc250-gpu-v…`, `bc250-upscaler-v…` and so on. You do not need them.
 
 ## The apps
 
-By category, as the portal lists them.
+This list follows the portal's categories.
 
-**Sustainable**: the board itself: test it, tune it, unlock it, cool it, and keep it running well.
+**Sustainable**: the board itself. Test it, tune it, unlock it, cool it and keep it running well.
 
-- <img src="portal/images/apps/check.webp" width="20" height="20" alt=""/> **[BC-250 Board Test](apps/check)**: Read-only diagnostics, stress test and benchmarks. Always installed.
-- <img src="portal/images/apps/gpu.webp" width="20" height="20" alt=""/> **[BC-250 GPU Manager](apps/gpu)**: Manage the cyan-skillfish GPU governor: tuning, safe points, profiles, backups.
+- <img src="portal/images/apps/check.webp" width="20" height="20" alt=""/> **[BC-250 Board Test](apps/check)**: Read-only diagnostics, a stress test and benchmarks. Always installed.
+- <img src="portal/images/apps/gpu.webp" width="20" height="20" alt=""/> **[BC-250 GPU Manager](apps/gpu)**: Manage the cyan-skillfish GPU governor. It covers tuning, safe points, profiles and backups.
 - <img src="portal/images/apps/compute.webp" width="20" height="20" alt=""/> **[BC-250 CU Tools](apps/compute)**: Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock.
 - <img src="portal/images/apps/cores.webp" width="20" height="20" alt=""/> **[BC-250 CPU Tools](apps/cores)**: Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock.
 - <img src="portal/images/apps/oc.webp" width="20" height="20" alt=""/> **[BC-250 GPU OC Bisect](apps/oc)**: Find your board's safe GPU overclock and undervolt, one step at a time.
 - <img src="portal/images/apps/acpi.webp" width="20" height="20" alt=""/> **[BC-250 Persistent ACPI](apps/acpi)**: CPU C-states and frequency scaling through a persistent ACPI override (GRUB early initrd).
 - <img src="portal/images/apps/vram.webp" width="20" height="20" alt=""/> **[BC-250 Memory Manager](apps/vram)**: The VRAM split in CMOS, with the GTT, TTM limit and swap layout that go with it.
-- <img src="portal/images/apps/fan.webp" width="20" height="20" alt=""/> **[BC-250 Fan Control](apps/fan)**: A thermal guard that warns, cools and shuts down cleanly at a critical temperature, and the fans.
+- <img src="portal/images/apps/fan.webp" width="20" height="20" alt=""/> **[BC-250 Fan Control](apps/fan)**: The fans, and a thermal guard. The guard warns, cools and shuts down cleanly at a critical temperature.
 
 **Graphics**: graphics features for games.
 
-- <img src="portal/images/apps/upscaler.webp" width="20" height="20" alt=""/> **[BC-250 Upscaler Manager](apps/upscaler)**: Deploy HelixSR (FSR 3.1 drop-in upscaler with DLSS-style networks) into games.
-- <img src="portal/images/apps/ace.webp" width="20" height="20" alt=""/> **[BC-250 ACE Queues](apps/ace)**: Async compute for games: a patched RADV beside the system Mesa, built on the board and tested before use.
-- <img src="portal/images/apps/mesh.webp" width="20" height="20" alt=""/> **[BC-250 Mesh Shaders](apps/mesh)**: Mesh shaders for games: RADV with DirectMesh beside the system Mesa, built on the board and tested before use.
+- <img src="portal/images/apps/upscaler.webp" width="20" height="20" alt=""/> **[BC-250 Upscaler Manager](apps/upscaler)**: Deploy HelixSR into games. HelixSR is an FSR 3.1 drop-in upscaler with DLSS-style networks.
+- <img src="portal/images/apps/ace.webp" width="20" height="20" alt=""/> **[BC-250 ACE Queues](apps/ace)**: Async compute for games. It puts a patched RADV beside the system Mesa, built on the board and tested before use.
+- <img src="portal/images/apps/mesh.webp" width="20" height="20" alt=""/> **[BC-250 Mesh Shaders](apps/mesh)**: Mesh shaders for games. It puts RADV with DirectMesh beside the system Mesa, built on the board and tested before use.
 
 **Gaming**: apps for playing.
 
 - <img src="portal/images/apps/consoles.webp" width="20" height="20" alt=""/> **[BC-250 PS Remote Play](apps/consoles)**: Find, wake and register PS4 and PS5 consoles on the network, and start a Remote Play session.
 - <img src="portal/images/apps/clb.webp" width="20" height="20" alt=""/> **[BC-250 XB Remote Play](apps/clb)**: Stream your XBOX (Remote Play) or games from XBOX Cloud Gaming to the board, signed in with your Microsoft account.
-- <img src="portal/images/apps/shadps4.webp" width="20" height="20" alt=""/> **[shadPS4 Manager](apps/shadps4)**: PS4 games with the shadPS4 emulator: a tested shadPS4 release, your games found (or unpacked from .pkg files) and added to Game Mode.
-- <img src="portal/images/apps/rpcs3.webp" width="20" height="20" alt=""/> **[RPCS3 Manager](apps/rpcs3)**: PS3 games with the RPCS3 emulator: a tested RPCS3 build, the firmware, your games found and added to Game Mode.
+- <img src="portal/images/apps/shadps4.webp" width="20" height="20" alt=""/> **[shadPS4 Manager](apps/shadps4)**: PS4 games with the shadPS4 emulator. It gets a tested shadPS4 release. It finds your games, or unpacks them from .pkg files, and adds them to Steam.
+- <img src="portal/images/apps/rpcs3.webp" width="20" height="20" alt=""/> **[RPCS3 Manager](apps/rpcs3)**: PS3 games with the RPCS3 emulator. It gets a tested RPCS3 build and the firmware. It finds your games and adds them to Steam.
 - <img src="portal/images/apps/datstation.webp" width="20" height="20" alt=""/> **[Bazzite DatStation](apps/datstation)**: PlayStation quiz, console history, system versions, region codes, user guides and news, with your scores.
-- <img src="portal/images/apps/ppsspp.webp" width="20" height="20" alt=""/> **[PPSSPP Manager](apps/ppsspp)**: PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Game Mode.
-- <img src="portal/images/apps/pcsx2.webp" width="20" height="20" alt=""/> **[PCSX2 Manager](apps/pcsx2)**: PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Game Mode.
-- <img src="portal/images/apps/vita3k.webp" width="20" height="20" alt=""/> **[Vita3K Manager](apps/vita3k)**: PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Game Mode.
-- <img src="portal/images/apps/xenia.webp" width="20" height="20" alt=""/> **[Xenia Manager](apps/xenia)**: XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Game Mode.
+- <img src="portal/images/apps/ppsspp.webp" width="20" height="20" alt=""/> **[PPSSPP Manager](apps/ppsspp)**: PSP games with the PPSSPP emulator. It gets a tested PPSSPP release. It finds your games and adds them to Steam.
+- <img src="portal/images/apps/pcsx2.webp" width="20" height="20" alt=""/> **[PCSX2 Manager](apps/pcsx2)**: PS2 games with the PCSX2 emulator. It gets a tested PCSX2 release and your PS2 BIOS. It finds your games and adds them to Steam.
+- <img src="portal/images/apps/vita3k.webp" width="20" height="20" alt=""/> **[Vita3K Manager](apps/vita3k)**: PS Vita games with the Vita3K emulator. It gets a tested Vita3K build. You install the firmware and your games through it, and it adds the games to Steam.
+- <img src="portal/images/apps/xenia.webp" width="20" height="20" alt=""/> **[Xenia Manager](apps/xenia)**: XBOX 360 games with the Xenia emulator, which is experimental on Linux. It gets a tested Xenia build. It finds your games and adds them to Steam.
 
 **Utilities**: handy tools around the board.
 
 - <img src="portal/images/apps/overlay.webp" width="20" height="20" alt=""/> **[BC-250 System Overlay](apps/overlay)**: CPU, GPU, refresh rate, fan and temperatures in a small window that stays on top.
-- <img src="portal/images/apps/turing.webp" width="20" height="20" alt=""/> **[BC-250 Turing Screen](apps/turing)**: CPU, GPU, memory, fan and temperatures on a Turzx USB IPS screen (Turing Smart Screen 3.5"), with the time, the date and the weather, in your own theme and colors.
-- <img src="portal/images/apps/webcam.webp" width="20" height="20" alt=""/> **[BC-250 Webcam](apps/webcam)**: the PS5 HD Camera (CFI-ZEY1) as a webcam: loads its firmware at every plug-in and shows its picture, one camera or both side by side.
-- <img src="portal/images/apps/controller.webp" width="20" height="20" alt=""/> **[BC-250 Controller](apps/controller)**: the DualSense and DualSense Edge: battery, firmware updates from the official server over USB, and the Edge's profiles with a backup.
+- <img src="portal/images/apps/turing.webp" width="20" height="20" alt=""/> **[BC-250 Turing Screen](apps/turing)**: CPU, GPU, memory, fan and temperatures on a Turzx USB IPS screen (Turing Smart Screen 3.5"). It also shows the time, the date and the weather, in your own theme and colors.
+- <img src="portal/images/apps/webcam.webp" width="20" height="20" alt=""/> **[BC-250 Webcam](apps/webcam)**: The PS5 HD Camera (CFI-ZEY1) as a webcam. It loads the camera's firmware at every plug-in. It shows the picture of one camera, or of two side by side.
+- <img src="portal/images/apps/controller.webp" width="20" height="20" alt=""/> **[BC-250 Controller](apps/controller)**: The DualSense and DualSense Edge. It shows the battery and installs firmware updates from the official server over USB. It also handles the Edge's profiles, with a backup.
 - <img src="portal/images/apps/bios.webp" width="20" height="20" alt=""/> **[BC-250 BIOS Reader](apps/bios)**: The BIOS settings as the setup screen shows them, hidden menus included. Stock or modded BIOS. Read-only.
 - <img src="portal/images/apps/cec.webp" width="20" height="20" alt=""/> **[BC-250 CEC Manager](apps/cec)**: Turn the TV on and off with the board, switch its input and use its remote, over HDMI-CEC.
 - <img src="portal/images/apps/sftp.webp" width="20" height="20" alt=""/> **[BC-250 SFTP Tools](apps/sftp)**: Move files between computers over SFTP, and manage the SSH server of a Bazzite host.
 - <img src="portal/images/apps/ssd.webp" width="20" height="20" alt=""/> **[BC-250 SSD Check](apps/ssd)**: The health, power cycles and power-on hours of the board's SSDs.
 - <img src="portal/images/apps/btpair.webp" width="20" height="20" alt=""/> **[BC-250 Bluetooth Pairing](apps/btpair)**: Pair your Bluetooth keyboard, mouse and controllers at boot, with no USB keyboard or mouse needed.
-- <img src="portal/images/apps/quickfix.webp" width="20" height="20" alt=""/> **[BC-250 Quickfix](apps/quickfix)**: Small quickfixes for one job each: Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the regulator's sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed.
-- <img src="portal/images/apps/password.webp" width="20" height="20" alt=""/> **[BC-250 Password Generator](apps/password)**: Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere.
+- <img src="portal/images/apps/quickfix.webp" width="20" height="20" alt=""/> **[BC-250 Quickfix](apps/quickfix)**: Small quickfixes for one job each. Always installed. The quickfixes cover these:
+  - Board Test's optional tools
+  - MangoHud's config
+  - GPU metrics
+  - the sensors driver
+  - the regulator's sensors
+  - the memory map
+  - the journal
+  - the IOMMU
+  - the CPU mitigations
+- <img src="portal/images/apps/password.webp" width="20" height="20" alt=""/> **[BC-250 Password Generator](apps/password)**: Makes a random password of 8 or 15 characters and keeps it nowhere. The password has a capital letter, a small letter, a number and a special character.
 
-The tools for working on the suite run from a checkout of the repository and are not in the portal.
-**[Nexus Dashboard](dev/dash)** opens them all: Nexus Release Tool, Nexus Installer Tests,
-Nexus Demo Recorder, Nexus Sound Lab, Nexus TTS, Nexus Remix Studio, the video tours and the icons.
+The tools for working on the suite are not in the portal. They run from a checkout of the repository.
+**[Nexus Dashboard](dev/dash)** opens them all:
 
-How to install and use them: **[the wiki](https://robertotorino.github.io/bc250-bazzite/)**.
+- Nexus Release Tool
+- Nexus Deps
+- Nexus Garbage Remover
+- Nexus Installer Tests
+- Nexus Demo Recorder
+- Nexus Sound Lab
+- Nexus TTS
+- Nexus Remix Studio
+- the video tours
+- the icons
+
+**[The wiki](https://robertotorino.github.io/bc250-bazzite/)** says how to install and use them.
 
 ## License
 
-GPL-3.0-or-later ([LICENSE](LICENSE)), except BC-250 Persistent ACPI, which is MIT, and BC-250 PS Remote Play, which
-is AGPL-3.0 (its protocol code comes from chiaki-ng). Each app keeps its own `LICENSE`. The icons were made with generative AI tools and edited by hand in Photoshop, and the
-music of the video tours with generative AI tools. The portal's welcome sound was made in Nexus Remix Studio, with a voice generated by Nexus TTS. The other sounds were made without AI: the portal's intro sound by its own
-code, from arithmetic alone (`tools/make_portal_sounds.py`), and the portal's sound on a controller action and
-DatStation's quiz music by hand in Audacity. All are under the license of the folder they are in, like the code beside
-them.
+The suite is under GPL-3.0-or-later ([LICENSE](LICENSE)). BC-250 Persistent ACPI is under MIT instead. BC-250 PS
+Remote Play is under AGPL-3.0. Its protocol code comes from chiaki-ng. Each app keeps its own `LICENSE`.
+
+The icons were made with generative AI tools and then edited by hand in Photoshop. The music of the video tours was
+made with generative AI tools too. The portal's welcome sound was made in Nexus Remix Studio, with a voice generated by
+Nexus TTS. The other sounds were made without AI. The portal's intro sound comes from its own code, from arithmetic
+alone (`tools/make_portal_sounds.py`). The portal's sound on a controller action and DatStation's quiz music were made
+by hand in Audacity.
+
+All are under the license of the folder they are in, like the code beside them.
 
 ## Disclaimer
 

@@ -5,13 +5,13 @@
 # BC-250 Mesh Shaders
 
 !!! warning "Changes the board"
-    The app builds RADV, Mesa's Vulkan driver, with DirectMesh in a container and installs it under
-    /usr/local/lib/bc250-mesh-shaders, beside the system Mesa, which is never changed, with a wrapper in
-    /usr/local/bin. A game uses it only through the wrapper in its launch options, and only after the app's test
-    passed on the running kernel; nothing is set for every app. The files stay across reboots, power offs and
-    Bazzite updates. Nothing is written to the BIOS, the firmware, the kernel or its arguments. Remove takes the
-    driver and the wrapper away: games are back on the system Mesa, and the launch options you gave them must go
-    by hand.
+    The app builds RADV, Mesa's Vulkan driver, with DirectMesh in a container. It installs the driver under
+    /usr/local/lib/bc250-mesh-shaders, beside the system Mesa, with a wrapper in /usr/local/bin. The system Mesa is
+    never changed. A game uses the driver only through the wrapper in its launch options. It does so only after the
+    app's test passed on the running kernel. Nothing is set for every app. The files stay across reboots, power offs and
+    Bazzite updates. Nothing is written to the BIOS, the firmware, the kernel or its arguments. Remove takes away the
+    driver and the wrapper. Games are then back on the system Mesa. You must remove the launch options you gave them by
+    hand.
 
 BC-250 Mesh Shaders brings **mesh shaders** to games on the **AMD BC-250**. Mesh shaders are how newer DirectX 12
 games (DirectX 12 Ultimate) draw their scenes. Some of these games need mesh shaders to start. Others fall back to an

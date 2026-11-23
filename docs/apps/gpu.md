@@ -5,14 +5,14 @@
 # BC-250 GPU Manager
 
 !!! warning "Changes the board"
-    The app edits the governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml, and makes a dated
-    backup of it beside it before every write; it starts, stops, enables and disables the governor's service,
-    and sends it clock, voltage and range requests over D-Bus. The governor is what sets the GPU's clocks and
-    voltages; the app never writes a register itself. The settings file stays across reboots and power offs, and
-    the governor reads it whenever it starts; what the app sets over D-Bus, test mode included, lasts until the
-    governor restarts. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Restore
-    on the Backups page makes any earlier settings file the current one again, and Stop test ends a test;
-    uninstalling the app leaves the settings file and its backups as they are.
+    The app edits the governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml. Before every write it
+    makes a dated backup of the file beside it. It starts, stops, enables and disables the governor's service. It sends
+    the governor clock, voltage and range requests over D-Bus. The governor is what sets the GPU's clocks and voltages.
+    The app never writes a register itself. The settings file stays across reboots and power offs. The governor reads it
+    whenever it starts. What the app sets over D-Bus, test mode included, lasts until the governor restarts. Nothing is
+    written to the BIOS, the firmware, the CMOS or the kernel's arguments. Restore selected on the Backups page makes
+    any earlier settings file the current one again. Stop test ends a test. Removing the app leaves the settings file
+    and its backups as they are.
 
 BC-250 GPU Manager lets you set up and watch the GPU of an **AMD BC-250** board running **Bazzite**. It is a PyQt6
 window for **cyan-skillfish-governor-smu**, the GPU governor. A governor is the service that sets the GPU's clocks

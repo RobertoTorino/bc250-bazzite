@@ -4,17 +4,22 @@
 
 # Development
 
-How the repository is laid out, how to set it up and test it, how the wiki's pictures and tours are made, and how
-the versions and releases fit together. How every app is built, and how to add one:
-[Architecture and consistency](architecture.md). The development apps, from Nexus Dashboard to Nexus Deps:
-[Dashboard](dashboard.md). How a release is made and published: [Releases](releases.md) and, step by step,
-[Portal](../portal.md#appstoml-and-releases). The repository's settings on GitHub and Dependabot's pull requests:
-[GitHub settings](github-settings.md). The tools a machine needs to work on it, on Bazzite, and how they
-stay up to date: [The development machine](#the-development-machine).
+This chapter helps you work on the suite. It shows how the repository is laid out, and how to set it up and test
+it. It also says how the wiki's pictures and tours are made, and how the versions and releases fit together.
+
+You find the rest here:
+
+- [Architecture and consistency](architecture.md) says how every app is built, and how to add one.
+- [Dashboard](dashboard.md) describes the development apps, from Nexus Dashboard to Nexus Deps.
+- [Releases](releases.md) says how a release is made and published. [Portal](../portal.md#appstoml-and-releases)
+  gives the steps.
+- The [GitHub settings](github-settings.md) page covers the repository's settings on GitHub and Dependabot's pull requests.
+- [The development machine](#the-development-machine) lists the tools a Bazzite machine needs to work on the suite.
+  It also says how they stay up to date.
 
 ## Layout
 
-The repository is the suite. Paths in this wiki are written from the root of the repository.
+The repository is the suite. Paths in this wiki start at the root of the repository.
 
 ```
 portal/                       the portal: app, apps.toml (the pinned app releases), its tests and install.sh
@@ -52,36 +57,47 @@ python3 tools/check_versions.py             # hard-coded versions = VERSION
 mkdocs build --strict                       # the wiki
 ```
 
-The suite is worked on and tested on Bazzite.
+You work on the suite and test it on Bazzite.
 
 ### CI on your own machine
 
-GitHub runs `ci.yml` on every push and pull request: the versions and the portal's manifest, the pytest matrix
-(core, tools, every `dev/` app, the portal and every app), the native Rust job for PS Remote Play, the shell checks
-(`bash -n`, shellcheck, line endings, exec bits, the four files of every folder, workflows only at the root), the
-installer tests and the wiki build. A release waits for it: a commit CI did not pass gets no release.
+GitHub runs `ci.yml` on every push and pull request. It runs these checks:
 
-A push runs the jobs of what it changed. A first job, `plan` (`tools/ci_matrix.py plan`), compares the push with
-the commit before it and names them:
+- the versions and the portal's manifest
+- the pytest matrix, for core, tools, every `dev/` app, the portal and every app
+- the native Rust job for PS Remote Play
+- the shell checks, with `bash -n`, shellcheck, line endings, exec bits, the four files of every folder and
+  workflows only at the root
+- the installer tests
+- the wiki build
+
+A release waits for CI. A commit that CI did not pass gets no release.
+
+A push runs only the jobs for what it changed. The first job, `plan`, runs `tools/ci_matrix.py plan`. It compares
+the push with the commit before it, and names the jobs to run:
 
 | What changed | What runs |
 |---|---|
-| A file of a folder with `tests/` (an app, the portal, a `dev/` app) | That folder's tests |
+| A file of a folder with `tests/`, such as an app, the portal or a `dev/` app | That folder's tests |
 | Anything | The tests of `tools`, which hold the repository's rules, the versions and the shell checks |
-| `portal/apps.toml` or `icons/categories.toml` | Also the tests of every folder whose tests read that file |
+| `portal/apps.toml` or `icons/categories.toml` | Also, the tests of every folder whose tests read that file |
 | An app, a `dev/` app, the portal or a tool | The installer tests that name it, side by side |
-| `apps/consoles` | Also the native job |
-| Anything but Python code | Also the wiki build |
+| `apps/consoles` | Also, the native job |
+| Anything but Python code | Also, the wiki build |
 | `core`, a workflow, `tools/ci_matrix.py`, an action or a script the jobs run (`.github/actions/`, `tools/ci-apt.sh`, `tools/ci-qt-libs.sh`, `tools/ci-font.sh`), `requirements-dev.txt` | Every job |
-| The local CI (`tools/ci_local.py`, `tools/ci-local.sh`, `tools/ci-local/`) | As any tool: no job on GitHub runs it |
+| The local CI (`tools/ci_local.py`, `tools/ci-local.sh`, `tools/ci-local/`) | The same as any tool. No job on GitHub runs it |
 
-Every job also runs every Monday, with **Run workflow** on the CI workflow's page on GitHub, and when the commit
-before the push is not known (a new branch, a forced push). The pytest matrix and the installer tests are read from
-the folders, so a new app needs no edit to a workflow: its folder, its installer test and its `install.sh` are in
-CI at once.
+Every job also runs in these cases:
 
-[All tests](all-tests.md) lists every test with what it checks and the time it took, and the installer tests.
-`tools/all_tests.py` writes that page (`ALL-TESTS.md` at the root) from the tests themselves:
+- every Monday
+- when you click **Run workflow** on the CI workflow's page on GitHub
+- when the commit before the push is not known, as on a new branch or after a forced push
+
+CI reads the pytest matrix and the installer tests from the folders. So a new app needs no edit to a workflow. Its
+folder, its installer test and its `install.sh` are in CI at once.
+
+The page [All tests](all-tests.md) shows every test, with what it checks and the time it took. It also lists the
+installer tests. `tools/all_tests.py` writes that page (`ALL-TESTS.md` at the root) from the tests themselves:
 
 ```bash
 python3 tools/all_tests.py            # the list as the tests are now; the times stay as they were
@@ -89,13 +105,13 @@ python3 tools/all_tests.py --run      # run every test folder first, for each te
 python3 tools/all_tests.py --check    # is the list what the tests are? (a test of tools asks this in CI)
 ```
 
-Nexus Release Tool's **Commit** runs the first form before it adds the changes, so the list follows the tests by
-itself. By hand, run it after adding, renaming or removing a test; CI fails otherwise.
+Nexus Release Tool's **Commit** runs the first form before it adds the changes. So the list keeps up with the
+tests by itself. When you work by hand, run it after you add, rename or remove a test. Otherwise, CI fails.
 
 `./test.sh` runs every test folder in one venv that holds everything, on whatever Python your system has. GitHub's
-CI runs each job on Python 3.12 with only that job's own requirements, so a test can pass here and still fail there:
-a Python 3.13 function, or a package only the full venv has. `tools/ci-local.sh` runs the jobs of `ci.yml` the way
-GitHub does, in a container (podman, which Bazzite has, or docker):
+CI runs each job on Python 3.12, with only that job's own requirements. So a test can pass here and still fail
+there. It may use a Python 3.13 function, or a package only the full venv has. `tools/ci-local.sh` runs the jobs of
+`ci.yml` the way GitHub does, in a container. It uses podman, which Bazzite has, or docker:
 
 ```bash
 tools/ci-local.sh                            # the jobs of what changed since origin/main, under a minute
@@ -104,24 +120,40 @@ tools/ci-local.sh shell pytest/tools         # some jobs; a matrix job by its va
 tools/ci-local.sh --list                     # the jobs
 ```
 
-It reads the jobs from the workflow itself and runs its plan job as GitHub does, against what differs from
-`origin/main`, so it runs the same jobs the push will, and a new app needs no change. The first run builds the image from `tools/ci-local/Containerfile` (Python 3.12 and the packages GitHub's
-runner has) and PS Remote Play's FFmpeg; both are kept, with the venvs and the logs, in `~/.cache/bc250-ci-local`.
-FFmpeg is built again when `apps/consoles/native/ffmpeg/build.sh` changes, as GitHub's cache
-is keyed on that file. It works on a copy of the checkout with every change staged, as the commit will have it. The copy is named as the
-checkout, as GitHub's is named after the repository. One run goes at a time on a computer: a second one, from a
-terminal or Nexus Release Tool's Push, says that another run is going and waits until it ends, as the two would share
-the venvs and the logs. Within a run the jobs go several at a time: half the cores, fewer when the free memory is short (one job per
-1.5 GB, at least two; `--workers N` sets the number yourself), except a job that compiles (`native`, with
-cargo): it runs after the others, alone, since its compilers need the computer's memory for themselves. The push commands Nexus Release Tool shows run it first (`tools/ci-local.sh && git push`): no
-push when a job fails.
+It reads the jobs from the workflow itself. It runs the plan job as GitHub does, against what differs from
+`origin/main`. So it runs the same jobs the push will, and a new app needs no change.
 
-Before each run it removes what earlier runs and tests left on the computer (`tools/clean_caches.py`): a venv no run
-used for a week, the files pytest kept in `/tmp` of runs a day ago or longer, an AI assistant's scratch folders in
-`/tmp` that did not change for six hours, and container images without a name. `/tmp` is kept in memory on Bazzite, so
-what stays there takes memory from the tests. `python3 tools/clean_caches.py --dry-run` only says what would go. It
-reports the system's crash dumps once they pass 1 GB, with the command that removes them (it takes sudo).
-`./test.sh` keeps no files of a test that passed.
+The first run builds the image from `tools/ci-local/Containerfile`. The image holds Python 3.12 and the packages
+GitHub's runner has. The first run also builds PS Remote Play's FFmpeg. Both are kept in `~/.cache/bc250-ci-local`,
+with the venvs and the logs. FFmpeg is built again when `apps/consoles/native/ffmpeg/build.sh` changes, as GitHub's
+cache is keyed on that file.
+
+It works on a copy of the checkout with every change staged, as the commit will have it. The copy has the name of
+the checkout, as GitHub's copy has the name of the repository.
+
+One run goes at a time on a computer, because two runs would share the venvs and the logs. A second run says that
+another run is going, and waits until it ends. That holds for a run from a terminal and for Nexus Release Tool's
+Push.
+
+Within a run, several jobs go at a time. Their number is half the cores. It is lower when the free memory is short,
+with one job per 1.5 GB. It is never under two. You can set the number yourself with `--workers N`. A job that
+compiles, such as `native` with cargo, is the exception. It runs after the others, alone, since its compilers need
+the computer's memory for themselves.
+
+The push commands Nexus Release Tool shows run it first (`tools/ci-local.sh && git push`). So nothing is pushed when
+a job fails.
+
+Before each run, `tools/clean_caches.py` removes what earlier runs and tests left on the computer:
+
+- a venv unused by any run for a week
+- the files pytest kept in `/tmp` from runs a day ago or longer
+- an AI assistant's scratch folders in `/tmp` that did not change for six hours
+- container images without a name
+
+`/tmp` is kept in memory on Bazzite, so what stays there takes memory from the tests.
+`python3 tools/clean_caches.py --dry-run` only says what would go. It reports the system's crash dumps once they pass
+1 GB. It also shows the command that removes them, which takes sudo. `./test.sh` keeps no files of a test that
+passed.
 
 ### Keeping the wiki accurate
 
@@ -135,7 +167,7 @@ tells you which sections to read again after a change.
 - an option of one of the suite's scripts
 - a window label that an app's chapter tells you to use
 
-A name of something outside the suite goes in `OUTSIDE` in `tools/wiki_names.py`, with the reason.
+Add a name of something outside the suite to `OUTSIDE` in `tools/wiki_names.py`, with the reason.
 
 `tools/check_wiki.py` lists each section that names a changed file but did not change itself. A section names a
 file through its path, its file name, its module name or a name the file defines. An app's chapter names its whole
@@ -152,7 +184,7 @@ The list never fails a run. Nexus Release Tool's **Commit your changes** step sh
 
 - **Line endings:** `.gitattributes` makes every text file LF in the repository and in the working tree. Scripts,
   units and `.desktop` files reach the board with LF. CI rejects CRLF.
-- **Executable bit:** when a script lost its executable bit, run `tools/fix-modes.sh` after `git add`: it marks every
+- **Executable bit:** when a script lost its executable bit, run `tools/fix-modes.sh` after `git add`. It marks every
   `.sh` as executable in the index. CI fails when a script is missing the bit.
 - **Venv:** one venv in the checkout, `.venv-linux/`, ignored by git.
 - **File names:** Linux and GitHub are case-sensitive. Keep links and asset names in exactly the case of the file.
@@ -223,23 +255,23 @@ terminal, may need it on `PATH`.
 
 Bazzite keeps itself current. Its updater, `uupd.timer`, runs every day at 04:00, or at the next boot when the
 machine was off. It updates the image, the Flatpaks and Homebrew's packages. `ujust update` runs the same now. A new
-image is used after a restart. The venv is pip's and the Rust toolchain is rustup's, so nothing updates those for
-you.
+image takes effect after a restart. The venv is pip's and the Rust toolchain is rustup's, so nothing updates those
+for you.
 
 [Nexus Deps](dashboard.md#deps) shows every source with a newer version at once: Bazzite's image, the Flatpaks,
 Homebrew's packages, the Rust toolchain, the packages of `.venv-linux` and Prime95's mprime in `~/mprime`.
 **Update** on a card installs that source's updates after it shows the command and asks. Its hourly notification
 says when something is newer.
 
-The venv's packages are upgraded within what `requirements-dev.txt` allows. The venv's `python` links to Bazzite's
+Nexus Deps upgrades the venv's packages within what `requirements-dev.txt` allows. The venv's `python` links to Bazzite's
 `/usr/bin/python3`, so a Bazzite image with a newer Python leaves the venv without its packages. Nexus Deps says so,
 and **Update** installs `requirements-dev.txt` for the new Python.
 
 ### Keeping it clean
 
-[Nexus Garbage Remover](dashboard.md#garbage-remover) shows what can go from the machine. That is crash dumps, Steam's
+[Nexus Garbage Remover](dashboard.md#garbage-remover) shows what can go from the machine. It lists crash dumps, Steam's
 crash reports, the Trash and caches that fill up. It deletes what you check, after it asks. Its hourly notification says
-when there is 1 GB or more. Our tools' own leftovers go by themselves: `tools/clean_caches.py` removes them before
+when there is 1 GB or more. Our tools' own leftovers go by themselves. `tools/clean_caches.py` removes them before
 every local CI run.
 
 ### Git identity and signing
@@ -267,19 +299,26 @@ a new system or a new home folder starts without them. Check them with `git conf
 
 ## Colors
 
-[DESIGN.md](https://github.com/RobertoTorino/bc250-bazzite/blob/main/DESIGN.md) lists every color of the suite: the
-rules that make its design recognizable, every tint of each hue and why it is there, and where each color is used
-(the apps' themes and state colors, the wiki, the development apps, the apps' own colors). Each color shows a sample
-from `design/colors/`. Both are written by `tools/make_design.py` from the listing in it: change the listing and run
-it, never DESIGN.md itself. DESIGN.md also lists every icon of the suite and where it is used. `tools/design_icons.py`
-reads that part from the repository.
+[DESIGN.md](https://github.com/RobertoTorino/bc250-bazzite/blob/main/DESIGN.md) lists every color of the suite. It
+gives the rules that make the suite's design recognizable. It shows every tint of each hue and why it is there. It
+also says where each color is used:
+
+- the apps' themes and state colors
+- the wiki
+- the development apps
+- the apps' own colors
+
+Each color shows a sample from `design/colors/`. `tools/make_design.py` writes DESIGN.md and the samples from the
+listing in the script. To change a color, change the listing and run the script. Never edit DESIGN.md itself.
+DESIGN.md also lists every icon of the suite and where it is used. `tools/design_icons.py` reads that part from the
+repository.
 
 ```bash
 python3 tools/make_design.py            # write DESIGN.md and its samples
 python3 tools/make_design.py --check    # only say what is out of date (tools/tests runs it)
 ```
 
-The check also compares the wiki's stylesheet, `docs/stylesheets/suite.css`, with its listing: a color added to the
+The check also compares the wiki's stylesheet, `docs/stylesheets/suite.css`, with its listing. A color added to the
 stylesheet goes into the listing too, with what it is for.
 
 ## The wiki's pictures and tours
@@ -287,44 +326,54 @@ stylesheet goes into the listing too, with what it is for.
 To preview the wiki locally, run `mkdocs serve` from the repository root with the development venv active,
 then open <http://127.0.0.1:8000/bc250-bazzite/>. Stop the server with Ctrl+C.
 
-`.github/workflows/docs.yml` builds the wiki from `main` on every push and publishes it on GitHub Pages at
-<https://robertotorino.github.io/bc250-bazzite/>. The Install page's link to the portal's release and the archive's
-name are the tag of the newest published portal release (`tools/mkdocs/hooks.py`), so publishing a portal release
-builds the wiki again. GitHub Pages deploys from `main` only, and a release's run belongs to its tag: that run starts
-the workflow on `main` and builds nothing itself, so the Actions list shows two Wiki runs for a release. By hand:
-`gh workflow run docs.yml --ref main`.
+`.github/workflows/docs.yml` builds the wiki from `main` on every push. It publishes the wiki on GitHub Pages at
+<https://robertotorino.github.io/bc250-bazzite/>. The Install page links to the portal's release and names its
+archive. Both come from the tag of the newest published portal release (`tools/mkdocs/hooks.py`). So publishing a
+portal release builds the wiki again. GitHub Pages deploys from `main` only, and a release's run belongs to its tag.
+That run starts the workflow on `main` and builds nothing itself. So the Actions list shows two Wiki runs for a
+release. To start it by hand, run `gh workflow run docs.yml --ref main`.
 
-The picture of the portal on the home page (`docs/images/home/portal.webp`) is taken from the portal itself:
-`tools/portal_screenshot.py` opens its window offscreen on this checkout's `apps.toml` and icons, in a home folder
-of its own, with a fixed demo state (one update, the Sustainable tab open), and saves it. The wiki's workflow runs it
-before every build, so the published picture always shows the portal as it is on main. Run it yourself to see the
-same picture in `mkdocs serve`:
+The picture of the portal on the home page (`docs/images/home/portal.webp`) is taken from the portal itself.
+`tools/portal_screenshot.py` opens the portal's window offscreen and saves it. It uses this checkout's `apps.toml`
+and icons, in a home folder of its own. The window shows a fixed demo state, with one update and the Sustainable tab
+open. The wiki's workflow runs the script before every build. So the published picture always shows the portal as
+it is on main. Run it yourself to see the same picture in `mkdocs serve`:
 
 ```bash
 python tools/portal_screenshot.py          # from the venv; --out FILE to save it elsewhere
 ```
 
-The video tours are made the same way, frame by frame from the real windows, offscreen, from a terminal as below
-or from [Nexus Dashboard](dashboard.md#video-tours). `tools/record-tour.sh`
-records the portal's tour, about two minutes, with music under it that fades out over the last two seconds
-(`tools/sounds/the_quiet_engine_remix.ogg`, made with generative AI tools; `--no-music` leaves it out).
-`tools/record-tour.sh --wiki` also writes the copy on the [Portal Tour](../portal-tour.md) page,
-`docs/videos/portal-tour.mp4` (1280 × 720, about 6 MB) and its poster, and a fingerprint of the portal it was recorded from
-(`tools/portal-tour.stamp`: the portal's code and pictures, its tiles in `portal/apps.toml` (their names,
-categories and marks, not the tags or checksums), and the tour's script). The video shows no version number, so a
-release does not make it out of date. While it is out of date, [Nexus Release Tool](releases.md) shows an orange
-banner with **Record new video now**, and its Start new release waits for it. The checks fail when
-the portal changed since, until the tour is recorded again with `--wiki`;
-`python3 tools/portal_tour.py --check` says so from a terminal, and `--stamp` marks the video as current
-for a change that does not show in it. A change the wiki describes goes into its [Portal](../portal.md) page in the
-same change.
-The video itself goes to `~/Videos`, outside the repository, at 1920 × 1080. For YouTube, record it at 4K:
-`--size 2160p` renders the same tour at 3840 × 2160 (the window drawn at 240 % instead of 120 %, so the text stays
-crisp; about three minutes, around 35 MB) into `~/Videos/bc250-portal-tour-v<portal version>-2160p.mp4`.
-YouTube shows a 4K upload far sharper than a 1080p one, since it gives it a better codec and more bits. `--size
-1440p` is the step between. The wiki's copy is the same whatever the size.
-`tools/record-app-tour.sh` records one app's, about 40 seconds, the same script for every app, with music under it
-that fades out over the last two seconds (`tools/sounds/the_quiet_engine.mp3`, made with generative AI tools):
+The video tours are made the same way, frame by frame from the real windows, offscreen. You make them from a
+terminal as below, or from [Nexus Dashboard](dashboard.md#video-tours).
+
+`tools/record-tour.sh` records the portal's tour, about two minutes long. Music plays under it and fades out over
+the last two seconds. The music is `tools/sounds/the_quiet_engine_remix.ogg`, made with generative AI tools.
+`--no-music` leaves it out.
+
+`tools/record-tour.sh --wiki` also writes these files:
+
+- the copy on the [Portal Tour](../portal-tour.md) page, `docs/videos/portal-tour.mp4`, at 1280 × 720 and about 6 MB
+- its poster
+- a fingerprint of the portal it was recorded from, `tools/portal-tour.stamp`
+
+The fingerprint covers the portal's code and pictures and the tour's script. It also covers the names, categories
+and marks of the portal's tiles in `portal/apps.toml`. It leaves out their tags and checksums.
+
+The video shows no version number, so a release does not make it out of date. While it is out of date,
+[Nexus Release Tool](releases.md) shows an orange banner with **Record new video now**. Its Start new release waits
+for the new video. When the portal changed since, the checks fail until you record the tour again with `--wiki`.
+From a terminal, `python3 tools/portal_tour.py --check` says so. The option `--stamp` marks the video as current
+for a change that does not show in it. A change the wiki describes goes into its [Portal](../portal.md) page in the same change.
+
+The video itself goes to `~/Videos`, outside the repository, at 1920 × 1080. For YouTube, record it at 4K.
+`--size 2160p` renders the same tour at 3840 × 2160 into `~/Videos/bc250-portal-tour-v<portal version>-2160p.mp4`.
+It draws the window at 240 % instead of 120 %, so the text stays crisp. That takes about three minutes, and the file
+comes to around 35 MB. YouTube shows a 4K upload far sharper than a 1080p one, since it gives it a better codec and
+more bits. `--size 1440p` is the step between. The wiki's copy is the same whatever the size.
+
+`tools/record-app-tour.sh` records one app's tour, about 40 seconds long. It uses the same script for every app.
+Music plays under it and fades out over the last two seconds. The music is `tools/sounds/the_quiet_engine.mp3`, made
+with generative AI tools:
 
 ```bash
 tools/record-app-tour.sh fan                          # ~/Videos/bc250-fan-tour-v<version>.mp4
@@ -334,21 +383,21 @@ tools/record-app-tour.sh fan --size 2160p             # at 4K for YouTube: ...-t
 ```
 
 The app starts from the checkout in a home folder of its own. The tour points at the controls of its header, with
-their tooltips as captions, and opens its tabs or pages; it presses no buttons and nothing runs as root. What the
+their tooltips as captions, and opens its tabs or pages. It presses no buttons, and nothing runs as root. What the
 app reads from the board is real, so watch the video before you publish it.
 
 The controller beside the board on the home page changes with every portal release, in the order of
-`docs/images/home/controllers/controllers.toml`. To add one, put its picture in that folder (WebP, 1295 × 1600, with
-a transparent background, like the others) and add it at the end of the list with its alt text.
+`docs/images/home/controllers/controllers.toml`. To add one, put its picture in that folder. Make it a WebP of
+1295 × 1600 with a transparent background, like the others. Then add it at the end of the list with its alt text.
 
 ## Where things are installed
 
-- **Root-owned `/opt`:** Board Test (`check`), cores, oc, acpi, mesh and ace, whose scripts run as root: a normal
-  user cannot change code that sudo runs.
-- **Your home folder:** the portal (`~/.local/share/bc250-bazzite-suite/portal`, what it remembers beside it in
-  `~/.local/share/bc250-bazzite-suite/state`), the shared venv `~/.local/share/bc250-bazzite-suite/venv` (PyQt6
-  and pygame-ce, used by all suite GUIs and removed with the last of them), plus each app's settings, results and
-  launchers.
+- **Root-owned `/opt`:** Board Test (`check`), cores, oc, acpi, mesh and ace. Their scripts run as root, and a
+  normal user cannot change code that sudo runs.
+- **Your home folder:** the portal, the shared venv, and each app's settings, results and launchers. The portal is
+  in `~/.local/share/bc250-bazzite-suite/portal`. What it remembers is beside it, in
+  `~/.local/share/bc250-bazzite-suite/state`. The shared venv is `~/.local/share/bc250-bazzite-suite/venv`. It holds
+  PyQt6 and pygame-ce, which all suite GUIs use, and goes with the last of them.
 - **`bc250_core` per app:** each app's release carries the `bc250_core` it was tested with, next to its own code.
   Apps with different release tags never share a core version they were not tested with.
 
@@ -356,27 +405,30 @@ a transparent background, like the others) and add it at the end of the list wit
 
 ## Versions and tags
 
-`core/`, `portal/` and every app have a `VERSION` file; it is the single source of the version. Versions that are
-also written in a script or package (`VERSION="…"`, `__version__ = "…"`, pyproject `version`) must match it, which
-CI checks with `tools/check_versions.py`. Everything started at 0.1.0 with the suite. The development apps in
-`dev/` have no version: they are never released, and their header shows the checkout's last commit and its time.
+`core/`, `portal/` and every app have a `VERSION` file. It is the single source of the version. Some versions are
+also written in a script or package (`VERSION="…"`, `__version__ = "…"`, pyproject `version`). They must match it,
+and CI checks that with `tools/check_versions.py`. Everything started at 0.1.0 with the suite. The development apps
+in `dev/` have no version. They are never released. Their header shows the checkout's last commit and its time.
 
-Each app is released on its own tag (`bc250-check-v0.1.0`, `bc250-gpu-v0.4.0`, …); the release workflow builds
-`<tag>.tar.gz` and `SHA256SUMS`. The portal has `bc250-portal-vX.Y.Z` and pins one release of every app in
-`portal/apps.toml`; a change there since the last portal release needs a portal version bump at least as large as the largest app bump.
-The release steps are in [Portal](../portal.md#appstoml-and-releases).
+Each app is released on its own tag (`bc250-check-v0.1.0`, `bc250-gpu-v0.4.0`, …). The release workflow builds
+`<tag>.tar.gz` and `SHA256SUMS`. The portal's tag is `bc250-portal-vX.Y.Z`. The portal pins one release of every app
+in `portal/apps.toml`. When that file changed since the last portal release, the portal's version bump must be at
+least as large as the largest app bump. The release steps are in [Portal](../portal.md#appstoml-and-releases).
 
-How the releases are titled on GitHub, and why its **Latest** release is always the newest portal:
-[The releases on GitHub](releases.md#the-releases-on-github).
+See [The releases on GitHub](releases.md#the-releases-on-github) for how the releases are titled on GitHub. That section also
+says why GitHub's **Latest** release is always the newest portal.
 
 ### Upstream releases an app pins or follows
 
-`tools/check_upstream.py` compares what the apps pin or follow with their upstreams, each described
-below. It exits with 0 when every one is in step, 1 when one moved and 2 when one could not be checked. The Upstream workflow (`.github/workflows/upstream.yml`) runs it every Monday and can be started by
-hand. What moved goes into the open **Upstream review** issue (a new one when none is open, else its list is
-updated with a comment), which notifies everyone who watches the repository. The workflow never closes it: close
-it once every item on it is handled on `main`, else next Monday's run opens it again. **Close issues** in [Nexus
-Dashboard](dashboard.md#close-issues) does it, or a command with a gh login:
+`tools/check_upstream.py` compares what the apps pin or follow with their upstreams. Each one is described below.
+The tool exits with 0 when every one is in step, 1 when one moved and 2 when one could not be checked. The Upstream
+workflow (`.github/workflows/upstream.yml`) runs it every Monday. You can also start the workflow by hand.
+
+What moved goes into the open **Upstream review** issue. When none is open, the workflow opens a new one. Otherwise,
+it updates the list in the open issue and adds a comment. That notifies everyone who watches the repository. The
+workflow never closes the issue. Close it once every item on it is handled on `main`. If you close it sooner, next Monday's
+run opens a new issue for the items left. **Close issues** in [Nexus Dashboard](dashboard.md#close-issues) closes it. A command
+with a gh login does it too:
 
 ```bash
 gh issue list                                                  # the open issues, with their numbers
@@ -385,99 +437,128 @@ gh issue close <number> --comment "PPSSPP pinned at 1.20."     # close one, sayi
 
 The run fails only when an upstream could not be checked. A moved pin means a new version of the app is due, with
 the new pin tried on the board first. Until then, users can choose the newer build themselves in the manager's
-version manager. It also moves Nexus Deps' list of the programs the apps use: run
-`dev/deps/run.sh --sync-upstreams` from the repository's root, else CI fails
+version manager. A new pin also changes Nexus Deps' list of the programs the apps use. Run
+`dev/deps/run.sh --sync-upstreams` from the repository's root to update it. Otherwise, CI fails
 ([Nexus Deps](dashboard.md#deps)).
 
 Each emulator manager pins the build that version of the app was tried with. **Install** installs that build and puts
-it back in use. In the manager's version manager (core's `builds`), you can download
-any other build the emulator publishes on GitHub, a stable release or a nightly. The app checks it against the
-SHA-256 GitHub publishes. So the pin says which build was tried on the board, not which builds users may run.
+it back in use. In the manager's version manager (core's `builds`), you can download any other build the emulator
+publishes on GitHub. That can be a stable release or a nightly build. The app checks it against the SHA-256 GitHub
+publishes. So the pin says which build was tried on the board, not which builds users may run.
 
-The shadPS4 Manager was tried with one shadPS4 release, pinned in `apps/shadps4/shadps4_manager/emulator.py`
-(`VERSION`, `TAG`, `ASSET`, `SHA256`). The tool checks it: a newer stable release, with the Linux zip and the
-SHA-256 GitHub publishes for it that a new pin needs, and the SHA-256 of the pinned zip. A new shadPS4 can change
-what the app relies on (its `config.json`, the shadNet protocol), so a new pin also needs a look at what changed.
+The shadPS4 Manager was tried with one shadPS4 release. It is pinned in `apps/shadps4/shadps4_manager/emulator.py`
+as `VERSION`, `TAG`, `ASSET` and `SHA256`. The tool checks these:
 
-The PPSSPP, PCSX2 (its stable channel) and RPCS3 Managers and Mesh Shaders each pin one release: `VERSION` or
-`LANDMARK` in the app's `emulator.py`, and `DIRECTMESH` in `apps/mesh/bc250-mesh-shaders.sh`. RPCS3's `emulator.py`
-also holds the size of the pinned AppImage (`SIZE`), by which the app sees that RPCS3 replaced itself with another
-build, so a new pin moves it too.
-The same tool reports a newer stable release than the pin (for DirectMesh the newest `directmesh-v<version>` tag; a tag
-with more after the version is a development candidate and skipped); the apps check the checksum of what they download
-themselves. The governor has no pin in the repository (its version is the one COPR built); the GPU Manager
-compares the installed package with filippor's latest release.
+- a newer stable release, with the Linux zip and the SHA-256 GitHub publishes for it, which a new pin needs
+- the SHA-256 of the pinned zip
 
-The BC-250 Upscaler Manager pins no HelixSR release: it gets the latest of one major version (`SUPPORTED_MAJOR`), or the
-fallback HelixSR's developer names. Its `apps/upscaler/upscaler/acquire.py` holds `SUPPORTED_MAJOR`,
-`KNOWN_VERSION`, the newest release the app was checked against, and `FALLBACK_VERSION`. The same tool reports a newer
-stable release (users get it at once, so what changed in its setup, its zip and `helixsr.ini` needs a look and a try
-on the board; then `KNOWN_VERSION` moves), a newer major version (users do not get it until the app is moved to it), a fallback
-named in the latest release's notes that is not `FALLBACK_VERSION`, and a fallback release without its zip.
+A new shadPS4 can change what the app relies on, such as its `config.json` or the shadNet protocol. So a new pin
+also needs a look at what changed.
 
-The Vita3K Manager was tried with one Vita3K build, pinned in `apps/vita3k/vita3k_manager/emulator.py`
-(`BUILD`, `SEMVER`, `COMMIT`, `SHA256`, `SIZE`). Vita3K has no stable releases: every change is a build, kept as a
-release of `Vita3K/Vita3K-builds` tagged with its number, with `Vita3K-x86_64.AppImage` and the SHA-256 GitHub
-publishes for it. Builds come almost daily; the tool reports the newest build when it is past the pin (with how many
-builds later), and a pinned AppImage that is gone from GitHub or was replaced. The app itself already tells its users
-when a newer build is out, so a report is a reminder, not a fault: move the pin when a build is worth trying. A new pin takes the asset's digest and size from that release, and a look at what the app relies on in
-Vita3K's source at the new build:
+The PPSSPP, PCSX2 and RPCS3 Managers and Mesh Shaders each pin one release. For PCSX2, that is its stable channel.
+The pin is `VERSION` or `LANDMARK` in the app's `emulator.py`, and `DIRECTMESH` in `apps/mesh/bc250-mesh-shaders.sh`.
+RPCS3's `emulator.py` also holds the size of the pinned AppImage (`SIZE`). By that size, the app sees that RPCS3
+replaced itself with another build. So a new pin moves it too.
 
-- the command line (`vita3k/config/src/config.cpp`): `-r <title ID>`, `--frontend sdl`, `--firmware`,
-  `--pkg` with `--zrif`, and a `.vpk`, `.zip` or folder as the positional argument;
-- the folders (`vita3k/app/src/app_init.cpp`, `init_paths`): settings in `$XDG_CONFIG_HOME/Vita3K/config.yml`, the
-  storage in `$XDG_DATA_HOME/Vita3K/Vita3K` unless `pref-path` in config.yml moves it, games in its `ux0/app`;
-- the firmware's three parts (`vita3k/app/src/app.cpp`, `get_firmware_state`): `vs0`, `sa0` and `pd0` counted as
-  installed when they hold anything;
-- the SDL frontend (`vita3k/sdl-frontend`): it runs the game given by `-r` and quits with it, and has no full screen
-  of its own. `--fullscreen` is not used: Vita3K writes it into config.yml as `boot-apps-full-screen`;
-- the AppImage's self-updater (`bin/10-self-updater.hook` in the AppImage): it overwrites the AppImage with the
+The same tool reports a newer stable release than the pin. For DirectMesh, that is the newest
+`directmesh-v<version>` tag. A tag with more after the version is a development candidate, and the tool skips it.
+The apps check the checksum of what they download themselves. The governor has no pin in the repository. Its version
+is the one COPR built. The GPU Manager compares the installed package with filippor's latest release.
+
+The BC-250 Upscaler Manager pins no HelixSR release. It gets the latest release of one major version
+(`SUPPORTED_MAJOR`), or the fallback that HelixSR's developer names. Its `apps/upscaler/upscaler/acquire.py` holds
+these values:
+
+- `SUPPORTED_MAJOR`
+- `KNOWN_VERSION`, the newest release the app was checked against
+- `FALLBACK_VERSION`
+
+The same tool reports these:
+
+- a newer stable release
+- a newer major version
+- a fallback named in the latest release's notes that is not `FALLBACK_VERSION`
+- a fallback release without its zip
+
+Users get a newer stable release at once. So what changed in its setup, its zip and `helixsr.ini` needs a look and a
+try on the board. Then `KNOWN_VERSION` moves. Users do not get a newer major version until the app is moved to it.
+
+The Vita3K Manager was tried with one Vita3K build. It is pinned in `apps/vita3k/vita3k_manager/emulator.py` as
+`BUILD`, `SEMVER`, `COMMIT`, `SHA256` and `SIZE`. Vita3K has no stable releases. Every change is a build, kept as a
+release of `Vita3K/Vita3K-builds` tagged with its number. Each release has `Vita3K-x86_64.AppImage` and the SHA-256
+GitHub publishes for it. Builds come almost daily. The tool reports the newest build when it is past the pin, with
+how many builds later it is. It also reports a pinned AppImage that is gone from GitHub or was replaced. The app
+itself already tells its users when a newer build is out. So a report is a reminder, not a fault. Move the pin when
+a build is worth trying. A new pin takes the asset's digest and size from that release. It also needs a look at what
+the app relies on in Vita3K's source at the new build:
+
+- The command line (`vita3k/config/src/config.cpp`) takes `-r <title ID>`, `--frontend sdl`, `--firmware`, and
+  `--pkg` with `--zrif`. Its positional argument is a `.vpk`, `.zip` or folder.
+- The folders are set in `vita3k/app/src/app_init.cpp`, in `init_paths`. The settings are in
+  `$XDG_CONFIG_HOME/Vita3K/config.yml`. The storage is in `$XDG_DATA_HOME/Vita3K/Vita3K`, unless `pref-path` in
+  config.yml moves it. The games are in its `ux0/app`.
+- The firmware's three parts are checked in `vita3k/app/src/app.cpp`, in `get_firmware_state`. `vs0`, `sa0` and
+  `pd0` count as installed when they hold anything.
+- The SDL frontend (`vita3k/sdl-frontend`) runs the game given by `-r` and quits with it. It has no full screen of
+  its own. The app does not use `--fullscreen`, because Vita3K writes it into config.yml as `boot-apps-full-screen`.
+- The AppImage's self-updater is `bin/10-self-updater.hook` in the AppImage. It overwrites the AppImage with the
   newest continuous build unless `DISABLE_AUTO_UPDATES=1`, which the run wrapper sets. `vita3k --version` on the new
   AppImage confirms the build and commit.
 
-The tests hold the `config.yml` the pinned build writes on its first start (`tests/fixtures/config-4377.yml`); a new
-pin replaces it with the new build's, renamed for it.
+The tests hold the `config.yml` the pinned build writes on its first start (`tests/fixtures/config-4377.yml`). A new
+pin replaces it with the new build's file, renamed for it.
 
-The Xenia Manager was tried with one Xenia Canary build, pinned in `apps/xenia/xenia_manager/emulator.py` (`BUILD`,
-`COMMIT`, `PUBLISHED`, `SHA256`, `SIZE`). Xenia has no stable releases either: every change is a release of
-`xenia-canary/xenia-canary`, tagged with its commit, with `xenia_canary_linux.AppImage` and the SHA-256 GitHub
-publishes for it. A tag is no number, so the app and the tool take a release published after `PUBLISHED` as a newer
-build; the tool also reports a pinned AppImage that is gone or replaced, as for Vita3K. A new pin takes the asset's digest and size and the release's date, and a look at what the
-app relies on in Xenia's source at the new commit: the `--fullscreen` option and the positional path
-(`src/xenia/app/xenia_main.cc`), the storage root in `$XDG_DATA_HOME/Xenia` (the same file, and `GetUserFolder` in
-`src/xenia/base/filesystem_posix.cc`), the places of the game partition in a disc image
-(`src/xenia/vfs/devices/disc_image_device.cc`, which `GAME_PARTITIONS` in the app's `games.py` copies), and GTK on
-X11 (`GDK_BACKEND` in `src/xenia/ui/windowed_app_main_posix.cc`).
+The Xenia Manager was tried with one Xenia Canary build. It is pinned in `apps/xenia/xenia_manager/emulator.py` as
+`BUILD`, `COMMIT`, `PUBLISHED`, `SHA256` and `SIZE`. Xenia has no stable releases either. Every change is a release
+of `xenia-canary/xenia-canary`, tagged with its commit. Each release has `xenia_canary_linux.AppImage` and the
+SHA-256 GitHub publishes for it. A tag is no number. So the app and the tool take a release published after
+`PUBLISHED` as a newer build. The tool also reports a pinned AppImage that is gone or replaced, as for Vita3K. A new
+pin takes the asset's digest and size and the release's date. It also needs a look at what the app relies on in
+Xenia's source at the new commit:
 
-BC-250 Mesh Shaders builds RADV from one Mesa release (`MESA_VER` in `apps/mesh/bc250-mesh-shaders.sh`,
-with DirectMesh's patch and the suite's patch for that release in `apps/mesh/mesa/`); BC-250 ACE Queues builds it from
-the system's Mesa with one patch (`apps/ace/mesa/gfx1013-ace-queue.patch`). The tool takes Mesa's newest release from
-its tags on GitLab (a release candidate is none), reports it when it is newer than `MESA_VER`, and tries the ACE patch
-on it (`patch -p1 --dry-run` on the files the patch touches, fetched at that release): a patch that no longer applies
-stops ACE Queues building once Bazzite ships that Mesa. A new Mesh Shaders pin needs DirectMesh's patch for the new
-release and the suite's patch moved to it.
+- the `--fullscreen` option and the positional path, in `src/xenia/app/xenia_main.cc`
+- the storage root in `$XDG_DATA_HOME/Xenia`, set in the same file and by `GetUserFolder` in
+  `src/xenia/base/filesystem_posix.cc`
+- the places of the game partition in a disc image, in `src/xenia/vfs/devices/disc_image_device.cc`, which
+  `GAME_PARTITIONS` in the app's `games.py` copies
+- GTK on X11, through `GDK_BACKEND` in `src/xenia/ui/windowed_app_main_posix.cc`
+
+BC-250 Mesh Shaders builds RADV from one Mesa release, `MESA_VER` in `apps/mesh/bc250-mesh-shaders.sh`. DirectMesh's
+patch and the suite's patch for that release are in `apps/mesh/mesa/`. BC-250 ACE Queues builds RADV from the
+system's Mesa with one patch (`apps/ace/mesa/gfx1013-ace-queue.patch`).
+
+The tool takes Mesa's newest release from its tags on GitLab. A release candidate does not count as a release. The
+tool reports the release when it is newer than `MESA_VER`. It also tries the ACE patch on it with
+`patch -p1 --dry-run`, on the files the patch touches, fetched at that release. A patch that no longer applies stops
+ACE Queues building once Bazzite ships that Mesa. A new Mesh Shaders pin needs DirectMesh's patch for the new release.
+It also needs the suite's patch moved to that release.
 
 BC-250 PS Remote Play builds FFmpeg from one release (`FFMPEG_VERSION`, `FFMPEG_SHA256` in
-`apps/consoles/native/ffmpeg/build.sh`) and takes libva's headers from one release where the system has
-none (`LIBVA_VERSION`, `LIBVA_SHA256`). The tool reads FFmpeg's release tags (`n<version>` on its GitHub mirror) and
-libva's latest release, and reports a newer FFmpeg on the pinned branch (its fixes), a newer FFmpeg branch (a bigger
-move: the decoder calls of the native core) and a newer libva (its headers only; the libraries stay the system's).
+`apps/consoles/native/ffmpeg/build.sh`). Where the system has no libva headers, it takes them from one release
+(`LIBVA_VERSION`, `LIBVA_SHA256`). The tool reads FFmpeg's release tags, `n<version>` on its GitHub mirror. It also
+reads libva's latest release. It reports these:
+
+- a newer FFmpeg on the pinned branch, which brings its fixes
+- a newer FFmpeg branch, a bigger move that touches the decoder calls of the native core
+- a newer libva, which only matters for its headers, as the libraries stay the system's
 
 BC-250 Webcam downloads each camera's firmware from one commit of a GitHub repository (`PINNED` in
-`apps/webcam/webcam/firmware.py`). The tool downloads the file at that commit, which must still have
-the pinned SHA-256, and the same file on the repository's default branch: changed or gone there is reported.
+`apps/webcam/webcam/firmware.py`). The tool downloads the file at that commit, which must still have the pinned
+SHA-256. It also downloads the same file on the repository's default branch. It reports the file when it changed
+there or is gone.
 
-BC-250 Board Test runs whichever speedtest CLI is installed; its development tool installs one release of Ookla's
-(`SPEEDTEST_VERSION` in `apps/check/development/tools/install-requirements.sh`). Ookla publishes no API;
-the tool reads the version from Ookla's Homebrew formula. The same script installs Prime95's mprime: the release
-mersenne.org's download page lists, with the SHA-256 listed there. `MPRIME_URL` and `MPRIME_SHA256` in it are one
-known release, used only when the page cannot be read. Nexus Deps compares `~/mprime/.release` with the page.
+BC-250 Board Test runs whichever speedtest CLI is installed. Its development tool installs one release of Ookla's
+(`SPEEDTEST_VERSION` in `apps/check/development/tools/install-requirements.sh`). Ookla publishes no API. So the tool
+reads the version from Ookla's Homebrew formula. The same script installs Prime95's mprime. It takes the release
+that mersenne.org's download page lists, with the SHA-256 listed there. `MPRIME_URL` and `MPRIME_SHA256` in the
+script are one known release. The script uses them only when the page cannot be read. Nexus Deps compares
+`~/mprime/.release` with the page.
 
 BC-250 Quickfix's VRM Sensors brings the source of the `bc250_vrm` kernel module in `apps/quickfix/quickfix/vrm`.
 The files are those of one tag of `Hexxeh/bc250-vrm-dkms`, unchanged.
-`VRM_TAG`, `VRM_COMMIT` and `VRM_SHA256` in `apps/quickfix/quickfix/system.py` name the tag, its commit and each file's SHA-256.
-The tool reports a tag with a higher version, and a pinned tag that is gone or points at another commit.
-A new pin replaces the files and the three constants, after the changes are read and the module is tried on the board.
+`VRM_TAG`, `VRM_COMMIT` and `VRM_SHA256` in `apps/quickfix/quickfix/system.py` name the tag, its commit and each
+file's SHA-256. The tool reports a tag with a higher version, and a pinned tag that is gone or points at another
+commit. A new pin replaces the files and the three constants. First read the changes and try the module on the board.
 `Kbuild` and `bc250-quickfix-vrm.sh` in that folder are the suite's own.
 
 ```bash
@@ -488,34 +569,35 @@ python3 tools/check_upstream.py helixsr    # one: shadps4, helixsr, ppsspp, pcsx
 
 ## bc250_core
 
-Code shared by the suite's apps (`core/`). Nothing in it imports an app: each app passes its constants in as an `AppInfo`.
+`core/` holds the code the suite's apps share. Nothing in it imports an app. Each app passes its constants to core
+as its `AppInfo`.
 
 | Module | What it holds | Merged from |
 |---|---|---|
-| `appinfo` | `AppInfo` (id, name, version, logo, tag prefix, settings names) |
-| `theme` | The suite's theme (`THEMES`, `theme_name()`, `save_theme_name()`, `apply_theme()`, `surface_style()`, `muted()`), `STATE_COLORS`, bundled Inter font, `header_font()`, `HOVER_STYLESHEET`; self-contained, so an app not on core carries a copy | all six GUIs |
+| `appinfo` | `AppInfo`, with the ID, name, version, logo, tag prefix and settings names |
+| `theme` | The suite's theme, with `THEMES`, `theme_name()`, `save_theme_name()`, `apply_theme()`, `surface_style()` and `muted()`. It also holds `STATE_COLORS`, the bundled Inter font, `header_font()` and `HOVER_STYLESHEET`. It is self-contained, so an app not on core carries a copy | all six GUIs |
 | `text` | `fmt()` (`%1` placeholders), `fill()` (`{name}` placeholders), `plain_tooltip()`, `window_title()` | governor, upscaler |
-| `widgets` | `AppHeader` (the window header), `StatusPill`, `StatusText` (a state beside a title; with a name, the name alone, a green or red dot and the state in its tooltip), `MetricBox`, `Pill` (a `MetricBox` that is a button), `same_width()`, `RefreshButton`, `ClickableLogo`, `Terminal`, `TextDialog`, `RoundedToolTip`, `show_tooltip()`, `page_header()`, `hint_label()`, `accent_button()`, `set_button_active()` | governor + helixsr's Wayland tooltip + board-test's manual tooltips |
-| `app` | `create_app()` / `run_app()` / `exec_app()`: names, Fusion with the theme, tooltip, icon, SIGTERM | the apps' `__main__` |
-| `exit_keys` | `install(app)`: Escape and a controller's B close the app's window, after a key the window takes for itself and through its `closeEvent`; the controller, read with pygame-ce, works the app (the d-pad and the stick move the focus, A presses, LB and RB change the tab, B is Escape for what has the focus, the touchpad moves a uinput mouse at the portal's **Touchpad** speed), and only for the app that has had the focus for a moment; `install(app, controller=False)` for Escape alone, the class attribute `exit_keys = False` for a window that keeps every key. SDL's dummy drivers are in the environment only while SDL starts, so a program the app starts never gets them. Self-contained, so an app not on core carries a copy |
-| `card` | `CardWindow`: the template of a small window, with the header's two symbols and rows of five even places |
-| `action_tab` | `ActionTab`: the last tab of a `QTabWidget` as a button (Start game in the game managers): a click acts and the open page stays open |
+| `widgets` | `AppHeader` (the window header), `StatusPill`, `StatusText`, `MetricBox`, `Pill`, `same_width()`, `RefreshButton`, `ClickableLogo`, `Terminal`, `TextDialog`, `RoundedToolTip`, `show_tooltip()`, `page_header()`, `hint_label()`, `accent_button()`, `set_button_active()`. `StatusText` is a state beside a title. With a name, it shows the name alone and a green or red dot, with the state in its tooltip. `Pill` is a `MetricBox` that is a button | governor + helixsr's Wayland tooltip + board-test's manual tooltips |
+| `app` | `create_app()` / `run_app()` / `exec_app()`, which set the names, Fusion with the theme, the tooltip, the icon and SIGTERM | the apps' `__main__` |
+| `exit_keys` | `install(app)` lets Escape and a controller's B close the app's window. That works after a key the window takes for itself, and through its `closeEvent`. The controller, read with pygame-ce, works the app. The d-pad and the stick move the focus, and the A button presses. LB and RB change the tab. B is Escape for what has the focus. The touchpad moves a uinput mouse at the portal's **Touchpad** speed. The controller works only for the app that has had the focus for a moment. `install(app, controller=False)` gives Escape alone. The class attribute `exit_keys = False` is for a window that keeps every key. SDL's dummy drivers are in the environment only while SDL starts, so a program the app starts never gets them. It is self-contained, so an app not on core carries a copy |
+| `card` | `CardWindow`, the template of a small window, with the header's two symbols and rows of five even places |
+| `action_tab` | `ActionTab`, the last tab of a `QTabWidget` as a button, such as Start game in the game managers. A click acts, and the open page stays open |
 | `settings` | `open_settings(info)` at each app's existing file, geometry helpers, `SettingsStore` (typed defaults) | board-test's `AppSettings` |
-| `help` | `HelpView` (the content stays in the app) | upscaler |
-| `updates` | `latest_release()` (with a tag prefix for the per-app tags: GitHub's release pages, newest first, are followed until one holds the prefix, since other releases can fill the first page), `UpdateStatus`, `UpdateChecker` (any job, off the GUI thread) | upscaler + governor |
-| `builds` | Several builds of an emulator side by side (the game managers' version manager): each in a folder of its own with a `build.json`, `current` pointing to the one in use; `install()` (checked against its SHA-256, GitHub's digest or a pinned one), `use()`, `delete()`, `add_custom()`, `replaced()`, `github_builds()` and `github_latest()` (a repository's builds with GitHub's SHA-256) |
-| `builds_dialog` | `BuildsDialog`, the version manager's window (Installed: Use, Delete, Add; Download: Refresh, Download; the tested build marked Tested), and `fill_menu()`, the menu of a manager's version pill |
-| `platform` | XDG folders, `xdg_open()`, `launch_in_terminal()` (with an exit file the caller can watch), `show_in_folder()`; `private()`, a path or a text with the home folder as `~`, never the user's name, which `applog.setup(private=True)` applies to every line of a log | the bisect GUIs' `terminal.py` |
-| `steam` | Steam's folders and users, `installed()`, `with_steam_closed()`, `shortcuts.vdf` and the shortcuts' artwork in `grid/`, `shortcut_number()` and `play_url()` (a shortcut's number in Steam's file, and the address that starts it), `signed_in()` (whether Steam runs and is signed in, from its connection log), and `steam_environment()` (Steam started without the SDL values of our controller readers) (standard library only) | consoles |
-| `steam_art` | `draw_icon_art()`: a shortcut's four pictures drawn from an app's icon, in the icon's color | consoles |
-| `processes` | `find(match)`: a program's processes in `/proc`, without zombies; `end(pids)`: SIGKILL to them and every process under them (Exit <emulator> in the game managers) (standard library only) |
-| `upstream` | `publish()` / `read_all()`: the updates outside the suite an app can install now, for the portal's notice (standard library only; HelixSR carries a copy) | new: helixsr, pcsx2, portal |
-| `sensors` | `Sensors.read()`: the board's live values from `/proc` and `/sys` without root (CPU, GPU, the governor's range, VRAM, RAM, temperatures, network, disk, fans, and the CPU and GPU rails of the `bc250_vrm` module), `Reading`, `Fan`, `Rail` | System Overlay; used by BC-250 Turing Screen too |
-| `nexus` | The development apps' design (the theme `NEXUS`) and their header (`header()`: the checkout's last commit and its time in place of a version) |
-| `wifi` | The Wi-Fi adapters and whether the running kernel has a driver and firmware for them, `report()` (standard library only; `python3 -m bc250_core.wifi`) | new: check's test 53 |
+| `help` | `HelpView`. The content stays in the app | upscaler |
+| `updates` | `latest_release()`, `UpdateStatus` and `UpdateChecker`. `latest_release()` takes a tag prefix for the per-app tags. It follows GitHub's release pages from the newest one, until a page holds the prefix, since other releases can fill the first page. The class `UpdateChecker` runs any job off the GUI thread | upscaler + governor |
+| `builds` | Several builds of an emulator side by side, for the game managers' version manager. Each build is in a folder of its own with a `build.json`. The link `current` points to the one in use. The function `install()` checks a build against its SHA-256, which is GitHub's digest or a pinned one. The module also holds `use()`, `delete()`, `add_custom()`, `replaced()`, `github_builds()` and `github_latest()`. The last two give a repository's builds with GitHub's SHA-256 |
+| `builds_dialog` | `BuildsDialog`, the version manager's window, and `fill_menu()`, the menu of a manager's version pill. The window's Installed column has Use, Delete and Add. Its Download column has Refresh and Download. The tested build is marked Tested |
+| `platform` | The XDG folders. Its functions are `xdg_open()`, `launch_in_terminal()`, `show_in_folder()` and `private()`. `launch_in_terminal()` takes an exit file the caller can watch. The function `private()` gives a path or a text with the home folder as `~`, never the user's name. `applog.setup(private=True)` applies it to every line of a log | the bisect GUIs' `terminal.py` |
+| `steam` | Steam's folders and users, `installed()`, `with_steam_closed()`, `shortcuts.vdf` and the shortcuts' artwork in `grid/`. The function `shortcut_number()` gives a shortcut's number in Steam's file, and `play_url()` the address that starts it. The function `signed_in()` says whether Steam runs and is signed in, from its connection log. `steam_environment()` gives the environment Steam starts with, without the SDL values of our controller readers. It uses the standard library only | consoles |
+| `steam_art` | `draw_icon_art()`, which draws a shortcut's four pictures from an app's icon, in the icon's color | consoles |
+| `processes` | `find(match)` gives a program's processes in `/proc`, without zombies. `end(pids)` sends SIGKILL to them and every process under them, for Exit &lt;emulator&gt; in the game managers. It uses the standard library only |
+| `upstream` | `publish()` / `read_all()`, the updates outside the suite an app can install now, for the portal's notice. It uses the standard library only. HelixSR carries a copy | new: helixsr, pcsx2, portal |
+| `sensors` | `Sensors.read()`, `Reading`, `Fan`, `Rail`. `Sensors.read()` gives the board's live values from `/proc` and `/sys` without root. They are the CPU, GPU, the governor's range, VRAM, RAM, temperatures, network, disk and fans. They also include the CPU and GPU rails of the `bc250_vrm` module | System Overlay. BC-250 Turing Screen uses it too |
+| `nexus` | The development apps' design, with the theme `NEXUS`. It also holds their header, `header()`, which shows the checkout's last commit and its time in place of a version |
+| `wifi` | The Wi-Fi adapters and whether the running kernel has a driver and firmware for them, `report()`. It uses the standard library only. Run it with `python3 -m bc250_core.wifi` | new: check's test 53 |
 
-Core is **bundled per app**: `tools/stage_app.py` copies `bc250_core/` next to the package of every app that
-imports it, so each release runs on the core it was tested with. The development apps import it from the
+Core is **bundled per app**. `tools/stage_app.py` copies `bc250_core/` next to the package of every app that
+imports it. So each release runs on the core it was tested with. The development apps import it from the
 checkout.
 
 ### Tests
@@ -525,4 +607,4 @@ cd core && QT_QPA_PLATFORM=offscreen python -m pytest -q tests
 ```
 
 `tests/test_parity.py` renders core's widgets next to the copies in `apps/gpu` and `apps/upscaler` and requires
-identical pixels; a case is skipped once its app no longer has its own copy.
+identical pixels. The test skips a case once its app no longer has its own copy.

@@ -4,16 +4,27 @@
 
 # Portal Tour
 
-Two minutes through the portal, over its example wallpaper: the intro, the header and its symbols, the notice of
-updates, the tiles with their icons, the tip that pops up over a tile and its menu, the categories, the focus moved
-as a controller moves it, the wallpaper's transparency, and the three themes. It also shows that a click on the suite's icon plays this tour in the portal and a click on the portal's name this wiki.
+The Portal Tour is a two-minute video of the portal. The portal in the video uses its example wallpaper. The video shows:
+
+- the intro
+- the header and its symbols
+- the notice of updates
+- the tiles with their icons
+- the tip that pops up over a tile, and the tile's menu
+- the categories
+- the focus as a controller moves it
+- the wallpaper's transparency
+- the three themes
+
+It also shows two clicks in the header. A click on the suite's icon plays this tour in the portal. A click on the
+portal's name opens this wiki.
 
 <figure markdown>
 <video class="board-video" controls playsinline preload="metadata" poster="../images/portal/portal-tour-poster.webp">
   <source src="../videos/portal-tour.mp4" type="video/mp4">
-  Your browser cannot play this video; <a href="../videos/portal-tour.mp4">download it</a> instead.
+  Your browser cannot play this video. <a href="../videos/portal-tour.mp4">Download it</a> instead.
 </video>
 <figcaption>The portal (2 minutes, with music)</figcaption>
 </figure>
 
-Everything in the video is described in [Portal](portal.md). The music was made with generative AI tools.
+[Portal](portal.md) describes everything in the video. The music was made with generative AI tools.

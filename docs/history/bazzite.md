@@ -4,11 +4,11 @@
 
 # What is Bazzite?
 
-Bazzite is a Linux operating system based on Fedora, designed for gaming and everyday desktop use. It provides a
-familiar graphical desktop, while including gaming-focused tools and support for game launchers and controllers.
+Bazzite is a Linux operating system based on Fedora. It is made for gaming and for daily desktop use. It gives
+you a familiar graphical desktop. It also brings tools for gaming. It supports game launchers and controllers.
 
-Its core system is delivered as a managed image. Instead of changing individual system files during updates,
-Bazzite installs a new system version, which helps keep the base consistent and makes it possible to roll back
-an update. You can still install and update regular desktop applications and games.
+Bazzite delivers its core system as a managed image. An update does not change system files one by one. Bazzite
+installs a new system version instead. This helps keep the base consistent. It also lets you roll an update back.
+You can still install and update regular desktop apps and games.
 
-In this suite, Bazzite is the operating system the BC-250 apps are designed to run on.
+The BC-250 apps in this suite are designed to run on Bazzite.

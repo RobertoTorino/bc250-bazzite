@@ -5,12 +5,12 @@
 # BC-250 Persistent ACPI
 
 !!! warning "Changes the board"
-    The app copies three ACPI tables to /boot/acpi_override.cpio and adds one line to /etc/default/grub, then
-    regenerates the GRUB configuration. At every boot GRUB hands the tables to the kernel, which uses them in
-    memory instead of the BIOS's own. Both files stay across reboots, power offs and Bazzite updates. Nothing is
-    written to the BIOS, the firmware or the CMOS: the BIOS keeps its own tables, and the override is gone the
-    moment the two files are. Uninstall removes the file and the line, puts back any line that was there before,
-    and regenerates GRUB; after the next reboot the board runs on the BIOS's tables again.
+    The app copies three ACPI tables to /boot/acpi_override.cpio and adds one line to /etc/default/grub. Then it
+    regenerates the GRUB configuration. At every boot GRUB hands the tables to the kernel. The kernel uses them in
+    memory instead of the BIOS's own. Both files stay across reboots, power offs and Bazzite updates. Nothing is written
+    to the BIOS, the firmware or the CMOS. The BIOS keeps its own tables, and the override is gone the moment the two
+    files are. Uninstall removes the file and the line, puts back any line that was there before, and regenerates GRUB.
+    After the next restart the board runs on the BIOS's tables again.
 
 BC-250 Persistent ACPI gives the CPU of the **AMD BC-250** its idle states (C-states) and frequency scaling on
 Linux. The frequency scales from 800 MHz to 3.2 GHz in 8 steps. The fix is **persistent**, so it stays across

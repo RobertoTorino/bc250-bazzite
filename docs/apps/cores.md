@@ -5,15 +5,15 @@
 # BC-250 CPU Tools
 
 !!! warning "Changes the board"
-    The app sends the SoC's SMU one mailbox message over PCI configuration space with setpci, which sets the
-    core presence mask to 0xFF in the SMU's own memory; the governor's service is stopped around the message, as
-    it shares the mailbox, and started again. The mask takes effect on the next warm reboot, survives warm
-    reboots, and a full power off reverts it to the stock 6 cores. The 8 cores stay across power offs only
-    through the root service that CPU Tools installs, bc250-cores-unlock.service, which sends the message
-    again after a cold boot and warm-reboots once, with a guard against reboot loops. Nothing is written to the
-    BIOS, the firmware, the CMOS or the kernel's arguments. Uninstall in CPU Tools disables the service and
-    removes its files; the cores stay on until the next full power off, and the board is then stock. CPU Tools
-    reboots the board between its rounds, by itself with the unattended option, after a question otherwise.
+    The app sends the SoC's SMU one mailbox message over PCI configuration space with setpci. The message sets the core
+    presence mask to 0xFF in the SMU's own memory. The governor's service shares the mailbox, so the app stops it around
+    the message and starts it again. The mask takes effect on the next warm reboot and survives warm reboots. A full
+    power off reverts it to the stock 6 cores. The 8 cores stay across power offs only through the root service that CPU
+    Tools installs, bc250-cores-unlock.service. After a cold boot the service sends the message again and warm-reboots
+    once. A guard keeps it from reboot loops. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's
+    arguments. Uninstall in CPU Tools disables the service and removes its files. The cores stay on until the next full
+    power off, and after it the board is stock. CPU Tools restarts the board between its rounds. With the unattended
+    option it does so by itself, otherwise after a question.
 
 BC-250 CPU Tools tells **bad CPU cores** apart from an **unstable core unlock** on the AMD BC-250 (Cyan Skillfish).
 Use it *before* you trust or keep the 8C/16T core unlock.

@@ -7,7 +7,7 @@
 ## Reporting a vulnerability
 
 Please don't open a public issue for a security problem. Use **Security → Report a vulnerability** in this
-repository instead, so it can be fixed before it's public. You'll get an answer within a week.
+repository instead. That way we can fix the problem before it's public. You'll get an answer within a week.
 
 ## Verifying a download
 
@@ -17,31 +17,38 @@ Every release comes with a `SHA256SUMS` file. Check the download before you inst
 sha256sum --check --ignore-missing SHA256SUMS
 ```
 
-The app also checks its own test files before every run and refuses to run tests when they were changed.
+Board Test also checks its test engine before every run. It refuses to run tests when someone changed the engine.
 
 ## Dependencies and known vulnerabilities
 
-The suite answers for its own code and for the Python packages its apps install. Bazzite's own packages, including
-the system tools some apps run (such as `systemctl`, `sudo` or `cec-ctl`), are updated and patched by Bazzite.
+The suite answers for its own code and for the Python packages its apps install. Bazzite updates and patches its own
+packages. These include the system tools some apps run, such as `systemctl`, `sudo` or `cec-ctl`.
 
-[Nexus Deps](development/dashboard.md#deps), a development app run from a checkout of the repository, shows where the suite's dependencies stand
-on a board:
+[Nexus Deps](development/dashboard.md#deps) shows where the suite's dependencies stand on a board. It is a
+development app that you run from a checkout of the repository. It shows these:
 
-- **Python packages** are read from the environment each installed app runs in: the suite's shared one, or the
-  app's own. A card shows the version in each environment, whether it meets the app's requirement, and the latest
-  version on PyPI.
-- **Known vulnerabilities:** each installed version is looked up in [OSV.dev](https://osv.dev), the open database
-  that collects the GitHub, PyPA and NVD advisories. A green **✓ CVE** means no known vulnerability. A red
-  **✗ CVE** lists each one by its CVE ID, linked to [Snyk's vulnerability database](https://security.snyk.io/),
-  with the release that fixes it, and the card says which version to update to and for which apps. **CVE ?** means
-  the check could not run, for example without a network; it never counts as clean.
-- **External tools** are checked for availability only: whether each one is installed, which apps need it, and
-  whether it needs root. Their versions are not looked up, because they come with Bazzite or from their makers,
-  and OSV.dev has no reliable record of those builds.
+- **Python packages.** Nexus Deps reads them from the environment each installed app runs in. That is the suite's
+  shared environment or the app's own. A card shows the version in each environment and the latest version on PyPI.
+  It also shows whether the version meets what the app needs.
+- **Known vulnerabilities.** Nexus Deps looks up each installed version in [OSV.dev](https://osv.dev). OSV.dev is
+  the open database that collects the GitHub, PyPA and NVD advisories. A green **✓ CVE** means no known
+  vulnerability. A red **✗ CVE** lists each one by its CVE ID, with the release that fixes it. Each ID links to
+  [Snyk's vulnerability database](https://security.snyk.io/). The card says which version to update to and for
+  which apps. **CVE ?** means the check could not run, for example without a network. It never counts as clean.
+- **External tools.** Nexus Deps checks only whether they are available. For each tool it shows these:
+    - whether it is installed
+    - which apps need it
+    - whether it needs root
+
+    It doesn't look up their versions. They come with Bazzite or from their makers, and OSV.dev has no reliable
+    record of those builds.
 
 Its check changes nothing. It sends the names and versions of the Python packages to PyPI and OSV.dev, and
-nothing else. Its **Fix** changes only what it lists and you confirm: the Python packages in an app's environment,
-and a missing tool an installed app needs (with Homebrew, or layered into the Bazzite image with rpm-ostree).
+nothing else. Its **Fix** changes only what it lists and what you confirm. It can change these:
+
+- the Python packages in an app's environment
+- a missing tool an installed app needs, installed with Homebrew
+- a missing tool an installed app needs, layered into the Bazzite image with rpm-ostree
 
 When a package of an app has a known vulnerability, the card names the version with the fix. The fix reaches the
 app through an app release that requires that version. If no release does yet, report it as described above.
@@ -49,9 +56,16 @@ app through an app release that requires that version. If no release does yet, r
 ## Root and passwords
 
 - The apps run as your own user. Their installers refuse to run with sudo, and so do the bisect scripts. Only the
-  steps that need root ask for your password, through sudo in a terminal or pkexec in a desktop dialog.
-- Apps whose scripts run as root are installed root-owned under `/opt`, so a normal user cannot change code that
-  sudo runs. Board Test never runs a tool as root from a folder you can write to, such as `~/.local/bin`.
-- The tools that only work as root are marked **Needs root.** in [Nexus Deps](development/dashboard.md#deps).
-- The portal asks before it installs or opens an app that changes how the board runs (unlocks, clocks, voltages,
-  firmware tables, the VRAM split, the patched driver). All of them are software-only and can be undone.
+  steps that need root ask for your password. They ask through sudo in a terminal or pkexec in a desktop dialog.
+- The installers put apps whose scripts run as root under `/opt`, owned by root. That way a normal user cannot
+  change code that sudo runs. Board Test never runs a tool as root from a folder you can write to, such as
+  `~/.local/bin`.
+- [Nexus Deps](development/dashboard.md#deps) marks the tools that only work as root with **Needs root.**
+- The portal asks before it installs or opens an app that changes how the board runs. Each of these apps is
+  software-only, and you can undo what it does. Such an app changes one or more of these:
+    - unlocks
+    - clocks
+    - voltages
+    - firmware tables
+    - the VRAM split
+    - the patched driver

@@ -285,3 +285,6 @@ zstd
 lzo
 tmpfiles
 Sys
+clippy
+uinput
+docstring
