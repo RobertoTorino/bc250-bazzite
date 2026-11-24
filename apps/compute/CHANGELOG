@@ -1,3 +1,7 @@
+Changelog: 24-11-2026 14:52:14
+
+Release 2.0.0.
+
 Changelog: 24-11-2026 12:57:36
 
 Fixed. bc250-cu-bisect.sh measured a GPU load of 0% on systems whose awk is mawk, as on Debian and Ubuntu. mawk wrote

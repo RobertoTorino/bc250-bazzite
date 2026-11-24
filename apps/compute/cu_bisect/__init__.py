@@ -5,7 +5,7 @@ installs a tested CU unlock. The bisecting is the script's own, exactly as if ty
 
 APP_NAME = "BC-250 CU Unlock"
 APP_ID = "bc250-cu-bisect-gui"
-__version__ = "1.1.1"
+__version__ = "2.0.0"
 
 from pathlib import Path
 
