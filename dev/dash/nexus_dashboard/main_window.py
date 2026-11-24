@@ -224,8 +224,8 @@ class MainWindow(QMainWindow):
         off_icons = "" if has_category_icons(root) else "This checkout's apps take no category icons."
         found += [
             Tile("portal-tour", "Portal video tour", LOGO_ICON, "Record the portal's video tour from this checkout. "
-                 "It runs about two minutes, with music, at 1080p or 4K. It can also write the copy on the wiki's "
-                 "Portal Tour page", off=off_tours),
+                 "It runs about four minutes, with a voice and music, at 1080p or 4K. It can also write the copy on the "
+                 "wiki's Portal Tour page", off=off_tours),
             Tile("apps-tour", "Apps video tour", LOGO_ICON, "Record a short video tour of each app you check, from "
                  "this checkout. Each runs about 40 seconds, with music, at 1080p or 4K", off=off_tours or (
                      "" if (root / RECORD_APP_TOUR).is_file() else

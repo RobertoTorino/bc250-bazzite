@@ -6,7 +6,7 @@
 
 The portal is the BC250 Bazzite Suite's front door. It is one fullscreen view that installs, opens, updates and
 removes the suite's apps. It suits a TV and a controller as much as a desk, as Steam's Big Picture does for Steam. It
-works with the keyboard, the mouse or a controller alike. The [Portal Tour](portal-tour.md) shows it in a two-minute
+works with the keyboard, the mouse or a controller alike. The [Portal Tour](portal-tour.md) shows it in a four-minute
 video.
 
 The portal opens with a short animated intro of about three seconds, with its own sound. The intro shows the suite's
@@ -18,7 +18,7 @@ none.
 
 - The suite's icon, as large as a tile's. Click it to watch the [Portal Tour](portal-tour.md) over the whole screen.
   **A** or Space pauses the tour, and **B** or Esc closes it. Without a connection, the tour opens in the browser.
-- The suite's name, with the version and the **Beta** stage. Click the name to open this wiki.
+- The suite's name, with the version and the **Beta** stage in orange. Click the name to open this wiki.
 - A small **i** that says where the apps install from.
 - A line that says in a few words what the open category is for.
 - **☰ Settings** at the top right, with **✕ Exit** in the corner beside it. **✕ Exit** closes the portal.
@@ -180,7 +180,7 @@ nothing in the portal. You can get every button in two ways:
     a game.
 
 The tools for working on the suite are not in the portal. They are in `dev/` of the repository. They run from a
-checkout and have no release. [Nexus Dashboard](development/dashboard.md) opens them all:
+checkout and have no release. [Nexus Dashboard for BC-250](development/dashboard.md) opens them all:
 
 - Nexus Release Tool
 - Nexus Deps, for the suite's packages and tools on this machine
@@ -193,7 +193,7 @@ checkout and have no release. [Nexus Dashboard](development/dashboard.md) opens 
 - the video tours
 - the icons
 
-Start Nexus Dashboard from the checkout, or give it a menu entry with its `install.sh`.
+Start Nexus Dashboard for BC-250 from the checkout, or give it a menu entry with its `install.sh`.
 
 - `apps/` may also contain standalone tools with a `.standalone` marker. They do not appear in `apps.toml`, and the
   portal does not install or open them.
@@ -381,7 +381,9 @@ Start Nexus Dashboard from the checkout, or give it a menu entry with its `insta
 
     The status' third line then shows the weather, under the date and the time. It shows a symbol, the place's
     name, the temperature and the sky. The symbol is a sun or moon, clouds, fog, rain, snow or thunder. Hover over
-    the line to see the wind and the humidity too. The portal gets the weather again every 30 minutes while it is
+    the line to see the wind and the humidity too. Click the line to open the forecast for the place at
+    [wttr.in](https://wttr.in/), a page without ads, in Brave Browser. Brave Browser must be installed as a Flatpak.
+    Without it, the portal says so. The portal gets the weather again every 30 minutes while it is
     not minimized. **Update the weather now** asks at once. When Open-Meteo cannot be reached, the last weather
     stays, and its tooltip says why. **No weather** removes it, and nothing goes to Open-Meteo anymore. Until you
     choose a place, the portal sends nothing. See [Privacy](privacy.md).
@@ -458,7 +460,7 @@ Uninstalling an app removes the app. Two things stay on purpose:
 |---|---|---|
 | CU Unlock | A persisted CU unlock, with `bc250-cu-unlock.service` at every boot | **Uninstall** in CU Unlock, or `sudo /usr/local/sbin/bc250-cu-unlock.sh --uninstall`. Stock CUs come back after the next restart |
 | Core Unlock | A persisted core unlock, with its boot service | **Uninstall** in Core Unlock, or `sudo /usr/local/sbin/bc250-cores-unlock.sh --uninstall`. Stock cores come back after the next full power off |
-| GPU OC Bisect | The installed overclock in the governor's `config.toml` | **Uninstall** in the app, or `bc250-gpu-oc-bisect.sh --uninstall`. Either one restores the backup |
+| GPU Manager | The step its GPU sweep installed in the governor's `config.toml` | **Restore selected** on the app's **Backups** page. Or copy the `config.toml.bak-<stamp>` that Install made back over `config.toml`, then restart the governor |
 | Persistent ACPI | The ACPI override, with `/boot/acpi_override.cpio` and its GRUB line | **Uninstall** in the app, or `sudo ./bc250-acpi-override.sh --uninstall`. Then restart |
 | ACE Queues | An installed patched driver | **Remove** in the app |
 | Memory Manager | The VRAM split in CMOS | Set the split back in the app, or press **Undo**. Then restart |

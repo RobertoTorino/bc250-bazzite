@@ -417,16 +417,18 @@ class CyanSkillfishBackend:
 
     # ------------------------------------------------------------------ backups
     def list_backups(self) -> list[ConfigBackup]:
-        """config.toml.bak-* next to the config, newest first."""
+        """config.toml.bak-* next to the config, newest first, and the config.toml.pre-oc-bisect that BC-250 GPU OC
+        Bisect's --install left (owner, 24-11-2026: the Backups page shows both; its date is the file's)."""
         found = []
-        for path in self.config_path.parent.glob(f"{self.config_path.name}.bak-*"):
+        old = self.config_path.with_name(f"{self.config_path.name}.pre-oc-bisect")
+        for path in [*self.config_path.parent.glob(f"{self.config_path.name}.bak-*"), *([old] if old.exists() else [])]:
             try:
                 stat = path.stat()
             except OSError:
                 continue
             try:
                 created = datetime.strptime(path.name.rsplit(".bak-", 1)[1], BACKUP_STAMP)
-            except ValueError:
+            except (ValueError, IndexError):            # IndexError: the .pre-oc-bisect name has no stamp
                 created = datetime.fromtimestamp(stat.st_mtime)
             found.append(ConfigBackup(path, created, stat.st_size))
         return sorted(found, key=lambda b: b.created, reverse=True)

@@ -71,7 +71,6 @@ nav:
           - BC-250 CU Unlock: apps/compute.md
           - BC-250 Fan Control: apps/fan.md
           - BC-250 GPU Manager: apps/gpu.md
-          - BC-250 GPU OC Bisect: apps/oc.md
           - BC-250 Memory Manager: apps/vram.md
           - BC-250 Persistent ACPI: apps/acpi.md
       - Graphics:

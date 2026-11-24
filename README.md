@@ -42,7 +42,6 @@ This list follows the portal's categories.
 - <img src="portal/images/apps/gpu.webp" width="20" height="20" alt=""/> **[BC-250 GPU Manager](apps/gpu)**: Manage the cyan-skillfish GPU governor. It covers tuning, safe points, profiles and backups.
 - <img src="portal/images/apps/compute.webp" width="20" height="20" alt=""/> **[BC-250 CU Unlock](apps/compute)**: Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock.
 - <img src="portal/images/apps/cores.webp" width="20" height="20" alt=""/> **[BC-250 Core Unlock](apps/cores)**: Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock.
-- <img src="portal/images/apps/oc.webp" width="20" height="20" alt=""/> **[BC-250 GPU OC Bisect](apps/oc)**: Find your board's safe GPU overclock and undervolt, one step at a time.
 - <img src="portal/images/apps/acpi.webp" width="20" height="20" alt=""/> **[BC-250 Persistent ACPI](apps/acpi)**: CPU C-states and frequency scaling through a persistent ACPI override (GRUB early initrd).
 - <img src="portal/images/apps/vram.webp" width="20" height="20" alt=""/> **[BC-250 Memory Manager](apps/vram)**: The VRAM split in CMOS, with the GTT, TTM limit and swap layout that go with it.
 - <img src="portal/images/apps/fan.webp" width="20" height="20" alt=""/> **[BC-250 Fan Control](apps/fan)**: The fans, and a thermal guard. The guard warns, cools and shuts down cleanly at a critical temperature.
@@ -89,7 +88,7 @@ This list follows the portal's categories.
 - <img src="portal/images/apps/password.webp" width="20" height="20" alt=""/> **[BC-250 Password Generator](apps/password)**: Makes a random password of 8 or 15 characters and keeps it nowhere. The password has a capital letter, a small letter, a number and a special character.
 
 The tools for working on the suite are not in the portal. They run from a checkout of the repository.
-**[Nexus Dashboard](dev/dash)** opens them all:
+**[Nexus Dashboard for BC-250](dev/dash)** opens them all:
 
 - Nexus Release Tool
 - Nexus Deps

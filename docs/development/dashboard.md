@@ -4,8 +4,8 @@
 
 # Dashboard
 
-The **Nexus Dashboard** (`dev/dash/` in the repository) is the one door to the tools for working on the suite.
-Its tiles start the development apps of the checkout, each in a window of its own. Other tiles open the suite's
+The **Nexus Dashboard for BC-250** (`dev/dash/` in the repository) is the one door to the tools for working on the
+suite. Its tiles start the development apps of the checkout, each in a window of its own. Other tiles open the suite's
 tools. Below the tiles, Test local apps starts the suite's own apps and its wiki from the checkout.
 
 Like every development app, the dashboard runs from the checkout it lives in. It takes Nexus's design and icon. It
@@ -28,8 +28,8 @@ dev/dash/install.sh --uninstall             # remove them; the checkout stays
 dev/dash/install.sh --uninstall --purge     # also remove the settings
 ```
 
-Run the installer as your own user, not with sudo. Then double-click **Nexus Dashboard** on the Desktop to open the
-dashboard. Its menu entry opens it too.
+Run the installer as your own user, not with sudo. Then double-click **Nexus Dashboard for BC-250** on the Desktop to
+open the dashboard. Its menu entry opens it too.
 
 When you open the dashboard while it is already open, the open window closes and a new one opens. The app runs from
 the checkout, so the new window has the code as it is now. The dashboard ends an open dashboard that does not
@@ -78,7 +78,7 @@ only brings the open window to the front, so close the open portal first.
 An app that changes how the board runs has an orange **!** on its icon. It asks first, as in the portal. Started
 from the checkout, it uses the scripts in the checkout.
 
-Each app writes its output to `~/.cache/nexus-dashboard/local/<package>.log`. When an app stops with an error, the
+Each app writes its output to `~/.cache/nexus-dashboard-bc250/local/<package>.log`. When an app stops with an error, the
 end of its log shows below. The apps keep running when you close the dashboard. The round **i** beside the title
 says the same.
 
@@ -120,9 +120,10 @@ scale, so the text stays crisp. It takes about four times as long to record. Its
 A recording runs in the background, and its output shows in the dialog. **Stop** ends it. **Play** opens the video
 in your video player.
 
-- **Portal video tour** records the portal's tour, about two minutes long. The video is
-  `bc250-portal-tour-v<portal version>.mp4`. Check **Also write the copy on the wiki's Portal Tour page** to also
-  write `docs/videos/portal-tour.mp4` and its poster in the checkout. You review and commit them.
+- **Portal video tour** records the portal's tour, about four minutes long. The video is
+  `bc250-portal-tour-v<portal version>.mp4`. The dialog checks **A voice reads the captions out, with Nexus
+  TTS's speech engine** at first. Uncheck it for a tour without the voice. Check **Also write the copy on the wiki's
+  Portal Tour page** to also write `docs/videos/portal-tour.mp4` and its poster in the checkout. You review and commit them.
 - **Apps video tour** lists every app of the suite. An app with two programs has a row for each program. Check the
   apps (**All**, **None**), set the **Length** (40 seconds by default) and choose **Record**. Each tour takes a few
   seconds. Its video is `bc250-<app>-tour-v<version>.mp4`. Double-click an app to play its video. What an app reads from the
@@ -543,7 +544,8 @@ The check sends the names and versions of the Python packages to PyPI and OSV.de
 files nobody needs again, which fill up a disk over time. Our tools' own leftovers are not in it.
 `tools/clean_caches.py` removes those before every local CI run.
 
-The table lists each place that holds 1 MB of garbage or more, the largest first:
+The table lists each place that holds 1 MB of garbage or more, the largest first. The Trash shows whenever it holds
+a file, however small:
 
 | What | Where | Removed with |
 |---|---|---|

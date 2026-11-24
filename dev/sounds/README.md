@@ -15,7 +15,8 @@ when the controller moves the focus. The window gives you:
 - a row of buttons to try it while you move between them
 - Save as WAV, for the portal's sounds folder
 
-A development app: it runs from the checkout it lives in and has no releases of its own. Start it from [Nexus Dashboard](../dash), or:
+A development app: it runs from the checkout it lives in and has no releases of its own. Start it from [Nexus Dashboard
+for BC-250](../dash), or:
 
 | | Linux |
 |---|---|

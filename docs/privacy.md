@@ -67,6 +67,8 @@ Installing an app downloads its Python packages from PyPI.
 - The [portal](portal.md) shows the weather in its status only for a place you choose on its Settings page. The
   name you search for goes to Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`). After that, the
   place's coordinates go there every 30 minutes while the portal is not minimized. Open-Meteo needs no account.
+  When you click the weather, Brave Browser opens the place's forecast at `wttr.in`. That sends the place's
+  coordinates to wttr.in.
 - [BC-250 Turing Screen](apps/turing.md#settings) shows the weather only for a place you choose. The name you search
   for goes to Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`). After that, the place's
   coordinates go there every 30 minutes while the screen shows its Weather tile. Open-Meteo needs no account.

@@ -221,7 +221,7 @@ jobs:
           shellcheck -S warning dev/*/*.sh
           shellcheck -S warning apps/cores/bc250-cores-bisect.sh apps/cores/bc250-cores-unlock.sh \
             apps/cores/packaging/bazzite/*.sh
-          shellcheck -S warning apps/oc/bc250-gpu-oc-bisect.sh apps/acpi/bc250-acpi-override.sh
+          shellcheck -S warning apps/gpu/bc250-gpu-sweep.sh apps/acpi/bc250-acpi-override.sh
           shellcheck -S warning apps/ace/bc250-ace-queues.sh apps/ace/mesa/build-in-container.sh \
             apps/mesh/bc250-mesh-shaders.sh apps/mesh/mesa/build-in-container.sh
 

@@ -144,11 +144,11 @@ and the runtime controls to it.</p>
 <li>unique frequencies</li>
 <li>a voltage that never drops as the frequency rises</li>
 </ul>
-<p>The list must also pass the hard rails shared with bc250-gpu-oc-bisect: 700–1100 mV, up to 2500 MHz. You get a
+<p>The list must also pass the hard rails shared with the GPU sweep: 700–1100 mV, up to 2500 MHz. You get a
 warning above 2000 MHz or 1000 mV. You also get one when a change raises the top frequency or lowers an existing
 voltage. An unstable point freezes the board under load. Apply makes a backup and asks for your password. To find
-a board's own ceiling safely, use
-<a href="https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/oc">bc250-gpu-oc-bisect</a>.</p>
+a board's own ceiling safely, use the GPU sweep: the <b>GPU sweep</b> pill at the bottom of the Safe points page
+opens it.</p>
 <p><b>Test a point before saving it</b> uses the governor's root-only <code>TestMode</code> D-Bus interface, with
 one <code>pkexec</code> prompt. It pins the GPU to the frequency and voltage you enter and stops the automatic
 scaling. Thermal throttling stays active. Nothing changes in <code>config.toml</code>. The app fills in the

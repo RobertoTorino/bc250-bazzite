@@ -13,7 +13,7 @@ while OBS records the screen:
 - the suite in this checkout
 
 Then it opens the portal, and you install and show one optional app. It is a development app. It runs from the
-checkout it lives in and has no releases of its own. Start it from [Nexus Dashboard](../dash), or:
+checkout it lives in and has no releases of its own. Start it from [Nexus Dashboard for BC-250](../dash), or:
 
 | | Linux |
 |---|---|

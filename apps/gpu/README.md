@@ -9,7 +9,7 @@
 BC-250 GPU Manager lets you set up and watch the GPU of an **AMD BC-250** board running **Bazzite**. It is a PyQt6
 window for **cyan-skillfish-governor-smu**, the GPU governor. A governor is the service that sets the GPU's clocks
 and voltages. The board's APU is the Cyan Skillfish (`gfx1013`). Bazzite is a Fedora Atomic system that updates with
-rpm-ostree.
+rpm-ostree. Its GPU sweep finds the highest GPU clock and the lowest voltage your board holds, one step at a time.
 
 How to install and use it: [BC-250 GPU Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/gpu/).
 

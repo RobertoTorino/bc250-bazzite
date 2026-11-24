@@ -1,3 +1,7 @@
+Changelog: 24-11-2026 15:46:27
+
+Fixed. The texts name the dashboard Nexus Dashboard for BC-250, its new name.
+
 Changelog: 22-11-2026 23:04:04
 
 Fixed. The text of the window's info and hint, the README and the messages of install.sh and run.sh is rewritten to the

@@ -8,10 +8,14 @@
 #   ./install.sh                         install or update
 #   ./install.sh --no-desktop-shortcut   app menu entry only, no icon on the Desktop
 #   ./install.sh --uninstall             remove everything it installed; keeps its settings and profiles
-#   ./install.sh --uninstall --purge     also remove its settings, profiles and the start-at-login entry
+#   ./install.sh --uninstall --purge     also remove its settings, profiles, the start-at-login entry and the
+#                                        GPU sweep's results
 #   ./install.sh --run                   install and start the app
 #
-# Run it as your own user, not with sudo. It never touches the governor's own config.toml and its backups.
+# Run it as your own user, not with sudo. It never touches the governor's own config.toml and its backups, except
+# once: BC-250 GPU OC Bisect, which the GPU sweep replaces, goes with its results. When an attempt of it was cut
+# off, its test config is still in place, and the installer puts your own config back first. Removing its copy in
+# /opt and that restore ask for the sudo password.
 
 set -euo pipefail
 
@@ -26,6 +30,9 @@ APPS_DIR="$DATA_HOME/applications"
 ICON_DIR="$DATA_HOME/icons/hicolor/128x128/apps"
 DESKTOP_DIR=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
+SWEEP_ID="bc250-gpu-sweep"               # the GPU sweep window: its results, settings and resume entry
+OLD_ID="bc250-gpu-oc-bisect"             # BC-250 GPU OC Bisect, merged into GPU Manager (owner, 24-11-2026)
+OPT_DIR="${BC250_OPT_DIR:-/opt}"         # override only for testing
 
 say()  { printf '\033[1;35m==>\033[0m %s\n' "$*"; }
 fail() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
@@ -40,11 +47,34 @@ installed_here() {
     return 1
 }
 
+# BC-250 GPU OC Bisect goes completely (owner, 24-11-2026: removed, results not kept): its copy in /opt, launcher,
+# menu entry, Desktop icon, venv, results and settings. Its config.toml.pre-oc-bisect backup stays, and the Backups
+# page lists it.
+remove_oc_bisect() {
+    local state="$DATA_HOME/$OLD_ID" gov="/etc/cyan-skillfish-governor-smu/config.toml"
+    installed_here "$OPT_DIR/$OLD_ID" "$OPT_DIR/$OLD_ID-v*" "$BIN_DIR/$OLD_ID-gui" "$APPS_DIR/$OLD_ID-gui.desktop" \
+        "$DESKTOP_DIR/$OLD_ID-gui.desktop" "$DATA_HOME/$OLD_ID-app" "$state" "$CONFIG_DIR/$OLD_ID" || return 0
+    say "Removing BC-250 GPU OC Bisect: GPU Manager's GPU sweep replaces it"
+    if [[ -f "$state/test-config-active" && -f "$state/governor-config.orig" ]]; then
+        say "Its last attempt was cut off, so its test config is still in $gov: putting your own config back (sudo)"
+        sudo cp "$state/governor-config.orig" "$gov" && sudo systemctl restart cyan-skillfish-governor-smu ||
+            fail "could not put back $gov from $state/governor-config.orig. Copy it back by hand, then run this again."
+    fi
+    if installed_here "$OPT_DIR/$OLD_ID" "$OPT_DIR/$OLD_ID-v*"; then
+        say "Removing $OPT_DIR/$OLD_ID (sudo)"
+        sudo rm -rf "${OPT_DIR:?}/$OLD_ID" "$OPT_DIR/$OLD_ID"-v*
+    fi
+    rm -f "$BIN_DIR/$OLD_ID-gui" "$APPS_DIR/$OLD_ID-gui.desktop" "$DESKTOP_DIR/$OLD_ID-gui.desktop"
+    rm -rf "$DATA_HOME/$OLD_ID-app" "${state:?}" "${CONFIG_DIR:?}/$OLD_ID"
+}
+
 uninstall() {
     found=false
     installed_here "$APP_DIR" "$BIN_DIR/$APP_ID" "$APPS_DIR/$APP_ID.desktop" "$ICON_DIR/$APP_ID.png" \
         "$DESKTOP_DIR/$APP_ID.desktop" "$DATA_HOME/icons/hicolor/512x512/apps/$APP_ID.png" && found=true
-    $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "$CONFIG_DIR/autostart/$APP_ID.desktop" && found=true
+    installed_here "$CONFIG_DIR/autostart/$SWEEP_ID-resume.desktop" && found=true
+    $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "$CONFIG_DIR/autostart/$APP_ID.desktop" \
+        "$DATA_HOME/$SWEEP_ID" "$CONFIG_DIR/$SWEEP_ID" && found=true
     if ! $found; then
         say "$APP_ID is not installed: nothing to remove."
         exit 0
@@ -52,12 +82,12 @@ uninstall() {
     say "Removing $APP_ID"
     rm -rf "$APP_DIR"
     rm -f "$BIN_DIR/$APP_ID" "$APPS_DIR/$APP_ID.desktop" "$ICON_DIR/$APP_ID.png" "$DESKTOP_DIR/$APP_ID.desktop" \
-          "$DATA_HOME/icons/hicolor/512x512/apps/$APP_ID.png"
+          "$DATA_HOME/icons/hicolor/512x512/apps/$APP_ID.png" "$CONFIG_DIR/autostart/$SWEEP_ID-resume.desktop"
     command -v update-desktop-database >/dev/null && update-desktop-database -q "$APPS_DIR" || true
     command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -t "$DATA_HOME/icons/hicolor" 2>/dev/null || true
     if $PURGE; then
-        say "Removing the settings, profiles and the start-at-login entry"
-        rm -rf "${CONFIG_DIR:?}/$APP_ID"
+        say "Removing the settings, profiles, the start-at-login entry and the GPU sweep's results"
+        rm -rf "${CONFIG_DIR:?}/$APP_ID" "${CONFIG_DIR:?}/$SWEEP_ID" "${DATA_HOME:?}/$SWEEP_ID"
         rm -f "$CONFIG_DIR/autostart/$APP_ID.desktop"
     fi
     say "Done. The governor's config.toml and backups were left untouched."
@@ -90,6 +120,7 @@ say "Installing the app to $APP_DIR"
 mkdir -p "$APP_DIR" "$BIN_DIR" "$APPS_DIR" "$ICON_DIR"
 rm -rf "$APP_DIR/gpu_governor" "$APP_DIR/bc250_governor" "$APP_DIR/images"   # and the package before its rename
 cp -R "$SRC_DIR/gpu_governor" "$SRC_DIR/images" "$APP_DIR/"
+install -m 755 "$SRC_DIR/$SWEEP_ID.sh" "$APP_DIR/$SWEEP_ID.sh"
 cp "$SRC_DIR/requirements.txt" "$SRC_DIR/LICENSE" "$SRC_DIR/README.md" "$APP_DIR/" 2>/dev/null || true
 find "$APP_DIR" -name '__pycache__' -type d -prune -exec rm -rf {} +
 
@@ -104,6 +135,8 @@ fi
 say "Installing PyQt6 into the virtual environment (this takes a moment the first time)"
 "$VENV_DIR/bin/python" -m pip install --quiet --upgrade pip
 "$VENV_DIR/bin/python" -m pip install --quiet --upgrade -r "$SRC_DIR/requirements.txt"
+
+remove_oc_bisect
 
 say "Installing the launcher, desktop entry and icon"
 cat > "$BIN_DIR/$APP_ID" <<EOF

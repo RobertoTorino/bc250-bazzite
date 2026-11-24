@@ -1,3 +1,32 @@
+Changelog: 24-11-2026 18:41:12
+
+Fixed. The wiki's Safe points picture shows the page as it is now, with the GPU sweep pill. The old picture showed
+version 0.3.0 with the link to bc250-gpu-oc-bisect.
+
+Changelog: 24-11-2026 16:29:51
+
+Added. BC-250 GPU OC Bisect is part of GPU Manager now, as the GPU sweep (owner, 24-11-2026). The sweep has a step
+window of its own, as Core Unlock and CU Unlock have: Scan, Test the current top point, Raise the clock, Lower the
+voltage and Install. The GPU sweep pill at the bottom of the Safe points page opens it. A table shows every step of
+the ladder with the outcome of each round. The window asks for sudo's password in a masked field, asks what happened
+after a freeze, and goes on after a restart with One boot each.
+
+Added. bc250-gpu-sweep.sh is GPU OC Bisect's script, run step by step by the window. It works with the smu and the tt
+governor. --scan reads the GPU, the governor, its top safe-point and the load tool, and writes nothing. --only
+control, oc or uv runs one part. The ladder's settings are kept with the results, so another ladder needs a reset.
+Its results live in ~/.local/share/bc250-gpu-sweep, so a sweep starts fresh.
+
+Added. Install in the sweep backs up the config as config.toml.bak-<stamp> first, which the Backups page restores. It
+writes the best step with one step of margin and keeps the lower safe-points, except those with a voltage above the
+new top's (owner, 24-11-2026). --uninstall and its config.toml.pre-oc-bisect backup are gone. The Backups page also
+lists an old config.toml.pre-oc-bisect.
+
+Added. install.sh removes BC-250 GPU OC Bisect: its copy in /opt, launcher, menu entry, Desktop icon, venv, results
+and settings. When its last attempt was cut off, it puts your own governor config back first. These steps ask for the
+sudo password. Uninstall also removes the sweep's resume entry, and --purge its results and settings.
+
+Fixed. The Safe points page and the Help name the GPU sweep instead of a link to GPU OC Bisect on GitHub.
+
 Changelog: 23-11-2026 05:15:41
 
 Release 0.7.1.

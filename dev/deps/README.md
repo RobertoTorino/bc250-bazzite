@@ -19,7 +19,7 @@ shows Bazzite's update state and every update of the machine:
 
 **Fix** installs what is missing, outdated or newer. It shows every command first and asks. An hourly notification
 tells you when something needs you. Nexus Deps is a development app. It runs from the checkout it lives in and has no
-releases of its own. Start it from [Nexus Dashboard](../dash), or:
+releases of its own. Start it from [Nexus Dashboard for BC-250](../dash), or:
 
 | | Linux |
 |---|---|

@@ -1,3 +1,8 @@
+Changelog: 24-11-2026 20:47:37
+
+Fixed. The tooltip of Record new video now says the recording takes a few minutes, with the voice of Nexus TTS's
+speech engine. It said about a minute.
+
 Changelog: 22-11-2026 23:09:02
 
 Fixed. The text of the README, run.sh, install.sh and the window was rewritten to the writing standard: short sentences

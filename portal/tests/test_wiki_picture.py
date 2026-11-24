@@ -24,7 +24,7 @@ def test_the_picture_shows_the_window_in_the_demo_state(qapp, home, settings_dir
     assert (image.width(), image.height()) == (round(shot.SIZE[0] * shot.SCALE), round(shot.SIZE[1] * shot.SCALE))
     assert len({image.pixel(x, y) for x in range(0, image.width(), 40) for y in range(0, image.height(), 40)}) > 50
     detect = {e.key: Path(e.detect[0].replace("~", str(home), 1)) for e in load(MANIFEST)}
-    assert detect["gpu"].is_file() and not detect["oc"].exists()            # one installed, one not
+    assert detect["gpu"].is_file() and not detect["acpi"].exists()            # one installed, one not
 
 
 def test_the_default_picture_is_the_one_the_wiki_shows():

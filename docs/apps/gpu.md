@@ -5,14 +5,18 @@
 # BC-250 GPU Manager
 
 !!! warning "Changes the board"
-    The app edits the governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml. Before every write it
-    makes a dated backup of the file beside it. It starts, stops, enables and disables the governor's service. It sends
-    the governor clock, voltage and range requests over D-Bus. The governor is what sets the GPU's clocks and voltages.
-    The app never writes a register itself. The settings file stays across reboots and power offs. The governor reads it
-    whenever it starts. What the app sets over D-Bus, test mode included, lasts until the governor restarts. Nothing is
-    written to the BIOS, the firmware, the CMOS or the kernel's arguments. Restore selected on the Backups page makes
-    any earlier settings file the current one again. Stop test ends a test. Removing the app leaves the settings file
-    and its backups as they are.
+    The app edits the governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml, or the tt governor's.
+    Before each change from its pages it makes a dated backup of the file beside it. It starts, stops, enables and
+    disables the governor's service. It sends the governor clock, voltage and range requests over D-Bus. The governor is
+    what sets the GPU's clocks and voltages. The app never writes a register itself. For each attempt, the GPU sweep
+    puts a test clock and voltage in the settings file and restarts the governor. It puts your own file back after each
+    attempt, on a temperature abort and when it stops. A freeze can leave the test settings in the file. The sweep then
+    puts your own file back first, at its next attempt. Install in the sweep makes a dated backup, writes the best step
+    into the file and restarts the governor. The settings file stays across reboots and power offs. The governor reads
+    it whenever it starts. What the app sets over D-Bus, test mode included, lasts until the governor restarts. Nothing
+    is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Restore selected on the Backups page makes
+    any earlier settings file the current one again. Stop test ends a test, and Stop ends an attempt of the sweep.
+    Removing the app leaves the settings file and its backups as they are.
 
 BC-250 GPU Manager lets you set up and watch the GPU of an **AMD BC-250** board running **Bazzite**. It is a PyQt6
 window for **cyan-skillfish-governor-smu**, the GPU governor. A governor is the service that sets the GPU's clocks
@@ -107,6 +111,9 @@ The app runs as your normal desktop user. Only three things need root. Each goes
 
 The desktop's polkit agent handles the password. The app never sees it.
 
+The [GPU sweep](#the-gpu-sweep) is the exception. Its script uses `sudo` for the governor's config, the service and
+the kernel log. The sweep window asks for the password in a masked field and passes it to `sudo`. It never stores it.
+
 ## Requirements
 
 ```text
@@ -116,6 +123,12 @@ PyQt6-Charts>=6.11,<7
 ```
 
 The PyQt6 wheels bundle Qt. Nothing is layered with `rpm-ostree`.
+
+The [GPU sweep](#the-gpu-sweep) also needs these:
+
+- [memtest_vulkan](https://github.com/GpuZelenograd/memtest_vulkan) in `~/.local/bin`, strongly recommended. It checks
+  its results, so it finds wrong results and not only crashes. Without it, the sweep uses vkpeak, vkmark or glmark2.
+- `sudo`, for the governor's config, its service and the kernel log
 
 ## Install on Bazzite
 
@@ -264,6 +277,8 @@ backups and the service page work the same.
     result line gives the held time, peak temperature, clock range and kernel verdict. Closing the app or any
     Performance-page action ends the test too.
 
+    The **GPU sweep** pill at the bottom of the page opens the [GPU sweep](#the-gpu-sweep) window.
+
 <details markdown="1">
 <summary>🔽 5 - Performance </summary>
 
@@ -290,7 +305,8 @@ backups and the service page work the same.
 </details>
 
 * **6 - Backups** lists the `config.toml.bak-*` copies. It shows a diff against the current file and restores a
-  copy with one click.
+  copy with one click. It also lists the `config.toml.pre-oc-bisect` copy that BC-250 GPU OC Bisect made, with the
+  date of the file. GPU OC Bisect is part of GPU Manager now, as the GPU sweep.
 
 <details markdown="1">
 <summary>🔽 7 - Service </summary>
@@ -340,6 +356,138 @@ backups and the service page work the same.
 
 The app remembers the window size and the last page.
 
+## The GPU sweep
+
+The GPU sweep finds the highest GPU clock and the lowest voltage your own board holds. Then it can write them into
+the governor's config. The **GPU sweep** pill at the bottom of the Safe points page opens its window.
+
+No formula gives you the right GPU clock and voltage. The stable ceiling depends on these:
+
+- your specific die, the silicon lottery
+- your cooling
+- your PSU rail
+
+Two boards from the same batch can differ by 100 MHz or more. So the sweep tests it. It raises the clock or lowers
+the voltage one step at a time. It puts a heavy GPU load on each step that checks its own results. Then you see where
+your board stops being stable.
+
+An **overclock** (OC) gives you more performance at the same voltage. An **undervolt** (UV) gives you the same
+performance with less heat and power.
+
+!!! warning "Warning"
+    The sweep restarts the GPU governor with raised clocks or lowered voltages. An unstable step can freeze the
+    board. That is the point of the test, but save your work first. You can't change these hard rails:
+
+    - 2500 MHz ceiling
+    - 1100 mV ceiling
+    - 700 mV floor
+    - 97 °C abort
+
+    The community record of hard-locks above ~1850-2000 MHz is one reason for them. One bricked-board report from
+    overvolting is the other. Use at your own risk.
+
+[![GPU sweep](../assets/gpu/10-gpu-sweep.webp)](../assets/gpu/10-gpu-sweep.webp)
+
+### The steps
+
+The window leads you through five steps. The step you do now has its button on its row.
+
+| Step | What happens |
+|---|---|
+| **Scan** | Reads the GPU, the governor, its config's top safe-point and the load tool. It writes nothing and needs no password. |
+| **Test the current top point** | The control. Your config's top point runs a load in every round, unchanged. A failing control means power, heat or the load tool is at fault. Then the window stops here. |
+| **Raise the clock** | The top frequency goes up one step at a time, at a fixed voltage. A step is +50 MHz by default, up to 2200 MHz. The voltage is your config's top voltage by default. |
+| **Lower the voltage** | The top voltage goes down one step at a time, at your top frequency. A step is -25 mV by default, down to 850 mV. |
+| **Install** | Writes the best step into the governor's config. Or click **Keep my config** to install nothing. |
+
+The governor can be cyan-skillfish-governor-smu or the older `tt` governor. The sweep uses the one whose service runs.
+The table under the steps shows every step of the ladder with the outcome of each round.
+
+For every attempt the sweep does this:
+
+1. puts a config in place whose top safe-point is the step under test
+2. restarts the governor and runs a **verified** GPU load
+3. watches the temperature, the clock and the GPU busy percentage the whole time
+4. puts your own config back and restarts the governor again
+
+The test config keeps your other sections as they are, such as `[gpu]`, `[gpu-usage]` and the timings. At 97 °C the
+sweep stops the attempt and the run. Improve the cooling, then go on. An attempt gets the outcome **NO-REACH** when
+the GPU never gets near the step's clock under full load.
+
+Every step runs 3 rounds by default. All rounds of a step finish before the next step starts. So the sweep never
+drives past a step that is still failing. The sweep skips the steps beyond a step that **fails every time**.
+
+The sweep is **crash-safe**. A marker file records the attempt that runs. After a freeze, switch the board off and on,
+and open the window again. The window asks whether the board froze. The sweep puts your config back first. It
+records the crash against the right step. Then it goes on where it stopped.
+
+### Verdicts
+
+| Verdict             | Meaning                                                              |
+|---------------------|----------------------------------------------------------------------|
+| passes every round  | stable at this step                                                  |
+| fails every time    | past your die's limit at this voltage, so the ladder stops here      |
+| random              | It sometimes passes and sometimes fails. The cause is power, heat or margin noise, not a clean limit. |
+
+### Install
+
+**Install** writes the best step that passed every round, one step back from the edge as a margin. It asks first,
+then asks for your password. It works like this:
+
+- It backs up the config as `config.toml.bak-<stamp>` first. The **Backups** page restores it.
+- The best step becomes the config's top safe-point.
+- The safe-points below it stay, except those whose voltage is above the new top's. Those go, because the governor
+  wants a voltage that never drops as the frequency rises. So the sweep writes no voltage it did not test.
+- The governor restarts with the new config.
+
+When every lower safe-point has a voltage above the new top's, Install would leave only one point. Then **Install** is
+off.
+
+To undo Install, restore its backup on the **Backups** page.
+
+### Advanced
+
+**Advanced** shows the sweep's options. A sweep that has started keeps its ladder. To change it, click **Start over**.
+
+| Field | Option | Default |
+|---|---|---|
+| **Load per attempt** | `-t` | 180 s, at least 60 s |
+| **Rounds per step** | `-r` | 3, from 2 to 9 |
+| **Clock ladder voltage** | `--oc-volt` | your config's top voltage, at most 1100 mV |
+| **Highest clock** | `--max-freq` | 2200 MHz, at most 2500 MHz |
+| **Clock step** | `--freq-step` | 50 MHz, at least 25 MHz |
+| **Lowest voltage** | `--min-volt` | 850 mV, at least 700 mV |
+| **Voltage step** | `--volt-step` | 25 mV, at least 5 mV |
+
+**One boot each** restarts the board after each attempt (`--per-boot`). The window opens again after the login and
+goes on. Off, every attempt runs in this boot, with a 30 s cool-down between attempts.
+
+When your governor's config changes during a sweep, the sweep stops until you click **Start over**.
+
+### The script
+
+The window runs `bc250-gpu-sweep.sh` in the app's folder. You can also run it in a terminal, as your desktop user:
+
+```shell
+~/.local/share/bc250-governor-manager/bc250-gpu-sweep.sh --help      # every option
+~/.local/share/bc250-governor-manager/bc250-gpu-sweep.sh              # the whole sweep, both ladders
+~/.local/share/bc250-governor-manager/bc250-gpu-sweep.sh --status     # the results so far, and a report on the Desktop
+~/.local/share/bc250-governor-manager/bc250-gpu-sweep.sh --install    # write the best step
+```
+
+Everything the sweep keeps lives in `~/.local/share/bc250-gpu-sweep/`:
+
+- `runs.tsv`, with a line for every attempt
+- the logs of each attempt in `logs/`
+- the snapshot of your governor's config
+
+Each line in `runs.tsv` holds the step, MHz, mV, outcome, errors and faults. It also holds the highest temperature,
+clock and busy percentage. **Report** writes a readable report to your Desktop. A finished sweep writes one too.
+
+For the **CPU** side, voltage and frequency through the SMU, see
+[bc250_smu_oc](https://github.com/bc250-collective/bc250_smu_oc) from the BC-250 collective. The sweep sticks to the
+GPU curve on purpose.
+
 ## Development
 
 ```
@@ -366,6 +514,13 @@ gpu_governor/
   alerts.py         temperature / throttling / service alerts derived from the polled snapshot
   help.py           Help page
   widgets.py        status pills, metric boxes, terminal, rounded tooltip
+  sweep/            the GPU sweep window (python -m gpu_governor --sweep), which runs bc250-gpu-sweep.sh
+    app.py          its program: the window, one instance, the theme
+    main_window.py  the five steps, the ladder table, Advanced and Details
+    progress.py     where a sweep stands, read from the script's files
+    session.py      runs the script in a pseudo-terminal, with sudo's password in a masked field
+    options.py      the Advanced options as a command line
+    resume.py       the autostart entry that goes on after a restart
   backends/
     base.py         GovernorConfig, ServiceStatus, GpuTelemetry, PerformanceState, backend protocol
     cyan_skillfish.py  schema-driven config.toml editing, systemd, sensors (smu governor)
@@ -374,6 +529,7 @@ gpu_governor/
     dbus.py         busctl client for com.cyanskillfish.Governor
     process.py      subprocess helper
   fonts/            Inter (SIL OFL), used for the header on Linux
+bc250-gpu-sweep.sh  the GPU sweep's script
 install.sh          per-user installer (venv, launcher, desktop entry, icon); --uninstall [--purge] removes it
 bc250-governor-manager.desktop  desktop entry template, Exec is filled in by install.sh
 tests/              pytest suite (offscreen Qt; bus, systemd and pkexec mocked)
@@ -392,6 +548,7 @@ The tests need no BC-250, because they mock D-Bus, systemd and pkexec. They cove
 * profiles
 * the load-tool runner
 * the main window's TestMode, profile and Performance-page state machines
+* the GPU sweep's script from the scan to Install, with fake tools, and its window
 
 The suite's CI (`.github/workflows/ci.yml`) runs them on every push and pull request. The mocks cannot prove
 everything. For the rest, run the [Hardware verification checklist](#hardware-verification-checklist) by hand on a

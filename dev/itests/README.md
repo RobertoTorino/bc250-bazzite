@@ -8,7 +8,7 @@
 
 A window that runs the suite's installer tests, `tools/installer-tests/*.sh`, one at a time. It shows their live
 output and each one's result. It is a development app. It runs from the checkout it lives in and has no releases of
-its own. Start it from [Nexus Dashboard](../dash), or use these commands:
+its own. Start it from [Nexus Dashboard for BC-250](../dash), or use these commands:
 
 | | Linux |
 |---|---|

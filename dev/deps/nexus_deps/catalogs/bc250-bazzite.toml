@@ -43,10 +43,6 @@ launchers = ["~/.local/bin/bc250-bisect-gui"]
 name = "BC-250 Core Unlock"
 launchers = ["~/.local/bin/bc250-cores-bisect-gui"]
 
-[app.oc]
-name = "BC-250 GPU OC Bisect"
-launchers = ["~/.local/bin/bc250-gpu-oc-bisect-gui"]
-
 [app.acpi]
 name = "BC-250 Persistent ACPI"
 launchers = ["~/.local/bin/bc250-persistent-acpi-gui"]
@@ -273,9 +269,9 @@ usage = "Recommended: verify GPU load results during CU testing."
 anchor = "requirements"
 
 [[tool.source]]
-owner = "oc"
+owner = "gpu"
 need = "optional"
-usage = "Recommended: verify GPU load results during overclock testing."
+usage = "Recommended: verify GPU load results during the GPU sweep."
 anchor = "requirements"
 
 [[tool]]
@@ -324,9 +320,9 @@ need = "optional"
 usage = "Fallback GPU load during CU testing."
 
 [[tool.source]]
-owner = "oc"
+owner = "gpu"
 need = "optional"
-usage = "Fallback GPU load during overclock testing."
+usage = "Fallback GPU load during the GPU sweep."
 
 [[tool]]
 name = "vkmark"
@@ -343,11 +339,6 @@ usage = "Fallback GPU load during stress tests."
 owner = "compute"
 need = "optional"
 usage = "Fallback GPU load during CU testing."
-
-[[tool.source]]
-owner = "oc"
-need = "optional"
-usage = "Fallback GPU load during overclock testing."
 
 [[tool.source]]
 owner = "gpu"
@@ -369,11 +360,6 @@ usage = "Fallback GPU load during stress tests."
 owner = "compute"
 need = "optional"
 usage = "Fallback GPU load during CU testing."
-
-[[tool.source]]
-owner = "oc"
-need = "optional"
-usage = "Fallback GPU load during overclock testing."
 
 [[tool.source]]
 owner = "gpu"
@@ -628,7 +614,7 @@ need = "required"
 usage = "Privilege for system checks and tests that need administrator access."
 
 [[tool.source]]
-owner = "oc"
+owner = "gpu"
 need = "required"
 usage = "Privilege for governor configuration and kernel log checks."
 anchor = "requirements"
@@ -734,12 +720,6 @@ owner = "check"
 need = "optional"
 usage = "Read system and kernel logs for diagnostics."
 
-[[tool.source]]
-owner = "oc"
-need = "required"
-usage = "Check GPU kernel errors during testing."
-anchor = "requirements"
-
 [[tool]]
 name = "cyan-skillfish-governor-smu"
 description = "The GPU governor service for the BC-250's GPU (Cyan Skillfish): it sets the GPU clock and voltage from the load, through the SMU. Checked by its configuration and service files."
@@ -751,12 +731,6 @@ probe = "path"
 owner = "gpu"
 need = "required"
 usage = "System service and configuration managed by the GPU Manager."
-
-[[tool.source]]
-owner = "oc"
-need = "required"
-usage = "Service and configuration for overclock/undervolt testing."
-anchor = "requirements"
 
 [[tool]]
 name = "busctl"
@@ -1132,10 +1106,6 @@ specifier = ">=6.11,<7"
 [[dependency.source]]
 owner = "cores"
 specifier = ">=6.5,<7"
-
-[[dependency.source]]
-owner = "oc"
-specifier = ">=6.11,<7"
 
 [[dependency.source]]
 owner = "acpi"

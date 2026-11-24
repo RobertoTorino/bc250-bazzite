@@ -680,7 +680,7 @@ See [Performance score](#performance-score-comparing-cu-and-core-unlocks) below.
 |----|------------------------|----------------------------------------------------------------------------------|
 | 13 | Security Configuration | firewalld zones and SELinux enforcement mode.                                    |
 | 32 | OSTree Deployment      | Lists deployments and warns when a newer one is staged and waiting for a reboot. |
-| 33 | Update and Patch       | Checks for available rpm-ostree updates and lists Flatpak remotes.               |
+| 33 | Update and Patch       | Checks for available rpm-ostree updates and lists Flatpak remotes. When the check fails, for example offline, the test says so. |
 | 45 | Installed Packages     | Counts installed software per source. The sources are image RPMs, layered/overridden packages, Flatpak apps, Homebrew, AppImages and Distrobox containers. Names and versions only. |
 
 ---
@@ -1108,8 +1108,8 @@ Minor caveats, not performance losses:
 - A CMOS reset or battery pull reverts the `bc250_memcfg` split. Just run it again.
 - Validate cores and CUs with the bisect tools first. Silicon quality is per board, independent of BIOS.
 
-Going beyond stock: [BC-250 GPU OC Bisect](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/oc), a
-suite app, sweeps the governor's top GPU safe-point the same bisect way, with the clock up and the voltage down.
+Going beyond stock: the [GPU sweep](gpu.md#the-gpu-sweep) of BC-250 GPU Manager, a suite app, sweeps the governor's
+top GPU safe-point the same bisect way, with the clock up and the voltage down.
 It finds the safe overclock or undervolt for your specific board, and no BIOS is involved either.
 
 The stock BIOS is also the safe choice. It has zero bricking risk, and no duplicate-ACPI-table conflicts

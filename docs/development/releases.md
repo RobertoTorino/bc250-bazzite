@@ -105,7 +105,8 @@ explains itself behind the round **i** in its first row. Click it to read the wh
    for those runs until GitHub shows them running again. When a run fails again, you can start it again.
 5. **Start new release:** when the wiki's Portal Tour is older than the portal, its window or its tiles, an
    orange banner above the steps says so. It holds **Record new video now** (`tools/record-tour.sh --wiki`). The
-   recording takes about a minute, and its output is on the Commands tab. This step waits until the video is
+   recording takes a few minutes, and its output is on the Commands tab. The tour's voice needs Nexus TTS's speech
+   engine. This step waits until the video is
    recorded.
 
     The release can start by itself, without the pill and its question. It does so when CI passes on the commit

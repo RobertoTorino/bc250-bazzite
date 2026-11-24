@@ -36,8 +36,7 @@ and the journal. [BIOS Reader](apps/bios.md) shows every BIOS setting, hidden me
 <div class="home-card" markdown>
 #### :material-speedometer: Tuning
 
-[GPU Manager](apps/gpu.md) tunes the GPU governor.
-[GPU OC Bisect](apps/oc.md) finds your board's safe overclock and undervolt.
+[GPU Manager](apps/gpu.md) tunes the GPU governor. Its GPU sweep finds your board's safe overclock and undervolt.
 [Persistent ACPI](apps/acpi.md) gives the CPU its C-states and frequency scaling.
 </div>
 <div class="home-card" markdown>

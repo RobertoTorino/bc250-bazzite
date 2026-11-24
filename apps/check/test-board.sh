@@ -245,7 +245,7 @@ filter_logs() {
 LOG_ADVICE=(
   # --- Real faults ---
   "ring [a-z0-9_.]+ timed? ?out|amdgpu_job_timedout|GPU reset|gpu_recover|Waiting for fences timed out|MES failed"
-  "GPU hang or reset. The usual cause is an unstable CU unlock, GPU overclock or governor setting. Go back to the last stable one (cu-bisect, gpu-oc-bisect, governor) and check test 35."
+  "GPU hang or reset. The usual cause is an unstable CU unlock, GPU overclock or governor setting. Go back to the last stable one (cu-bisect, the GPU sweep, governor) and check test 35."
   "VM_L2_PROTECTION_FAULT|GPU fault detected|page fault \(src_id"
   "GPU page fault. A game or the driver used invalid GPU memory. Once is usually a game bug. If it repeats, update Bazzite (Mesa) and undo any GPU overclock."
   "flip_done timed out|commit wait timed out"
@@ -320,7 +320,8 @@ explain_log_lines() {
     while read -r n ident; do
         [ -n "$ident" ] || continue
         log_result "HINT: [$n line$( [ "$n" = 1 ] || echo s)] from ${ident}, no known explanation. To read them, run journalctl ${scope} -p warning -t ${ident}. Search the message online if it repeats."
-    done < <(awk '/^[A-Z][a-z][a-z] +[0-9]+ [0-9:]+ / { t = $5; sub(/\[[0-9]+\]/, "", t); sub(/:$/, "", t); if (t != "") print t }' <<<"$rest" \
+    # journalctl writes the month in the user's language ("nov 24" in Dutch, "11月 24" in Japanese), so any word counts.
+    done < <(awk '/^[^ ]+ +[0-9]+ [0-9:]+ / { t = $5; sub(/\[[0-9]+\]/, "", t); sub(/:$/, "", t); if (t != "") print t }' <<<"$rest" \
         | sort | uniq -c | sort -rn | head -3)
 }
 
@@ -1802,8 +1803,9 @@ if command -v rpm-ostree >/dev/null 2>&1; then
     fi
     # The booted deployment is the one marked with a bullet. If it is not the first
     # entry, a newer deployment is already staged and only needs a reboot.
-    BOOTED_INDEX=$(grep -nE "^●" <<<"$OSTREE_STATUS" | head -1 | cut -d: -f1)
-    FIRST_INDEX=$(grep -nE "^[●[:space:]]+ostree-" <<<"$OSTREE_STATUS" | head -1 | cut -d: -f1)
+    # rpm-ostree marks it with * instead of the bullet outside a UTF-8 locale, as under LC_ALL=C.
+    BOOTED_INDEX=$(grep -nE "^(●|\*)" <<<"$OSTREE_STATUS" | head -1 | cut -d: -f1)
+    FIRST_INDEX=$(grep -nE "^(●|\*|[[:space:]])+ostree-" <<<"$OSTREE_STATUS" | head -1 | cut -d: -f1)
     if [ -n "$BOOTED_INDEX" ] && [ -n "$FIRST_INDEX" ] && [ "$BOOTED_INDEX" -gt "$FIRST_INDEX" ]; then
         PENDING_VERSION=$(grep -E "Version:" <<<"$OSTREE_STATUS" | head -1 | xargs)
         log_result "WARNING: A newer deployment is staged and pending a reboot ($PENDING_VERSION)."
@@ -1824,11 +1826,16 @@ log_result "[TEST 33] Update and Patch Test"
 log_result "Check for available updates (read-only, nothing is installed)"
 if command -v rpm-ostree >/dev/null 2>&1; then
     UPDATE_OUTPUT=$(rpm-ostree upgrade --check 2>&1)
+    UPDATE_RC=$?
     echo "$UPDATE_OUTPUT" | tee -a "$LOG_FILE"
-    if grep -qi "No updates available" <<<"$UPDATE_OUTPUT"; then
+    # The exit code tells: 77 is no update, 0 is an update. Anything else is a check that failed, for
+    # example offline or while another rpm-ostree job runs, and says nothing about updates.
+    if [ "$UPDATE_RC" = 77 ] || grep -qi "No updates available" <<<"$UPDATE_OUTPUT"; then
         log_result "SUCCESS: System is up to date."
-    else
+    elif [ "$UPDATE_RC" = 0 ]; then
         log_result "INFO: An update is available. Apply with: ujust update"
+    else
+        log_result "INFO: The update check did not finish (exit code $UPDATE_RC), so it is not known whether an update is available. Its output is above."
     fi
 fi
 for t in uupd.timer ublue-update.timer rpm-ostreed-automatic.timer; do
@@ -2122,12 +2129,13 @@ else
     log_result "SUCCESS: No framebuffer pin failures in the retained boots."
 fi
 log_result "Report the VRAM split and its dynamic ceiling"
-VRAM_SPLIT_MIB=$(( $(read_num_g "/sys/class/drm/card1/device/mem_info_vram_total") / 1048576 ))
-GTT_MIB=$(( $(read_num_g "/sys/class/drm/card1/device/mem_info_gtt_total") / 1048576 ))
-for card in /sys/class/drm/card*/device; do
+# The board's GPU (GPU_DEV) first, else the first card with VRAM: a second GPU never takes its place.
+VRAM_SPLIT_MIB=0 GTT_MIB=0
+for card in ${GPU_DEV:+"$GPU_DEV"} /sys/class/drm/card*/device; do
     [ -r "$card/mem_info_vram_total" ] || continue
     VRAM_SPLIT_MIB=$(( $(read_num_g "$card/mem_info_vram_total") / 1048576 ))
     GTT_MIB=$(( $(read_num_g "$card/mem_info_gtt_total") / 1048576 ))
+    break
 done
 # amdgpu sizes GTT from ttm.pages_limit (4 KiB pages, default half the RAM) and caps it at the RAM on this APU,
 # so the GTT total is the real dynamic ceiling, not the parameter.

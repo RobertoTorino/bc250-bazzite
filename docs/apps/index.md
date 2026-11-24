@@ -38,7 +38,6 @@ never acts in it. The same apps as above leave the controller to what they do.
 | ![](../assets/apps/gpu.webp){ .app-icon } [BC-250 GPU Manager](gpu.md) | Manage the cyan-skillfish GPU governor: tuning, safe points, profiles, backups. **Changes the board.** |
 | ![](../assets/apps/compute.webp){ .app-icon } [BC-250 CU Unlock](compute.md) | Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock. **Changes the board.** |
 | ![](../assets/apps/cores.webp){ .app-icon } [BC-250 Core Unlock](cores.md) | Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock. **Changes the board.** |
-| ![](../assets/apps/oc.webp){ .app-icon } [BC-250 GPU OC Bisect](oc.md) | Find your board's safe GPU overclock and undervolt, one step at a time. **Changes the board.** |
 | ![](../assets/apps/acpi.webp){ .app-icon } [BC-250 Persistent ACPI](acpi.md) | CPU C-states and frequency scaling through a persistent ACPI override (GRUB early initrd). **Changes the board.** |
 | ![](../assets/apps/vram.webp){ .app-icon } [BC-250 Memory Manager](vram.md) | The VRAM split in CMOS, with the GTT, TTM limit and swap layout that go with it. **Changes the board.** |
 | ![](../assets/apps/fan.webp){ .app-icon } [BC-250 Fan Control](fan.md) | A thermal guard that warns, cools and shuts down cleanly at a critical temperature, and the fans. **Changes the board.** |
@@ -82,7 +81,7 @@ never acts in it. The same apps as above leave the controller to what they do.
 | ![](../assets/apps/password.webp){ .app-icon } [BC-250 Password Generator](password.md) | Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere. |
 
 The tools for working on the suite run from a checkout of the repository and are not in the portal:
-[Nexus Dashboard](../development/dashboard.md) opens them all (Nexus Release Tool, Nexus Deps,
+[Nexus Dashboard for BC-250](../development/dashboard.md) opens them all (Nexus Release Tool, Nexus Deps,
 Nexus Garbage Remover, Nexus Installer Tests, Nexus Demo Recorder, Nexus Sound Lab, Nexus TTS, Nexus Remix Studio, the video tours and the icons).
 
 Apps that **change the board** (unlocks, the GPU governor, GPU overclocking, the ACPI override, the VRAM split,

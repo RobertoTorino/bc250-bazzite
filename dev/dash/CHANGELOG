@@ -1,3 +1,18 @@
+Changelog: 24-11-2026 20:47:37
+
+Added. Portal video tour has the option A voice reads the captions out, with Nexus TTS's speech engine. It is checked
+at first. Unchecked, the tour is recorded with --no-voice. The dialog and the tile say the tour runs about four minutes
+and takes a few minutes to record.
+
+Changelog: 24-11-2026 15:46:27
+
+Breaking. Nexus Dashboard is now called Nexus Dashboard for BC-250. Its ID is now nexus-dashboard-bc250 instead of
+nexus-dashboard, which both suites shared. That ID names the launcher in ~/.local/bin, the menu entry, the Desktop
+icon, the settings folder, the log folder and the check for an open window. Both suites' dashboards can now be
+installed and opened side by side. Before, the one installed last replaced the other, and opening one closed the
+other. install.sh removes the old nexus-dashboard launcher, menu entry and Desktop icon when that launcher starts
+this checkout.
+
 Changelog: 22-11-2026 22:36:54
 
 Fixed. The text of the window, the dialogs, the messages, install.sh, run.sh and the README is rewritten to the writing

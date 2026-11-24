@@ -44,7 +44,6 @@ Every app with its icon and its category.
 | ![](../assets/apps/gpu.webp){ .app-icon } [BC-250 GPU Manager](gpu.md) | Sustainable |
 | ![](../assets/apps/compute.webp){ .app-icon } [BC-250 CU Unlock](compute.md) | Sustainable |
 | ![](../assets/apps/cores.webp){ .app-icon } [BC-250 Core Unlock](cores.md) | Sustainable |
-| ![](../assets/apps/oc.webp){ .app-icon } [BC-250 GPU OC Bisect](oc.md) | Sustainable |
 | ![](../assets/apps/acpi.webp){ .app-icon } [BC-250 Persistent ACPI](acpi.md) | Sustainable |
 | ![](../assets/apps/vram.webp){ .app-icon } [BC-250 Memory Manager](vram.md) | Sustainable |
 | ![](../assets/apps/fan.webp){ .app-icon } [BC-250 Fan Control](fan.md) | Sustainable |

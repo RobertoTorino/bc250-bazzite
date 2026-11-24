@@ -4,10 +4,10 @@
 [![CI](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
 
-# Nexus Dashboard
+# Nexus Dashboard for BC-250
 
-Nexus Dashboard is one door to the tools for working on the suite. Its tiles start the development apps of the
-checkout. Each app opens in a window of its own:
+Nexus Dashboard for BC-250 is one door to the tools for working on the suite. Its tiles start the development apps of
+the checkout. Each app opens in a window of its own:
 
 - [Nexus Release Tool](../nrt)
 - [Nexus Installer Tests](../itests)
@@ -24,7 +24,7 @@ Other tiles open the suite's tools:
 - convert the category icons
 - close the repository's open issues on GitHub that you check
 
-Nexus Dashboard is a development app. It runs from the checkout it lives in. It has no releases of its own.
+Nexus Dashboard for BC-250 is a development app. It runs from the checkout it lives in. It has no releases of its own.
 
 ## Start it
 

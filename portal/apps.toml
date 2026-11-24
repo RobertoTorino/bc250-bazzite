@@ -54,14 +54,18 @@ sha256 = "00d4bcf2c0780e37638f3283d460dfc6229da6ba4fd056e2670a83d0a4956a43"
 required = false
 changes_board = true
 board_change = """
-The app edits the governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml. Before every write it
-makes a dated backup of the file beside it. It starts, stops, enables and disables the governor's service. It sends
-the governor clock, voltage and range requests over D-Bus. The governor is what sets the GPU's clocks and voltages.
-The app never writes a register itself. The settings file stays across reboots and power offs. The governor reads it
-whenever it starts. What the app sets over D-Bus, test mode included, lasts until the governor restarts. Nothing is
-written to the BIOS, the firmware, the CMOS or the kernel's arguments. Restore selected on the Backups page makes
-any earlier settings file the current one again. Stop test ends a test. Removing the app leaves the settings file
-and its backups as they are.
+The app edits the governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml, or the tt governor's.
+Before each change from its pages it makes a dated backup of the file beside it. It starts, stops, enables and
+disables the governor's service. It sends the governor clock, voltage and range requests over D-Bus. The governor is
+what sets the GPU's clocks and voltages. The app never writes a register itself. For each attempt, the GPU sweep
+puts a test clock and voltage in the settings file and restarts the governor. It puts your own file back after each
+attempt, on a temperature abort and when it stops. A freeze can leave the test settings in the file. The sweep then
+puts your own file back first, at its next attempt. Install in the sweep makes a dated backup, writes the best step
+into the file and restarts the governor. The settings file stays across reboots and power offs. The governor reads
+it whenever it starts. What the app sets over D-Bus, test mode included, lasts until the governor restarts. Nothing
+is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Restore selected on the Backups page makes
+any earlier settings file the current one again. Stop test ends a test, and Stop ends an attempt of the sweep.
+Removing the app leaves the settings file and its backups as they are.
 """
 category = "sustainable"
 install = ["bash install.sh"]
@@ -130,28 +134,6 @@ install = ["bash install.sh"]
 uninstall = ["bash install.sh --uninstall"]
 detect = ["~/.local/bin/bc250-cores-bisect-gui"]
 launch = [["Open", "~/.local/bin/bc250-cores-bisect-gui"]]
-
-[apps.oc]
-name = "BC-250 GPU OC Bisect"
-summary = "Find your board's safe GPU overclock and undervolt, one step at a time."
-tag = "bc250-oc-v0.5.1"
-sha256 = "168fb669fdcf19936eb03ff8fb16c1ceaea16aa07c4ad930752633f97ef8a4e7"
-required = false
-changes_board = true
-board_change = """
-The app changes only the GPU governor's settings file, /etc/cyan-skillfish-governor-smu/config.toml. For each
-attempt it puts a test clock and voltage in the file and restarts the governor, which applies them. It puts your own
-file back after the attempt, on a temperature abort and when it exits. It never writes a register itself. Install
-result writes the found safe point into the file and restarts the governor. It keeps a copy of the earlier file
-beside it. The file stays across reboots and power offs. A crash during an attempt can leave the test settings in
-the file. The script then restores the file first when it runs again. Nothing is written to the BIOS, the firmware,
-the CMOS or the kernel's arguments. Uninstall puts that copy back and restarts the governor.
-"""
-category = "sustainable"
-install = ["bash install.sh"]
-uninstall = ["bash install.sh --uninstall"]
-detect = ["~/.local/bin/bc250-gpu-oc-bisect-gui"]
-launch = [["Open", "~/.local/bin/bc250-gpu-oc-bisect-gui"]]
 
 [apps.acpi]
 name = "BC-250 Persistent ACPI"

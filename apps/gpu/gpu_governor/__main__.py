@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Entry point: python -m gpu_governor [--backend auto|smu|tt] [--config PATH] [--profile NAME | --list-profiles]
+or python -m gpu_governor --sweep [--script PATH] [--resume] for the GPU sweep window (sweep/app.py).
 
 One instance per user: a second launch tells the running one to show its window (or to apply --profile) and
 exits, which is what makes `--profile` usable as a desktop hotkey command."""
@@ -24,6 +25,9 @@ from .tray import TRAY_FLAG
 from .widgets import RoundedToolTip
 
 def main() -> int:
+    if "--sweep" in sys.argv[1:]:           # the GPU sweep window, a program of its own (sweep/app.py)
+        from .sweep.app import main as sweep_main
+        return sweep_main([a for a in sys.argv[1:] if a != "--sweep"])
     parser = argparse.ArgumentParser(prog="gpu_governor", description=f"{APP_NAME} {__version__}")
     parser.add_argument("--backend", choices=("auto", *BACKENDS), default="auto",
                         help="governor to manage: smu (cyan-skillfish-governor-smu, the default), tt "

@@ -31,3 +31,17 @@ def test_add_to_table_sorted_and_replacing(qapp, backend):
     page.test_volt.setValue(860)
     page._add_test_point()
     assert page.points()[2] == (1750, 860) and page.is_dirty()
+
+
+def test_the_pill_opens_the_gpu_sweep_window(qapp, backend, monkeypatch):
+    """The GPU sweep pill at the bottom of the page starts python -m gpu_governor --sweep as a process of its own (owner, 24-11-2026: BC-250
+    GPU OC Bisect merged into GPU Manager)."""
+    from PyQt6.QtCore import QProcess
+    from gpu_governor import safepoints_page
+    from gpu_governor.sweep import ROOT
+    started = []
+    monkeypatch.setattr(QProcess, "startDetached", lambda program, args, cwd: started.append((args, cwd)) or (True, 1))
+    page = safepoints_page.SafePointsPage(str(backend.config_path), backend.default_safe_points)
+    assert page.sweep_pill.value.text() == "GPU sweep" and "apps/oc" not in page.sweep_hint.text()
+    page.sweep_pill.clicked.emit()
+    assert started == [(["-m", "gpu_governor", "--sweep"], str(ROOT))]

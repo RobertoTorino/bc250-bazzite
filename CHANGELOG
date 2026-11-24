@@ -1,3 +1,30 @@
+Changelog: 24-11-2026 20:47:37
+
+Added. The Portal Tour has a voice that reads every caption out, from Nexus TTS's speech engine in its default voice
+(owner, 24-11-2026). The music under the voice plays at 12 %, and the voice at twice the engine's volume. The voice
+says async as A-sync and BC-250 as BC twofifty (tools/tour_frames.py: SPOKEN). A caption stays until it is spoken, or
+read without the voice, before the view changes. The Utilities caption was gone before it could be read. The tour
+opens as the portal does: the title card in silence, then the intro with its sound and the welcome. The music starts
+after the welcome. It ends with "Thank you and have fun using the Portal." over the end card. tools/record-tour.sh
+--no-voice records it without the voice. The voice needs the speech engine, which Nexus TTS sets up.
+
+Fixed. The Portal Tour showed a tile's tip in Qt's plain tooltip, square and with the text against its edge. It now
+shows core's rounded tooltip, as the portal does. The wiki's Portal Tour, Portal and Development pages describe the
+tour with the voice. The size of the wiki's copy is corrected to about 12 MB, and the size of a 4K tour is left out.
+
+Changelog: 24-11-2026 16:29:51
+
+Breaking. BC-250 GPU OC Bisect (apps/oc) is removed, with its wiki chapter, installer test, icons and its line in the
+README, the wiki's lists, CI's shellcheck, requirements-dev.txt and the bug report form (owner, 24-11-2026). It is
+part of BC-250 GPU Manager now, as the GPU sweep. CI's shellcheck checks apps/gpu/bc250-gpu-sweep.sh instead. The
+wiki's portal picture is new.
+
+Changelog: 24-11-2026 15:46:27
+
+Fixed. The README, CONTRIBUTING.md, ALL-TESTS.md, the wiki, the tools' tests and the dashboard's installer test name
+the dashboard Nexus Dashboard for BC-250, its new name. The installer test also checks its new ID and the removal of
+the old nexus-dashboard entry.
+
 Changelog: 24-11-2026 13:06:54
 
 Added. The development machine in the Development chapter lists mawk, for Board Test's awk test. Install it with

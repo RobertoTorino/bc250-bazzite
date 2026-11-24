@@ -4,9 +4,10 @@
 
 # Portal Tour
 
-The Portal Tour is a two-minute video of the portal. The portal in the video uses its example wallpaper. The video shows:
+The Portal Tour is a four-minute video of the portal. A voice reads every caption out. The portal in the video uses
+its example wallpaper. The video shows:
 
-- the intro
+- the intro, with its sound and the welcome
 - the header and its symbols
 - the notice of updates
 - the tiles with their icons
@@ -24,7 +25,8 @@ portal's name opens this wiki.
   <source src="../videos/portal-tour.mp4" type="video/mp4">
   Your browser cannot play this video. <a href="../videos/portal-tour.mp4">Download it</a> instead.
 </video>
-<figcaption>The portal (2 minutes, with music)</figcaption>
+<figcaption>The portal (4 minutes, with a voice and music)</figcaption>
 </figure>
 
-[Portal](portal.md) describes everything in the video. The music was made with generative AI tools.
+[Portal](portal.md) describes everything in the video. The voice comes from Nexus TTS. The music was made with
+generative AI tools.

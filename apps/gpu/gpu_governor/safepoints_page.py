@@ -15,13 +15,24 @@ from PyQt6.QtWidgets import (
 from . import fmt
 from .backends.base import PerformanceState, SafePoint
 from .stress import NO_TOOL, available_tools
+from .sweep.widgets import Pill
 from .widgets import ACCENT, BLUE, ORANGE, RED, accent_button, hint_label, page_header
 
-BISECT_URL = "https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/oc"
 
 
-# Hard rails, the same as bc250-gpu-oc-bisect: community reports of hard-locks above ~2000 MHz and one bricked
-# board from overvolting. The governor itself only insists on unique frequencies and non-decreasing voltage.
+def open_sweep() -> bool:
+    """Starts the GPU sweep window (python -m gpu_governor --sweep) as a process of its own, so a freeze or a restart
+    during a sweep leaves GPU Manager alone. A second start brings the open window to the front."""
+    import sys
+    from PyQt6.QtCore import QProcess
+    from .sweep import ROOT
+    ok, _pid = QProcess.startDetached(sys.executable, ["-m", "gpu_governor", "--sweep"], str(ROOT))
+    return ok
+
+
+# Hard rails, the same as the GPU sweep's (bc250-gpu-sweep.sh): community reports of hard-locks above ~2000 MHz
+# and one bricked board from overvolting. The governor itself only insists on unique frequencies and non-decreasing
+# voltage.
 HARD_MAX_FREQ = 2500
 HARD_MIN_VOLT = 700
 HARD_MAX_VOLT = 1100
@@ -263,11 +274,18 @@ class SafePointsPage(QWidget):
 
         self.runtime = hint_label("")
         layout.addWidget(self.runtime)
-        layout.addWidget(hint_label(fmt(
-            "To find how far your own board can go, use %1. It finds a higher top frequency and lower voltages. "
-            "It tests one step at a time under a verified load and "
-            "can install the result. Edit the points by hand only if you know what the silicon tolerates.",
-            f'<a href="{BISECT_URL}">bc250-gpu-oc-bisect</a>')))
+        # The GPU sweep's pill with what it does beside it (owner, 24-11-2026: a pill, as the step windows have).
+        sweep_row = QHBoxLayout()
+        sweep_row.setSpacing(12)
+        self.sweep_pill = Pill("GPU sweep", "Find your board's limit", "Opens the GPU sweep window. It finds how far "
+                               "your own board can go.", ACCENT)
+        self.sweep_pill.clicked.connect(open_sweep)
+        sweep_row.addWidget(self.sweep_pill)
+        self.sweep_hint = hint_label(
+            "Finds a higher top frequency and lower voltages, one step at a time under a verified load, and can "
+            "install the result. Edit the points by hand only if you know what the silicon tolerates.")
+        sweep_row.addWidget(self.sweep_hint, 1)
+        layout.addLayout(sweep_row)
 
     # ------------------------------------------------------------------ model
     def load(self, points: list[SafePoint]) -> None:
@@ -393,7 +411,7 @@ class SafePointsPage(QWidget):
             return ""
         return f'<div style="color:{ORANGE};">⚠ ' + fmt(
             "This change %1: an unstable point can freeze the board under load. Verify it with "
-            "bc250-gpu-oc-bisect first.", " and ".join(notes)) + '</div>'
+            "the GPU sweep first.", " and ".join(notes)) + '</div>'
 
     def show_runtime(self, state: PerformanceState) -> None:
         self._bus_ok = state.available

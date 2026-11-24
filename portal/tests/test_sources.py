@@ -236,5 +236,5 @@ def test_the_record_of_a_checkout_install(tmp_path):
     assert installed_from("local") == "from the suite checkout"
     assert installed_from("local-v1.2.3") == "from the suite checkout (v1.2.3)"
     path = tmp_path / "installed.json"                                      # a renamed app keeps it
-    path.write_text('{"gpu-oc-bisect": "local-v0.1.9"}')
-    assert Records(path).get("oc") == "local-v0.1.9"
+    path.write_text('{"cu-bisect": "local-v0.1.9"}')
+    assert Records(path).get("compute") == "local-v0.1.9"

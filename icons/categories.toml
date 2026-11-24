@@ -40,11 +40,6 @@ category = "sustainable"
 icons = ["apps/cores/images/bc250-cores-bisect"]
 tile = "portal/images/apps/cores.webp"
 
-[oc]
-category = "sustainable"
-icons = ["apps/oc/images/bc250-gpu-oc-bisect"]
-tile = "portal/images/apps/oc.webp"
-
 [acpi]
 category = "sustainable"
 icons = ["apps/acpi/images/bc250-persistent-acpi"]

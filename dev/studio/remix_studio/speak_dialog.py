@@ -31,8 +31,8 @@ TEXT_KEY = "speak/text"                 # the settings
 VOICE_KEY = "speak/voice"
 SPEED_KEY = "speak/speed"
 NO_TEXT_APP = "Nexus TTS is not in this checkout, so the app cannot speak a text here. Open a sound file instead."
-NOT_SET_UP = ("The speech engine is not on this machine yet. Open Nexus TTS from Nexus Dashboard and set it up "
-              "there. Then come back.")
+NOT_SET_UP = ("The speech engine is not on this machine yet. Open Nexus TTS from Nexus Dashboard for BC-250 and set it "
+              "up there. Then come back.")
 NO_TEXT = "Type a text first."
 
 

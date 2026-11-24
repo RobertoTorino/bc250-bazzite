@@ -1,3 +1,12 @@
+Changelog: 24-11-2026 16:29:51
+
+Fixed. The BC-250 catalog's tools that GPU OC Bisect needed belong to GPU Manager now, for its GPU sweep:
+memtest_vulkan, vkpeak and sudo. Its other entries and the app itself are gone, as GPU Manager lists those already.
+
+Changelog: 24-11-2026 15:46:27
+
+Fixed. The texts name the dashboard Nexus Dashboard for BC-250, its new name.
+
 Changelog: 24-11-2026 12:21:30
 
 Fixed. BC-250 CU Tools is now called BC-250 CU Unlock in the bc250-bazzite catalog. The app key compute stays.

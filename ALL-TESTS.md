@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3532 test functions (4104 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3543 test functions (4107 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -15,17 +15,16 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/bios](#appsbios) | 6 | 51 | 0.8 s |
 | [apps/btpair](#appsbtpair) | 3 | 34 | 0.5 s |
 | [apps/cec](#appscec) | 8 | 98 | 1.6 s |
-| [apps/check](#appscheck) | 4 | 34 | 2.5 s |
+| [apps/check](#appscheck) | 4 | 35 | 2.5 s |
 | [apps/clb](#appsclb) | 12 | 88 | 2.9 s |
 | [apps/compute](#appscompute) | 8 | 76 | 0.4 s |
-| [apps/consoles](#appsconsoles) | 25 | 237 | 10.1 s |
+| [apps/consoles](#appsconsoles) | 25 | 238 | 10.1 s |
 | [apps/controller](#appscontroller) | 13 | 164 | 6.3 s |
 | [apps/cores](#appscores) | 7 | 55 | 0.3 s |
 | [apps/datstation](#appsdatstation) | 7 | 39 | 2.5 s |
 | [apps/fan](#appsfan) | 2 | 38 | 0.5 s |
-| [apps/gpu](#appsgpu) | 11 | 56 | 5.8 s |
+| [apps/gpu](#appsgpu) | 14 | 72 | 5.8 s |
 | [apps/mesh](#appsmesh) | 5 | 48 | 3.1 s |
-| [apps/oc](#appsoc) | 2 | 14 | 0.3 s |
 | [apps/overlay](#appsoverlay) | 1 | 12 | 0.3 s |
 | [apps/password](#appspassword) | 2 | 22 | 0.6 s |
 | [apps/pcsx2](#appspcsx2) | 14 | 150 | 21.5 s |
@@ -45,15 +44,15 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
-| [dev/garbage](#devgarbage) | 1 | 7 |  |
+| [dev/garbage](#devgarbage) | 1 | 8 |  |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
 | [dev/nrt](#devnrt) | 4 | 135 | 24.8 s |
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [dev/studio](#devstudio) | 6 | 65 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
-| [portal](#portal) | 17 | 217 | 29.0 s |
-| [tools](#tools) | 43 | 250 | 11.1 s |
-| **All** | | **3532** | **182 s** |
+| [portal](#portal) | 17 | 220 | 29.0 s |
+| [tools](#tools) | 43 | 253 | 11.1 s |
+| **All** | | **3543** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -74,7 +73,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `consoles.sh` | Exercise apps/consoles/install.sh. |
 | `controller.sh` | Exercise apps/controller/install.sh. |
 | `cores.sh` | Exercise apps/cores/install.sh. |
-| `dash.sh` | Exercise dev/dash/install.sh, Nexus Dashboard's installer. |
+| `dash.sh` | Exercise dev/dash/install.sh, Nexus Dashboard for BC-250's installer. |
 | `datstation.sh` | Exercise apps/datstation/install.sh. |
 | `demo.sh` | Exercise dev/demo/install.sh, Nexus Demo Recorder's installer. |
 | `deps.sh` | Exercise dev/deps/install.sh, Nexus Deps' installer. |
@@ -85,7 +84,6 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `mesh.sh` | Exercise apps/mesh/install.sh. |
 | `not-installed.sh` | Every app's installer and the portal's, with --uninstall and with --uninstall --purge, on a computer where nothing of them is installed. |
 | `nrt.sh` | Exercise dev/nrt/install.sh (and tools/nrt.sh, which forwards to it). |
-| `oc.sh` | Exercise apps/oc/install.sh. |
 | `overlay.sh` | Exercise apps/overlay/install.sh. |
 | `password.sh` | Exercise apps/password/install.sh. |
 | `pcsx2.sh` | Exercise apps/pcsx2/install.sh. |
@@ -380,7 +378,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/check
 
-34 tests in 4 files, 2.5 s in a local run.
+35 tests in 4 files, 2.5 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -388,6 +386,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_awk.py` | `test_kernel_faults_match_in_any_case_and_benign_blocks_drop` |  |  | Kernel faults match in any case and benign blocks drop. |
 | `test_awk.py` | `test_an_oops_line_counts_on_its_own` |  |  | Oops as a word, also without a Call Trace beside it (24-11-2026: \b, passed with awk -v, became a backspace and the word never matched). |
 | `test_awk.py` | `test_mangohud_lows_need_no_asort` |  |  | Mangohud lows need no asort. |
+| `test_awk.py` | `test_the_hint_names_the_program_whatever_the_month_is_called` |  |  | journalctl writes the month in the user's language (24-11-2026: "nov 24" in Dutch matched no hint). |
 | `test_log_advice.py` | `test_table_is_pairs_of_a_pattern_and_a_sentence` |  |  | Table is pairs of a pattern and a sentence. |
 | `test_log_advice.py` | `test_nothing_for_no_lines` |  |  | Nothing for no lines. |
 | `test_log_advice.py` | `test_real_fault_is_explained_and_counted` |  | 0.1 s | Real fault is explained and counted. |
@@ -599,7 +598,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/consoles
 
-237 tests in 25 files, 10.1 s in a local run.
+238 tests in 25 files, 10.1 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -661,6 +660,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_gamepad.py` | `test_real_sdl_opens_and_closes` |  |  | Real sdl opens and closes. |
 | `test_gamepad.py` | `test_player_experiment_keeps_the_second_controller_apart` |  |  | Player experiment keeps the second controller apart. |
 | `test_genuine.py` | `test_the_owners_dualshock4_over_bluetooth` |  |  | The owners dualshock4 over bluetooth. |
+| `test_genuine.py` | `test_the_build_date_is_read_in_english` |  |  | The month names come from a fixed English table, not from the window's locale (24-11-2026). |
 | `test_genuine.py` | `test_over_usb_the_calibration_comes_in_the_other_order` |  |  | Over usb the calibration comes in the other order. |
 | `test_genuine.py` | `test_what_a_copy_gets_wrong` | 8 |  | What a copy gets wrong. |
 | `test_genuine.py` | `test_a_dualsense` |  |  | A dualsense. |
@@ -1167,7 +1167,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/gpu
 
-56 tests in 11 files, 5.8 s in a local run.
+72 tests in 14 files, 5.8 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -1176,6 +1176,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_alerts.py` | `test_service_alert_only_after_seen_running` |  |  | Service alert only after seen running. |
 | `test_alerts.py` | `test_disabled_alerts_are_silent` |  |  | Disabled alerts are silent. |
 | `test_alerts.py` | `test_no_temperature_sensor` |  |  | No temperature sensor. |
+| `test_backups.py` | `test_both_kinds_of_backup_are_listed` |  |  | Both kinds of backup are listed. |
+| `test_backups.py` | `test_without_the_old_backup_only_the_stamped_ones` |  |  | Without the old backup only the stamped ones. |
 | `test_config_toml.py` | `test_read_shipped_values` |  |  | Read shipped values. |
 | `test_config_toml.py` | `test_round_trip_every_field` |  |  | Round trip every field. |
 | `test_config_toml.py` | `test_missing_sections_are_appended_after_safe_points` |  |  | Missing sections are appended after safe points. |
@@ -1223,8 +1225,22 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_safe_points.py` | `test_parse_and_render` |  |  | Parse and render. |
 | `test_safe_points.py` | `test_interpolate` |  |  | Interpolate. |
 | `test_safe_points.py` | `test_add_to_table_sorted_and_replacing` |  |  | Add to table sorted and replacing. |
+| `test_safe_points.py` | `test_the_pill_opens_the_gpu_sweep_window` |  |  | The GPU sweep pill at the bottom of the page starts python -m gpu_governor --sweep as a process of its own (owner, 24-11-2026: BC-250 GPU OC Bisect merged into GPU Manager). |
 | `test_stress.py` | `test_available_tools_in_preference_order` |  |  | Available tools in preference order. |
 | `test_stress.py` | `test_runner_stop_is_silent_and_early_exit_is_reported` |  | 0.5 s | Runner stop is silent and early exit is reported. |
+| `test_sweep_script.py` | `test_the_scan_reads_and_writes_nothing` |  |  | The scan reads and writes nothing. |
+| `test_sweep_script.py` | `test_a_whole_sweep_and_install` |  |  | A whole sweep and install. |
+| `test_sweep_script.py` | `test_a_crash_counts_after_the_restart` |  |  | A crash counts after the restart. |
+| `test_sweep_script.py` | `test_a_changed_config_blocks_until_a_reset` |  |  | A changed config blocks until a reset. |
+| `test_sweep_window.py` | `test_it_opens_at_the_scan_with_the_header` |  |  | It opens at the scan with the header. |
+| `test_sweep_window.py` | `test_the_scan_offers_start_and_names_what_blocks_it` |  |  | The scan offers start and names what blocks it. |
+| `test_sweep_window.py` | `test_the_control_passes_and_the_clock_ladder_is_next` |  |  | The control passes and the clock ladder is next. |
+| `test_sweep_window.py` | `test_a_failed_control_stops_the_sweep` |  |  | A failed control stops the sweep. |
+| `test_sweep_window.py` | `test_the_ladder_table_shows_every_round` |  |  | The ladder table shows every round. |
+| `test_sweep_window.py` | `test_install_writes_the_margin_step_and_drops_higher_points` |  |  | Install writes the margin step and drops higher points. |
+| `test_sweep_window.py` | `test_installed_and_kept_are_finished` |  |  | Installed and kept are finished. |
+| `test_sweep_window.py` | `test_one_boot_each_restarts_and_goes_on_after_the_login` |  |  | One boot each restarts and goes on after the login. |
+| `test_sweep_window.py` | `test_a_crash_is_asked_in_the_window` |  |  | A crash is asked in the window. |
 | `test_widgets.py` | `test_tooltip_filter_is_removed_when_the_app_quits` |  |  | Tooltip filter is removed when the app quits. |
 | `test_widgets.py` | `test_tooltip_border_is_the_outline` |  |  | Framed in the theme's outline, silver, not the accent (owner, 07-11-2026). |
 
@@ -1282,27 +1298,6 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_updates.py` | `test_drafts_pre_releases_and_other_tags_are_skipped` |  |  | Drafts pre releases and other tags are skipped. |
 | `test_updates.py` | `test_errors_never_raise` |  |  | Errors never raise. |
 | `test_updates.py` | `test_is_newer_than_the_pinned_release` |  |  | Is newer than the pinned release. |
-
-## apps/oc
-
-14 tests in 2 files, 0.3 s in a local run.
-
-| File | Test | Cases | Time | What it checks |
-|---|---|---|---|---|
-| `test_main_window.py` | `test_header` |  | 0.1 s | Header. |
-| `test_main_window.py` | `test_the_status_boxes_sum_up_the_sweep` |  |  | The suite's header (owner, 26-10-2026): four boxes under the title follow the options. |
-| `test_main_window.py` | `test_start_with_the_defaults` |  |  | Start with the defaults. |
-| `test_main_window.py` | `test_undervolt_only` |  |  | Undervolt only. |
-| `test_main_window.py` | `test_no_sweep_no_start` |  |  | No sweep no start. |
-| `test_main_window.py` | `test_confirmed_actions` | 2 |  | Confirmed actions. |
-| `test_main_window.py` | `test_the_status_boxes_are_as_wide_as_their_text` |  |  | A narrow window cut the text off (owner, 26-10-2026): the boxes are as wide as the widest of them, never narrower than their text, and follow a wider value. |
-| `test_main_window.py` | `test_help_and_about_are_pills_beside_the_boxes` |  |  | Help and About are pills in the row of boxes (owner, 26-10-2026), as wide as them; a click opens the dialog. |
-| `test_options.py` | `test_defaults_pass_only_time_and_rounds` |  |  | Defaults pass only time and rounds. |
-| `test_options.py` | `test_one_ladder_and_changed_values` |  |  | One ladder and changed values. |
-| `test_options.py` | `test_values_of_the_other_ladder_are_left_out` |  |  | Values of the other ladder are left out. |
-| `test_options.py` | `test_command_is_quoted_for_bash` |  |  | Command is quoted for bash. |
-| `test_options.py` | `test_validation` | 8 |  | Validation. |
-| `test_options.py` | `test_the_hard_rails` |  |  | The hard rails. |
 
 ## apps/overlay
 
@@ -3132,11 +3127,12 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/garbage
 
-7 tests in 1 files.
+8 tests in 1 files.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
 | `test_garbage.py` | `test_it_finds_the_full_places_largest_first` |  |  | It finds the full places largest first. |
+| `test_garbage.py` | `test_the_trash_shows_with_any_file_in_it` |  |  | The Trash shows whatever it holds, a file of a few KB too (owner, 24-11-2026); an empty one does not. |
 | `test_garbage.py` | `test_the_crash_dumps_take_root` |  |  | The crash dumps take root. |
 | `test_garbage.py` | `test_homebrew_only_where_it_is_installed` |  |  | Homebrew only where it is installed. |
 | `test_garbage.py` | `test_homebrews_own_cache_is_not_garbage` |  |  | Homebrews own cache is not garbage. |
@@ -3462,7 +3458,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## portal
 
-217 tests in 17 files, 29.0 s in a local run.
+220 tests in 17 files, 29.0 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3513,6 +3509,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_bigpicture.py` | `test_the_legend_names_the_keys` |  | 0.2 s | The legend names the keys. |
 | `test_bigpicture.py` | `test_wallpaper_and_veil_reach_the_view` |  | 0.4 s | Wallpaper and veil reach the view. |
 | `test_bigpicture.py` | `test_the_view_scales_down_for_a_handheld_screen` | 3 | 0.7 s | The view scales down for a handheld screen. |
+| `test_bigpicture.py` | `test_the_weather_symbol_fits_its_place_at_every_screen_scale` |  |  | The symbol is as large as a line of text at every scale of the screen (owner, 24-11-2026: at 150 % on a 3840 px wide screen it was drawn 1.5 times too large and cut off). |
 | `test_bigpicture.py` | `test_each_category_keeps_its_own_columns` |  | 0.2 s | Each category keeps its own columns. |
 | `test_bigpicture.py` | `test_r3_toggles_the_on_screen_keyboard_in_a_dialog_too` |  | 0.2 s | R3 (owner, 05-11-2026): Bazzite's on-screen keyboard, also while a question or the file dialog is open, where text is typed; when the desktop has none, the window says what to do. |
 | `test_bigpicture.py` | `test_every_controller_action_plays_the_short_sound` |  | 0.2 s | blob.wav on every controller action (owner, 05-11-2026), not on the button that skips the intro, and not with the Sound setting off. |
@@ -3559,6 +3556,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_portal_update.py` | `test_check_reads_the_tarballs_sha256_and_the_running_build` |  |  | The newest release's SHA256SUMS tells a new build of this version (owner, 03-11-2026); build.sha256 beside the program is what this portal came from. |
 | `test_shortcuts.py` | `test_steam_and_the_file_manager` |  |  | Steam and the file manager. |
 | `test_shortcuts.py` | `test_youtube_needs_brave_browsers_flatpak` |  |  | Youtube needs brave browsers flatpak. |
+| `test_shortcuts.py` | `test_the_weather_opens_its_forecast_in_brave` |  |  | A click on the weather (owner, 24-11-2026): the place's forecast at wttr.in, a page without ads, by its coordinates, in a window of Brave Browser. |
 | `test_shortcuts.py` | `test_github_opens_in_the_desktops_own_browser` |  |  | github.com with xdg-open; the browser's window is the one KWin brings to the front, when it can be asked. |
 | `test_shortcuts.py` | `test_the_settings_of_the_desktop_that_is_there` | 4 |  | KDE Plasma's System Settings, else the module alone, else GNOME's Settings (not only the owner's desktop). |
 | `test_sources.py` | `test_expected_sha256` |  |  | Expected sha256. |
@@ -3680,13 +3678,14 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_the_clock_pill_sets_the_hours_the_seconds_and_the_zone` |  | 0.2 s | The clock pill sets the hours the seconds and the zone. |
 | `test_window.py` | `test_the_status_is_three_lines` |  |  | A line each (owner, 12-11-2026), whatever the room: the loads, the date and time, and the weather with a place chosen (its symbol, the place, the temperature and the sky); two lines without a place. |
 | `test_window.py` | `test_the_weather_shows_under_the_clock_once_a_place_is_chosen` |  | 0.2 s | No place: no weather, nothing asked. |
+| `test_window.py` | `test_a_click_on_the_weather_opens_its_forecast` |  |  | The place's forecast at wttr.in in Brave Browser (owner, 24-11-2026); without Brave the portal says so. |
 | `test_window.py` | `test_a_long_place_name_ends_in_an_ellipsis_on_its_pill` |  | 0.3 s | A long place name ends in an ellipsis on its pill. |
 | `test_window.py` | `test_the_touchpad_moves_the_pointer_only_while_the_portal_has_the_focus` |  | 0.2 s | The touchpad moves the pointer only while the portal has the focus. |
 | `test_window.py` | `test_the_touchpad_pill_steps_through_the_speeds` |  | 0.2 s | The Touchpad pill (owner, 05-11-2026): a click for the next speed, at once and kept, round to the slowest. |
 
 ## tools
 
-250 tests in 43 files, 11.1 s in a local run.
+253 tests in 43 files, 11.1 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3925,6 +3924,9 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_tour_frames.py` | `test_the_home_is_a_temp_folder_with_one_screen_of_the_videos_size` |  |  | The home is a temp folder with one screen of the videos size. |
 | `test_tour_frames.py` | `test_the_window_fills_the_video` |  |  | The window fills the video. |
 | `test_tour_frames.py` | `test_the_music_loops_under_the_picture_and_fades_out` |  |  | The music loops under the picture and fades out. |
+| `test_tour_frames.py` | `test_the_sounds_the_voice_and_the_music_each_start_at_their_time` |  |  | The Portal Tour's sound: each cue at its second and volume, the music from the end of the welcome, quiet under the voice and faded out at the end, and a limiter over the sum. |
+| `test_tour_frames.py` | `test_without_sound_the_video_is_only_copied` |  |  | Without sound the video is only copied. |
+| `test_tour_frames.py` | `test_the_voice_says_a_few_words_as_written_for_it` |  |  | The voice says a few words as written for it. |
 | `test_tour_frames.py` | `test_a_frame_goes_to_ffmpeg_without_the_rows_padding` |  |  | A frame goes to ffmpeg without the rows padding. |
 | `test_tour_frames.py` | `test_a_crashed_ffmpeg_ends_the_recording_with_a_message` |  |  | A crashed ffmpeg ends the recording with a message. |
 | `test_wiki_apps.py` | `test_every_app_has_a_chapter_and_no_chapter_is_left_over` |  |  | Every app has a chapter and no chapter is left over. |

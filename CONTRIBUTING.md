@@ -21,7 +21,7 @@ name its source and license in the pull request. Say so when you made something 
 
 Every app in a category has the same icon. A new or changed icon goes in `icons/<category>/`. The file
 `icons/categories.toml` names each app's category. Then `python3 tools/sync_icons.py` writes the copies that the apps,
-the portal and the wiki use. **Convert icons** in Nexus Dashboard does the same from a window. The wiki's
+the portal and the wiki use. **Convert icons** in Nexus Dashboard for BC-250 does the same from a window. The wiki's
 [Architecture and consistency](docs/development/architecture.md#icons) page describes it. It also says how to build a
 new app.
 

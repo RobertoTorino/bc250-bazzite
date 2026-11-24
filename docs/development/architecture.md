@@ -314,7 +314,7 @@ python3 tools/sync_icons.py --category sustainable --from ~/Pictures/leaf.png   
 python3 tools/sync_icons.py --category sustainable --from ~/Pictures/leaf-small.png --size 128
 ```
 
-[Nexus Dashboard](dashboard.md#convert-icons) does the same from a window.
+[Nexus Dashboard for BC-250](dashboard.md#convert-icons) does the same from a window.
 Run `python3 tools/sync_icons.py --check` to list what is not converted or copied yet. `tools/tests/test_icons.py` fails
 when a copy is out of date, or when an app icon has no category.
 

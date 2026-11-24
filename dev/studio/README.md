@@ -12,7 +12,7 @@ the app from a preset, a chord and three sliders. The mix sets how loud each tra
 in, trails and fades.
 
 Remix Studio is a development app. It runs from the checkout it lives in and has no releases of its own. Start it
-from [Nexus Dashboard](../dash), or with these commands:
+from [Nexus Dashboard for BC-250](../dash), or with these commands:
 
 | | Linux |
 |---|---|

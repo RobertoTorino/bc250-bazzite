@@ -15,8 +15,8 @@ each with its size and the command that empties it:
 - caches that fill up
 
 An hourly notification tells you when there is 1 GB or more. Nexus Garbage Remover is a development app. It runs from
-the checkout it lives in and has no releases of its own. Start it from [Nexus Dashboard](../dash), or with these
-commands:
+the checkout it lives in and has no releases of its own. Start it from [Nexus Dashboard for BC-250](../dash), or with
+these commands:
 
 | | Linux |
 |---|---|

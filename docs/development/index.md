@@ -10,7 +10,7 @@ it. It also says how the wiki's pictures and tours are made, and how the version
 You find the rest here:
 
 - [Architecture and consistency](architecture.md) says how every app is built, and how to add one.
-- [Dashboard](dashboard.md) describes the development apps, from Nexus Dashboard to Nexus Deps.
+- [Dashboard](dashboard.md) describes the development apps, from Nexus Dashboard for BC-250 to Nexus Deps.
 - [Releases](releases.md) says how a release is made and published. [Portal](../portal.md#appstoml-and-releases)
   gives the steps.
 - The [GitHub settings](github-settings.md) page covers the repository's settings on GitHub and Dependabot's pull requests.
@@ -227,6 +227,7 @@ Each one serves one tool or one kind of work. Without it, that tool does not run
 | GNU patch (`patch`) | `tools/check_upstream.py` tries the ACE Queues patch on Mesa's newest release, and its test skips without it | `brew install gpatch` |
 | mawk | Board Test's `tests/test_awk.py`, which runs each awk program under gawk and mawk, the awk of Debian and Ubuntu | `brew install mawk` |
 | ffmpeg | the video tours, `tools/record-tour.sh` and `tools/record-app-tour.sh` | comes with Bazzite |
+| Nexus TTS's speech engine | the voice of the Portal Tour, `tools/record-tour.sh` | **Set up the speech engine** in [Nexus TTS](dashboard.md#nexus-tts). It needs uv (`brew install uv`) or a Python from 3.10 to 3.13 |
 | Rust, maturin, nasm and the libva headers | BC-250 PS Remote Play's native core, for `cargo test` or `maturin build` on the machine itself | rustup from [rustup.rs](https://rustup.rs), `brew install nasm`, and maturin with pip in the venv |
 | OBS Studio, with its WebSocket server on | Nexus Demo Recorder (`dev/demo/`) | the Flatpak `com.obsproject.Studio` |
 | notify-send | the hourly notifications of Nexus Deps and Nexus Garbage Remover | comes with Bazzite |
@@ -345,15 +346,26 @@ python tools/portal_screenshot.py          # from the venv; --out FILE to save i
 ```
 
 The video tours are made the same way, frame by frame from the real windows, offscreen. You make them from a
-terminal as below, or from [Nexus Dashboard](dashboard.md#video-tours).
+terminal as below, or from [Nexus Dashboard for BC-250](dashboard.md#video-tours).
 
-`tools/record-tour.sh` records the portal's tour, about two minutes long. Music plays under it and fades out over
-the last two seconds. The music is `tools/sounds/the_quiet_engine_remix.ogg`, made with generative AI tools.
-`--no-music` leaves it out.
+`tools/record-tour.sh` records the portal's tour, about four minutes long. It opens as the portal does:
+
+1. The title card shows in silence.
+2. The intro plays with its own sound.
+3. The welcome plays after the intro.
+4. The music starts when the welcome has ended and fades out over the last two seconds.
+
+The music is `tools/sounds/the_quiet_engine_remix.ogg`, made with generative AI tools. `--no-music` leaves it out.
+
+A voice reads every caption out. Nexus TTS's speech engine makes it, in its default voice. Set the engine up once in
+[Nexus TTS](dashboard.md#nexus-tts) with **Set up the speech engine**. The music plays quietly under the voice. A
+caption stays on screen until the voice has spoken it. The tour spells a few words another way for the voice, so it
+says them right. The list is `SPOKEN` in `tools/tour_frames.py`. With `--no-voice` the tour has no voice. The music
+then plays at full volume. Without the voice, a caption stays until there was time to read it.
 
 `tools/record-tour.sh --wiki` also writes these files:
 
-- the copy on the [Portal Tour](../portal-tour.md) page, `docs/videos/portal-tour.mp4`, at 1280 × 720 and about 6 MB
+- the copy on the [Portal Tour](../portal-tour.md) page, `docs/videos/portal-tour.mp4`, at 1280 × 720 and about 12 MB
 - its poster
 - a fingerprint of the portal it was recorded from, `tools/portal-tour.stamp`
 
@@ -368,8 +380,7 @@ for a change that does not show in it. A change the wiki describes goes into its
 
 The video itself goes to `~/Videos`, outside the repository, at 1920 × 1080. For YouTube, record it at 4K.
 `--size 2160p` renders the same tour at 3840 × 2160 into `~/Videos/bc250-portal-tour-v<portal version>-2160p.mp4`.
-It draws the window at 240 % instead of 120 %, so the text stays crisp. That takes about three minutes, and the file
-comes to around 35 MB. YouTube shows a 4K upload far sharper than a 1080p one, since it gives it a better codec and
+It draws the window at 240 % instead of 120 %, so the text stays crisp. That takes about four times as long. YouTube shows a 4K upload far sharper than a 1080p one, since it gives it a better codec and
 more bits. `--size 1440p` is the step between. The wiki's copy is the same whatever the size.
 
 `tools/record-app-tour.sh` records one app's tour, about 40 seconds long. It uses the same script for every app.
@@ -393,7 +404,7 @@ The controller beside the board on the home page changes with every portal relea
 
 ## Where things are installed
 
-- **Root-owned `/opt`:** Board Test (`check`), cores, oc, acpi, mesh and ace. Their scripts run as root, and a
+- **Root-owned `/opt`:** Board Test (`check`), cores, acpi, mesh and ace. Their scripts run as root, and a
   normal user cannot change code that sudo runs.
 - **Your home folder:** the portal, the shared venv, and each app's settings, results and launchers. The portal is
   in `~/.local/share/bc250-bazzite-suite/portal`. What it remembers is beside it, in
@@ -428,8 +439,8 @@ workflow (`.github/workflows/upstream.yml`) runs it every Monday. You can also s
 What moved goes into the open **Upstream review** issue. When none is open, the workflow opens a new one. Otherwise,
 it updates the list in the open issue and adds a comment. That notifies everyone who watches the repository. The
 workflow never closes the issue. Close it once every item on it is handled on `main`. If you close it sooner, next Monday's
-run opens a new issue for the items left. **Close issues** in [Nexus Dashboard](dashboard.md#close-issues) closes it. A command
-with a gh login does it too:
+run opens a new issue for the items left. **Close issues** in [Nexus Dashboard for BC-250](dashboard.md#close-issues)
+closes it. A command with a gh login does it too:
 
 ```bash
 gh issue list                                                  # the open issues, with their numbers
