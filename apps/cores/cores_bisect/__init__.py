@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""BC-250 CPU Tools, one window for the core bisect and the core unlock (owner, 20-11-2026: Cores Bisect and Cores
-Unlock are one app, as CU Tools). The bisect part only assembles the command line of bc250-cores-bisect.sh and starts it
-in a terminal, exactly as if typed by hand; the unlock part reads the bisect's results and runs bc250-cores-unlock.sh."""
+"""BC-250 Core Unlock (owner, 24-11-2026: the name, before BC-250 CPU Tools), one window that leads through the core
+test and the core unlock in five steps, as CU Unlock does. It runs bc250-cores-bisect.sh in the window itself, and
+bc250-cores-unlock.sh for Install and Uninstall."""
 
 from pathlib import Path
 
-APP_NAME = "BC-250 CPU Tools"
+APP_NAME = "BC-250 Core Unlock"
 APP_ID = "bc250-cores-bisect-gui"
 ROOT = Path(__file__).resolve().parent.parent
 LOGO_PATH = ROOT / "images" / "bc250-cores-bisect.webp"

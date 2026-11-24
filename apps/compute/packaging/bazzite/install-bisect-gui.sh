@@ -119,7 +119,7 @@ command -v kbuildsycoca5 >/dev/null 2>&1 && kbuildsycoca5 --noincremental >/dev/
 
 cat <<EOF
 
-Done. BC-250 CU Tools is installed for your user account only:
+Done. BC-250 CU Unlock is installed for your user account only:
   - app + venv: $APP_DIR
   - launcher:   $LAUNCHER
   - menu entry: $DESKTOP_FILE

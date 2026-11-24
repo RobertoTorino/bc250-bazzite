@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Removes the separate unlock window of before (BC-250 CU Unlock, bc250-unlock-cu-gui) for the current user:
-# CU Tools' one window has the unlock now, and install-bisect-gui.sh runs this on an update. Does not touch
-# /etc/bc250-cu-bisect or the systemd unit - use Uninstall in CU Tools, or "sudo ./bc250-cu-unlock.sh
+# CU Unlock's one window has the unlock now, and install-bisect-gui.sh runs this on an update. Does not touch
+# /etc/bc250-cu-bisect or the systemd unit - use Uninstall in CU Unlock, or "sudo ./bc250-cu-unlock.sh
 # --uninstall", if you also want the unlock itself removed.
 set -euo pipefail
 

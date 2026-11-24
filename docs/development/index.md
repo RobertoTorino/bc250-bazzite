@@ -225,6 +225,7 @@ Each one serves one tool or one kind of work. Without it, that tool does not run
 | GitHub CLI (`gh`) | runs and releases from a terminal, and Nexus Release Tool's sign-in | `brew install gh` |
 | actionlint | a changed workflow in `.github/workflows/`, checked before the push with `actionlint` at the root | `brew install actionlint` |
 | GNU patch (`patch`) | `tools/check_upstream.py` tries the ACE Queues patch on Mesa's newest release, and its test skips without it | `brew install gpatch` |
+| mawk | Board Test's `tests/test_awk.py`, which runs each awk program under gawk and mawk, the awk of Debian and Ubuntu | `brew install mawk` |
 | ffmpeg | the video tours, `tools/record-tour.sh` and `tools/record-app-tour.sh` | comes with Bazzite |
 | Rust, maturin, nasm and the libva headers | BC-250 PS Remote Play's native core, for `cargo test` or `maturin build` on the machine itself | rustup from [rustup.rs](https://rustup.rs), `brew install nasm`, and maturin with pip in the venv |
 | OBS Studio, with its WebSocket server on | Nexus Demo Recorder (`dev/demo/`) | the Flatpak `com.obsproject.Studio` |

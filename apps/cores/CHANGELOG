@@ -1,3 +1,40 @@
+Changelog: 24-11-2026 12:21:30
+
+Fixed. The bottom row no longer has the label Other actions, and its pills start at the left. Show details and Show
+advanced are now the pills Details and Advanced at the right end of that row. Under the name they say Show or Hide.
+The window always opens 900 pixels wide, also when it was wider before. It fits its height to the page once it shows,
+so a first window no longer cuts half of the page off. The tooltips are rounded boxes on the window's dark background,
+as in the suite's other apps. The window no longer fails to open when all 8 cores are on and there are no results,
+for example after Start over with the boot service installed. The window tests no longer read the boot service
+installed on the machine. The wiki's picture of the window shows the new row. Comments name CU Unlock, before CU
+Tools.
+
+Changelog: 24-11-2026 05:04:45
+
+Breaking. The app is now called BC-250 Core Unlock, before BC-250 CPU Tools. The window leads through five steps
+instead of opening a terminal: Scan, Test the stock cores, Unlock and restart, Test the new cores, and Install. It
+runs bc250-cores-bisect.sh and bc250-cores-unlock.sh itself. Each step's row says the one thing to do now, with its
+pill on that row, and a green bar says when you're finished. After the unlock and between attempts the window
+restarts the board itself after a countdown, and it opens again after the login with the next step. A desktop
+notification says when a step ends. A test blocks sleep while it runs. After a full power off in the middle of the
+test, step 4 turns the new cores on again with bc250-cores-unlock.sh --apply. Install needs no restart, because the
+cores are on already. The window's Unattended and Auto resume switches are gone, and so is the separate unlock part
+with its verdict row. The script's --auto still works from a terminal. Uninstall also removes the window's autostart
+entry.
+
+Changelog: 24-11-2026 04:34:43
+
+Added. bc250-cores-bisect.sh has two options for the coming step window. --scan reads the presence mask, the cores and
+what a run needs, then exits without writing to the SMU. --only ITEM runs only the attempts of one item. The help
+page lists them.
+
+Changelog: 24-11-2026 04:29:56
+
+Fixed. Every attempt ended as LOAD-FAIL with "temp-path '.' must be readable and writeable" when the test started from
+the window. The window starts in its root-owned app folder, and stress-ng 0.22 refuses to start in a folder it can't
+write, even for its CPU stressors. bc250-cores-bisect.sh now gives stress-ng the logs folder of its results as its
+temp folder, so the script works from any folder.
+
 Changelog: 23-11-2026 05:15:41
 
 Release 1.1.1.

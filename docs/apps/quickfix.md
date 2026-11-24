@@ -55,7 +55,7 @@ Each group's tools are listed beside its pill.
 Layered RPM packages are active after a restart (`systemctl reboot`). Until then, the tools of that group still show
 as missing.
 
-The group **Prime95** is `mprime`, which no test uses. [BC-250 CPU Tools](cores.md#longer-burn-in-mprime--rasdaemon)
+The group **Prime95** is `mprime`, which no test uses. [BC-250 Core Unlock](cores.md#longer-burn-in-mprime--rasdaemon)
 runs its torture test for a longer burn-in. The pill installs the release that mersenne.org's download page lists at
 that moment. It compares the download with the SHA-256 listed there. It installs `mprime` into `~/mprime`, with a link
 in `~/.local/bin`. A newer release later shows in Nexus Deps as **Prime95 (mprime)**. Its **Update** installs it over

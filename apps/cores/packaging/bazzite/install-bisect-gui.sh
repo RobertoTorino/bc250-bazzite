@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Self-install for Bazzite (and any other immutable/rpm-ostree-based desktop): sets up
-# cores_bisect, the one window for the core bisect and the core unlock (BC-250 CPU Tools), in a private venv
+# cores_bisect, the one window for the core bisect and the core unlock (BC-250 Core Unlock), in a private venv
 # under ~/.local, with a launcher, .desktop entry and icon. Nothing here touches rpm-ostree or needs root - the
 # window starts bc250-cores-bisect.sh in a terminal, and only its Install, Uninstall and Root status run
 # bc250-cores-unlock.sh through sudo. The separate unlock window of before (bc250-cores-unlock-gui) is removed.
@@ -92,7 +92,7 @@ command -v kbuildsycoca5 >/dev/null 2>&1 && kbuildsycoca5 --noincremental >/dev/
 
 cat <<EOF
 
-Done. BC-250 CPU Tools is installed for your user account only:
+Done. BC-250 Core Unlock is installed for your user account only:
   - app + venv: $APP_DIR
   - launcher:   $LAUNCHER
   - menu entry: $DESKTOP_FILE

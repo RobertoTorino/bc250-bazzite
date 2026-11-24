@@ -73,8 +73,8 @@ def test_bazzite_test_first_without_uninstall(window):
     assert "Uninstall" not in menu_texts(window, "check")
     assert "Uninstall" in menu_texts(window, "gpu")
     assert "Open" in menu_texts(window, "acpi")
-    assert menu_texts(window, "cores")[0] == "Open"                                     # CPU Tools: one window
-    assert menu_texts(window, "compute")[0] == "Open"                                   # CU Tools: one window
+    assert menu_texts(window, "cores")[0] == "Open"                                     # Core Unlock: one window
+    assert menu_texts(window, "compute")[0] == "Open"                                   # CU Unlock: one window
 
 
 def test_every_app_has_its_icon(qapp, home, settings_dir, tmp_path, launched):

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs BC-250 CPU Tools as a desktop app. It is one window for the core bisect and the core unlock.
+# Installs BC-250 Core Unlock as a desktop app. It is one window for the core bisect and the core unlock.
 # Run it from a clone or the extracted release tarball.
 #
 #   ./install.sh                         # install or update the app
@@ -17,7 +17,7 @@
 set -euo pipefail
 
 APP_ID="bc250-cores-bisect"
-APP_NAME="BC-250 CPU Tools"
+APP_NAME="BC-250 Core Unlock"
 OPT_DIR="${BC250_OPT_DIR:-/opt}"            # override only for testing
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -76,10 +76,13 @@ remove_legacy_install() {
           "$DATA_DIR/icons/hicolor/128x128/apps/bc250-cores-unlock.png"
 }
 
+# The window's autostart entry goes too: it goes on with a running core test after a login, and would start the
+# removed app.
 remove_menu_entries() {
     rm -f "$BISECT_LAUNCHER" "$UNLOCK_LAUNCHER" \
           "$DATA_DIR/applications/$BISECT_DESKTOP" "$DATA_DIR/applications/$UNLOCK_DESKTOP" \
-          "$DESKTOP_DIR/$BISECT_DESKTOP" "$DESKTOP_DIR/$UNLOCK_DESKTOP"
+          "$DESKTOP_DIR/$BISECT_DESKTOP" "$DESKTOP_DIR/$UNLOCK_DESKTOP" \
+          "${XDG_CONFIG_HOME:-$HOME/.config}/autostart/bc250-core-unlock-resume.desktop"
     refresh_menu
 }
 
@@ -235,7 +238,7 @@ StartupWMClass=$2"
 
 info "Creating the launcher $BISECT_LAUNCHER and its menu entry"
 write_launcher "$BISECT_LAUNCHER" cores_bisect
-write_entry "$BISECT_DESKTOP" bc250-cores-bisect-gui "BC-250 CPU Tools" \
+write_entry "$BISECT_DESKTOP" bc250-cores-bisect-gui "BC-250 Core Unlock" \
     "Find bad CPU cores with bc250-cores-bisect.sh, then keep a tested 8C/16T core unlock" "$BISECT_LAUNCHER" "$APP_ID"
 if [ -e "$UNLOCK_LAUNCHER" ] || [ -e "$DATA_DIR/applications/$UNLOCK_DESKTOP" ] || [ -e "$DESKTOP_DIR/$UNLOCK_DESKTOP" ]; then
     info "Removing the separate unlock window of earlier versions. This window has it now."

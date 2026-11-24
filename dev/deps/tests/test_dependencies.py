@@ -315,7 +315,7 @@ def test_tools_are_found_in_the_apps_extra_folders(tmp_path, monkeypatch):
 
 
 def test_mprime_is_found_where_its_download_is_unpacked(tmp_path, monkeypatch):
-    """mprime is a tarball from mersenne.org, unpacked into ~/mprime and on no PATH: found where CPU Tools looks."""
+    """mprime is a tarball from mersenne.org, unpacked into ~/mprime and on no PATH: found where Core Unlock looks."""
     mprime = next(tool for tool in load_tools(CATALOG) if tool.name == "mprime")
     script = (SUITE / "apps" / "cores" / "bc250-cores-bisect.sh").read_text(encoding="utf-8")
     looked = re.search(r"for p in (.+?); do\n\s+\[\[ -x \$p \]\] && { MPRIME_BIN=\$p", script).group(1)

@@ -1,3 +1,12 @@
+Changelog: 24-11-2026 12:21:30
+
+Fixed. BC-250 CU Tools is now called BC-250 CU Unlock in the bc250-bazzite catalog. The app key compute stays.
+
+Changelog: 24-11-2026 04:57:23
+
+Fixed. BC-250 CPU Tools is now called BC-250 Core Unlock in the bc250-bazzite catalog, the mprime text and the
+tests. The app key cores stays.
+
 Changelog: 22-11-2026 22:35:51
 
 Fixed. The text of the README, install.sh, run.sh and the window was rewritten to the writing standard: short sentences,

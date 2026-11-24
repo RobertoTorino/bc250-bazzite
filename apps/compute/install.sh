@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs BC-250 CU Tools, one window for the bisect and the unlock, as a desktop app, from a clone or the
+# Installs BC-250 CU Unlock, one window for the bisect and the unlock, as a desktop app, from a clone or the
 # extracted release tarball:
 #
 #   ./install.sh                         # install or update the app
@@ -14,7 +14,7 @@
 # removes the separate unlock window of before (uninstall-gui.sh).
 set -euo pipefail
 
-APP_NAME="BC-250 CU Tools"
+APP_NAME="BC-250 CU Unlock"
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 STATE_DIR="$DATA_DIR/bc250-cu-bisect"                # the bisect script's runs, logs and results

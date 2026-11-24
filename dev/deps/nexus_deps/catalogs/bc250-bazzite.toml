@@ -36,11 +36,11 @@ name = "BC-250 Upscaler Manager"
 launchers = ["~/.local/bin/bc250-upscaler"]
 
 [app.compute]
-name = "BC-250 CU Tools"
+name = "BC-250 CU Unlock"
 launchers = ["~/.local/bin/bc250-bisect-gui"]
 
 [app.cores]
-name = "BC-250 CPU Tools"
+name = "BC-250 Core Unlock"
 launchers = ["~/.local/bin/bc250-cores-bisect-gui"]
 
 [app.oc]
@@ -547,7 +547,7 @@ usage = "Internet speed test: Ookla's speedtest, or speedtest-cli."
 [[tool]]
 name = "setpci"
 rpm = "pciutils"
-description = "Reads and writes PCI configuration registers (pciutils). CPU Tools reaches the BC-250's SMU through them to switch CPU cores."
+description = "Reads and writes PCI configuration registers (pciutils). Core Unlock reaches the BC-250's SMU through them to switch CPU cores."
 executables = ["setpci"]
 root = true
 
@@ -560,7 +560,7 @@ anchor = "requirements"
 [[tool]]
 name = "lspci"
 rpm = "pciutils"
-description = "Lists the PCI devices (pciutils). CPU Tools uses it to make sure the board is a BC-250 before it touches the SMU."
+description = "Lists the PCI devices (pciutils). Core Unlock uses it to make sure the board is a BC-250 before it touches the SMU."
 executables = ["lspci"]
 
 [[tool.source]]

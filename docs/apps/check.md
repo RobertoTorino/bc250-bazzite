@@ -71,7 +71,7 @@ there and installs them.
 | `memtest_vulkan` | 41 CPU + GPU Stress, as the GPU load and a VRAM error check | Binaries in `~/.local/bin` |
 | `vkpeak` | 42 Performance Benchmark (GPU score), and 41 CPU + GPU Stress as the GPU load when memtest_vulkan is missing | Binaries in `~/.local/bin` |
 | Ookla `speedtest` | 44 Internet Speed (`speedtest-cli` works too) | Speed test in `~/.local/bin` |
-| `mprime` (Prime95) | No test. [BC-250 CPU Tools](cores.md#longer-burn-in-mprime--rasdaemon) runs its torture test for a longer burn-in | Prime95 in `~/mprime`, with a link in `~/.local/bin` |
+| `mprime` (Prime95) | No test. [BC-250 Core Unlock](cores.md#longer-burn-in-mprime--rasdaemon) runs its torture test for a longer burn-in | Prime95 in `~/mprime`, with a link in `~/.local/bin` |
 | `sqlite` (`sqlite3`) | No test. It looks into the app's history database during development | Development extras |
 
 Tests 10, 20, 21, 41, 47 and 60 also use `glmark2`, `vulkan-tools` (`vulkaninfo`, `vkcube`) and `smartmontools`
@@ -1056,7 +1056,7 @@ It reports whether the ACPI tables came from the initrd override or the BIOS.
 - A known side effect is that `pp_dpm_sclk` reports nonsense clocks afterward. Tests 19/40 would
   flag that.
 
-Or use [BC-250 CPU Tools](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/cores), a suite app.
+Or use [BC-250 Core Unlock](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/cores), a suite app.
 It does its own unlock and also makes it **persistent**:
 
 1. **Test first:** `bc250-cores-bisect.sh` runs a control on the stock cores and unlocks. Then it tests each
@@ -1069,7 +1069,7 @@ It does its own unlock and also makes it **persistent**:
 3. **Undo:** `sudo ./bc250-cores-unlock.sh --uninstall`, then a full power off. Stock 6C/12T returns.
 
 **For the extra CUs without flashing:**
-[BC-250 CU Tools](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/compute), a suite app, unlocks
+[BC-250 CU Unlock](https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/compute), a suite app, unlocks
 CUs at runtime by writing the GPU's WGP mask registers with `umr`. It keeps a validated unlock across reboots:
 
 1. **Test first:** `bc250-cu-bisect.sh` tests every locked WGP (2 CUs) on its own over several rounds and

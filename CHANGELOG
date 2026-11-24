@@ -1,3 +1,20 @@
+Changelog: 24-11-2026 13:06:54
+
+Added. The development machine in the Development chapter lists mawk, for Board Test's awk test. Install it with
+brew install mawk.
+
+Changelog: 24-11-2026 12:21:30
+
+Fixed. BC-250 CU Tools is now called BC-250 CU Unlock in the README, the wiki's navigation and pages, DESIGN.md
+and tools/make_design.py. The app key compute, its folder and file names stay. ALL-TESTS.md was written again by its
+tool.
+
+Changelog: 24-11-2026 04:57:23
+
+Fixed. BC-250 CPU Tools is now called BC-250 Core Unlock in the README, the wiki's navigation and pages, DESIGN.md,
+ALL-TESTS.md and tools/make_design.py. The app key cores, its folder and file names stay. DESIGN.md and ALL-TESTS.md
+were written again by their tools.
+
 Changelog: 23-11-2026 02:38:19
 
 Fixed. The App categories page in the wiki takes the portal's new tooltips for Gaming and Utilities. The Utilities

@@ -43,7 +43,7 @@ and the journal. [BIOS Reader](apps/bios.md) shows every BIOS setting, hidden me
 <div class="home-card" markdown>
 #### :material-lock-open-variant: Unlocks
 
-[CU Tools](apps/compute.md) and [CPU Tools](apps/cores.md) tell bad CUs and cores apart from an
+[CU Unlock](apps/compute.md) and [Core Unlock](apps/cores.md) tell bad CUs and cores apart from an
 unstable unlock. [Memory Manager](apps/vram.md) sets the VRAM split.
 </div>
 <div class="home-card" markdown>

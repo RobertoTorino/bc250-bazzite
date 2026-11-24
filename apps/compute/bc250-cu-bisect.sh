@@ -40,6 +40,12 @@
 #                         login until every item is done. This needs the autostart unit, see the
 #                         wiki. It is still one attempt per boot, so no isolation is lost.
 #       --no-watch        don't read the registers back during the load
+#       --only ITEM       run only the attempts of one item, for example control. The window runs the
+#                         control's rounds first this way. The results and the report stay as they are.
+#       --scan            read the live masks and what a run needs, then exit. Writes no register.
+#       --writes LIST     a test of the unlock method itself: write only these registers, comma-separated,
+#                         from cc, spi and rlc (default cc,spi,rlc, the full unlock). Use it with
+#                         --control-only, and --reset between tests.
 #       --status          show the results so far and write the report, then exit
 #       --reset           delete the results and start over
 #   -V, --version         show the version
@@ -51,14 +57,16 @@ set -u
 if (( BASH_VERSINFO[0] < 4 )); then echo "bash 4 or newer is needed." >&2; exit 1; fi
 
 VERSION="1.1.1"
-STRESS_SECS="" ROUNDS_OPT="" BASE_OPT="" SAME_BOOT=0 AUTO=0 WATCH=1 MODE=run CONTROL_ONLY_OPT=""
+STRESS_SECS="" ROUNDS_OPT="" BASE_OPT="" SAME_BOOT=0 AUTO=0 WATCH=1 MODE=run CONTROL_ONLY_OPT="" ONLY="" WRITES=cc,spi,rlc
 
 say()  { printf '%s\n' "$*"; }
 hdr()  { printf '\n=== %s ===\n' "$*"; }
 die()  { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
-ask()  { # prompt [default-used-in---auto-mode]; only the answer goes to stdout (callers capture it)
+ev()   { [[ -z ${BC250_GUI:-} ]] || printf '@@ %s\n' "$*"; }   # a line for CU Unlock's window (BC250_GUI=1), not for people
+ask()  { # prompt [default-used-in---auto-mode] [name for the window]; only the answer goes to stdout (callers capture it)
   local prompt=$1 def=${2:-}
   if (( AUTO )); then say "$prompt -> auto: ${def:-(none)}" >&2; printf '%s' "$def"; return 0; fi
+  if [[ -n ${BC250_GUI:-} ]]; then say "$prompt" >&2; ev ask "${3:-question}" >&2; local a; read -r a; printf '%s' "$a"; return 0; fi
   local a; read -rp "$prompt " a; printf '%s' "$a"
 }
 do_reboot() { # --no-ask-password: fail instead of raising a GUI auth popup, then fall back to sudo
@@ -85,6 +93,9 @@ while (( $# )); do
     -r|--rounds)   ROUNDS_OPT=${2:-}; shift ;;
     -b|--baseline) BASE_OPT=${2:-}; shift ;;
     --control-only) CONTROL_ONLY_OPT=1 ;;
+    --only)        ONLY=${2:-}; shift ;;
+    --scan)        MODE=scan ;;
+    --writes)      WRITES=${2:-}; shift ;;
     --same-boot)   SAME_BOOT=1 ;;
     --auto)        AUTO=1 ;;
     --no-watch)    WATCH=0 ;;
@@ -101,6 +112,7 @@ done
 [[ -z $ROUNDS_OPT || $ROUNDS_OPT =~ ^[1-9]$ ]] || die "--rounds needs a number from 1 to 9."
 (( CONTROL_ONLY_OPT )) || [[ -z $ROUNDS_OPT ]] || (( ROUNDS_OPT >= 2 )) || die "--rounds needs 2 or more. A control-only run may use 1."
 MASK_RE='^0x[0-9a-fA-F]{1,2}(,0x[0-9a-fA-F]{1,2}){3}$'
+[[ $WRITES =~ ^(cc|spi|rlc)(,(cc|spi|rlc))*$ ]] || die "--writes needs registers from cc, spi and rlc, for example spi,rlc"
 [[ -z $BASE_OPT || $BASE_OPT =~ $MASK_RE ]] || die "--baseline needs 4 masks, for example 0x07,0x07,0x07,0x07"
 
 STATE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/bc250-cu-bisect"
@@ -108,6 +120,7 @@ CONFIG="$STATE_DIR/umr-config"
 RUNS="$STATE_DIR/umr-runs.tsv"
 PENDING="$STATE_DIR/umr-pending"
 LASTBOOT="$STATE_DIR/umr-lastboot"
+WRITTEN="$STATE_DIR/umr-written"        # the boot whose registers this script wrote last; --reset keeps it
 LOGS="$STATE_DIR/logs"
 mkdir -p "$LOGS" && chmod 700 "$STATE_DIR" "$LOGS" 2>/dev/null
 touch "$RUNS"
@@ -212,12 +225,14 @@ draw_cu_map() { # [current item, e.g. SE0.SH1.WGP3]
 record() { # round item masks outcome errors faults drift maxtemp maxsclk maxbusy note
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(date '+%F %T')" "${BOOT_ID:0:8}" "$@" >>"$RUNS"
   sync "$RUNS" 2>/dev/null
+  ev result "$1" "$2" "$4"
 }
 attempt_done() { awk -F'\t' -v r="$1" -v i="$2" '$3==r && $4==i && $6!="ABORTED"{f=1} END{exit !f}' "$RUNS"; }
 next_attempt() { # prints "round item" of the first attempt without a result
   local r it
   for (( r = 1; r <= ROUNDS; r++ )); do
     for it in "${ITEMS[@]}"; do
+      [[ -z $ONLY || $it == "$ONLY" ]] || continue
       attempt_done "$r" "$it" || { echo "$r $it"; return 0; }
     done
   done
@@ -329,7 +344,7 @@ write_report() {
 
 # ---------------------------------------------------------------- state ----
 if [[ $MODE == reset ]]; then
-  [[ $(ask "Delete all results in $STATE_DIR (umr-*) and start over? [y/N]" n) =~ ^[Yy]$ ]] || exit 0
+  [[ $(ask "Delete all results in $STATE_DIR (umr-*) and start over? [y/N]" n reset) =~ ^[Yy]$ ]] || exit 0
   rm -f "$CONFIG" "$RUNS" "$PENDING" "$LASTBOOT"; rm -rf "$LOGS"
   say "Results deleted."; exit 0
 fi
@@ -369,7 +384,7 @@ for t in memtest_vulkan vkpeak vkmark glmark2; do
     [[ -n $p && -x $p && -f $p ]] && { LOAD=$t LOAD_BIN=$p; break 2; }
   done
 done
-[[ -n $LOAD ]] || die "no GPU load tool found. Put memtest_vulkan (github.com/GpuZelenograd/memtest_vulkan) in ~/.local/bin."
+[[ -n $LOAD || $MODE == scan ]] || die "no GPU load tool found. Put memtest_vulkan (github.com/GpuZelenograd/memtest_vulkan) in ~/.local/bin."
 
 say "Register access needs root (umr). sudo may ask for your password once."
 # not `sudo -v`: with the default verifypw=all a mixed sudoers (e.g. wheel + NOPASSWD drop-in)
@@ -408,27 +423,88 @@ read_spi_all() { local i v out=(); for i in 0 1 2 3; do v=$(reg_read "$REG_SPI" 
 read_cc_all()  { local i v out=(); for i in 0 1 2 3; do v=$(reg_read "$REG_CC" $((i / 2)) $((i % 2))) || return 1; out+=("$v"); done; echo "${out[*]}"; }
 
 # Runtime unlock sequence: clear CC, write SPI per row, RLC = union of the rows.
+# --writes picks which of the three registers are written, to test the method itself (default: all three).
+writes() { [[ ,$WRITES, == *,$1,* ]]; }
 apply_masks() {
   local i union=0 m; IFS=, read -ra m <<<"$1"
-  reg_write "$REG_CC" 0x0 || true
+  if writes cc; then reg_write "$REG_CC" 0x0 || true; fi
   for i in 0 1 2 3; do
-    reg_write "$REG_CC" 0x0 $((i / 2)) $((i % 2)) || return 1
-    reg_write "$REG_SPI" "$(hex2 "${m[$i]}")" $((i / 2)) $((i % 2)) || return 1
+    if writes cc; then reg_write "$REG_CC" 0x0 $((i / 2)) $((i % 2)) || return 1; fi
+    if writes spi; then reg_write "$REG_SPI" "$(hex2 "${m[$i]}")" $((i / 2)) $((i % 2)) || return 1; fi
     (( union |= m[i] ))
   done
-  reg_write "$REG_RLC" "$(hex2 $union)" || true
+  if writes rlc; then reg_write "$REG_RLC" "$(hex2 $union)" || true; fi
+  return 0
 }
 
-gpu_busy() { cat "$GPU_DEV/gpu_busy_percent" 2>/dev/null || echo 0; }
+# GPU load in % into BUSY. The kernel's gpu_busy_percent first. Where the firmware doesn't report it (a stock Cyan
+# Skillfish kernel answers EOPNOTSUPP), the engine time of every client in /proc/<pid>/fdinfo since the last call,
+# the busier of gfx and compute, as Board Test's monitor does. Only this user's processes are readable, which
+# includes the load program, games and the compositor. A client new since the last call is left out.
+BUSY=0 BUSY_AT=0 PROC=/proc
+declare -A GFX_NS=() COMP_NS=()
+gpu_pdev() { basename "$(readlink -f "$GPU_DEV")"; }
+engine_ns() { # -> "client-id gfx-ns compute-ns" lines for this GPU, one per client
+  grep -s -H -E '^drm-(pdev|client-id|engine-gfx|engine-compute):' "$PROC"/[0-9]*/fdinfo/* | awk -v pdev="$(gpu_pdev)" '
+    { i = index($0, ":"); f = substr($0, 1, i - 1); s = substr($0, i + 1); k = substr(s, 1, index(s, ":") - 1)
+      v = s; sub(/^[^:]*:[ \t]*/, "", v); sub(/ ns$/, "", v)
+      if (k == "drm-pdev") pd[f] = v; else if (k == "drm-client-id") id[f] = v
+      else if (k == "drm-engine-gfx") gfx[f] = v; else comp[f] = v }
+    END { for (f in id) if (!(f in pd) || pd[f] == pdev) { g[id[f]] = gfx[f] + 0; c[id[f]] = comp[f] + 0 }
+          for (n in g) printf "%s %.0f %.0f\n", n, g[n], c[n] }'   # %.0f: mawk prints 5e+09 with print
+}
+gpu_busy() {
+  local v n g c t sum_g=0 sum_c=0 dt
+  # EPOCHREALTIME in µs: a locale such as nl_NL writes its decimal point as a comma, which (( )) reads as two numbers.
+  if v=$(cat "$GPU_DEV/gpu_busy_percent" 2>/dev/null) && [[ $v =~ ^[0-9]+$ ]]; then BUSY=$v; return; fi
+  if (( ${EPOCHREALTIME/[.,]/} - BUSY_AT > 10000000 )); then  # no sample in the last 10 s: take one first
+    GFX_NS=() COMP_NS=(); BUSY_AT=${EPOCHREALTIME/[.,]/}
+    while read -r n g c; do GFX_NS[$n]=$g COMP_NS[$n]=$c; done < <(engine_ns)
+    sleep 1
+  fi
+  local -A old_g=() old_c=()
+  for n in "${!GFX_NS[@]}"; do old_g[$n]=${GFX_NS[$n]} old_c[$n]=${COMP_NS[$n]}; done
+  GFX_NS=() COMP_NS=(); t=${EPOCHREALTIME/[.,]/}
+  while read -r n g c; do
+    GFX_NS[$n]=$g COMP_NS[$n]=$c
+    [[ -n ${old_g[$n]:-} ]] && (( g >= old_g[$n] && c >= old_c[$n] )) || continue
+    (( sum_g += g - old_g[$n], sum_c += c - old_c[$n] ))
+  done < <(engine_ns)
+  dt=$(( (t - BUSY_AT) * 1000 )); BUSY_AT=$t                  # µs -> ns
+  (( sum_c > sum_g )) && sum_g=$sum_c
+  BUSY=$(( dt > 0 ? sum_g * 100 / dt : 0 )); (( BUSY > 100 )) && BUSY=100
+  return 0
+}
 gpu_temp() { local f; for f in "$GPU_DEV"/hwmon/hwmon*/temp1_input; do [[ -r $f ]] && { echo $(( $(cat "$f") / 1000 )); return; }; done; echo 0; }
 gpu_sclk() {
   local f; for f in "$GPU_DEV"/hwmon/hwmon*/freq1_input; do [[ -r $f ]] && { echo $(( $(cat "$f") / 1000000 )); return; }; done
   sed -n 's/.*: *\([0-9]*\)[Mm][Hh]z *\*.*/\1/p' "$GPU_DEV/pp_dpm_sclk" 2>/dev/null | head -1 || echo 0
 }
+gov_max() { grep -oE "max[_a-z]*\s*=\s*[0-9]+" "$GOV_CONF" 2>/dev/null | grep -oE "[0-9]+" | sort -rn | head -1; }
 faults_since() { sudo -n journalctl -k --since "$1" --no-pager 2>/dev/null | grep -E "$FAULT_RE"; }
 
 SPI_NOW=$(read_spi_all) || die "umr could not read $ASIC.$REG_SPI. Set UMR_ASIC or UMR_INSTANCE if your setup differs."
 CC_NOW=$(read_cc_all) || CC_NOW=""
+RLC_NOW=$(reg_read "$REG_RLC") || RLC_NOW=""
+
+# ------------------------------------------------------------------- scan ----
+if [[ $MODE == scan ]]; then
+  AT_BOOT=no; [[ -n $CC_NOW ]] && [[ -z $(tr -d '0x ' <<<"$CC_NOW") ]] && AT_BOOT=yes
+  SERVICE=$(systemctl is-enabled bc250-cu-unlock.service 2>/dev/null); SERVICE=${SERVICE:-not-found}
+  GOV_MAX=$(gov_max)
+  hdr "Scan (reads only, writes no register)"
+  say "Live masks: $SPI_NOW ($(cu_count "$SPI_NOW") CUs)   CC: ${CC_NOW:-?}   RLC: ${RLC_NOW:-?}"
+  say "CU unlock active since boot: $AT_BOOT   bc250-cu-unlock.service: $SERVICE"
+  say "Load tool: ${LOAD:-none}   GPU governor ceiling: ${GOV_MAX:-not set} MHz"
+  ev scan live "$SPI_NOW"
+  ev scan at-boot "$AT_BOOT"
+  ev scan service "$SERVICE"
+  ev scan load "${LOAD:--}"
+  ev scan gov-max "${GOV_MAX:--}"
+  ev scan sysfs "$([[ -n $GPU_DEV ]] && echo yes || echo no)"
+  kill "$KEEPALIVE" 2>/dev/null
+  exit 0
+fi
 
 # -------------------------------------------------- crash from last boot ----
 if [[ -s $PENDING ]]; then
@@ -438,7 +514,7 @@ if [[ -s $PENDING ]]; then
     say "Round $P_ROUND, $P_ITEM ($P_MASKS). The system went down while $([[ $P_PHASE == load ]] && echo 'the GPU load was running' || echo 'the masks were being written (GPU idle)')."
     PREV=$(sudo -n journalctl -k -b -1 --no-pager 2>/dev/null | grep -E "$FAULT_RE" | tail -5)
     [[ -n $PREV ]] && { say "Kernel faults in the previous boot:"; say "$PREV"; }
-    if [[ $(ask "Did the system freeze, crash or restart by itself? [Y/n]" y) =~ ^[Nn]$ ]]; then
+    if [[ $(ask "Did the system freeze, crash or restart by itself? [Y/n]" y crash) =~ ^[Nn]$ ]]; then
       record "$P_ROUND" "$P_ITEM" "$P_MASKS" ABORTED - - - - - - "rebooted by hand during the attempt"
       say "Recorded as interrupted. This attempt will run again."
     else
@@ -477,14 +553,20 @@ elif [[ -n $BASE_OPT && $(norm_masks "$BASE_OPT") != "$BASE" ]]; then
 fi
 cfg_set ROUNDS "$ROUNDS"; cfg_set TIME "$STRESS_SECS"; cfg_set CONTROL_ONLY "$CONTROL_ONLY"
 build_plan
+[[ -z $ONLY || " ${ITEMS[*]} " == *" $ONLY "* ]] || die "--only needs an item of this run: ${ITEMS[*]}"
 
 hdr "BC-250 CU unlock test $VERSION"
-say "Baseline: $BASE ($(cu_count "$BASE") CUs)   Live now: $SPI_NOW   CC: ${CC_NOW:-?}"
+say "Baseline: $BASE ($(cu_count "$BASE") CUs)   Live now: $SPI_NOW   CC: ${CC_NOW:-?}   RLC: ${RLC_NOW:-?}"
+[[ $WRITES == cc,spi,rlc ]] || say "Writes only: $WRITES (a test of the unlock method itself)"
 say "Items: ${ITEMS[*]}$([[ $CONTROL_ONLY == 1 ]] && echo '   (--control-only: per-WGP bisecting skipped)')"
 say "Rounds: $ROUNDS   Load: $LOAD, ${STRESS_SECS}s   Mode: $([[ $SAME_BOOT == 1 ]] && echo 'same boot' || echo 'one attempt per boot')"
 draw_cu_map
 
-if ! NEXT=$(next_attempt); then summary; write_report; exit 0; fi
+if ! NEXT=$(next_attempt); then
+  summary; ev finished
+  [[ -n $ONLY ]] || write_report
+  exit 0
+fi
 
 # ------------------------------------------------------- safety checks ----
 WARNINGS=()
@@ -493,6 +575,7 @@ if [[ $SAME_BOOT == 0 ]]; then
     say ""
     say "An attempt already ran in this boot. Power off, wait 10 seconds, power on, and run"
     say "the script again (or use --same-boot). Next: round ${NEXT% *}, ${NEXT#* }."
+    ev restart-first
     (( AUTO )) && { say "Restarting by itself (--auto)..."; do_reboot; }
     exit 0
   fi
@@ -501,8 +584,23 @@ if [[ $SAME_BOOT == 0 ]]; then
        Turn off whatever applies a CU unlock at boot, then restart and run this again."
   fi
 fi
+# CC_GC_SHADER_ARRAY_CONFIG bits 16-20 mark the WGPs this chip has switched off, and they differ per board. A baseline
+# must keep every WGP the chip runs. Otherwise the control switches a working WGP off and a switched-off one on.
+# Only before the first attempt of a boot: after one, the registers hold this script's own writes, not the chip's
+# (with --same-boot every attempt after the first runs in such a boot, and so does a retest after --reset).
+if [[ $(cat "$WRITTEN" 2>/dev/null) != "$BOOT_ID" ]] && [[ -n $CC_NOW ]] && [[ -n $(tr -d '0x ' <<<"$CC_NOW") ]]; then
+  read -ra CC_ROWS <<<"$CC_NOW"; IFS=, read -ra B_ROWS <<<"$BASE"; OWN=() DROPPED=()
+  for i in 0 1 2 3; do
+    act=$(( ~(CC_ROWS[i] >> 16) & 31 )); OWN+=("$(hex2 "$act")")
+    for b in 0 1 2 3 4; do
+      (( act >> b & 1 && !(B_ROWS[i] >> b & 1) )) && DROPPED+=("${ROWS[$i]}.WGP$b")
+    done
+  done
+  (( ${#DROPPED[@]} )) && die "the baseline $BASE switches off ${DROPPED[*]}, which this chip runs.
+       This board's own masks are $(IFS=,; echo "${OWN[*]}"). Run --reset, then start without --baseline to use them."
+fi
 [[ $SPI_NOW != "$BASE" && $SAME_BOOT == 0 && $(cfg_get BASE_FROM) == live ]] && WARNINGS+=("The live masks ($SPI_NOW) differ from the baseline ($BASE).")
-GOV_MAX=$(grep -oE "max[_a-z]*\s*=\s*[0-9]+" "$GOV_CONF" 2>/dev/null | grep -oE "[0-9]+" | sort -rn | head -1)
+GOV_MAX=$(gov_max)
 [[ -n $GOV_MAX ]] && (( GOV_MAX > 1500 )) &&
   WARNINGS+=("The governor may run the GPU up to ${GOV_MAX} MHz. For this test cap it at 1500 MHz in $GOV_CONF, so power and heat don't hide the result.")
 [[ $LOAD != memtest_vulkan ]] &&
@@ -511,7 +609,7 @@ GOV_MAX=$(grep -oE "max[_a-z]*\s*=\s*[0-9]+" "$GOV_CONF" 2>/dev/null | grep -oE 
 if (( ${#WARNINGS[@]} )); then
   hdr "Before you start"
   for w in "${WARNINGS[@]}"; do say "- $w"; done
-  [[ $(ask "Continue anyway? [y/N]" y) =~ ^[Yy]$ ]] || exit 0
+  [[ $(ask "Continue anyway? [y/N]" y warnings) =~ ^[Yy]$ ]] || exit 0
 fi
 say ""
 say "WARNING: this writes GPU registers. A bad WGP or the CU unlock itself can freeze the system."
@@ -539,10 +637,11 @@ wait_idle() {
   local calm=0 t=0
   say "Waiting for the GPU to be idle (close games and video)..."
   while (( calm < 3 )); do
-    if (( $(gpu_busy) <= 15 )); then (( calm += 1 )); else calm=0; fi
+    gpu_busy
+    if (( BUSY <= 15 )); then (( calm += 1 )); else calm=0; fi
     sleep 1; (( t++ ))
     if (( t == 60 )); then
-      [[ $(ask "The GPU is still busy ($(gpu_busy)%). Write the masks anyway? [y/N]" n) =~ ^[Yy]$ ]] || return 1
+      [[ $(ask "The GPU is still busy ($BUSY%). Write the masks anyway? [y/N]" n idle) =~ ^[Yy]$ ]] || return 1
       return 0
     fi
   done
@@ -558,32 +657,38 @@ memtest_bytes() {
 
 run_attempt() { # round item
   local r=$1 it=$2 masks=${ITEM_MASKS[$2]} t0 now drift="" faults errs=0 rc note="" o
+  [[ $WRITES == cc,spi,rlc ]] || note="writes $WRITES"
   local maxt=0 maxf=0 maxb=0 log="$LOGS/$(date '+%Y%m%d-%H%M%S')-r$1-$2.log"
   hdr "Round $r/$ROUNDS: $it  ($masks = $(cu_count "$masks") CUs)"
+  ev attempt "$r" "$it" "$masks"
   draw_cu_map "$it"
-  wait_idle || { record "$r" "$it" "$masks" ABORTED - - - - - - "GPU not idle"; return 1; }
+  wait_idle || { record "$r" "$it" "$masks" ABORTED - - - - - - "${note:+$note; }GPU not idle"; return 1; }
   t0=$(date '+%F %T')
   set_pending "$r" "$it" apply "$masks"
   echo "$BOOT_ID" >"$LASTBOOT"; sync "$LASTBOOT" 2>/dev/null
+  echo "$BOOT_ID" >"$WRITTEN"
+  ev phase write
   say "Writing the masks..."
   if ! apply_masks "$masks"; then
-    record "$r" "$it" "$masks" MISMATCH - - - - - - "umr refused a write"; rm -f "$PENDING"; return 0
+    record "$r" "$it" "$masks" MISMATCH - - - - - - "${note:+$note; }umr refused a write"; rm -f "$PENDING"; return 0
   fi
   now=$(read_spi_all)
   if [[ $now != "$masks" ]]; then
-    record "$r" "$it" "$masks" MISMATCH - - - - - - "read back $now"; rm -f "$PENDING"; return 0
+    record "$r" "$it" "$masks" MISMATCH - - - - - - "${note:+$note; }read back $now"; rm -f "$PENDING"; return 0
   fi
+  ev phase settle
   say "Masks read back OK. Settling 15 s on the idle GPU..."
   sleep 15
   faults=$(faults_since "$t0")
   if [[ -n $faults ]]; then
     say "$faults"
-    record "$r" "$it" "$masks" FAULT - "$(grep -c . <<<"$faults")" - - - - "kernel fault right after writing (idle GPU)"
+    record "$r" "$it" "$masks" FAULT - "$(grep -c . <<<"$faults")" - - - - "${note:+$note; }kernel fault right after writing (idle GPU)"
     rm -f "$PENDING"; return 0
   fi
   now=$(read_spi_all); [[ $now != "$masks" ]] && drift="idle: $now"
 
   set_pending "$r" "$it" load "$masks"
+  ev phase load
   say "Running $LOAD for ${STRESS_SECS}s..."
   case $LOAD in
     memtest_vulkan) timeout -k 10 "$STRESS_SECS" "$LOAD_BIN" 0 "$(memtest_bytes)" </dev/null >"$log" 2>&1 & ;;
@@ -598,21 +703,22 @@ run_attempt() { # round item
     if [[ -n $GPU_DEV ]]; then
       v=$(gpu_temp); (( v > maxt )) && maxt=$v
       v=$(gpu_sclk); (( ${v:-0} > maxf )) && maxf=$v
-      v=$(gpu_busy); (( v > maxb )) && maxb=$v
+      gpu_busy; (( BUSY > maxb )) && maxb=$BUSY
     fi
     if (( WATCH && tick % 2 == 0 )) && [[ -z $drift ]]; then
       now=$(read_spi_all) && [[ $now != "$masks" ]] && { drift="t+$(( SECONDS - start ))s: $now"; say "Masks changed under load: $now"; }
     fi
-    printf '\r  %3ds  %s C  %s MHz  busy %s%%   ' "$(( SECONDS - start ))" "$maxt" "$maxf" "$maxb"
+    if [[ -n ${BC250_GUI:-} ]]; then ev load "$(( SECONDS - start ))" "$STRESS_SECS" "$maxt" "$maxf" "$maxb"
+    else printf '\r  %3ds  %s C  %s MHz  busy %s%%   ' "$(( SECONDS - start ))" "$maxt" "$maxf" "$maxb"; fi
   done
-  wait "$LOAD_PID"; rc=$?; LOAD_PID=""; echo
+  wait "$LOAD_PID"; rc=$?; LOAD_PID=""; [[ -n ${BC250_GUI:-} ]] || echo
   faults=$(faults_since "$t0")
   [[ $LOAD == memtest_vulkan ]] && errs=$(grep -c 'Error found' "$log" 2>/dev/null); errs=${errs:-0}
   [[ -n $faults ]] && say "$faults"
 
   if [[ -n $faults ]]; then o=FAULT
-  elif (( errs > 0 )); then o=ERRORS; note="memtest_vulkan error reports: $errs"
-  elif (( rc != 124 && rc != 0 )); then o="LOAD-FAIL"; note="$LOAD exit $rc: $(tail -1 "$log" | tr '\t' ' ' | cut -c1-80)"
+  elif (( errs > 0 )); then o=ERRORS; note="${note:+$note; }memtest_vulkan error reports: $errs"
+  elif (( rc != 124 && rc != 0 )); then o="LOAD-FAIL"; note="${note:+$note; }$LOAD exit $rc: $(tail -1 "$log" | tr '\t' ' ' | cut -c1-80)"
   elif [[ -n $drift ]]; then o=DRIFT
   else o=PASS; fi
   [[ -n $GPU_DEV ]] && (( maxb < 50 )) && note="${note:+$note; }GPU load only reached ${maxb}%"
@@ -645,25 +751,30 @@ if [[ $SAME_BOOT == 1 ]]; then
     revert || break
     say "Cooling down 30 s..."; sleep 30
   done
-  summary; next_attempt >/dev/null || { write_report; auto_cleanup; }
+  summary
+  if ! next_attempt >/dev/null; then
+    ev finished
+    [[ -n $ONLY ]] || { write_report; auto_cleanup; }
+  fi
 else
   run_attempt ${NEXT% *} "${NEXT#* }"
   summary
   if NEXT=$(next_attempt); then
     say ""
     say "Next: round ${NEXT% *}, ${NEXT#* }. Each attempt needs a fresh boot."
+    ev next "${NEXT% *}" "${NEXT#* }"
     if (( AUTO )); then
       say "Restarting by itself to continue (--auto)..."; do_reboot
     else
-      case $(ask "[p]ower off (best: cold boot), [r]estart, or [n]othing? [p/r/N]") in
+      case $(ask "[p]ower off (best: cold boot), [r]estart, or [n]othing? [p/r/N]" "" restart) in
         [Pp]) systemctl poweroff ;;
         [Rr]) systemctl reboot ;;
         *) say "Restart before you use the system normally. The CU unlock is still active." ;;
       esac
     fi
   else
-    write_report
-    auto_cleanup
+    ev finished
+    [[ -n $ONLY ]] || { write_report; auto_cleanup; }
     say "Restart to return to the stock state."
   fi
 fi

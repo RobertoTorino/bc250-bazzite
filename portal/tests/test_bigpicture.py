@@ -713,7 +713,7 @@ def test_a_tile_that_is_not_installed_offers_to_install_it(made, monkeypatch):
 
 
 def two_ways(entries):
-    """The manifest with cores opened two ways, as an app with two windows would be (none has since CPU Tools)."""
+    """The manifest with cores opened two ways, as an app with two windows would be (none has since Core Unlock)."""
     return [replace(e, launch=(("Bisect", "~/.local/bin/a"), ("Unlock", "~/.local/bin/b"))) if e.key == "cores" else e
             for e in entries]
 
@@ -748,7 +748,7 @@ def test_the_tile_menu_holds_every_action(made, monkeypatch, home):
     check = window.entries[0]                                  # check goes with the portal: no Uninstall
     assert [a.text() for a in window.tile_menu(check).actions() if not a.isSeparator()] == ["Open", "Install"]
     cores = next(e for e in window.entries if e.key == "cores")
-    assert [a.text() for a in window.tile_menu(cores).actions()][0] == "Open"          # CPU Tools: one window
+    assert [a.text() for a in window.tile_menu(cores).actions()][0] == "Open"          # Core Unlock: one window
     shown = []
     monkeypatch.setattr(mw.QMenu, "exec", lambda self, *a: shown.append([a.text() for a in self.actions()]))
     window.big.tiles["gpu"].setFocus()

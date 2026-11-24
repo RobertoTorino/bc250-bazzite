@@ -10,7 +10,7 @@
 #   - unlock the same number of WGPs on all 4 shader arrays (SE0.SH0, SE0.SH1, SE1.SH0, SE1.SH1)
 #
 # WGPs that pass alone can still fail combined, because they draw more power at the same voltage.
-# The CU Tools wiki chapter says more. The GPU splits work across all 4 shader arrays in lockstep.
+# The CU Unlock wiki chapter says more. The GPU splits work across all 4 shader arrays in lockstep.
 # So an uneven unlock only ever runs as fast as its smallest row, while still drawing the extra
 # power. This script refuses to install one. It only accepts the three even levels:
 #   3 WGPs per row = 24 CUs (stock/default)   4 per row = 32 CUs   5 per row = 40 CUs (max)
@@ -23,7 +23,7 @@
 #
 # Usage:
 #   sudo ./bc250-cu-unlock.sh 0x0f,0x0f,0x0f,0x0f        apply the masks once, right now (not persisted)
-#   sudo ./bc250-cu-unlock.sh --install 0x0f,0x0f,0x0f,0x0f   save + apply now + enable at every boot
+#   sudo ./bc250-cu-unlock.sh --install 0x0f,0x0f,0x0f,0x0f   save + enable at every boot, from the next restart
 #   sudo ./bc250-cu-unlock.sh --uninstall                 disable the service. Stock 24 CUs from next boot
 #        ./bc250-cu-unlock.sh --status                    show the installed masks, service and live state
 #        ./bc250-cu-unlock.sh --help
@@ -168,10 +168,11 @@ WantedBy=multi-user.target
 EOF
   chmod 644 "$UNIT_PATH"
   systemctl daemon-reload || die "systemctl daemon-reload failed. The service was not enabled. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME, and that /etc/systemd/system is writable."
-  apply_masks "$1"
-  systemctl enable "$UNIT_NAME" || die "systemctl enable $UNIT_NAME failed, see the error above. The CU unlock is applied right now, but it will NOT survive a restart. Common causes: SELinux, or /etc/systemd/system not writable on this image. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME."
-  systemctl is-enabled --quiet "$UNIT_NAME" || die "systemctl enable reported success, but $UNIT_NAME is still not enabled. The CU unlock will NOT survive a restart. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME."
-  say "Installed and enabled. $1 is applied now and on every future boot."
+  # Nothing is written to the GPU now: masks written live in a running desktop can freeze the board. The service
+  # writes them at the next boot, before the display manager uses the GPU.
+  systemctl enable "$UNIT_NAME" || die "systemctl enable $UNIT_NAME failed, see the error above. The CU unlock will NOT be applied at boot. Common causes: SELinux, or /etc/systemd/system not writable on this image. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME."
+  systemctl is-enabled --quiet "$UNIT_NAME" || die "systemctl enable reported success, but $UNIT_NAME is still not enabled. The CU unlock will NOT be applied at boot. Check: systemctl status $UNIT_NAME, journalctl -u $UNIT_NAME."
+  say "Installed and enabled. $1 is applied at every boot. Restart the board to turn it on."
   say "Remove with: sudo $0 --uninstall"
 }
 

@@ -24,7 +24,7 @@ def test_the_scripts_help_becomes_a_page():
     assert "<td class='name'><code>--mprime-bin PATH</code></td><td>mprime binary" in page   # one space before
     # a continued line belongs to the option above it
     assert "login until every item is done. This needs the autostart unit, see the wiki.</td>" in page
-    assert page.count("<td class='name'><code>-") == 11                       # every option of Usage
+    assert page.count("<td class='name'><code>-") == 13                       # every option of Usage
     assert "<a href='https://github.com/RobertoTorino/bc250-bazzite/tree/main/apps/cores'>" in page
 
 
@@ -37,7 +37,7 @@ def test_a_sentence_above_a_list_of_terms_is_its_paragraph():
 
 def test_what_the_window_does_is_the_first_paragraph():
     page = help_html(_help(), WINDOW)
-    first = page.index("<p>This window starts <code>bc250-cores-bisect.sh</code>")
+    first = page.index("<p>This window runs <code>bc250-cores-bisect.sh</code>")
     assert page.index("<p class='lead'>") < first < page.index("<h2>How it works</h2>")
 
 

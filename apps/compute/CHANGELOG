@@ -1,3 +1,137 @@
+Changelog: 24-11-2026 12:57:36
+
+Fixed. bc250-cu-bisect.sh measured a GPU load of 0% on systems whose awk is mawk, as on Debian and Ubuntu. mawk wrote
+large engine times as 5e+09, which bash can't count with. The script now writes them as whole numbers. Bazzite's awk
+is gawk, which wasn't affected. The load test failed in the local CI's Debian container for this reason.
+
+Fixed. The load reading was also wrong at random where the locale writes numbers with a decimal comma, as nl_NL does.
+The script's timer then read only the microseconds. It now reads the time with a point or a comma. The load test also
+runs in such a locale where one is installed.
+
+Changelog: 24-11-2026 12:21:30
+
+Breaking. The app is now called BC-250 CU Unlock, before BC-250 CU Tools. The app key compute, its folder and file names
+stay. The bottom row no longer has the label Other actions, and its pills start at the left. Show details and Show
+advanced are now the pills Details and Advanced at the right end of that row. Under the name they say Show or Hide.
+The window always opens 900 pixels wide, also when it was wider before. It fits its height to the page once it shows,
+so a first window no longer cuts half of the page off. The tooltips are rounded boxes on the window's dark background,
+as in the suite's other apps. The wiki's picture of the window shows the new row.
+
+Changelog: 24-11-2026 04:05:33
+
+Fixed. While a script runs, the current step's row says Running, in orange, instead of Do this now. The wiki's picture
+of the window shows the step rows.
+
+Changelog: 24-11-2026 03:54:56
+
+Fixed. Install no longer writes the masks to the GPU while the desktop runs, because that can freeze the board.
+bc250-cu-unlock.sh --install now only saves the masks and turns on the boot service. The unlock turns on at the next
+restart, before the desktop starts. Step 4 then says to restart, and its Restart pill asks first.
+
+Added. The four steps are rows at the top of the window. Each row says Done, Do this now, Stopped or Later, and what
+came out of the step. The current step's row says the one thing to do, with its pill on the row. The other pills sit
+at the bottom under Other actions. When everything is done, a green bar over the steps says that you're finished.
+Step 4 is now called Choose and install. Active now shows the CUs the boot service applied at this boot.
+
+Changelog: 24-11-2026 03:07:27
+
+Fixed. The CU test measured a GPU load of 0% on the BC-250, because the kernel can't fill gpu_busy_percent there. Every
+result then said "GPU load only reached 0%", and the idle check before a write could never see a busy GPU. Where that
+file can't be read, the script now adds up each program's gfx and compute time from /proc/<pid>/fdinfo, as Board Test
+does. On the board it read 0% at idle and 98% under memtest_vulkan.
+
+Changelog: 24-11-2026 00:46:40
+
+Fixed. The baseline check stopped a one-boot test after its safety check: in the same boot the registers held the
+script's own writes, not the chip's, and the check refused the board's own masks. It now runs only before the first
+attempt of a boot. A new file, umr-written, records the boot whose registers the script wrote, and --reset keeps it.
+
+Changelog: 24-11-2026 00:38:43
+
+Added. The window says the one thing to do now, in a line under the step's heading, and the pill it names has an accent
+border. While a script runs, an orange turning symbol beside the pills says what runs and for how long. The window is
+more compact: the hint and what comes next sit beside the pills, Show details and Show advanced sit at the right end of
+the legend, and the map's cells are lower. It never opens higher than the screen, an older saved size included, and its
+page scrolls when needed. Refresh is the suite's small round symbol beside the info symbol, a copy of core's
+RefreshButton, not a framed button.
+
+Fixed. During a test the window stayed on the step it started from, for example Scan during the whole safety check,
+without the live line. It now reads the results again at every attempt and moves to the step that runs. Step 1 no
+longer says "with the restarts" when the test runs in one boot.
+
+Changelog: 24-11-2026 00:00:03
+
+Fixed. The wiki chapter explains the CU counts in one highlighted box near its top, "24, 32 or 40 CUs, and the counts
+in between". It holds that the 24 stock CUs differ per board, why only 24, 32 and 40 CUs help, the example masks,
+and the counts in between, such as 34, 36 and 38 CUs. The step-by-step part and How it works point to it. The
+window's link Why uneven CUs don't help now leads to the box.
+
+Changelog: 23-11-2026 23:55:44
+
+Fixed. The wiki chapter opens with a box that says the 24 stock CUs differ per board. Which 2 WGPs per shader
+array a chip has switched off differs per chip, so the stock masks differ too. The chapter assumed
+0x07,0x07,0x07,0x07 on every board before. The masks in its first table are now marked as examples.
+
+Changelog: 23-11-2026 23:52:38
+
+Added. The board doesn't go to sleep while a test runs. Each test run of the script holds the standard sleep block of
+systemd-inhibit, with the reason "A CU test is running", and the block ends with the run. The scan and the report
+don't block sleep.
+
+Changelog: 23-11-2026 23:50:27
+
+Added. When a test ends, the window shows a desktop notification that stays until you click it. It says that the
+test is done, with the WGPs that fail and the highest even level, or that it stopped, or how the combined test went.
+Stop and Pause send none. The notification goes through notify-send, as Board Test's do.
+
+Changelog: 23-11-2026 23:47:04
+
+Added. The map has a Mask column: each row's mask as a hex value, with the same bits under it. Step 1 names the
+board's own masks in one line. Same boot is on by default, so a test runs every attempt in one boot, asks for the
+password once and needs no one by the board. After the safety check passes, the WGP test starts by itself. The
+window keeps one terminal for all its script runs, so sudo asks once. Turn Same boot off to test a failing WGP again
+with a restart per attempt. The autostart entry opens the same window and scripts that started the test, also from
+a checkout.
+
+Changelog: 23-11-2026 23:10:48
+
+Added. Step 4 of the window shows the uneven CU counts between the highest even level and all healthy WGPs, for
+example 34, 36 and 38 CUs, with the WGPs per row. They are status boxes for comparison with other tools and can't be
+applied. A link beside them leads to the wiki's explanation of why uneven CUs don't help.
+
+Changelog: 23-11-2026 22:59:57
+
+Fixed. bc250-cu-bisect.sh refuses a baseline that switches off a WGP the chip runs, and names that WGP and the
+board's own masks. The chip marks its switched-off WGPs in CC_GC_SHADER_ARRAY_CONFIG, and they differ per board. On
+a board with 0x07,0x07,0x07,0x0b, the baseline 0x07,0x07,0x07,0x07 turned a working WGP off and a switched-off one
+on. Its control then reset the GPU. The window's Baseline field is gone, with its choices Stock, 24 CUs, Unlocked,
+40 CUs and Custom.... The test always starts from the board's own masks. The wiki said that stock is
+0x07,0x07,0x07,0x07 on every board. That was wrong, and the chapter now says the stock masks differ per board.
+
+Changelog: 23-11-2026 22:35:20
+
+Added. bc250-cu-bisect.sh has a test option for the unlock method itself, --writes. It writes only the registers you
+name, from cc, spi and rlc. Without it, the script writes all three, as before. The script now also shows the live
+value of RLC_PG_ALWAYS_ON_WGP_MASK beside the masks and CC. A result written with --writes says which registers in
+its note.
+
+Changelog: 23-11-2026 22:00:34
+
+Added. The window runs the CU test itself, in four steps, and no terminal opens anymore. Step 1 scans the board.
+Step 2 runs the safety check, which is the control. Step 3 tests each locked WGP. In step 4 you choose 24, 32 or 40
+CUs, and the window runs the combined test and installs the unlock. A map shows each WGP's state in words and color.
+The window asks once before the test. It then restarts the board by itself after each attempt, with a countdown and
+Pause. An autostart entry, ~/.config/autostart/bc250-cu-tools-resume.desktop, opens it again after each login. When
+the safety check fails, the window stops and says that the unlock method breaks on this board. Load per attempt,
+Rounds per item, Baseline, Same boot and No watch are under Show advanced. Control only, Unattended and Auto resume
+are gone from the window. The safety check and the combined test do what Control only did. The script keeps
+--control-only and --auto. The window no longer installs bc250-cu-bisect-auto.service. Preview a mask and Re-check
+are gone, and the round refresh symbol reads the results again. The uninstall removes the autostart entry.
+bc250-cu-bisect.sh has two new options. --scan reads the live masks and what a run needs, and writes no register.
+--only ITEM runs the attempts of one item only. With BC250_GUI=1 the script prints lines for the window and asks its
+questions as whole lines. Without it, the script works as before. The "Changes the board" text in the portal and the
+wiki chapter says how the window restarts the board now.
+
 Changelog: 23-11-2026 05:15:41
 
 Release 1.1.1.

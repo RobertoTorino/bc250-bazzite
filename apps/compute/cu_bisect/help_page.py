@@ -16,9 +16,10 @@ from __future__ import annotations
 import html
 import re
 
-WINDOW = ("This window starts <code>bc250-cu-bisect.sh</code> for you. Choose the options, then click <b>Start</b>. "
-          "The window closes, and the run continues in a terminal, exactly as if you typed the command yourself. "
-          "Hover a field or a pill to see what it does.")
+WINDOW = ("This window runs <code>bc250-cu-bisect.sh</code> for you, in four steps. The scan reads the board. "
+          "The safety check tests the unlock method. Then each locked WGP is tested, and you choose 24, 32 or 40 CUs. "
+          "The window restarts the board between attempts and goes on after the login. Below is the script's own "
+          "help, for the options under <b>Show advanced</b>.")
 
 _TERM = re.compile(r"^  (\S(?:.*?\S)?)\s{2,}(\S.*)$")             # "  control   the same register writes"
 _OPTION = re.compile(r"^\s{2,6}(-\S.*?)\s{2,}(\S.*)$")            # "  -t, --time SECS       GPU load per attempt"

@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Removes the separate unlock window of before (BC-250 Cores Unlock, bc250-cores-unlock-gui) for the current user:
-# CPU Tools' one window has the unlock now, and install-bisect-gui.sh runs this on an update. Does not touch the
-# unlock service - use Uninstall in CPU Tools, or "sudo ./bc250-cores-unlock.sh --uninstall", if you also want the
+# Core Unlock's one window has the unlock now, and install-bisect-gui.sh runs this on an update. Does not touch the
+# unlock service - use Uninstall in Core Unlock, or "sudo ./bc250-cores-unlock.sh --uninstall", if you also want the
 # unlock itself removed.
 set -euo pipefail
 

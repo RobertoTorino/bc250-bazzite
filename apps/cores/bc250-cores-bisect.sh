@@ -53,6 +53,10 @@
 #       --same-boot       don't restart between bisect attempts (faster, less isolation)
 #       --auto            don't ask anything. Restart after each attempt, and go on after every
 #                         login until every item is done. This needs the autostart unit, see the wiki.
+#       --only ITEM       run only the attempts of one item, for example post-control. The window
+#                         runs the post-control's rounds first this way. The report stays as it is.
+#       --scan            read the presence mask, the cores and what a run needs, then exit. It
+#                         writes nothing to the SMU.
 #       --status          show the results so far and write the report, then exit
 #       --reset           delete the results and start over
 #   -V, --version         show the version
@@ -64,16 +68,18 @@ set -u
 if (( BASH_VERSINFO[0] < 4 )); then echo "bash 4 or newer is needed." >&2; exit 1; fi
 
 VERSION="1.1.1"
-STRESS_SECS="" ROUNDS_OPT="" SAME_BOOT=0 AUTO=0 MODE=run
+STRESS_SECS="" ROUNDS_OPT="" SAME_BOOT=0 AUTO=0 MODE=run ONLY=""
 LOAD_TOOL_OPT="" MPRIME_BIN_OPT="" RAS_OPT=""
 LOAD_TOOL=stress-ng MPRIME_BIN="" STRESS_BIN="" RAS=0 MPRIME_DIR=""
 
 say()  { printf '%s\n' "$*"; }
 hdr()  { printf '\n=== %s ===\n' "$*"; }
 die()  { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
-ask()  { # prompt [default-used-in---auto-mode]; only the answer goes to stdout (callers capture it)
+ev()   { [[ -z ${BC250_GUI:-} ]] || printf '@@ %s\n' "$*"; }   # a line for Core Unlock's window (BC250_GUI=1), not for people
+ask()  { # prompt [default-used-in---auto-mode] [name for the window]; only the answer goes to stdout (callers capture it)
   local prompt=$1 def=${2:-}
   if (( AUTO )); then say "$prompt -> auto: ${def:-(none)}" >&2; printf '%s' "$def"; return 0; fi
+  if [[ -n ${BC250_GUI:-} ]]; then say "$prompt" >&2; ev ask "${3:-question}" >&2; local a; read -r a; printf '%s' "$a"; return 0; fi
   local a; read -rp "$prompt " a; printf '%s' "$a"
 }
 do_reboot() { # --no-ask-password: fail instead of raising a GUI auth popup, then fall back to sudo
@@ -100,6 +106,8 @@ while (( $# )); do
     --mprime-bin) MPRIME_BIN_OPT=${2:-}; shift ;;
     --rasdaemon)  RAS_OPT=1 ;;
     --same-boot)  SAME_BOOT=1 ;;
+    --only)       ONLY=${2:-}; shift ;;
+    --scan)       MODE=scan ;;
     --auto)       AUTO=1 ;;
     --status)     MODE=status ;;
     --reset)      MODE=reset ;;
@@ -348,12 +356,14 @@ record() { # round item cpus outcome mces verify_errs maxtemp maxfreq note load_
   local IFS=$'\t'
   printf '%s\n' "${fields[*]}" >>"$RUNS"
   sync "$RUNS" 2>/dev/null
+  ev result "$1" "$2" "$4"
 }
 attempt_done() { awk -F'\t' -v r="$1" -v i="$2" '$3==r && $4==i && $6!="ABORTED"{f=1} END{exit !f}' "$RUNS"; }
 next_attempt() { # prints "round item" of the first attempt without a result
   local r it
   for (( r = 1; r <= ROUNDS; r++ )); do
     for it in "${ITEMS[@]}"; do
+      [[ -z $ONLY || $it == "$ONLY" ]] || continue
       attempt_done "$r" "$it" || { echo "$r $it"; return 0; }
     done
   done
@@ -493,7 +503,7 @@ write_report() { # report + every raw file of the run in ~/Desktop/bc250-cores-b
 
 # ------------------------------------------------------------------ state ---
 if [[ $MODE == reset ]]; then
-  [[ $(ask "Delete all results in $STATE_DIR and start over? [y/N]" n) =~ ^[Yy]$ ]] || exit 0
+  [[ $(ask "Delete all results in $STATE_DIR and start over? [y/N]" n reset) =~ ^[Yy]$ ]] || exit 0
   rm -f "$CONFIG" "$RUNS" "$PENDING" "$LASTBOOT"; rm -rf "$LOGS" "$STATE_DIR/mprime"
   say "Results deleted."; exit 0
 fi
@@ -528,7 +538,7 @@ fi
 command -v lspci >/dev/null 2>&1 && command -v setpci >/dev/null 2>&1 || die "lspci/setpci not found. Install pciutils."
 lspci -nn 2>/dev/null | grep -qi '1002:13fe' || die "no BC-250 (1002:13fe) found. Refusing to touch the SMU."
 if [[ $LOAD_TOOL == stress-ng || $LOAD_TOOL == both ]]; then
-  STRESS_BIN=$(command -v stress-ng 2>/dev/null) || die "stress-ng not found. Install it, or use --load mprime."
+  STRESS_BIN=$(command -v stress-ng 2>/dev/null) || [[ $MODE == scan ]] || die "stress-ng not found. Install it, or use --load mprime."
 fi
 if [[ $LOAD_TOOL == mprime || $LOAD_TOOL == both ]]; then
   if [[ -z $MPRIME_BIN || ! -x $MPRIME_BIN ]]; then
@@ -537,12 +547,12 @@ if [[ $LOAD_TOOL == mprime || $LOAD_TOOL == both ]]; then
              [[ -x $p ]] && { MPRIME_BIN=$p; break; }
            done; }
   fi
-  [[ -n $MPRIME_BIN && -x $MPRIME_BIN ]] || die "mprime not found. Install it, or pass --mprime-bin PATH. The wiki says how. Prime95/mprime is a separate download from mersenne.org."
+  [[ -n $MPRIME_BIN && -x $MPRIME_BIN ]] || [[ $MODE == scan ]] || die "mprime not found. Install it, or pass --mprime-bin PATH. The wiki says how. Prime95/mprime is a separate download from mersenne.org."
   command -v timeout >/dev/null 2>&1 || die "timeout (coreutils) not found. It stops mprime after --time seconds."
-  cfg_set MPRIME_BIN "$MPRIME_BIN"
+  [[ $MODE == scan ]] || cfg_set MPRIME_BIN "$MPRIME_BIN"
 fi
 if (( RAS )); then
-  command -v ras-mc-ctl >/dev/null 2>&1 || die "--rasdaemon: ras-mc-ctl not found. Install rasdaemon (Fedora/Bazzite: rpm-ostree install rasdaemon)."
+  command -v ras-mc-ctl >/dev/null 2>&1 || [[ $MODE == scan ]] || die "--rasdaemon: ras-mc-ctl not found. Install rasdaemon (Fedora/Bazzite: rpm-ostree install rasdaemon)."
   if ! systemctl is-active --quiet rasdaemon 2>/dev/null; then
     say "WARNING: --rasdaemon: the rasdaemon service is not active, so it records nothing."
     say "         Start it first: sudo systemctl enable --now rasdaemon"
@@ -565,6 +575,23 @@ fi
 MASK=$(core_mask) || die "could not read the core presence mask (SMN $(printf '0x%X' "$MASK_REG")) via $NB_BDF."
 NT=$(nthreads)
 
+# ------------------------------------------------------------------- scan ---
+if [[ $MODE == scan ]]; then
+  SERVICE=$(systemctl is-enabled bc250-cores-unlock.service 2>/dev/null); SERVICE=${SERVICE:-not-found}
+  hdr "Scan (reads only, writes nothing to the SMU)"
+  say "Presence mask: $MASK   Threads online: $NT   Cores online: $(online_core_ids)"
+  say "bc250-cores-unlock.service: $SERVICE"
+  say "stress-ng: ${STRESS_BIN:-not found}"
+  ev scan mask "$MASK"
+  ev scan threads "$NT"
+  ev scan cores "$(online_core_ids)"
+  ev scan service "$SERVICE"
+  ev scan stress-ng "$(command -v stress-ng 2>/dev/null || echo -)"
+  ev scan load "$LOAD_TOOL"
+  kill "$KEEPALIVE" 2>/dev/null
+  exit 0
+fi
+
 # -------------------------------------------------- crash from last boot ----
 if [[ -s $PENDING ]]; then
   read -r P_ROUND P_ITEM P_BOOT P_CPUS P_SECS P_TOOL <"$PENDING"
@@ -579,7 +606,7 @@ if [[ -s $PENDING ]]; then
       PREV_RAS=$(ras_error_lines | tail -5)
       [[ -n $PREV_RAS ]] && { say "Most recent hardware errors recorded by rasdaemon:"; say "$PREV_RAS"; }
     fi
-    if [[ $(ask "Did the system freeze, crash or restart by itself? [Y/n]" y) =~ ^[Nn]$ ]]; then
+    if [[ $(ask "Did the system freeze, crash or restart by itself? [Y/n]" y crash) =~ ^[Nn]$ ]]; then
       record "$P_ROUND" "$P_ITEM" "$P_CPUS" ABORTED - - - - "rebooted by hand during the attempt" - "$P_TOOL" -
       say "Recorded as interrupted. This attempt will run again."
     else
@@ -643,6 +670,11 @@ elif [[ $PHASE == unlock-pending ]]; then
 fi
 
 build_plan
+# --only names an item of the bisect phase; before the unlock (or after a cold boot reverted it) the control runs
+if [[ -n $ONLY && " ${ITEMS[*]} " != *" $ONLY "* ]]; then
+  [[ $PHASE == bisect ]] && die "--only needs an item of this run: ${ITEMS[*]}"
+  ONLY=""
+fi
 
 hdr "BC-250 cores bisect $VERSION"
 say "Phase: $PHASE   Presence mask: $MASK   Threads online: $NT"
@@ -661,7 +693,7 @@ if awk -F'\t' '$6!="ABORTED"{f=1} END{exit !f}' "$RUNS"; then
     hdr "Settings changed during a run"
     for w in "${CHANGES[@]}"; do say "- $w"; done
     say "The report will list the load per attempt. For a uniform result, use --reset and start over."
-    [[ $(ask "Continue with the new settings? [y/N]" y) =~ ^[Yy]$ ]] || exit 0
+    [[ $(ask "Continue with the new settings? [y/N]" y settings) =~ ^[Yy]$ ]] || exit 0
   fi
 fi
 cfg_set ROUNDS "$ROUNDS"; cfg_set TIME "$STRESS_SECS"; cfg_set LOAD_TOOL "$LOAD_TOOL"; cfg_set RAS "$RAS"
@@ -680,21 +712,26 @@ offer_unlock() {
   hdr "Control passed - ready to unlock"
   say "The next step is one SMU write. It sets the presence mask to 0xFF (all 8 cores). It only takes"
   say "effect on the next restart, and a full power off reverts it. Nothing stays after a power off yet."
-  [[ $(ask "Apply the core unlock now? [y/N]" y) =~ ^[Yy]$ ]] || { say "Stopped before the core unlock."; exit 0; }
+  [[ $(ask "Apply the core unlock now? [y/N]" y unlock) =~ ^[Yy]$ ]] || { say "Stopped before the core unlock."; exit 0; }
   cfg_set BASE_THREADS "$NT"
   apply_unlock || die "the core unlock failed. Nothing lasting changed. See the message above."
   cfg_set PHASE unlock-pending
+  ev unlocked
   say "The mask is 0xFF. Do a warm restart to bring the cores up, and do NOT power off."
   if (( AUTO )); then say "Restarting by itself (--auto)..."; do_reboot
   else
-    [[ $(ask "Restart now? [Y/n]" y) =~ ^[Nn]$ ]] || do_reboot
+    [[ $(ask "Restart now? [Y/n]" y restart) =~ ^[Nn]$ ]] || do_reboot
   fi
   exit 0
 }
 
 if ! NEXT=$(next_attempt); then
   if [[ $PHASE == control ]]; then offer_unlock
-  else summary; write_report; exit 0; fi
+  else
+    summary; ev finished
+    [[ -n $ONLY ]] || write_report
+    exit 0
+  fi
 fi
 
 # ---------------------------------------------------------- safety checks ---
@@ -702,6 +739,7 @@ if [[ $SAME_BOOT == 0 && $(cat "$LASTBOOT" 2>/dev/null) == "$BOOT_ID" ]]; then
   say ""
   say "An attempt already ran in this boot. Do a warm restart, which keeps the core unlock. Then run"
   say "the script again, or use --same-boot. Next: round ${NEXT% *}, ${NEXT#* }."
+  ev restart-first
   (( AUTO )) && { say "Restarting by itself (--auto)..."; do_reboot; }
   exit 0
 fi
@@ -712,7 +750,7 @@ LOADAVG=$(awk '{print int($1)}' /proc/loadavg)
 if (( ${#WARNINGS[@]} )); then
   hdr "Before you start"
   for w in "${WARNINGS[@]}"; do say "- $w"; done
-  [[ $(ask "Continue anyway? [y/N]" y) =~ ^[Yy]$ ]] || exit 0
+  [[ $(ask "Continue anyway? [y/N]" y warnings) =~ ^[Yy]$ ]] || exit 0
 fi
 say ""
 say "WARNING: a genuinely bad core can freeze the system or corrupt data under load."
@@ -741,9 +779,10 @@ monitor_load() { # cpus - watch $LOAD_PID, track the peaks, return the load's ex
     sleep 5
     v=$(cpu_temp); (( v > MON_MAXT )) && MON_MAXT=$v
     v=$(cpu_freq "$cpus"); (( v > MON_MAXF )) && MON_MAXF=$v
-    printf '\r  %3ds  %s C  %s MHz   ' "$(( SECONDS - start ))" "$MON_MAXT" "$MON_MAXF"
+    if [[ -n ${BC250_GUI:-} ]]; then ev load "$(( SECONDS - start ))" "$STRESS_SECS" "$MON_MAXT" "$MON_MAXF"
+    else printf '\r  %3ds  %s C  %s MHz   ' "$(( SECONDS - start ))" "$MON_MAXT" "$MON_MAXF"; fi
   done
-  wait "$LOAD_PID"; rc=$?; LOAD_PID=""; echo
+  wait "$LOAD_PID"; rc=$?; LOAD_PID=""; [[ -n ${BC250_GUI:-} ]] || echo
   return $rc
 }
 
@@ -752,6 +791,7 @@ run_attempt() { # round item
   local log mlog ras0=0 ras_new=0 mp_failed=0
   log="$LOGS/$(date '+%Y%m%d-%H%M%S')-r$1-$2.log"; mlog="${log%.log}-mprime.log"
   hdr "Round $r/$ROUNDS: $it  (CPUs $cpus)"
+  ev attempt "$r" "$it" "${cpus:--}"
   [[ -n ${BASE_CORES:-} ]] && draw_core_map "$it"
   if [[ -z $cpus ]]; then
     record "$r" "$it" "-" OFFLINE - - - - "no online CPUs found for this item" - "$LOAD_TOOL" -; return 0
@@ -764,8 +804,11 @@ run_attempt() { # round item
   MON_MAXT=0 MON_MAXF=0
 
   if [[ $LOAD_TOOL == stress-ng || $LOAD_TOOL == both ]]; then
+    ev phase stress-ng
     say "Running stress-ng --verify on CPUs $cpus for ${STRESS_SECS}s..."
-    taskset -c "$cpus" "$STRESS_BIN" --cpu "$n" --cpu-method all --verify \
+    # --temp-path: stress-ng 0.22 refuses to start in a folder it can't write, such as the root-owned app folder the
+    # window starts in, even for --cpu.
+    taskset -c "$cpus" "$STRESS_BIN" --cpu "$n" --cpu-method all --verify --temp-path "$LOGS" \
       --timeout "${STRESS_SECS}s" --metrics-brief </dev/null >"$log" 2>&1 &
     LOAD_PID=$!
     monitor_load "$cpus"; rc=$?
@@ -774,6 +817,7 @@ run_attempt() { # round item
   fi
   # mprime runs after stress-ng (not next to it) so the two never fight over the same threads
   if [[ $LOAD_TOOL == mprime || $LOAD_TOOL == both ]] && (( rc == 0 )); then
+    ev phase mprime
     say "Running mprime torture test on CPUs $cpus for ${STRESS_SECS}s..."
     if mprime_start "$it" "$cpus" "$n" "$STRESS_SECS" "$mlog"; then
       local mp_rc; monitor_load "$cpus"; mp_rc=$?
@@ -821,7 +865,11 @@ if [[ $SAME_BOOT == 1 ]]; then
     say "Cooling down 30 s..."; sleep 30
   done
   if [[ $PHASE == control ]] && ! next_attempt >/dev/null; then offer_unlock; fi
-  summary; next_attempt >/dev/null || { write_report; auto_cleanup; }
+  summary
+  if ! next_attempt >/dev/null; then
+    ev finished
+    [[ -n $ONLY ]] || { write_report; auto_cleanup; }
+  fi
 else
   run_attempt ${NEXT% *} "${NEXT#* }"
   if [[ $PHASE == control ]] && ! next_attempt >/dev/null; then offer_unlock; fi
@@ -830,13 +878,14 @@ else
     say ""
     say "Next: round ${NEXT% *}, ${NEXT#* }. Each attempt needs a fresh boot."
     say "Do a WARM restart and do not power off. A cold boot reverts the core unlock."
+    ev next "${NEXT% *}" "${NEXT#* }"
     if (( AUTO )); then say "Restarting by itself to continue (--auto)..."; do_reboot
     else
-      [[ $(ask "Restart now? [Y/n]" y) =~ ^[Nn]$ ]] || do_reboot
+      [[ $(ask "Restart now? [Y/n]" y restart) =~ ^[Nn]$ ]] || do_reboot
     fi
   else
-    write_report
-    auto_cleanup
+    ev finished
+    [[ -n $ONLY ]] || { write_report; auto_cleanup; }
     say "Done. A full power off (cold boot) reverts the core unlock to the stock 6C/12T."
   fi
 fi

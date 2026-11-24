@@ -1,21 +1,21 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![BC-250 CPU Tools](../assets/cores/bc250-cores-bisect.webp){ .app-logo }
+![BC-250 Core Unlock](../assets/cores/bc250-cores-bisect.webp){ .app-logo }
 
-# BC-250 CPU Tools
+# BC-250 Core Unlock
 
 !!! warning "Changes the board"
     The app sends the SoC's SMU one mailbox message over PCI configuration space with setpci. The message sets the core
     presence mask to 0xFF in the SMU's own memory. The governor's service shares the mailbox, so the app stops it around
     the message and starts it again. The mask takes effect on the next warm reboot and survives warm reboots. A full
-    power off reverts it to the stock 6 cores. The 8 cores stay across power offs only through the root service that CPU
-    Tools installs, bc250-cores-unlock.service. After a cold boot the service sends the message again and warm-reboots
-    once. A guard keeps it from reboot loops. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's
-    arguments. Uninstall in CPU Tools disables the service and removes its files. The cores stay on until the next full
-    power off, and after it the board is stock. CPU Tools restarts the board between its rounds. With the unattended
-    option it does so by itself, otherwise after a question.
+    power off reverts it to the stock 6 cores. The 8 cores stay across power offs only through the root service that
+    Core Unlock installs, bc250-cores-unlock.service. After a cold boot the service sends the message again and
+    warm-reboots once. A guard keeps it from reboot loops. Nothing is written to the BIOS, the firmware, the CMOS or the
+    kernel's arguments. Uninstall in Core Unlock disables the service and removes its files. The cores stay on until the
+    next full power off, and after it the board is stock. Core Unlock restarts the board after the core unlock,
+    and between its rounds when Same boot is off. It counts down 15 seconds first, and Pause stops it.
 
-BC-250 CPU Tools tells **bad CPU cores** apart from an **unstable core unlock** on the AMD BC-250 (Cyan Skillfish).
+BC-250 Core Unlock tells **bad CPU cores** apart from an **unstable core unlock** on the AMD BC-250 (Cyan Skillfish).
 Use it *before* you trust or keep the 8C/16T core unlock.
 
 The BC-250 ships with 6 of its 8 Zen 2 cores enabled. Its core presence mask is `0x77`. Core 3 of each CCX
@@ -128,6 +128,8 @@ chmod +x bc250-cores-bisect.sh
 ./bc250-cores-bisect.sh --load both     # stress-ng *and* the mprime torture test per attempt
 ./bc250-cores-bisect.sh --rasdaemon     # also count hardware errors via ras-mc-ctl
 ./bc250-cores-bisect.sh --status        # results so far, report + logs in ~/Desktop/bc250-cores-bisect/
+./bc250-cores-bisect.sh --scan          # read the cores and what a run needs, write nothing
+./bc250-cores-bisect.sh --only post-control   # run only the attempts of one item
 ./bc250-cores-bisect.sh --reset         # delete the results and start over
 ./bc250-cores-bisect.sh --help
 ```
@@ -158,6 +160,7 @@ That makes it easy to share.
 | `auto.log`                                   | Everything the script printed in `--auto` runs.              |
 
 The working copies live in `~/.local/share/bc250-cores-bisect/`. `--reset` deletes those, not the Desktop folder.
+stress-ng keeps its temporary files in `logs/` there. So the script works from any folder, a read-only one too.
 
 Pick `-t`/`-r` before you start and keep them. You *can* change them mid-run. The script then keeps the results so
 far and asks you to confirm. But the evidence is then mixed. The report lists the load of every attempt. A control
@@ -292,7 +295,7 @@ tar -xzf p95v3019b20.linux64.tar.gz
 ```
 
 The third line compares the download with the SHA-256 that mersenne.org's download page lists, and prints
-`p95v3019b20.linux64.tar.gz: OK`. You need nothing more. BC-250 CPU Tools and Nexus Deps look for `mprime` in these
+`p95v3019b20.linux64.tar.gz: OK`. You need nothing more. BC-250 Core Unlock and Nexus Deps look for `mprime` in these
 places, in this order:
 
 1. `$PATH`
@@ -328,81 +331,149 @@ shows the mask, the threads, and the state of the service and the guard.
 
 ## The window
 
-![The window of BC-250 CPU Tools](../assets/cores/bc-cores-bisect-gui.webp)
+![The window of BC-250 Core Unlock](../assets/cores/bc-cores-bisect-gui.webp)
 
-`cores_bisect` is an optional PyQt6 window for both scripts, on one page. Its top half sets up a run of
-`bc250-cores-bisect.sh` and starts it. Its bottom half keeps a tested unlock with `bc250-cores-unlock.sh`. The
-window doesn't run the core bisect itself. **Start** hands off to a terminal that runs the exact command line you
-would type by hand, and the window closes. You can also type everything it does by hand.
+The window runs the core test for you, step by step. You see which cores are on, what is tested now and what comes
+next. It runs `bc250-cores-bisect.sh` and `bc250-cores-unlock.sh` itself, inside the window. No terminal opens.
 
-**Starting a run.** The pills under the title:
+Four boxes under the title show where you are:
 
-* **Help** says what the window does. Then it shows the script's own `--help` as a page. The page covers what the
-  script does, the control, post-control and core items, and every option in a table.
-* **Start** shows a summary of the options and, after Yes, starts the run in a terminal.
-* **Show status** runs `--status` in a terminal. You see the results so far and the report. It starts nothing.
-* **Reset** runs `--reset` after a question. That deletes every saved result and log in
-  `~/.local/share/bc250-cores-bisect`. The script asks once more in the terminal.
+- **Cores on now** shows how many of the 8 cores are on, for example **6 of 8**.
+- **Boot unlock** says whether the boot service is **Installed**.
+- **Attempts done** shows how far the test is.
+- **Test** says whether the test is ready, running, paused, stopped or done.
 
-Under them, on one line, are three fields:
+The info symbol says what the app does. The round symbol at the right end of the title row reads the results, the
+cores and the boot service again.
 
-* **Load per attempt** (`-t`)
-* **Rounds per item** (`-r`)
-* **Load tool** (`--load`), with the choices stress-ng, mprime and both
+Under the boxes are the five steps, one row each. Each row says **Done**, **Do this now**, **Running**, **Stopped** or
+**Later**. A row that is done says what came out of it, for example "Passed 3 of 3 rounds on the 6 stock cores."
+
+The row of the step you're on says the one thing to do now, for example "Click **Start**. The test of cores 3 and 7
+takes about 20 minutes." The pill it names sits on that row, with an accent border all round. The other pills sit at
+the bottom left. While the test runs, the row says that there is nothing to do.
+
+Click a row that is done to look at that step again. A click on a row only shows the step. It doesn't start anything.
+
+When everything is done, a green bar over the steps says so: "Finished. Your board runs all 8 cores at every boot.
+There is nothing left to do." The bar also shows when you chose to stay at the stock cores.
+
+While a script runs, an orange turning symbol beside the pills says what runs and for how long. An example is
+"Running: round 1, core3 · 64 s". While the window follows a test, it moves to the step that runs, attempt by attempt.
+
+The window opens 900 pixels wide, as wide as the map needs. It never opens higher than your screen. When the page is
+higher than the window, the page scrolls. An example is with **Details** open. The **Details** and **Advanced** pills
+are at the right end of the bottom row. Under the name they say **Show** or **Hide**.
+
+The map shows the 8 physical cores. Each cell shows its state in words and in color:
+
+- green, **On**: a stock core
+- gray, **Not tested**: a new core without a result yet
+- yellow, **Testing**: the core under test now
+- blue, **Healthy**: it passed every round
+- red, **Fails**: it failed every round
+- orange, **Random**: it failed in some rounds only
+
+**Step 1, Scan.** **Scan** reads the core presence mask and the cores with `--scan`. It writes nothing to the SMU.
+You're asked for your password, because the mask needs root. The window then says how many cores are on, which are
+switched off, and what the mask is. It also says how long each part of the test takes. These block the test:
+
+- A core unlock is active, so all 8 cores are on already. Switch the board fully off once, then scan again.
+- The mask isn't the usual `0x77`. Your switched-off cores are then very likely defective.
+- `stress-ng` isn't found, while the load tool needs it.
+
+**Start test** asks once, then starts the test of the stock cores. **Help** shows the script's own help as a page.
+
+**Step 2, Test the stock cores.** This is the control. The 6 stock cores run the load together, before anything is
+unlocked. When a round fails, the window stops here. The board itself, its power or its heat is then at fault. The
+window names the round's outcome and offers these pills:
+
+- **Stay at 6** ends the test. Nothing is installed.
+- **Start over** deletes the results after a question, so you can test again.
+- **Details** shows the script's results.
+
+**Step 3, Unlock and restart.** When every round of the stock cores passed, a notification says so. **Unlock** asks
+first. Then the script writes the core unlock, and the board restarts by itself 15 seconds later. **Restart now**
+doesn't wait, and **Pause** stops the countdown. After a pause, **Restart** restarts the board.
+
+Restart the board, but don't switch it off. A full power off undoes the core unlock. When the new cores didn't come up,
+step 3 says so and offers **Unlock** again.
+
+**Step 4, Test the new cores.** After the restart, the window opens by itself after the login. Step 4 then says what
+to do: "Click **Start**." **Start** asks once, then runs the test of the new cores:
+
+- **post-control**, a stock core, for comparison
+- each new core on its own, for example **core3** and **core7**
+- **combined**, both new cores together
+
+During an attempt, the line under the pills shows the round, the item, the load time, the temperature and the clock.
+**Stop** stops the attempt as Ctrl+C does. The attempt then runs again later.
+
+When the board was switched fully off during the test, the new cores are off. Step 4 then offers **Unlock**. That runs
+`bc250-cores-unlock.sh --apply`, and the board restarts by itself. The test goes on after the login.
+
+**Step 5, Install.** When every new core passed every round, alone and together, a notification says so. **Install**
+asks first. Then it installs the boot service with `bc250-cores-unlock.sh --install`. The cores are on already, so no
+restart is needed. The green bar then says that you're finished. From then on, the service turns all 8 cores on at
+every boot, also after a full power off.
+
+When a core failed, step 5 advises you to stay at 6 cores. The core unlock turns on all cores or none, so it can't keep
+only the healthy one. **Stay at 6** ends the test. Then switch the board fully off once, to put back the stock cores.
+
+**Uninstall** removes the boot service. The cores stay on until the next full power off. Then the board is back at
+the stock cores. **Install** and **Uninstall** ask for your password in a masked prompt. The password goes to
+`sudo -S` only and is never stored. When the service is installed but not all 8 cores are on, **Root status** shows what
+the service did at this boot.
+
+**One boot or restarts.** By default, **Same boot** is on, and every attempt of a step runs in one boot. Between
+attempts, the script lets the cores cool down for 30 seconds. You type your password once, and you can leave the
+board alone until the step is done. The price is that each attempt inherits the board's state from the attempt
+before.
+
+Turn **Same boot** off under **Advanced** to give each attempt a fresh boot. A warm restart keeps the core unlock.
+After an attempt, a countdown of 15 seconds runs, with **Restart now** and **Pause**. While the test runs, an autostart
+entry opens the window after each login. That entry is `~/.config/autostart/bc250-core-unlock-resume.desktop`. The
+window then counts down 20 seconds, with **Go on now** and **Pause**, and runs the next attempt. You're asked for your
+password after each restart, unless sudo needs none.
+
+**Pause** removes the autostart entry, and **Go on** adds it again. The entry also goes by itself when the test is
+done.
+
+**No sleep during a test.** While a test runs, the board doesn't go to sleep. The window holds the standard sleep
+block of `systemd-inhibit`, with the reason "A core test is running". The screen may still turn off or lock, and the
+test goes on. The block ends with each run of the script, so nothing stays behind.
+
+**When a step ends.** You don't have to watch the window. When a step ends, a desktop notification appears and stays
+until you click it:
+
+- **Stock cores passed** says that step 3 is next.
+- **Core test passed** says that the new cores passed and that step 5 is next.
+- **Core test done** names the items that fail every time or at random.
+- **Core test stopped** says that the stock cores failed, or why the script stopped.
+
+No notification comes when you press **Stop** or **Pause** yourself. A frozen board can't send anything, so its
+screen just stays as it was.
+
+**After a freeze.** Switch the board off and on. A power off also undoes the core unlock, so step 4 offers **Unlock**
+first. After that restart, the window asks whether the board froze, crashed or restarted by itself. **Yes** records a
+crash of that attempt. **No** runs the attempt again.
+
+**The script's questions.** The script can warn before an attempt, for example about a busy system. The window then
+shows the warnings and asks once for the whole test. When you change the options during a test, the window asks
+whether to go on with the new settings.
+
+**Advanced** opens the test's options. A test that has started keeps its own options, and the fields show them:
+
+- **Load per attempt** (`-t`)
+- **Rounds per item** (`-r`)
+- **Load tool** (`--load`), with the choices stress-ng, mprime and both
+- **Same boot** (`--same-boot`), on by default, with no restarts between attempts
+- **Hardware log** (`--rasdaemon`)
 
 Hover a choice of **Load tool** to see what it does, and see [Longer burn-in](#longer-burn-in-mprime--rasdaemon).
-Beside the fields is a rough estimate of the whole run, which follows the options. Its tooltip says how the app
-works it out.
 
-The switches are pills that say **On** or **Off**. A click turns one over:
-
-* **Rasdaemon** (`--rasdaemon`) and **Same boot** (`--same-boot`).
-* **Unattended** (`--auto`) turns on **Auto resume** with it. Auto resume writes and enables
-  `~/.config/systemd/user/bc250-cores-bisect-auto.service`, which starts the run again after every restart and
-  login. These are the same steps as the [`--auto` checklist](#running-truly-unattended---auto-checklist). The
-  script disables the service again once every item is done. Auto resume can only be on with Unattended.
-
-**Keeping the core unlock.** The window reads the results that `bc250-cores-bisect.sh` left in
-`~/.local/share/bc250-cores-bisect`. It only enables **Install** once they accept the core unlock. The row for it:
-
-* **Accepted** or **Not accepted** is the verdict on the bisect results. The verdict is Accepted only when all of
-  this is true:
-    * the bisect phase is finished
-    * no attempt is still in progress
-    * control and post-control are clean
-    * every new core and the combined item passed **every** round
-
-    The tooltip says why, for example a failing core or random failures. It also shows notes, which don't block.
-    One note says that the control ran fewer rounds. Another says that the load changed during the run.
-* **Install** enables the root service of `bc250-cores-unlock.sh --install`, which keeps the 8 cores at every
-  boot. The pill is off until the results accept the core unlock.
-* **Uninstall** removes the service. The cores stay on until the next full power off. Then the board is back to
-  the stock 6C/12T.
-* **Refresh** shows the threads and the state of the service and the guard. It runs `--status` and needs no root.
-  It shows the mask too when sudo needs no password.
-* **Root status** shows the same status as root, so it always shows the core presence mask. It asks for the sudo
-  password when sudo needs one.
-* **Re-check** reads the bisect results again, for example after more rounds finished. It writes the verdict and
-  its reasons in the log.
-
-Uninstall, Refresh, Root status and Re-check don't depend on the verdict. Install, Uninstall and Root status run
-`bc250-cores-unlock.sh` through `sudo`. The password prompt is masked. The app passes the password to `sudo -S`
-only and never stores it. The app only asks for the password when sudo needs one.
-
-Under the row are the 8 physical cores in the order of the script's map. The 6 stock cores come first, then the 2
-that the core unlock adds. Each of those 2 has one of these marks:
-
-* `ok` passed every round
-* `xx` fails every time
-* `??` random
-* `..` not tested yet
-
-The **i** beside them explains the marks.
-
-**Show logs** opens what `bc250-cores-unlock.sh` prints, and **Hide logs** closes it again. When an action fails, a
-red **!** with **Check logs** appears beside the button. It goes away when you open the log.
-
-Hover a field, its label or a pill to see what it does. The window remembers its size and position between runs.
+**Details** opens what both scripts print. **Report** writes the results so far to a text file on your Desktop,
+with `--status`. The window remembers its position and the advanced options.
 
 **Installing it: `install.sh`.** Run it from a clone or the extracted release tarball. It installs these parts:
 
@@ -419,7 +490,7 @@ asks for the sudo password.
 ./install.sh                         # install or update
 ./install.sh --no-desktop-shortcut   # app menu entry only, no Desktop icon
 bc250-cores-bisect-gui               # or launch it from the app menu
-./install.sh --uninstall             # remove the app; keeps results, settings and logs (and the unlock itself)
+./install.sh --uninstall             # remove the app and its autostart entry; keeps results, settings, logs and the unlock
 ./install.sh --uninstall --purge     # also remove results, settings, logs and the autostart unit
 ```
 
@@ -429,7 +500,7 @@ you pass `--purge`.
 Per-user alternative, no `/opt` and nothing root-owned:
 
 ```bash
-bash packaging/bazzite/install-bisect-gui.sh     # venv + launcher + menu entry "BC-250 CPU Tools"
+bash packaging/bazzite/install-bisect-gui.sh     # venv + launcher + menu entry "BC-250 Core Unlock"
 bash packaging/bazzite/uninstall-bisect-gui.sh   # removes all of that again (keeps your results and the unlock)
 ```
 
@@ -439,20 +510,6 @@ bash packaging/bazzite/uninstall-bisect-gui.sh   # removes all of that again (ke
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m cores_bisect   # --script PATH and --unlock-script PATH to use other scripts
 ```
-
-You need a terminal emulator to see and run the core bisect. The window tries `$TERMINAL` first, then these:
-
-* konsole
-* gnome-terminal
-* ptyxis
-* xfce4-terminal
-* foot
-* alacritty
-* kitty
-* x-terminal-emulator
-* xterm
-
-The window shows an error if it finds none.
 
 ## Known side effect
 

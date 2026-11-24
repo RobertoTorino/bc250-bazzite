@@ -1,20 +1,22 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![BC-250 CU Tools](../assets/compute/bc250-cu-bisect.webp){ .app-logo }
+![BC-250 CU Unlock](../assets/compute/bc250-cu-bisect.webp){ .app-logo }
 
-# BC-250 CU Tools
+# BC-250 CU Unlock
 
 !!! warning "Changes the board"
     For the CU unlock, the app writes the GPU's shader array and WGP mask registers with umr. It does so as root, while
     the driver runs. The registers are volatile. Any reboot puts the stock 24 CUs back, and nothing is burned into the
-    chip. The unlock stays across reboots and power offs only through the root service that CU Tools installs. That
+    chip. The unlock stays across reboots and power offs only through the root service that CU Unlock installs. That
     service is bc250-cu-unlock.service, with the masks in /etc/bc250-cu-bisect. It writes the registers again early at
-    every boot. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Uninstall in CU Tools
+    every boot. Nothing is written to the BIOS, the firmware, the CMOS or the kernel's arguments. Uninstall in CU Unlock
     disables the service and removes its files. The unlock then lasts until the next reboot, and after it the board is
-    stock. CU Tools restarts the board between its rounds. With the unattended option it does so by itself, otherwise
-    after a question.
+    stock. CU Unlock runs every attempt of a test in one boot by default, and writes the board's own masks back between
+    attempts. With Same boot off, it asks once and then restarts the board by itself after each attempt. While such a
+    test runs, an autostart entry opens the window again after each login. The entry goes when the test ends, is paused
+    or is removed with the app.
 
-BC-250 CU Tools tells **bad CUs** apart from an **unstable CU unlock** on the AMD BC-250 (Cyan Skillfish, gfx1013).
+BC-250 CU Unlock tells **bad CUs** apart from an **unstable CU unlock** on the AMD BC-250 (Cyan Skillfish, gfx1013).
 A CU is a compute unit of the GPU. CUs come in pairs, and a pair is a WGP.
 
 Every BC-250 die differs. AMD fuses off WGPs that failed validation. But a crash after a CU unlock doesn't have to
@@ -28,6 +30,42 @@ causes.
 > **Warning:** this writes GPU registers. A bad WGP or the CU unlock itself can freeze the system. Save your
 > work first. Use at your own risk.
 
+<a id="cu-levels"></a>
+
+!!! warning "24, 32 or 40 CUs, and the counts in between"
+    **The 24 CUs differ per board.** Every BC-250 runs 24 CUs out of the box, but not the same 24 on every board. In
+    each of the 4 shader arrays, the chip has 2 of its 5 WGPs switched off. Which 2 they are differs per chip. So the
+    stock masks differ per board too. For example, one board runs `0x07,0x07,0x07,0x0b`, because on its last row WGP2
+    is off and WGP3 is on.
+
+    Never copy another board's masks, and don't take `0x07,0x07,0x07,0x07` for granted. The window and
+    `bc250-cu-bisect.sh` without `--baseline` read your board's own masks. The script refuses a baseline that
+    switches off a WGP your chip runs.
+
+    **Only 24, 32 or 40 CUs exist.** The GPU front-end splits work across the 4 shader arrays in lockstep. The
+    slowest row caps them all. Unlocking WGPs on only one or two rows doesn't speed anything up, because the other
+    rows still bottleneck at their old CU count. The extra CUs just sit idle, hot and powered. So the only
+    configurations worth having unlock the *same* number of WGPs on every row.
+
+    | WGPs per row | Example mask          | Total CUs              | What you get                       |
+    |--------------|-----------------------|------------------------|------------------------------------|
+    | 3            | `0x07,0x07,0x07,0x07` | **24** (stock/default) | What the board does out of the box |
+    | 4            | `0x0f,0x0f,0x0f,0x0f` | **32**                 | +1 good WGP on each of the 4 rows  |
+    | 5            | `0x1f,0x1f,0x1f,0x1f` | **40** (max)           | +2 good WGPs on each of the 4 rows |
+
+    The per-row mask doesn't have to be exactly `0x0f` or `0x1f`. If WGP3 is bad on a row but WGP4 is good, `0x17`
+    is also 4 WGPs. What matters is that all 4 rows unlock the *same count*. On a row where the chip switched off
+    WGP2, stock is `0x0b`.
+
+    **The counts in between.** When some rows have more healthy WGPs than others, a board counts 34, 36 or 38 CUs.
+    For example, one bad WGP leaves 5, 5, 4 and 5 WGPs on the rows, which is 38 CUs. Other tools and discussions
+    often quote such numbers. Such a board runs as fast as its smallest row, here 32 CUs, while it uses more power
+    and makes more heat. One example is 5 extra CUs on one row and none on another. It would boot and run, but no
+    faster than 24 CUs. CU Unlock shows the counts in between in step 4, for comparison only.
+
+    `bc250-cu-unlock.sh` and the window **refuse** anything else. They reject an uneven mask like
+    `0x1f,0x1f,0x07,0x07` (5/5/3/3) with an error and don't install it. So you're aiming for 32, and trying for 40.
+
 ## Unlocking extra CUs, step by step
 
 New here? This is the whole process, start to finish. If you only read one section, read this one.
@@ -37,14 +75,18 @@ them off because they are defective. Others are fine. These scripts find out whi
 the good ones at every boot.
 
 **The only three outcomes.** The GPU has 4 identical rows, called shader arrays. It feeds all 4 in lockstep, so a
-row with fewer active CUs holds the other three back. Only three settings do anything useful, and the tools here
-will not let you install anything else.
+row with fewer active CUs holds the other three back. Only three settings do anything useful, 24, 32 and 40 CUs, and
+the tools here will not let you install anything else. [The box above](#cu-levels) explains them, with the masks
+and the counts in between.
 
-| Setting                | Mask                  | What you get                      |
-|------------------------|-----------------------|-----------------------------------|
+------------------------|-----------------------|-----------------------------------|
 | **24 CUs** (default)   | `0x07,0x07,0x07,0x07` | What the board does out of the box |
 | **32 CUs**             | `0x0f,0x0f,0x0f,0x0f` | +1 good WGP on each of the 4 rows |
 | **40 CUs** (max)       | `0x1f,0x1f,0x1f,0x1f` | +2 good WGPs on each of the 4 rows |
+
+The masks in this table are examples. Which WGPs a chip has switched off differs per board. One board runs
+`0x07,0x07,0x07,0x0b`, because on its last row WGP2 is off and WGP3 is on. The scripts and the window read your
+board's own masks when they start.
 
 The tools **reject** anything in between. One example is 5 extra CUs on one row and none on another. It would
 boot and run, but no faster than 24 CUs. It would also use more power and make more heat. So you're aiming for
@@ -125,9 +167,9 @@ sudo ./bc250-cu-unlock.sh --uninstall  # stock 24 CUs again from the next boot
 Do this if the system starts misbehaving later. A WGP that passed the tests can still turn out unstable under a
 different game or in a hotter room.
 
-> **Prefer clicking to typing?** [The window](#the-window) does exactly the same thing. Its top half starts
-> steps 2–4, and its bottom half handles steps 5–7. It shows **Accepted** only once your results justify the mask.
-> Until then, **Install** is grayed out.
+> **Prefer clicking to typing?** [The window](#the-window) runs these steps for you, one after the other. It scans
+> the board, tests the unlock method and each WGP, and restarts the board in between. Then you choose 24, 32 or 40
+> CUs, and it runs the combined test and installs the unlock. **Install** stays off until the combined test passed.
 
 ## How it works
 
@@ -157,31 +199,17 @@ Each row is a 5-bit `SPI_PG_ENABLE_STATIC_WGP_MASK` value. WGP0 is bit 0 and WGP
 WGP is unlocked (2 CUs). Read the stock row above from right to left, WGP4 first, to get `00111`, which is `0x07`.
 In it, WGP0-2 are unlocked and WGP3-4 are locked. A row with all 5 WGPs unlocked is `11111`, which is `0x1f`.
 
-The 4 rows are always written together as `SE0.SH0,SE0.SH1,SE1.SH0,SE1.SH1`. So the stock baseline above is
+The 4 rows are always written together as `SE0.SH0,SE0.SH1,SE1.SH0,SE1.SH1`. So the baseline in the map above is
 `0x07,0x07,0x07,0x07` (24 CUs). A fully unlocked board would be `0x1f,0x1f,0x1f,0x1f` (40 CUs). This is exactly
 the format that `--baseline` takes, and that `--status` and the window print back.
 
-That's the default layout. 3 of the 5 WGPs per shader array ship unlocked, which is 24 CUs. The other 2 per array
-are fused off at the factory. Those 8 WGPs (16 CUs) are what this script tests one by one. The script shows this
-same map live while it runs. `>>` marks the WGP under test. Once a WGP has a verdict, it shows `ok` for GOOD, `xx`
-for FAILS EVERY TIME or `??` for RANDOM. See [Results](#results).
+That's a common layout, but not the only one. 3 of the 5 WGPs per shader array ship unlocked, which is 24 CUs. Which 3
+they are differs per board. The other 2 per array are fused off at the factory. Those 8 WGPs (16 CUs) are what this
+script tests one by one. The script shows this same map live while it runs. `>>` marks the WGP under test. Once a WGP
+has a verdict, it shows `ok` for GOOD, `xx` for FAILS EVERY TIME or `??` for RANDOM. See [Results](#results).
 
-> **Only 24, 32 or 40 CUs exist.** The GPU front-end splits work across the 4 shader arrays in lockstep. The
-> slowest row caps them all. Unlocking WGPs on only one or two rows doesn't speed anything up, because the other
-> rows still bottleneck at their old CU count. The extra CUs just sit idle, hot and powered. So the only
-> configurations worth having unlock the *same* number of WGPs on every row.
->
-> | WGPs per row | Mask                  | Total CUs            |
-> |--------------|-----------------------|----------------------|
-> | 3            | `0x07,0x07,0x07,0x07` | **24** (stock/default) |
-> | 4            | `0x0f,0x0f,0x0f,0x0f` | **32**               |
-> | 5            | `0x1f,0x1f,0x1f,0x1f` | **40** (max)         |
->
-> The per-row mask doesn't have to be exactly `0x0f` or `0x1f`. If WGP3 is bad on a row but WGP4 is good, `0x17`
-> is also 4 WGPs. What matters is that all 4 rows unlock the *same count*.
->
-> `bc250-cu-unlock.sh` and the window **refuse** anything else. They reject an uneven mask like
-> `0x1f,0x1f,0x07,0x07` (5/5/3/3) with an error and don't install it.
+**Only 24, 32 or 40 CUs exist.** The box [24, 32 or 40 CUs, and the counts in between](#cu-levels) at the top of
+this chapter explains why.
 
 The test plan:
 
@@ -217,6 +245,8 @@ The test plan:
 2. Cap the GPU governor at 1500 MHz, for example in `/etc/cyan-skillfish-governor-smu/config.toml`. Then power
    and heat don't hide the result. The script warns when the ceiling is higher.
 3. Close games and video players.
+4. Start without `--baseline`, so the script takes your board's own masks. A baseline must keep every WGP your chip
+   runs. The script refuses one that switches off such a WGP, and names it.
 
 ## Usage
 
@@ -226,8 +256,11 @@ Run it as your normal user:
 chmod +x bc250-cu-bisect.sh
 ./bc250-cu-bisect.sh                 # baseline = the stock masks of this boot, 3 rounds, 180 s load
 ./bc250-cu-bisect.sh -t 300 -r 5     # longer load, more rounds
-./bc250-cu-bisect.sh --baseline 0x07,0x07,0x07,0x07   # start from masks you trust
+./bc250-cu-bisect.sh --baseline 0x07,0x07,0x07,0x0b   # masks you trust, with every WGP your chip runs
 ./bc250-cu-bisect.sh --baseline 0x0f,0x0f,0x0f,0x0f --control-only --rounds 1   # re-validate a combined mask, control only
+./bc250-cu-bisect.sh --scan          # live masks and what a run needs, writes no register
+./bc250-cu-bisect.sh --only control  # only the control's rounds, as the window's safety check does
+./bc250-cu-bisect.sh --reset && ./bc250-cu-bisect.sh --control-only --rounds 1 --writes spi,rlc   # SPI and RLC only
 ./bc250-cu-bisect.sh --status        # results so far, report on the Desktop
 ./bc250-cu-bisect.sh --same-boot     # no reboots: restore the baseline live between attempts
 ./bc250-cu-bisect.sh --auto          # no prompts, auto-reboot after each attempt (see below)
@@ -386,13 +419,10 @@ Verdict per WGP:
 `CRASH-APPLY`, `DRIFT` and `MISMATCH` point to the CU unlock itself. When the control fails, the WGP verdicts are
 not reliable.
 
-> **Note: `GPU load only reached X%` even on a healthy PASS.** On the BC-250 the
-> `gpu_busy_percent` sensor the script reads can stay near 0% while the GPU is under load.
->
-> Look at the clock (`max sclk MHz`). It should still boost under load, and drop on a failing WGP. If it does,
-> the SMU's real DPM/boost logic is reacting correctly. The load was real, and only the busy percentage is
-> unreliable on this hardware. Don't treat a low or 0% busy reading by itself as a sign that the test didn't
-> stress the GPU.
+> **Note: how the script measures GPU load.** The script reads the kernel's `gpu_busy_percent` file first. On
+> the BC-250 the kernel can't fill that file. The script then adds up how long the GPU worked for each program.
+> The kernel lists that time per program in `/proc/<pid>/fdinfo`. Board Test measures the load the same way.
+> `GPU load only reached X%` means the load tool kept the GPU busy less than half the time.
 
 When everything is done and the control passed, the script suggests a combined mask of the good WGPs. WGPs that
 pass one by one can still fail together, because they draw more power at the same voltage. So test the
@@ -442,11 +472,14 @@ default you're back to 24 CUs the next time you start the system.
 
 `bc250-cu-unlock.sh` is a separate, standalone script. At every boot it applies a mask again that you've already
 validated. It does that as a root systemd service that starts before the display manager. It does not retest
-anything, and it's not a diagnostic. Only use it once a mask has passed the bisect run above:
+anything, and it's not a diagnostic. Only use it once a mask has passed the bisect run above.
+
+`--install` writes nothing to the GPU. The masks turn on at the next restart. Writing them while the desktop runs can
+freeze the board.
 
 ```bash
 chmod +x bc250-cu-unlock.sh
-sudo ./bc250-cu-unlock.sh --install 0x0f,0x0f,0x0f,0x0f   # save, apply now, enable at every boot
+sudo ./bc250-cu-unlock.sh --install 0x0f,0x0f,0x0f,0x0f   # save, enable at every boot, on after a restart
 ./bc250-cu-unlock.sh --status                             # installed masks, service state, live masks
 sudo ./bc250-cu-unlock.sh --uninstall                     # disable it; stock 24 CUs from the next boot
 ```
@@ -507,9 +540,9 @@ later. Then boot, run `sudo ./bc250-cu-unlock.sh --uninstall`, and restart to go
 
 > **If the CU unlock doesn't survive a restart: `--install` now fails loudly instead of lying.**
 >
-> `systemctl enable` can fail while the CU unlock is still applied for the *current* boot only. Causes include
-> SELinux and a read-only `/etc/systemd/system` on some images. Earlier versions printed "Installed and enabled"
-> regardless. You'd only find out after the next restart that it never persisted.
+> `systemctl enable` can fail. Causes include SELinux and a read-only `/etc/systemd/system` on some images.
+> Earlier versions printed "Installed and enabled" regardless. You'd only find out after the next restart that the
+> unlock never turned on.
 >
 > `--install` now checks the actual result. It exits with an error and doesn't claim success. The error names
 > `systemctl status bc250-cu-unlock.service` and `journalctl -u bc250-cu-unlock.service` to check. If you're on
@@ -537,71 +570,151 @@ later. Then boot, run `sudo ./bc250-cu-unlock.sh --uninstall`, and restart to go
 ### The window
 ![bc-cu-bisect-gui.webp](../assets/compute/bc-cu-bisect-gui.webp)
 
-`cu_bisect` is an optional PyQt6 window for both scripts, on one page. Its top half sets up a run of
-`bc250-cu-bisect.sh` and starts it. Its bottom half installs a tested CU unlock with `bc250-cu-unlock.sh`. The
-window doesn't do the bisecting itself. **Start** hands off to a terminal that runs the exact command line you'd
-have typed by hand, and the window closes.
+The window runs the CU test for you, step by step. You see which CUs are on, what is tested now and what comes next.
+It runs `bc250-cu-bisect.sh` and `bc250-cu-unlock.sh` itself, inside the window. No terminal opens.
 
-**Starting a run.** The pills under the title:
+Four boxes under the title show where you are:
 
-* **Help** says what the window does, then shows the script's own `--help` as a page. The page says what the
-  script does, explains the control and WGP steps, and lists every option in a table.
-* **Start** shows a summary of the options and, after Yes, starts the run in a terminal.
-* **Show status** runs `--status` in a terminal. You see the results so far and the report. It starts nothing.
-* **Reset** runs `--reset` after a question. It deletes every saved result and log in
-  `~/.local/share/bc250-cu-bisect`. The script asks once more in the terminal.
+- **Active now** shows the CUs the GPU runs, from the last scan or from the boot service at this boot.
+- **Boot unlock** shows the CUs the boot service applies, or **Stock**.
+- **Attempts done** shows how far the test is.
+- **Test** says whether the test is running, paused, stopped or done.
 
-Under them, on one line, are **Load per attempt** (`-t`), **Rounds per item** (`-r`) and **Baseline**. Baseline
-is a preset:
+The info symbol says what the app does. The round symbol at the right end of the title row reads the results and
+the boot unlock again.
 
-* **Auto-detect** uses this boot's own clean masks. This safe default doesn't pass `--baseline`.
-* **Stock, 24 CUs** is `0x07,0x07,0x07,0x07`.
-* **Unlocked, 40 CUs** is `0x1f,0x1f,0x1f,0x1f`.
-* **Custom...** takes any other 4-mask value, checked as you type.
+Under the boxes are the four steps, one row each. Each row says **Done**, **Do this now**, **Running**, **Stopped** or
+**Later**. A row that is done says what came out of it, for example "Passed 3 of 3 rounds."
 
-Hover a choice in the list to see its masks.
+The row of the step you're on says the one thing to do now, for example "Click **Start test**. A question opens.
+Answer **Yes**." The pill it names sits on that row, with an accent border all round. The other pills sit at the
+bottom left. While the test runs, the row says that there is nothing to do.
 
-The switches are pills that say **On** or **Off**. A click turns one over:
+Click a row that is done to look at that step again. **Choose and install** is always open, so you can always remove
+the boot unlock. A click on a row only shows the step. It doesn't start anything.
 
-* **Control only** (`--control-only`), **Same boot** (`--same-boot`) and **No watch** (`--no-watch`).
-* **Unattended** (`--auto`) turns on **Auto resume** with it. Auto resume writes
-  `~/.config/systemd/user/bc250-cu-bisect-auto.service` and turns it on. That service starts the run again after
-  every restart and login. These are the same steps as the "Running truly unattended" checklist above. Auto
-  resume can only be on with Unattended.
+When everything is done, a green bar over the steps says so. An example is "Finished. Your board runs 32 CUs at every
+boot. There is nothing left to do." The bar also shows when you chose to stay at the stock CUs.
 
-**Installing the CU unlock.** The window doesn't take your word for it. It reads the results that
-`bc250-cu-bisect.sh` recorded. **Install** only turns on once they show all of this:
+While a script runs, an orange turning symbol beside the pills says what runs and for how long, for example "Running:
+round 1, control · 64 s". It shows for the scan, the test, **Start over**, **Report**, **Install** and **Uninstall**.
+While the window follows a test, it moves to the step that runs, attempt by attempt.
 
-* the combined mask was retested as its own baseline, with no locked WGPs left in that run
-* every round of that retest passed
-* the 4 rows are even
+The window opens 900 pixels wide, as wide as the map needs. It never opens higher than your screen. When the page is
+higher than the window, the page scrolls. An example is with **Details** open. The **Details** and **Advanced** pills
+are at the right end of the bottom row. Under the name they say **Show** or **Hide**.
 
-The row for it:
+The map shows the four shader-array rows, SE0.SH0 to SE1.SH1, with five WGPs each. Each cell shows its state in
+words and in color:
 
-* **Accepted** or **Not accepted** is the verdict on the bisect results. Its tooltip says why, for example "still
-  has 2 WGP(s) under individual test" or "did not pass every round".
-* **Install** applies the accepted mask now and keeps it on every boot. It uses the same systemd service as
-  `bc250-cu-unlock.sh --install`. The pill is off until the results accept a mask.
-* **Uninstall** turns the service off. The board is back to the stock 24 CUs from the next restart.
-* **Refresh** shows the installed masks and the service's state (`--status`). It shows the live masks too when
-  sudo needs no password.
-* **Re-check** reads the bisect results again, for example after another retest. It writes the verdict and its
-  reasons in the log.
+- green, **On**: a WGP the GPU runs now
+- gray, **Not tested**: a locked WGP without a result yet
+- yellow, **Testing**: the WGP under test now
+- blue, **Healthy**: it passed every round
+- red, **Fails**: it failed every round
+- orange, **Random**: it failed in some rounds only
 
-**Uninstall** and **Refresh** don't depend on the verdict, so you can always turn the service off. Install and
-Uninstall run `bc250-cu-unlock.sh` through `sudo`. The window asks for your password in a masked prompt. It
-passes the password to `sudo -S` only and never stores it.
+At the right end of each row, the **Mask** column shows that row's mask. A mask is the hex value of the green WGPs,
+such as `0x0b`. Under it are the same bits, for example `01011`, read from WGP4 on the left to WGP0 on the right. So
+`0x07,0x07,0x07,0x0b` is the four values in the column, top to bottom. Step 1 also names your masks in one line.
 
-Under the row are the four shader-array rows, SE0.SH0 to SE1.SH1, with their five WGPs each. A WGP that is on is
-green. The rows show the accepted mask, or the one you preview. **Preview a mask** shows any 4-row mask on the
-rows without writing anything. It says how many CUs the mask gives and whether you can install it. You can
-install only 24, 32 or 40 CUs, with the same number of WGPs on every row. The **i** beside it explains how to
-write a mask.
+**Step 1, Scan.** **Scan** reads the live masks with `--scan` and writes no register. You're asked for your
+password, because umr needs root. The window then says how many CUs are on and how many WGPs are locked. It also says
+how many attempts the test takes, and about how long. Two things block the test:
 
-**Show logs** opens what `bc250-cu-unlock.sh` prints, and **Hide logs** closes it again. When Install or Uninstall
-fails, a red **!** with **Check logs** appears beside the button. It goes away when you open the log.
+- A CU unlock is active from the boot. Remove it with **Uninstall** in step 4, then restart.
+- No GPU load tool is found. Put `memtest_vulkan` in `~/.local/bin`.
 
-Hover a field, its label or a pill to see what it does. The window remembers its size and position between runs.
+A GPU ceiling above 1500 MHz only gives a warning. **Start test** asks once, then starts the safety check.
+**Help** shows the script's own help as a page.
+
+**Step 2, Safety check.** The safety check is the control. It writes your stock masks the way the unlock does, and
+adds no CUs. Its rounds run first, with `--only control`. When a round fails, the window stops here. The unlock
+method then breaks on this board, and testing single WGPs means nothing. The window names the round's outcome and
+offers these pills:
+
+- **Stay at 24** ends the test. Nothing is installed.
+- **Restart** puts back the stock masks. It shows when the failed round ran in this boot.
+- **Start over** deletes the results after a question, so you can test again.
+- **Details** shows the script's results and the kernel's lines.
+
+**Step 3, Test each WGP.** Each locked WGP is tested on its own, for as many rounds as **Rounds per item** says.
+During an attempt, the line under the pills shows the round, the WGP, the load time, the temperature and the clock.
+**Stop** stops the attempt as Ctrl+C does. The attempt then runs again later.
+
+**Step 4, Choose and install.** When every attempt is done, the window shows the levels your healthy WGPs allow:
+
+- **24 CUs** keeps the stock board. Nothing is installed.
+- **32 CUs** needs 4 healthy WGPs on every row.
+- **40 CUs** needs all 5 WGPs healthy on every row.
+
+A level that the healthy WGPs don't reach is off and says **Not healthy**. Under the pills, a row of boxes shows the
+uneven counts between the highest even level and all your healthy WGPs, for example **38 CUs** with **5·5·4·5 WGPs**.
+They help when you compare with other tools or discussions, which often quote such numbers. You can't apply them. The
+link **Why uneven CUs don't help** leads to [24, 32 or 40 CUs, and the counts in between](#cu-levels). When you choose
+32 or 40, the window first keeps a copy of the bisect results, in `bisect-runs.tsv` and `bisect-config`. Then it runs
+the combined test of that mask for one round. That is `--reset`, then `--baseline <mask> --control-only --rounds 1`.
+
+When the combined test fails, the higher levels say **Failed together**. You can then pick a lower level. When it
+passes, **Install** saves the mask for every boot. It writes nothing to the GPU now. Writing the masks while the
+desktop runs can freeze the board. Step 4 then says "Restart the board to turn on 32 CUs." **Restart** asks
+first, then restarts the board. The boot service turns the unlock on before the desktop starts. After the restart,
+the green bar says that you're finished.
+
+**Uninstall** turns the boot unlock off, and the board is stock again from the next restart. Both ask for your
+password in a masked prompt. The password goes to `sudo -S` only and is never stored.
+
+**One boot or restarts.** By default, **Same boot** is on, and every attempt of the test runs in one boot. Between
+attempts, the script writes your own masks back and lets the GPU cool down for 30 seconds. You type your password
+once, and you can leave the board alone until the test is done. After the safety check passes, the WGP test starts
+by itself. The price is that each attempt inherits the GPU's state from the attempt before.
+
+Turn **Same boot** off under **Advanced** to give each attempt a fresh boot. This helps to test a WGP again that
+failed or was random. **Start test** then asks once and says how many restarts the test needs. After an attempt, a
+countdown of 15 seconds runs, with **Restart now** and **Pause**. While the test runs, an autostart entry opens the
+window after each login. That entry is
+`~/.config/autostart/bc250-cu-tools-resume.desktop`. The window then counts down 20 seconds, with **Go on now** and
+**Pause**, and runs the next attempt. You're asked for your password after each restart, unless sudo needs none.
+
+**Pause** removes the autostart entry, and **Go on** adds it again. The entry also goes by itself when the test is
+done.
+
+**No sleep during a test.** While a test runs, the board doesn't go to sleep. The window holds the standard sleep
+block of `systemd-inhibit`, with the reason "A CU test is running". The desktop's power menu shows it, and refuses a
+manual sleep too. The screen may still turn off or lock, and the test goes on. The block ends with each run of the
+script, so nothing stays behind. The scan and the report don't block sleep.
+
+**When the test ends.** You don't have to watch the window. When a test ends, a desktop notification appears and
+stays until you click it:
+
+- **CU test done** names the attempts, the WGPs that fail every time or at random, and the highest even level.
+- **CU test stopped** says that the safety check failed, or why the script stopped.
+- **Combined test passed** or **Combined test failed** gives the result of the level you chose.
+
+No notification comes when you press **Stop** or **Pause** yourself. With **Same boot** off, the last attempt
+restarts the board first, so the notification comes after the login. A frozen board can't send anything, so its
+screen just stays as it was.
+
+**After a freeze.** Turn the board off and on. After the login, the window opens by itself, or you open it. It asks
+whether the board froze, crashed or restarted by itself. **Yes** records a crash of that attempt. **No** runs the
+attempt again.
+
+**The script's questions.** The script can warn before an attempt, for example about a high GPU clock. The window
+then shows the warnings and asks once for the whole test. When the GPU stays busy, the window asks whether to write
+the masks anyway.
+
+The test always starts from your board's own masks, which the script reads when it starts. You can't pick or type
+other masks in the window.
+
+**Advanced** opens the test's options. They count from the next attempt:
+
+- **Load per attempt** (`-t`)
+- **Rounds per item** (`-r`)
+- **Same boot** (`--same-boot`), on by default, with no restarts between attempts
+- **No watch** (`--no-watch`)
+
+**Details** opens what both scripts print. **Report** writes the results so far to a text file on your Desktop,
+with `--status`. The window remembers its position and the advanced options.
 
 Run it straight from a clone, on any distribution:
 
@@ -625,25 +738,11 @@ unlock window of earlier versions. Run it as your own user, not with sudo:
 ./install.sh                         # install or update
 ./install.sh --no-desktop-shortcut   # app-menu entry only, no Desktop icon
 bc250-bisect-gui                     # or launch it from the app menu
-./install.sh --uninstall             # removes the app again (not any results, settings or the unlock itself)
+./install.sh --uninstall             # removes the app and its autostart entry, not the results, settings or unlock
 ./install.sh --uninstall --purge     # also removes the results, settings, logs and autostart entries
 ```
 
 `install.sh` runs `packaging/bazzite/install-bisect-gui.sh`, which also works on its own.
-
-You need a terminal emulator to see the bisect run and to start it. The window tries `$TERMINAL` first, then these:
-
-- konsole
-- gnome-terminal
-- ptyxis
-- xfce4-terminal
-- foot
-- alacritty
-- kitty
-- x-terminal-emulator
-- xterm
-
-The window shows an error if it finds none.
 
 ## Releases
 

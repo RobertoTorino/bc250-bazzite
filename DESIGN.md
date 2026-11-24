@@ -94,7 +94,7 @@ There is no deviation. The last ones were unified on 26-10-2026.
 | ![#b71c1c](design/colors/block-b71c1c.svg) | `#b71c1c` | the family | A red button pressed or under the pointer, in the bisect apps and **Clean up logs**. |
 | ![#8b0000](design/colors/block-8b0000.svg) | `#8b0000` | the family | Active red: a toggle button while its state is on, in BC-250 GPU Manager and BC-250 ACE Queues. It is not an error. |
 | ![#a00000](design/colors/block-a00000.svg) | `#a00000` | the family | Active red under the pointer. |
-| ![#e57373](design/colors/block-e57373.svg) | `#e57373` | text tint | Red text on a dark surface. The check app uses it for findings, the log, in-game checks, history and scores. ACPI, CU Tools and CPU Tools use it for error labels. SFTP Tools uses it for password advice not followed. |
+| ![#e57373](design/colors/block-e57373.svg) | `#e57373` | text tint | Red text on a dark surface. The check app uses it for findings, the log, in-game checks, history and scores. ACPI, CU Unlock and Core Unlock use it for error labels. SFTP Tools uses it for password advice not followed. |
 | ![#e8505b](design/colors/block-e8505b.svg) | `#e8505b` | brand or icon | PlayStation's circle, for BC-250 Controller's circle button and DatStation's circle symbol. |
 | ![#ff2020](design/colors/block-ff2020.svg) | `#ff2020` | hardware | The light bar's red. The color wheel's red is `#ff0000`. |
 
@@ -518,7 +518,7 @@ Text colors:
 
   ![Sample text in #333333](design/colors/text-333333.svg)
 
-- `#e57373` Error findings, a worse result in the history, a low score and the log's errors. It also colors error labels and the in-game error. ACPI, CU Tools and CPU Tools use it for error labels too.
+- `#e57373` Error findings, a worse result in the history, a low score and the log's errors. It also colors error labels and the in-game error. ACPI, CU Unlock and Core Unlock use it for error labels too.
 
   ![Sample text in #e57373](design/colors/text-e57373.svg)
 
@@ -578,7 +578,7 @@ Background colors:
 
 Text colors:
 
-- `#888888` Busy and hint labels in italics (ACPI, CPU Tools).
+- `#888888` Busy and hint labels in italics (ACPI).
 
   ![Sample text in #888888](design/colors/text-888888.svg)
 
@@ -717,7 +717,7 @@ Every app has the icon of its category. `icons/categories.toml` assigns them, an
 | --- | --- | --- |
 | <img src="icons/gaming/gaming-128.png" width="64" alt=""> | Gaming | BC-250 PS Remote Play (`consoles`)<br>BC-250 XB Remote Play (`clb`)<br>Bazzite DatStation (`datstation`)<br>PCSX2 Manager (`pcsx2`)<br>PPSSPP Manager (`ppsspp`)<br>RPCS3 Manager (`rpcs3`)<br>Vita3K Manager (`vita3k`)<br>Xenia Manager (`xenia`)<br>shadPS4 Manager (`shadps4`) |
 | <img src="icons/graphics/graphics-128.png" width="64" alt=""> | Graphics | BC-250 ACE Queues (`ace`)<br>BC-250 Mesh Shaders (`mesh`)<br>BC-250 Upscaler Manager (`upscaler`) |
-| <img src="icons/sustainable/sustainable-128.png" width="64" alt=""> | Sustainable | BC-250 Board Test (`check`)<br>BC-250 CPU Tools (`cores`)<br>BC-250 CU Tools (`compute`)<br>BC-250 Fan Control (`fan`)<br>BC-250 GPU Manager (`gpu`)<br>BC-250 GPU OC Bisect (`oc`)<br>BC-250 Memory Manager (`vram`)<br>BC-250 Persistent ACPI (`acpi`) |
+| <img src="icons/sustainable/sustainable-128.png" width="64" alt=""> | Sustainable | BC-250 Board Test (`check`)<br>BC-250 CU Unlock (`compute`)<br>BC-250 Core Unlock (`cores`)<br>BC-250 Fan Control (`fan`)<br>BC-250 GPU Manager (`gpu`)<br>BC-250 GPU OC Bisect (`oc`)<br>BC-250 Memory Manager (`vram`)<br>BC-250 Persistent ACPI (`acpi`) |
 | <img src="icons/utilities/utilities-128.png" width="64" alt=""> | Utilities | BC-250 BIOS Reader (`bios`)<br>BC-250 Bluetooth Pairing (`btpair`)<br>BC-250 CEC Manager (`cec`)<br>BC-250 Controller (`controller`)<br>BC-250 Password Generator (`password`)<br>BC-250 Quickfix (`quickfix`)<br>BC-250 SFTP Tools (`sftp`)<br>BC-250 SSD Check (`ssd`)<br>BC-250 System Overlay (`overlay`)<br>BC-250 Turing Screen (`turing`)<br>BC-250 Webcam (`webcam`) |
 
 ### The portal's symbols
@@ -797,7 +797,9 @@ Characters of the font that the apps use as icons in labels and buttons.
 | Portal | ● ☰ |
 | BC-250 BIOS Reader | ▶ ↓ ↑ ← › |
 | BC-250 Board Test | ✔ ✖ ✕ ⚠ ▶ ■ ↓ ↑ › 💡 🎮 |
+| BC-250 CU Unlock | ■ |
 | BC-250 Controller | ✓ ✕ › △ ○ □ |
+| BC-250 Core Unlock | ✔ ✖ ▶ ■ |
 | BC-250 GPU Manager | ✖ ⚠ ● |
 | BC-250 PS Remote Play | ✓ ✗ |
 | BC-250 Persistent ACPI | ● |

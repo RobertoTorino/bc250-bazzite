@@ -35,7 +35,7 @@ def test_the_groups_are_board_tests_installers():
 
 
 def test_mprime_goes_where_cpu_tools_looks_and_is_checked_first():
-    """Prime95's mprime: unpacked into ~/mprime, the first place CPU Tools' bisect looks in, with a link in
+    """Prime95's mprime: unpacked into ~/mprime, the first place Core Unlock's bisect looks in, with a link in
     ~/.local/bin, where this window looks; the download is compared with a pinned SHA-256 before it is unpacked."""
     script = (SUITE / "apps" / "check" / state.INSTALLER).read_text(encoding="utf-8")
     bisect = (SUITE / "apps" / "cores" / "bc250-cores-bisect.sh").read_text(encoding="utf-8")

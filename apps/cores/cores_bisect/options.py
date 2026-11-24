@@ -20,7 +20,7 @@ MIN_ROUNDS = 1
 MAX_ROUNDS = 9
 
 # --load values understood by the script; stress-ng is its default. The choice shows the value itself, so the field
-# stays narrow (as CU Tools' Baseline, owner 19-11-2026); what each one is, is in LOAD_TIPS, the choice's tooltip.
+# stays narrow (as CU Unlock's Baseline, owner 19-11-2026); what each one is, is in LOAD_TIPS, the choice's tooltip.
 LOAD_TOOLS = ("stress-ng", "mprime", "both")
 DEFAULT_LOAD_TOOL = "stress-ng"
 LOAD_TIPS: dict[str, str] = {

@@ -636,16 +636,16 @@ the SMU. Keep these caveats in mind:
 - A known side effect is that `pp_dpm_sclk` reports nonsense clocks afterward. Tests 19/40 would flag that.
 
 **For the extra CUs without flashing:**
-[BC-250 CU Tools](../apps/compute.md), a suite app, unlocks CUs at runtime. It writes the GPU's WGP mask registers
+[BC-250 CU Unlock](../apps/compute.md), a suite app, unlocks CUs at runtime. It writes the GPU's WGP mask registers
 with `umr`. It keeps a validated unlock across restarts.
 
 1. **Test first:** `bc250-cu-bisect.sh` tests every locked WGP (2 CUs) on its own over several rounds. It tells bad
    WGPs apart from an unstable unlock, power or heat. Then test the combined mask on its own again.
-2. **Make it persistent:** `bc250-cu-unlock.sh --install <masks>`, or **Install** in BC-250 CU Tools, saves the mask.
-   A root systemd service then applies it again at every boot, before the desktop starts. The unlock survives
-   restarts, cold boots and Bazzite updates. CU Tools offers **Install** only after the bisect results show that
-   the combined mask passed every round. The mask must also have the same number of WGPs on all 4 rows.
-3. **Undo:** run `sudo ./bc250-cu-unlock.sh --uninstall` or click **Uninstall** in CU Tools. Then restart. The board
+2. **Make it persistent:** `bc250-cu-unlock.sh --install <masks>`, or **Install** in BC-250 CU Unlock, saves the mask.
+   A root systemd service then applies it at every boot, before the desktop starts. It turns on at the next
+   restart. The unlock survives restarts, cold boots and Bazzite updates. CU Unlock offers **Install** only after
+   the bisect results show that the combined mask passed every round. The mask must also have the same number of WGPs on all 4 rows.
+3. **Undo:** run `sudo ./bc250-cu-unlock.sh --uninstall` or click **Uninstall** in CU Unlock. Then restart. The board
    is back at stock 24 CUs.
 
 Keep these caveats in mind:
@@ -657,7 +657,7 @@ Keep these caveats in mind:
 - A WGP that passed can still fail under other conditions, such as heat or a game. After a hang, remove the unlock
   and restart. Then test again.
 
-[BC-250 CPU Tools](../apps/cores.md) keeps a validated core unlock across restarts with its boot service. CU Tools
+[BC-250 Core Unlock](../apps/cores.md) keeps a validated core unlock across restarts with its boot service. CU Unlock
 does the same for the CUs. Both work on the stock BIOS. The suite advises the latest stock P5.00 BIOS and offers no
 BIOS flashing.
 
@@ -673,5 +673,5 @@ tells you for each WGP which of these holds:
 - It fails every time, so it is likely bad.
 - It fails at random, so the cause is likely the unlock, power or heat.
 
-Once a mask passes, `bc250-cu-unlock.sh` or BC-250 CU Tools keeps it across restarts. See *For the extra CUs without
+Once a mask passes, `bc250-cu-unlock.sh` or BC-250 CU Unlock keeps it across restarts. See *For the extra CUs without
 flashing* above.

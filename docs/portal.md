@@ -456,8 +456,8 @@ Uninstalling an app removes the app. Two things stay on purpose:
 
 | App | Still active on the board after its uninstall | Undo it with |
 |---|---|---|
-| CU Tools | A persisted CU unlock, with `bc250-cu-unlock.service` at every boot | **Uninstall** in CU Tools, or `sudo /usr/local/sbin/bc250-cu-unlock.sh --uninstall`. Stock CUs come back after the next restart |
-| CPU Tools | A persisted core unlock, with its boot service | **Uninstall** in CPU Tools, or `sudo /usr/local/sbin/bc250-cores-unlock.sh --uninstall`. Stock cores come back after the next full power off |
+| CU Unlock | A persisted CU unlock, with `bc250-cu-unlock.service` at every boot | **Uninstall** in CU Unlock, or `sudo /usr/local/sbin/bc250-cu-unlock.sh --uninstall`. Stock CUs come back after the next restart |
+| Core Unlock | A persisted core unlock, with its boot service | **Uninstall** in Core Unlock, or `sudo /usr/local/sbin/bc250-cores-unlock.sh --uninstall`. Stock cores come back after the next full power off |
 | GPU OC Bisect | The installed overclock in the governor's `config.toml` | **Uninstall** in the app, or `bc250-gpu-oc-bisect.sh --uninstall`. Either one restores the backup |
 | Persistent ACPI | The ACPI override, with `/boot/acpi_override.cpio` and its GRUB line | **Uninstall** in the app, or `sudo ./bc250-acpi-override.sh --uninstall`. Then restart |
 | ACE Queues | An installed patched driver | **Remove** in the app |

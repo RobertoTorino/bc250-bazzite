@@ -274,7 +274,7 @@ FAMILIES = [
                               "ACE Queues. It is not an error."),
         ("#a00000", "family", "Active red under the pointer."),
         ("#e57373", "tint", "Red text on a dark surface. The check app uses it for findings, the log, in-game checks, "
-                            "history and scores. ACPI, CU Tools and CPU Tools use it for error labels. SFTP "
+                            "history and scores. ACPI, CU Unlock and Core Unlock use it for error labels. SFTP "
                             "Tools uses it for password advice not followed."),
         ("#e8505b", "brand", "PlayStation's circle, for BC-250 Controller's circle button and DatStation's circle "
                              "symbol."),
@@ -426,7 +426,7 @@ CHECK_TEXT = [
     ("#222222", "Text on the system score boxes."),
     ("#333333", "Labels on the graph's bars."),
     ("#e57373", "Error findings, a worse result in the history, a low score and the log's errors. It also colors "
-                "error labels and the in-game error. ACPI, CU Tools and CPU Tools use it for error labels too."),
+                "error labels and the in-game error. ACPI, CU Unlock and Core Unlock use it for error labels too."),
     ("#ffb74d", "Warning findings, a middle score, the log's warnings and the in-game warning."),
     ("#64b5f6", "Info and hint findings."),
     ("#81c784", "A better result in the history, the log's success, a full score and the in-game ok."),
@@ -459,7 +459,7 @@ CHECK_BLOCKS = [
 ]
 
 OTHER_TEXT = [
-    ("#888888", "Busy and hint labels in italics (ACPI, CPU Tools)."),
+    ("#888888", "Busy and hint labels in italics (ACPI)."),
     ("#ef6c00", "An incomplete ACPI override, and a CU mask that needs checking."),
     ("#b8b8c8", "System Overlay: the names of the values."),
     ("#dddddd", "PS Remote Play's stream view."),
