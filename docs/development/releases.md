@@ -98,6 +98,10 @@ explains itself behind the round **i** in its first row. Click it to read the wh
    done and name a job that failed. These are the step's line and the line under the header's pills. When a job
    fails, nothing is pushed and the step turns red. It shows the job's name and where its log is. Fix it, then commit
    and push. When the failure was no fault of the code, push again.
+   Sometimes GitHub's servers fail during the push. Git then shows a line such as
+   `! [remote rejected] main -> main (fatal error in commit_refs_rules)`. The step then says the fault is GitHub's.
+   [githubstatus.com](https://www.githubstatus.com) may report it only minutes later. Wait a few minutes, then push
+   again. When GitHub refuses the push for another reason, the step shows GitHub's reason.
 4. **CI passes:** the step waits until GitHub's CI (`ci.yml`) passed on that commit. When CI failed, the line says
    so. When a test failed, fix it, then commit and push again. Sometimes the trouble is GitHub's own, such as an error
    of its servers or a job that never started. [githubstatus.com](https://www.githubstatus.com) says when Actions are
