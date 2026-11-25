@@ -1,3 +1,7 @@
+Changelog: 25-11-2026 14:19:31
+
+Release 28.1.0.
+
 Changelog: 25-11-2026 14:00:36
 
 Fixed. The music no longer starts before the intro. Since the system tray came, the first show of the window started it, so it played over the intro. Closing the portal no longer pauses the music after it has stopped.
