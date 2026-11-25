@@ -1,3 +1,7 @@
+Changelog: 25-11-2026 06:54:51
+
+Release 4.10.2.
+
 Changelog: 24-11-2026 16:29:51
 
 Fixed. The hint after a GPU hang names the GPU sweep instead of gpu-oc-bisect, which is part of GPU Manager now.

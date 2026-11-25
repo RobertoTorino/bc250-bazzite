@@ -3,7 +3,7 @@
 
 APP_NAME = "BC-250 GPU Manager"
 APP_ID = "bc250-governor-manager"
-__version__ = "0.7.1"
+__version__ = "0.8.0"
 
 from pathlib import Path
 
