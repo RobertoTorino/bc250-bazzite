@@ -622,10 +622,10 @@ class MainWindow(QMainWindow):
         # The shortcuts (owner, 12-11-2026): programs outside the suite, started from the header (shortcuts.py).
         self.files_button = SymbolButton(glyphs.folder, "Files: open the file manager on your home folder.")
         self.steam_button = SymbolButton(glyphs.steam, "Steam: open Steam.")
-        self.discord_button = SymbolButton(glyphs.discord, "Discord: open Discord fullscreen in Brave Browser, "
-                                           "which must be installed as a Flatpak. Alt+F4 closes it.")
-        self.youtube_button = SymbolButton(glyphs.youtube, "YouTube: open YouTube fullscreen in Brave Browser, which "
-                                           "must be installed as a Flatpak. Alt+F4 closes it.")
+        self.discord_button = SymbolButton(glyphs.discord, "Discord: open Discord in a maximized window of Brave "
+                                           "Browser, which must be installed as a Flatpak.")
+        self.youtube_button = SymbolButton(glyphs.youtube, "YouTube: open YouTube in a maximized window of Brave "
+                                           "Browser, which must be installed as a Flatpak.")
         self.github_button = SymbolButton(glyphs.github, "GitHub: open github.com in your browser.")
         self.bluetooth_button = SymbolButton(glyphs.bluetooth, "Bluetooth: open the desktop's Bluetooth settings.")
         self.network_button = SymbolButton(glyphs.network, "Network: open the desktop's network settings.")

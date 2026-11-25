@@ -4,8 +4,8 @@
 the desktop's Bluetooth, network, sound and display settings, each a symbol that starts a program outside the
 suite. What to start is found here, from what the
 machine has: Steam's own launcher, the desktop's file manager on the home folder (xdg-open, whichever desktop),
-Discord's web app fullscreen in Brave Browser's kiosk mode,
-YouTube fullscreen in Brave Browser's kiosk mode (its Flatpak, which must be installed), GitHub in the desktop's
+Discord's web app in a maximized window of Brave Browser,
+YouTube in a maximized window of Brave Browser (its Flatpak, which must be installed), GitHub in the desktop's
 own browser (xdg-open), and the settings of KDE
 Plasma (System Settings, else the module alone) or of GNOME. A click on the weather opens the place's forecast at
 wttr.in in Brave Browser (owner, 24-11-2026: a page without ads). A shortcut whose program is missing raises Missing
@@ -80,17 +80,17 @@ def flatpak_installed(app_id: str, run: Run | None = None) -> bool:
 
 
 def youtube(run: Run | None = None) -> Start:
-    """YouTube fullscreen in Brave Browser's kiosk mode (Alt+F4 closes it)."""
+    """YouTube in a maximized window of Brave Browser (owner, 25-11-2026: in place of its fullscreen kiosk mode)."""
     if not flatpak_installed(BRAVE_ID, run):
         raise Missing(f"{BRAVE_NAME} is required. Install its Flatpak ({BRAVE_ID}) to open YouTube.")
-    return Start(["flatpak", "run", BRAVE_ID, "--kiosk", YOUTUBE_URL], (BRAVE_ID, "brave-browser"))
+    return Start(["flatpak", "run", BRAVE_ID, "--start-maximized", YOUTUBE_URL], (BRAVE_ID, "brave-browser"))
 
 
 def discord(run: Run | None = None) -> Start:
-    """Discord's web app fullscreen in Brave Browser's kiosk mode (Alt+F4 closes it), as YouTube."""
+    """Discord's web app in a maximized window of Brave Browser, as YouTube."""
     if not flatpak_installed(BRAVE_ID, run):
         raise Missing(f"{BRAVE_NAME} is required. Install its Flatpak ({BRAVE_ID}) to open Discord.")
-    return Start(["flatpak", "run", BRAVE_ID, "--kiosk", DISCORD_URL], (BRAVE_ID, "brave-browser"))
+    return Start(["flatpak", "run", BRAVE_ID, "--start-maximized", DISCORD_URL], (BRAVE_ID, "brave-browser"))
 
 
 def weather(latitude: float, longitude: float, run: Run | None = None) -> Start:

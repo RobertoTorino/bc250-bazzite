@@ -662,8 +662,8 @@ def test_a_shortcut_starts_its_program(window, monkeypatch):
     for button in window.shortcut_buttons:
         button.click()
     assert started == [["xdg-open", str(Path.home())], ["steam"],
-                       ["flatpak", "run", "com.brave.Browser", "--kiosk", "https://discord.com/app"],
-                       ["flatpak", "run", "com.brave.Browser", "--kiosk", "https://www.youtube.com/"],
+                       ["flatpak", "run", "com.brave.Browser", "--start-maximized", "https://discord.com/app"],
+                       ["flatpak", "run", "com.brave.Browser", "--start-maximized", "https://www.youtube.com/"],
                        ["xdg-open", "https://github.com/"],
                        ["systemsettings", "kcm_bluetooth"], ["systemsettings", "kcm_networkmanagement"],
                        ["systemsettings", "kcm_pulseaudio"], ["systemsettings", "kcm_kscreen"]]

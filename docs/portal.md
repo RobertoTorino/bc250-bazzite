@@ -283,11 +283,11 @@ Start Nexus Dashboard for BC-250 from the checkout, or give it a menu entry with
 - **Files**, a symbol at the top, opens the desktop's file manager on your home folder. On Bazzite's KDE Plasma,
   that is Dolphin.
 - **Steam**, a symbol at the top, opens Steam. When Steam runs already, it brings Steam's window to the front.
-- **Discord**, a symbol at the top, opens Discord fullscreen in Brave Browser's kiosk mode. Alt+F4 closes it.
+- **Discord**, a symbol at the top, opens Discord in a maximized window of Brave Browser.
   Brave Browser must be installed as a Flatpak, `com.brave.Browser`. Get it from Bazzite's software store, or with
   `flatpak install flathub com.brave.Browser`. Without it, the portal says so and opens nothing.
-- **YouTube**, a symbol at the top, opens YouTube fullscreen in Brave Browser's kiosk mode. Alt+F4 closes it. Brave
-  Browser must be installed as a Flatpak, `com.brave.Browser`. Get it from Bazzite's software store, or with
+- **YouTube**, a symbol at the top, opens YouTube in a maximized window of Brave Browser.
+  Brave Browser must be installed as a Flatpak, `com.brave.Browser`. Get it from Bazzite's software store, or with
   `flatpak install flathub com.brave.Browser`. Without it, the portal says so and opens nothing.
 - **GitHub**, a symbol at the top, opens github.com in the desktop's own browser. It opens in a normal window with
   its tabs and address bar. A browser that runs already comes to the front with a new tab.

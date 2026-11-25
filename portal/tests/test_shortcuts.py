@@ -33,7 +33,7 @@ def test_steam_and_the_file_manager():
 
 def test_youtube_needs_brave_browsers_flatpak():
     start = shortcuts.youtube(flatpak())
-    assert start.argv == ["flatpak", "run", "com.brave.Browser", "--kiosk", "https://www.youtube.com/"]
+    assert start.argv == ["flatpak", "run", "com.brave.Browser", "--start-maximized", "https://www.youtube.com/"]
     assert "com.brave.Browser" in start.app_ids
     with pytest.raises(shortcuts.Missing, match="Brave Browser is required"):
         shortcuts.youtube(flatpak(1))
@@ -44,9 +44,9 @@ def test_youtube_needs_brave_browsers_flatpak():
 
 
 def test_discord_opens_in_brave():
-    """Discord (owner, 25-11-2026): its web app fullscreen in Brave Browser's kiosk mode, and a message while it is missing."""
+    """Discord (owner, 25-11-2026): its web app in a maximized window of Brave Browser, and a message while it is missing."""
     start = shortcuts.discord(flatpak())
-    assert start.argv == ["flatpak", "run", "com.brave.Browser", "--kiosk", "https://discord.com/app"]
+    assert start.argv == ["flatpak", "run", "com.brave.Browser", "--start-maximized", "https://discord.com/app"]
     assert "com.brave.Browser" in start.app_ids
     with pytest.raises(shortcuts.Missing, match="Brave Browser is required.*to open Discord"):
         shortcuts.discord(flatpak(1))

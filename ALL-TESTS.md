@@ -3557,7 +3557,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_portal_update.py` | `test_check_reads_the_tarballs_sha256_and_the_running_build` |  |  | The newest release's SHA256SUMS tells a new build of this version (owner, 03-11-2026); build.sha256 beside the program is what this portal came from. |
 | `test_shortcuts.py` | `test_steam_and_the_file_manager` |  |  | Steam and the file manager. |
 | `test_shortcuts.py` | `test_youtube_needs_brave_browsers_flatpak` |  |  | Youtube needs brave browsers flatpak. |
-| `test_shortcuts.py` | `test_discord_opens_in_brave` |  |  | Discord (owner, 25-11-2026): its web app fullscreen in Brave Browser's kiosk mode, and a message while it is missing. |
+| `test_shortcuts.py` | `test_discord_opens_in_brave` |  |  | Discord (owner, 25-11-2026): its web app in a maximized window of Brave Browser, and a message while it is missing. |
 | `test_shortcuts.py` | `test_the_weather_opens_its_forecast_in_brave` |  |  | A click on the weather (owner, 24-11-2026): the place's forecast at wttr.in, a page without ads, by its coordinates, in a window of Brave Browser. |
 | `test_shortcuts.py` | `test_github_opens_in_the_desktops_own_browser` |  |  | github.com with xdg-open; the browser's window is the one KWin brings to the front, when it can be asked. |
 | `test_shortcuts.py` | `test_the_settings_of_the_desktop_that_is_there` | 4 |  | KDE Plasma's System Settings, else the module alone, else GNOME's Settings (not only the owner's desktop). |
