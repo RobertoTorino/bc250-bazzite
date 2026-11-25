@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3543 test functions (4107 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3545 test functions (4109 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -50,9 +50,9 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [dev/studio](#devstudio) | 6 | 65 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
-| [portal](#portal) | 17 | 220 | 29.0 s |
+| [portal](#portal) | 17 | 222 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3543** | **182 s** |
+| **All** | | **3545** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -3458,7 +3458,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## portal
 
-220 tests in 17 files, 29.0 s in a local run.
+222 tests in 17 files, 29.0 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3490,7 +3490,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_bigpicture.py` | `test_escape_and_b_close_the_portal_but_skip_the_intro_first` |  | 0.4 s | Escape closes the portal (owner, 01-11-2026: "ESC does not close the board"), B too with nothing open, without a question (owner, 12-11-2026); while the intro plays, either skips it instead. |
 | `test_bigpicture.py` | `test_sound_off_is_kept_and_silences_the_intro` |  | 0.4 s | Sound off is kept and silences the intro. |
 | `test_bigpicture.py` | `test_without_an_audio_output_the_pill_is_disabled_with_a_reason` |  | 0.2 s | Without an audio output the pill is disabled with a reason. |
-| `test_bigpicture.py` | `test_the_header_has_big_symbols_with_the_status_on_their_right` |  | 0.3 s | Big symbols in place of the pills (owner, 05-11-2026): all the same square size, their row ending at the bottom of the suite's icon; ☰ at the top right, level with the title, and the close symbol in the corner beside it (owner, 12-11-2026); on the right of the symbols the installed count over the status. |
+| `test_bigpicture.py` | `test_the_header_has_big_symbols_with_the_status_on_their_right` |  | 0.3 s | Big symbols in place of the pills (owner, 05-11-2026): all the same square size, their row ending at the bottom of the suite's icon; ☰ at the top right, level with the title, then minimize (owner, 25-11-2026) and the close symbol in the corner (owner, 12-11-2026); on the right of the symbols the installed count over the status. |
 | `test_bigpicture.py` | `test_a_symbols_badge_and_its_disabled_look` |  | 0.2 s | The badge holds a short figure; a disabled symbol draws its glyph muted, an enabled one in the theme's text. |
 | `test_bigpicture.py` | `test_the_symbols_and_the_pills_work_as_before` |  | 0.2 s | The symbols and the pills work as before. |
 | `test_bigpicture.py` | `test_the_focus_reaches_the_symbols_and_back_with_the_controller` |  | 0.3 s | The focus reaches the symbols and back with the controller. |
@@ -3556,6 +3556,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_portal_update.py` | `test_check_reads_the_tarballs_sha256_and_the_running_build` |  |  | The newest release's SHA256SUMS tells a new build of this version (owner, 03-11-2026); build.sha256 beside the program is what this portal came from. |
 | `test_shortcuts.py` | `test_steam_and_the_file_manager` |  |  | Steam and the file manager. |
 | `test_shortcuts.py` | `test_youtube_needs_brave_browsers_flatpak` |  |  | Youtube needs brave browsers flatpak. |
+| `test_shortcuts.py` | `test_discord_opens_in_brave` |  |  | Discord (owner, 25-11-2026): its web app fullscreen in Brave Browser's kiosk mode, and a message while it is missing. |
 | `test_shortcuts.py` | `test_the_weather_opens_its_forecast_in_brave` |  |  | A click on the weather (owner, 24-11-2026): the place's forecast at wttr.in, a page without ads, by its coordinates, in a window of Brave Browser. |
 | `test_shortcuts.py` | `test_github_opens_in_the_desktops_own_browser` |  |  | github.com with xdg-open; the browser's window is the one KWin brings to the front, when it can be asked. |
 | `test_shortcuts.py` | `test_the_settings_of_the_desktop_that_is_there` | 4 |  | KDE Plasma's System Settings, else the module alone, else GNOME's Settings (not only the owner's desktop). |
@@ -3638,7 +3639,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_a_download_counts_its_megabytes` |  | 0.2 s | The tile says how far a download is (owner, 03-11-2026: Downloading… for a 90 MB release looked like a hang): the part file's size, read every PROGRESS_MS while the job runs. |
 | `test_window.py` | `test_the_exit_asks_nothing` |  | 0.2 s | Escape (B) and the close symbol close the portal without a question (owner, 12-11-2026). |
 | `test_window.py` | `test_the_desktops_close_asks_only_while_something_runs` |  | 0.2 s | The desktops close asks only while something runs. |
-| `test_window.py` | `test_a_shortcut_starts_its_program` |  | 0.2 s | The header's shortcuts (owner, 12-11-2026): the file manager, Steam, YouTube in Brave Browser, GitHub, and the desktop's Bluetooth, network, sound and display settings. |
+| `test_window.py` | `test_a_shortcut_starts_its_program` |  | 0.2 s | The header's shortcuts (owner, 12-11-2026): the file manager, Steam, Discord and YouTube in Brave Browser, GitHub, and the desktop's Bluetooth, network, sound and display settings. |
 | `test_window.py` | `test_a_key_for_each_controller_action` |  | 0.2 s | Steam's desktop layout turns a pad's buttons into keys (owner, 05-11-2026): U, S, K and M do what Y, ☰, R3 and X do, for the buttons it gives no key of their own. |
 | `test_window.py` | `test_the_s_key_opens_the_settings` |  | 0.2 s | The s key opens the settings. |
 | `test_window.py` | `test_the_arrow_keys_move_between_a_questions_buttons` |  | 0.2 s | With Steam's desktop layout a controller is the arrow keys and Enter: Qt's questions take them as they are. |
@@ -3665,7 +3666,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_restart_that_cannot_start` |  | 0.2 s | Restart that cannot start. |
 | `test_window.py` | `test_no_restart_from_a_checkout` |  | 0.2 s | No restart from a checkout. |
 | `test_window.py` | `test_one_theme_for_every_app` |  | 0.6 s | The theme pill shows the chosen theme; a click takes the next one, for every app; its tooltip says when it shows. |
-| `test_window.py` | `test_the_header_is_an_apps_header_with_symbols` |  | 0.2 s | The suite's icon, spanning the name, ☰ and the close symbol at the top right and the row of big symbols (owner, 05-11-2026, in place of the pills): Refresh, Sys info, Install all apps and Install all updates, then the shortcuts (owner, 12-11-2026): Files, Steam, YouTube, GitHub, Bluetooth, Network, Volume and Screen, what each does in its tooltip; on their right the installed count over the status. |
+| `test_window.py` | `test_the_header_is_an_apps_header_with_symbols` |  | 0.2 s | The suite's icon, spanning the name, ☰ and the close symbol at the top right and the row of big symbols (owner, 05-11-2026, in place of the pills): Refresh, Sys info, Install all apps and Install all updates, then the shortcuts (owner, 12-11-2026): Files, Steam, Discord, YouTube, GitHub, Bluetooth, Network, Volume and Screen, what each does in its tooltip; on their right the installed count over the status. |
 | `test_window.py` | `test_the_sys_info_symbol_opens_one_window_read_each_time` |  | 0.2 s | Sys info (owner, 20-10-2026): a small window with what the system reports, read again each time it opens; Copy puts it on the clipboard as text. |
 | `test_window.py` | `test_the_wallpaper` |  | 0.4 s | A picture of at least 1920 x 1080 in 16:9 becomes the wallpaper (a copy in the portal's state folder); another is refused, with the rules (owner, 20-10-2026). |
 | `test_window.py` | `test_the_example_wallpaper` |  | 0.5 s | The portal ships an example wallpaper (owner, 20-10-2026) and starts with it (owner, 15-11-2026): it is the wallpaper until the user chooses a picture of their own or none, and No wallpaper is remembered. |
@@ -3682,6 +3683,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_a_long_place_name_ends_in_an_ellipsis_on_its_pill` |  | 0.3 s | A long place name ends in an ellipsis on its pill. |
 | `test_window.py` | `test_the_touchpad_moves_the_pointer_only_while_the_portal_has_the_focus` |  | 0.2 s | The touchpad moves the pointer only while the portal has the focus. |
 | `test_window.py` | `test_the_touchpad_pill_steps_through_the_speeds` |  | 0.2 s | The Touchpad pill (owner, 05-11-2026): a click for the next speed, at once and kept, round to the slowest. |
+| `test_window.py` | `test_minimize_hides_the_portal_in_the_tray` |  |  | The minimize symbol (owner, 25-11-2026): the portal hides and its icon shows in the system tray; a click on that icon, or a second launch, brings the portal back as it was, and the tray icon goes. |
 
 ## tools
 

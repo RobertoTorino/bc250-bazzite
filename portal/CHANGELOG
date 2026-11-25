@@ -1,3 +1,15 @@
+Changelog: 25-11-2026 09:49:07
+
+Added. A minimize symbol between ☰ and the close symbol. It hides the portal in the system tray, where the portal's icon shows while it is hidden. A click on that icon brings the portal back, and so does starting the portal again. The icon's menu holds Show the portal and Exit. While hidden, the music waits and the portal reads no status, batteries or weather. On a desktop without a system tray, the portal minimizes to the taskbar.
+
+Changelog: 25-11-2026 09:42:05
+
+Fixed. The close symbol at the top right is drawn with a thicker line. It looked too thin beside the other symbols.
+
+Changelog: 25-11-2026 09:35:14
+
+Added. A Discord symbol in the header, right after Steam. It opens Discord fullscreen in Brave Browser's kiosk mode, as YouTube does. Alt+F4 closes it. Without Brave Browser, the portal says so and opens nothing. The row of symbols is more compact, so the extra symbol still fits a screen 1920 pixels wide. The symbols are 78 pixels instead of 84, with 6 pixels between them instead of 14. The glyphs keep their size.
+
 Changelog: 25-11-2026 06:54:51
 
 Release 28.0.0. Pins bc250-check-v4.10.2, bc250-quickfix-v1.9.3, bc250-gpu-v0.8.0, bc250-upscaler-v5.8.1, bc250-compute-v2.0.1, bc250-overlay-v4.8.1, bc250-bios-v4.8.1, bc250-ace-v4.8.2, bc250-mesh-v4.9.2, bc250-vram-v4.8.2, bc250-fan-v4.8.2, bc250-cec-v4.8.1, bc250-sftp-v4.8.1, bc250-turing-v2.8.1, bc250-webcam-v2.8.1, bc250-controller-v2.8.1, bc250-rpcs3-v7.9.1, bc250-consoles-v5.8.1, bc250-clb-v4.8.1, bc250-shadps4-v7.8.1, bc250-datstation-v6.8.1, bc250-ppsspp-v5.9.1, bc250-pcsx2-v7.9.1, bc250-vita3k-v5.10.1, bc250-xenia-v5.10.1, bc250-ssd-v3.8.1, bc250-btpair-v2.8.1, bc250-password-v1.8.1.

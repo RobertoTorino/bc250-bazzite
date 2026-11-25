@@ -21,22 +21,24 @@ none.
 - The suite's name, with the version and the **Beta** stage in orange. Click the name to open this wiki.
 - A small **i** that says where the apps install from.
 - A line that says in a few words what the open category is for.
-- **☰ Settings** at the top right, with **✕ Exit** in the corner beside it. **✕ Exit** closes the portal.
+- **☰ Settings** at the top right, then **– Minimize** and **✕ Exit** in the corner. **– Minimize** hides the
+  portal in the system tray. **✕ Exit** closes the portal.
 - A battery for each connected device with one, left of **☰ Settings**. It shows a controller, a mouse, a keyboard
   or a headset. The level is under it, and the fill turns red at 20 % or less. A yellow bolt means the device is
   charging. Hover a battery to see the device's name. Without such a device, no battery shows.
 
-Under them is a row of twelve big symbols. Four act on the apps:
+Under them is a row of thirteen big symbols. Four act on the apps:
 
 - **Refresh**, two circling arrows, looks again at which apps are installed
 - **Sys info**, a chip
 - **Install all apps**, a grid of apps with an arrow down
 - **Install all updates**, a circular arrow around an arrow down
 
-Eight are shortcuts to what is outside the suite:
+Nine are shortcuts to what is outside the suite:
 
 - **Files**, a folder
 - **Steam**
+- **Discord**, a round face with two eyes
 - **YouTube**, a screen with a play triangle
 - **GitHub**, a cat in a disc
 - **Bluetooth**
@@ -281,6 +283,9 @@ Start Nexus Dashboard for BC-250 from the checkout, or give it a menu entry with
 - **Files**, a symbol at the top, opens the desktop's file manager on your home folder. On Bazzite's KDE Plasma,
   that is Dolphin.
 - **Steam**, a symbol at the top, opens Steam. When Steam runs already, it brings Steam's window to the front.
+- **Discord**, a symbol at the top, opens Discord fullscreen in Brave Browser's kiosk mode. Alt+F4 closes it.
+  Brave Browser must be installed as a Flatpak, `com.brave.Browser`. Get it from Bazzite's software store, or with
+  `flatpak install flathub com.brave.Browser`. Without it, the portal says so and opens nothing.
 - **YouTube**, a symbol at the top, opens YouTube fullscreen in Brave Browser's kiosk mode. Alt+F4 closes it. Brave
   Browser must be installed as a Flatpak, `com.brave.Browser`. Get it from Bazzite's software store, or with
   `flatpak install flathub com.brave.Browser`. Without it, the portal says so and opens nothing.
@@ -297,6 +302,11 @@ Start Nexus Dashboard for BC-250 from the checkout, or give it a menu entry with
     On KDE Plasma, that is System Settings on that page. On GNOME, it is GNOME's Settings.
 
 - **✕ Exit**, the symbol in the top right corner, closes the portal, as B and Escape do. See **Exiting** above.
+- **– Minimize**, left of **✕ Exit**, hides the portal in the system tray, next to the clock on the taskbar.
+  The portal's icon shows there while it is hidden. Click that icon to bring the portal back. Starting the
+  portal again from the menu or the Desktop brings it back too. Right-click the icon for **Show the portal**
+  and **Exit**. While the portal is hidden, its music waits. It reads no status, batteries or weather until it
+  comes back. On a desktop without a system tray, the portal goes to the taskbar instead.
 - **☰ Settings** is the symbol at the top right. The ☰ button on the controller opens the page too. That button is
   Start, or Options on a PlayStation controller. The Settings page takes the place of the category strip and the
   tiles, under the same header. It holds the nine settings below, each a pill with a short line beside it. On a
