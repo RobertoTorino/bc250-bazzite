@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3545 test functions (4109 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3546 test functions (4110 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
 
 ## Summary
 
@@ -50,9 +50,9 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [dev/studio](#devstudio) | 6 | 65 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
-| [portal](#portal) | 17 | 222 | 29.0 s |
+| [portal](#portal) | 17 | 223 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3545** | **182 s** |
+| **All** | | **3546** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -3458,7 +3458,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## portal
 
-222 tests in 17 files, 29.0 s in a local run.
+223 tests in 17 files, 29.0 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3544,6 +3544,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_music.py` | `test_a_track_of_your_own_is_a_copy_in_the_state_folder` |  |  | The user's track is copied into the portal's state folder, in place of the one before; without one the portal plays its own. |
 | `test_music.py` | `test_the_player_stays_silent_without_a_track` |  |  | The real player: no track, or one that is gone, makes no player and no error; pause and stop before play too. |
 | `test_music.py` | `test_the_music_plays_while_the_portal_is_in_front` |  | 0.3 s | The music starts once the intro is over, waits while another window has the focus (a game, an app), and plays on when the portal is back. |
+| `test_music.py` | `test_the_music_waits_for_the_intro_and_in_the_tray` |  |  | The portal shows itself fullscreen before the intro: the music does not start before the intro has ended. |
 | `test_music.py` | `test_the_music_pill_is_apart_from_the_sound_pill` |  | 0.4 s | Music has a switch of its own (owner, 14-11-2026): off, the music stops and Sound stays as it is, and the other way round; the choice is kept. |
 | `test_music.py` | `test_no_music_without_an_audio_output` |  | 0.2 s | No music without an audio output. |
 | `test_music.py` | `test_the_music_waits_for_the_portal_tour` |  | 0.2 s | The music waits for the portal tour. |

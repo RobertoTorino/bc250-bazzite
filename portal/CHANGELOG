@@ -1,3 +1,7 @@
+Changelog: 25-11-2026 14:00:36
+
+Fixed. The music no longer starts before the intro. Since the system tray came, the first show of the window started it, so it played over the intro. Closing the portal no longer pauses the music after it has stopped.
+
 Changelog: 25-11-2026 09:49:07
 
 Added. A minimize symbol between ☰ and the close symbol. It hides the portal in the system tray, where the portal's icon shows while it is hidden. A click on that icon brings the portal back, and so does starting the portal again. The icon's menu holds Show the portal and Exit. While hidden, the music waits and the portal reads no status, batteries or weather. On a desktop without a system tray, the portal minimizes to the taskbar.

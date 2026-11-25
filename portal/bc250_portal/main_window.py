@@ -550,6 +550,7 @@ class MainWindow(QMainWindow):
         self.weather_at = ""                            # when the weather shown came: "14:32"
         self.weather_skipped = False                    # a time to ask came while the portal was minimized
         self.intro: Intro | None = None
+        self.started_up = False                         # start_up() ran and the window is not closing
         self.installed = installed
         self.launch = launch or (lambda argv: QProcess.startDetached(argv[0], argv[1:])[0])
         self.setWindowTitle(INFO.display_name)
@@ -1221,16 +1222,18 @@ class MainWindow(QMainWindow):
             self.tray.hide()
         if self.weather_skipped:
             self.update_weather()
-        self._sync_music()
+        if self.started_up:                             # the first show comes before the intro
+            self._sync_music()
 
     def hideEvent(self, event) -> None:  # noqa: N802 (Qt override)
         super().hideEvent(event)
-        self._sync_music()                              # in the tray: the music waits
+        if self.started_up:                             # closing: the music stopped already
+            self._sync_music()                          # in the tray: the music waits
 
     def changeEvent(self, event) -> None:  # noqa: N802 (Qt override)
         if event.type() == QEvent.Type.WindowStateChange and not self.isMinimized() and self.weather_skipped:
             self.update_weather()                       # restored: the weather skipped while it was minimized
-        if event.type() == QEvent.Type.WindowStateChange:
+        if event.type() == QEvent.Type.WindowStateChange and self.started_up:
             self._sync_music()                          # minimized: the music waits
         if event.type() == QEvent.Type.ActivationChange and self.isActiveWindow():
             self.check_installed()                      # back from the terminal that installed a new portal
@@ -1698,6 +1701,7 @@ class MainWindow(QMainWindow):
         self._show_sound()
         self._show_music()
         self.gamepad.start()
+        self.started_up = True
         self.intro = Intro(self.big)
         self.intro.finished.connect(self._intro_done)
         self.intro.skipped.connect(self.sounds.stop)
@@ -2189,6 +2193,7 @@ class MainWindow(QMainWindow):
         self.weather_timer.stop()
         self.weather_job.stop(2000)
         self.sounds.stop()
+        self.started_up = False
         self.music.stop()
         self.worker.stop(2000)
         self.portal_checker.stop(2000)
