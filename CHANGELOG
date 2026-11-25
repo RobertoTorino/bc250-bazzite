@@ -1,3 +1,16 @@
+Changelog: 25-11-2026 23:15:52
+
+Fixed. The disclaimer no longer names Decky Loader, which no app of the suite has used since Decky Loader
+Manager left the suite on 11-11-2026 (owner, 25-11-2026). The text changed in tools/mkdocs/disclaimer.py and in
+every copy: the README, the apps' READMEs and their wiki chapters. Decky left tools/text_check/words.txt too.
+
+Changelog: 25-11-2026 21:10:01
+
+Added. tools/portal_shots.py takes stills of the portal from the checkout, one per category tab and one of
+the Settings page, as WebP. It sets the portal up as the Portal Tour does and writes the stamp of what they show.
+Nexus Marketing for BC-250 uses them. The README lists that app, and its installer test is
+tools/installer-tests/marketing.sh.
+
 Changelog: 25-11-2026 05:16:25
 
 Fixed. CI's app tests of BC-250 PS Remote Play and BC-250 XB Remote Play failed before a test ran. PyQt6-Qt6

@@ -56,7 +56,6 @@ zlib
 vpk
 Konsole
 libva
-Decky
 swappiness
 cpufreq
 Tctl

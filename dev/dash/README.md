@@ -11,6 +11,7 @@ the checkout. Each app opens in a window of its own:
 
 - [Nexus Release Tool](../nrt)
 - [Nexus Installer Tests](../itests)
+- [Nexus Marketing for BC-250](../marketing)
 - [Nexus Demo Recorder](../demo)
 - [Nexus Sound Lab](../sounds)
 - [Nexus Deps](../deps)

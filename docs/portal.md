@@ -27,19 +27,20 @@ none.
   or a headset. The level is under it, and the fill turns red at 20 % or less. A yellow bolt means the device is
   charging. Hover a battery to see the device's name. Without such a device, no battery shows.
 
-Under them is a row of thirteen big symbols. Four act on the apps:
+Under them is a row of fourteen big symbols. Four act on the apps:
 
 - **Refresh**, two circling arrows, looks again at which apps are installed
 - **Sys info**, a chip
 - **Install all apps**, a grid of apps with an arrow down
 - **Install all updates**, a circular arrow around an arrow down
 
-Nine are shortcuts to what is outside the suite:
+Ten are shortcuts to what is outside the suite:
 
 - **Files**, a folder
 - **Steam**
 - **Discord**, a round face with two eyes
 - **YouTube**, a screen with a play triangle
+- **Twitch**, a speech bubble with two eyes
 - **GitHub**, a cat in a disc
 - **Bluetooth**
 - **Network**
@@ -287,6 +288,9 @@ Start Nexus Dashboard for BC-250 from the checkout, or give it a menu entry with
   Brave Browser must be installed as a Flatpak, `com.brave.Browser`. Get it from Bazzite's software store, or with
   `flatpak install flathub com.brave.Browser`. Without it, the portal says so and opens nothing.
 - **YouTube**, a symbol at the top, opens YouTube in a maximized window of Brave Browser.
+  Brave Browser must be installed as a Flatpak, `com.brave.Browser`. Get it from Bazzite's software store, or with
+  `flatpak install flathub com.brave.Browser`. Without it, the portal says so and opens nothing.
+- **Twitch**, a symbol at the top, opens Twitch in a maximized window of Brave Browser.
   Brave Browser must be installed as a Flatpak, `com.brave.Browser`. Get it from Bazzite's software store, or with
   `flatpak install flathub com.brave.Browser`. Without it, the portal says so and opens nothing.
 - **GitHub**, a symbol at the top, opens github.com in the desktop's own browser. It opens in a normal window with

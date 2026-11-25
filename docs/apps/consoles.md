@@ -361,7 +361,7 @@ Universal Blue project, Sony, Microsoft, Valve, or the makers of the emulators a
 with. BC-250 is AMD's product name and Bazzite the Universal Blue project's. PlayStation, PS4, PS5, PS3, PS2, PSP, PS
 Vita, PSN, DualSense and Remote Play are Sony's; XBOX, XBOX 360, XBOX Cloud Gaming, Game Pass and Windows are
 Microsoft's; Steam, Steam Deck and Big Picture are Valve's; the names of the emulators (shadPS4, RPCS3, PPSSPP, PCSX2,
-Vita3K, Xenia) and of Decky Loader, HelixSR and DirectMesh belong to their owners. The suite uses them only to say what its apps work with.
+Vita3K, Xenia) and of HelixSR and DirectMesh belong to their owners. The suite uses them only to say what its apps work with.
 
 ## License
 

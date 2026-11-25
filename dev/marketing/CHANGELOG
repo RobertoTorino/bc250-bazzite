@@ -1,0 +1,46 @@
+Changelog: 26-11-2026 00:01:43
+
+Fixed. The copy lists Twitch among the portal's shortcuts.
+
+Changelog: 25-11-2026 23:51:31
+
+Fixed. Each line under Headline in copy.md is a line of the headline on the page, so copy.md sets where it
+breaks (owner, 25-11-2026).
+
+Changelog: 25-11-2026 23:49:52
+
+Fixed. The headline is wider, 18 characters instead of 15, so it takes two lines (owner, 25-11-2026).
+
+Changelog: 25-11-2026 23:47:47
+
+Fixed. Preview writes a file named after the suite, such as bc250-bazzite-suite.html, so the twins in the two
+suites never write over each other's preview (owner, 25-11-2026). "PlayStation 5" and "BC-250" never break in two
+at the end of a line.
+
+Changelog: 25-11-2026 23:40:24
+
+Fixed. An app card shows the name of its tile in the portal: apps.toml's short when the app has one, so Bazzite
+DatStation's card says DatStation. The suite's name, the portal's icon and core's fonts are read from the checkout,
+so the code is the same in Nexus Marketing for PS5. One test reads the first and last app from apps.toml.
+
+Changelog: 25-11-2026 23:22:09
+
+Added. Publish sends the article to the website (owner, 25-11-2026). Its caption counts the files that differ from
+the website's folder, a checkout of the repository GitHub Pages serves, or says Up to date. Its first click
+asks for that folder. Then it asks first, writes the article there, removes the pictures it no
+longer has, commits only the article's files as "see the changelog" and pushes. It is off while the website is up to
+date. A globe beside the info symbol opens the website, at its CNAME or GitHub Pages' address. Preview writes one file with the style sheet, fonts and pictures inside, so a browser in a Flatpak shows it
+whole. The quickfix card names four quickfixes and then "and more...", and an And more section shows the small
+touches of the portal and the apps.
+
+Changelog: 25-11-2026 21:10:01
+
+Added. Nexus Marketing for BC-250, a development app (owner, 25-11-2026). It writes an article that presents the
+portal and every app in it, as a web page in the suite's Bazzite design. The apps, their categories and their marks
+come from portal/apps.toml. The words come from nexus_marketing/copy.md, a line per category and per app, and the
+tests fail when one is missing. The license and the disclaimer come from the suite's README. The development apps
+are left out. The page links to the latest release, the wiki, the Portal Tour and GitHub. It shows stills of the
+portal from tools/portal_shots.py, one per category and one of the Settings page. The hero's background is a drawn
+placeholder until images/hero.webp is there. Preview opens the page in the browser as one file, with its style
+sheet, fonts and pictures inside. A browser in a Flatpak gets only the file it opens. Export writes the page to a
+new folder, Screenshots takes the stills again and Text check checks copy.md.

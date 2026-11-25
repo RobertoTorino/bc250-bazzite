@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3546 test functions (4110 cases counting the parametrized ones) in 42 test folders, and 43 installer tests.
+3572 test functions (4136 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -46,13 +46,14 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
 | [dev/garbage](#devgarbage) | 1 | 8 |  |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
+| [dev/marketing](#devmarketing) | 2 | 25 |  |
 | [dev/nrt](#devnrt) | 4 | 135 | 24.8 s |
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [dev/studio](#devstudio) | 6 | 65 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
-| [portal](#portal) | 17 | 223 | 29.0 s |
+| [portal](#portal) | 17 | 224 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3546** | **182 s** |
+| **All** | | **3572** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -81,6 +82,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `garbage.sh` | Exercise dev/garbage/install.sh, Nexus Garbage Remover's installer. |
 | `gpu.sh` | Exercise apps/gpu/install.sh. |
 | `itests.sh` | Exercise dev/itests/install.sh, Nexus Installer Tests's installer. |
+| `marketing.sh` | Exercise dev/marketing/install.sh, Nexus Marketing for BC-250's installer. |
 | `mesh.sh` | Exercise apps/mesh/install.sh. |
 | `not-installed.sh` | Every app's installer and the portal's, with --uninstall and with --uninstall --purge, on a computer where nothing of them is installed. |
 | `nrt.sh` | Exercise dev/nrt/install.sh (and tools/nrt.sh, which forwards to it). |
@@ -3162,6 +3164,38 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_runner.py` | `test_installer_creates_desktop_entries_and_uninstalls_only_them` |  | 0.1 s | Installer creates desktop entries and uninstalls only them. |
 | `test_runner.py` | `test_a_second_launch_opens_no_window` |  |  | A double-click on the Desktop icon starts the app twice: the second launch hands over to the first. |
 
+## dev/marketing
+
+25 tests in 2 files.
+
+| File | Test | Cases | Time | What it checks |
+|---|---|---|---|---|
+| `test_article.py` | `test_copy_has_a_line_for_every_app_and_category` |  |  | A new app in the portal fails here until copy.md has its line (owner, 25-11-2026: kept in sync). |
+| `test_article.py` | `test_missing_names_an_app_without_a_line_and_a_line_for_nothing` |  |  | Missing names an app without a line and a line for nothing. |
+| `test_article.py` | `test_every_part_of_the_copy_is_there` |  |  | Every part of the copy is there. |
+| `test_article.py` | `test_the_page_shows_every_portal_app_and_no_development_app` |  |  | The page shows every portal app and no development app. |
+| `test_article.py` | `test_the_count_comes_from_the_portal` |  |  | The count comes from the portal. |
+| `test_article.py` | `test_the_page_links_the_release_the_wiki_the_video_and_github` |  |  | The page links the release the wiki the video and github. |
+| `test_article.py` | `test_the_license_and_the_disclaimer_are_the_readmes` |  |  | The license and the disclaimer are the readmes. |
+| `test_article.py` | `test_a_readme_link_points_at_the_repository` |  |  | A readme link points at the repository. |
+| `test_article.py` | `test_the_changes_board_mark_follows_apps_toml` |  |  | The changes board mark follows apps toml. |
+| `test_article.py` | `test_stills_and_hero_go_along_when_there_are_some` |  |  | Stills and hero go along when there are some. |
+| `test_article.py` | `test_write_puts_every_file_beside_the_page` |  |  | Write puts every file beside the page. |
+| `test_article.py` | `test_every_file_of_the_page_exists` |  |  | Every file of the page exists. |
+| `test_article.py` | `test_the_preview_is_one_file_with_nothing_beside_it` |  |  | A browser in a sandbox (a Flatpak) gets only the file it opens: the preview refers to no file beside it. |
+| `test_article.py` | `test_the_quickfix_card_names_four_and_more` |  |  | Four quickfixes by name, then "and more..." (owner, 25-11-2026): not the one named as the app's own tile. |
+| `test_article.py` | `test_and_more_sits_above_the_safety_band` |  |  | And more sits above the safety band. |
+| `test_article.py` | `test_changes_and_publish_touch_only_the_articles_files` |  |  | Changes and publish touch only the articles files. |
+| `test_article.py` | `test_publish_commands_commit_the_articles_files_and_push` |  |  | Run against a local bare repository: the commit has the article's files, its message, and reaches the remote. |
+| `test_article.py` | `test_each_headline_line_in_the_copy_is_a_line_on_the_page` |  |  | copy.md sets where the headline breaks: a line there is a line on the page (owner, 25-11-2026). |
+| `test_main_window.py` | `test_a_row_for_every_app` |  |  | A row for every app. |
+| `test_main_window.py` | `test_current_stills_cannot_be_taken_again` |  |  | Current stills cannot be taken again. |
+| `test_main_window.py` | `test_export_never_takes_a_folder_that_is_there` |  |  | Export never takes a folder that is there. |
+| `test_main_window.py` | `test_publish_says_when_the_website_is_behind` |  |  | Publish says when the website is behind. |
+| `test_main_window.py` | `test_website_url_from_the_remote_or_the_cname` |  |  | Website url from the remote or the cname. |
+| `test_main_window.py` | `test_the_globe_is_on_with_a_website` |  |  | The globe is on with a website. |
+| `test_main_window.py` | `test_each_suite_has_its_own_preview_file` |  |  | Both suites' twins have the same app ID, so the preview is named after the suite (owner, 25-11-2026). |
+
 ## dev/nrt
 
 135 tests in 4 files, 24.8 s in a local run.
@@ -3458,7 +3492,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## portal
 
-223 tests in 17 files, 29.0 s in a local run.
+224 tests in 17 files, 29.0 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3558,6 +3592,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_shortcuts.py` | `test_steam_and_the_file_manager` |  |  | Steam and the file manager. |
 | `test_shortcuts.py` | `test_youtube_needs_brave_browsers_flatpak` |  |  | Youtube needs brave browsers flatpak. |
 | `test_shortcuts.py` | `test_discord_opens_in_brave` |  |  | Discord (owner, 25-11-2026): its web app in a maximized window of Brave Browser, and a message while it is missing. |
+| `test_shortcuts.py` | `test_twitch_opens_in_brave` |  |  | Twitch (owner, 25-11-2026): in a maximized window of Brave Browser, and a message while it is missing. |
 | `test_shortcuts.py` | `test_the_weather_opens_its_forecast_in_brave` |  |  | A click on the weather (owner, 24-11-2026): the place's forecast at wttr.in, a page without ads, by its coordinates, in a window of Brave Browser. |
 | `test_shortcuts.py` | `test_github_opens_in_the_desktops_own_browser` |  |  | github.com with xdg-open; the browser's window is the one KWin brings to the front, when it can be asked. |
 | `test_shortcuts.py` | `test_the_settings_of_the_desktop_that_is_there` | 4 |  | KDE Plasma's System Settings, else the module alone, else GNOME's Settings (not only the owner's desktop). |
@@ -3640,7 +3675,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_a_download_counts_its_megabytes` |  | 0.2 s | The tile says how far a download is (owner, 03-11-2026: Downloading… for a 90 MB release looked like a hang): the part file's size, read every PROGRESS_MS while the job runs. |
 | `test_window.py` | `test_the_exit_asks_nothing` |  | 0.2 s | Escape (B) and the close symbol close the portal without a question (owner, 12-11-2026). |
 | `test_window.py` | `test_the_desktops_close_asks_only_while_something_runs` |  | 0.2 s | The desktops close asks only while something runs. |
-| `test_window.py` | `test_a_shortcut_starts_its_program` |  | 0.2 s | The header's shortcuts (owner, 12-11-2026): the file manager, Steam, Discord and YouTube in Brave Browser, GitHub, and the desktop's Bluetooth, network, sound and display settings. |
+| `test_window.py` | `test_a_shortcut_starts_its_program` |  | 0.2 s | The header's shortcuts (owner, 12-11-2026): the file manager, Steam, Discord, YouTube and Twitch in Brave Browser, GitHub, and the desktop's Bluetooth, network, sound and display settings. |
 | `test_window.py` | `test_a_key_for_each_controller_action` |  | 0.2 s | Steam's desktop layout turns a pad's buttons into keys (owner, 05-11-2026): U, S, K and M do what Y, ☰, R3 and X do, for the buttons it gives no key of their own. |
 | `test_window.py` | `test_the_s_key_opens_the_settings` |  | 0.2 s | The s key opens the settings. |
 | `test_window.py` | `test_the_arrow_keys_move_between_a_questions_buttons` |  | 0.2 s | With Steam's desktop layout a controller is the arrow keys and Enter: Qt's questions take them as they are. |
@@ -3667,7 +3702,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_restart_that_cannot_start` |  | 0.2 s | Restart that cannot start. |
 | `test_window.py` | `test_no_restart_from_a_checkout` |  | 0.2 s | No restart from a checkout. |
 | `test_window.py` | `test_one_theme_for_every_app` |  | 0.6 s | The theme pill shows the chosen theme; a click takes the next one, for every app; its tooltip says when it shows. |
-| `test_window.py` | `test_the_header_is_an_apps_header_with_symbols` |  | 0.2 s | The suite's icon, spanning the name, ☰ and the close symbol at the top right and the row of big symbols (owner, 05-11-2026, in place of the pills): Refresh, Sys info, Install all apps and Install all updates, then the shortcuts (owner, 12-11-2026): Files, Steam, Discord, YouTube, GitHub, Bluetooth, Network, Volume and Screen, what each does in its tooltip; on their right the installed count over the status. |
+| `test_window.py` | `test_the_header_is_an_apps_header_with_symbols` |  | 0.2 s | The suite's icon, spanning the name, ☰ and the close symbol at the top right and the row of big symbols (owner, 05-11-2026, in place of the pills): Refresh, Sys info, Install all apps and Install all updates, then the shortcuts (owner, 12-11-2026): Files, Steam, Discord, YouTube, Twitch, GitHub, Bluetooth, Network, Volume and Screen, what each does in its tooltip; on their right the installed count over the status. |
 | `test_window.py` | `test_the_sys_info_symbol_opens_one_window_read_each_time` |  | 0.2 s | Sys info (owner, 20-10-2026): a small window with what the system reports, read again each time it opens; Copy puts it on the clipboard as text. |
 | `test_window.py` | `test_the_wallpaper` |  | 0.4 s | A picture of at least 1920 x 1080 in 16:9 becomes the wallpaper (a copy in the portal's state folder); another is refused, with the rules (owner, 20-10-2026). |
 | `test_window.py` | `test_the_example_wallpaper` |  | 0.5 s | The portal ships an example wallpaper (owner, 20-10-2026) and starts with it (owner, 15-11-2026): it is the wallpaper until the user chooses a picture of their own or none, and No wallpaper is remembered. |
