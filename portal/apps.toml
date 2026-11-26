@@ -230,8 +230,8 @@ launch = [["Open", "~/.local/bin/bc250-mesh-shaders"]]
 [apps.vram]
 name = "BC-250 Memory Manager"
 summary = "The VRAM split in CMOS, with the GTT, TTM limit and swap layout that go with it."
-tag = "bc250-vram-v5.0.0"
-sha256 = "29acb18cc95ff5666e3377b79d86749d50397776fb4439a3b941d184d919eecf"
+tag = "bc250-vram-v5.1.0"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
