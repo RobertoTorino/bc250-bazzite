@@ -1225,7 +1225,8 @@ class MainWindow(QMainWindow):
         lines[3] = tried_text(len(tried), kept, undone) if tried else "Nothing measured asked for a change."
         states[4], lines[4] = "done", "Nothing more to change. The measurements ask for nothing."
         self.show_learned(st)
-        self.round_actions = (None, None, "Nothing to do.", "Done. Your board runs the Learned profile.")
+        self.round_actions = (None, None, "Nothing to save. Keep playing.",
+                              "Done. Your board already runs these settings. They stay after a restart.")
         return 4
 
     # --- What the current step shows ---------------------------------------------------------------------------
@@ -1311,10 +1312,12 @@ class MainWindow(QMainWindow):
         reasons = {why[r.change["kind"]]: r.change["reason"] for r in st.rounds
                    if r.change and r.verdict == learn.KEPT}
         names = (("VRAM split", "split"), ("GTT limit", "pages"), ("Swap", "swap"), ("Memory guard", "guard"))
-        self.add_text("<b>The Learned profile</b>")
+        self.add_text("<b>The settings your board runs now</b>")
         self.add_table(["Setting", "Start point", "Learned", "Why"],
                        [(name, self.settings_text(start, key), self.settings_text(now, key),
                          reasons.get(key, "Unchanged")) for name, key in names])
+        if start == now:
+            self.add_text("No change stayed, so these are the start point's settings.", True, 13)
         self.add_text("Recording stays on. When a game runs out of memory again, the app proposes a new change.",
                       True, 13)
 

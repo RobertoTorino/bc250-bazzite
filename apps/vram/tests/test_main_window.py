@@ -612,7 +612,7 @@ def test_the_learning_steps_from_the_start_point_to_the_learned_profile(qapp, sy
     assert states(w)[4] == "now" and w.step_rows[4].line.text() == "Better. Keep the change, or undo it."
     assert (w.step_pill.text(), w.alt_pill.text()) == ("Keep", "Undo")
     w.step_pill.click()
-    assert w.finished_bar.text() == "Done. Your board runs the Learned profile." and not w.finished_bar.isHidden()
+    assert w.finished_bar.text() == "Done. Your board already runs these settings. They stay after a restart." and not w.finished_bar.isHidden()
     assert states(w) == ["done"] * 5 and w.round_box.caption.text() == "Rounds"
     assert learn.read_state(sys_root.parent / "learn.json").rounds[1].verdict == learn.KEPT
     w.close()
@@ -655,4 +655,22 @@ def test_a_change_that_is_no_better_is_undone(qapp, sys_root, proc_root, answer)
     assert (w.step_pill.text(), w.step_pill.caption.text()) == ("Write", "Takes effect at once")
     w.start_over_pill.click()
     assert learn.read_state(sys_root.parent / "learn.json") is None and states(w)[0] == "now"
+    w.close()
+
+
+def test_a_round_that_asks_for_nothing_ends_on_the_start_point(qapp, sys_root, proc_root, answer):
+    """Three games that end as usual: the window is done, with nothing to save, and says the start point stays."""
+    ostree = FakeOstree()
+    swapper, clock, restarts = Swapper(sys_root.parent), Clock(), []
+    w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-1")
+    w.step_pill.click()
+    play(sys_root, "boot-1", 1100, ("LUMINES", watch.CLOSED), ("Hades", watch.CLOSED), ("Tetris", watch.CLOSED))
+    w.refresh_sessions(force=True)
+    assert states(w) == ["done"] * 5
+    assert w.finished_bar.text() == "Done. Your board already runs these settings. They stay after a restart."
+    assert w.next_label.text() == "Nothing to save. Keep playing."
+    texts = [w.content.itemAt(i).widget().text() for i in range(w.content.count())
+             if isinstance(w.content.itemAt(i).widget(), main_window.QLabel)]
+    assert "<b>The settings your board runs now</b>" in texts
+    assert "No change stayed, so these are the start point's settings." in texts
     w.close()

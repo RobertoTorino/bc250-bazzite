@@ -73,8 +73,10 @@ says what to do. Done steps have a green check mark.
    pill on the step is the one the app advises. The other one is in the bottom row.
 
 Then step 4 comes again with the next change. When nothing measured asks for a change, a green bar says **Done. Your
-board runs the Learned profile.** A table compares the start point with the Learned profile, with the reason for each
-change. Recording stays on. When a game runs out of memory again, step 4 proposes a new change.
+board already runs these settings. They stay after a restart.** These settings are the Learned profile. You have
+nothing to save, because each step wrote its settings to the board. A table compares the start point with the
+Learned profile, with the reason for each change. When no change stayed, the line under it says so. Keep playing.
+Recording stays on. When a game runs out of memory again, step 4 proposes a new change.
 
 What points to a change, in this order:
 

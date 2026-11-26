@@ -1,3 +1,10 @@
+Changelog: 27-11-2026 00:24:08
+
+Fixed. The end of the learning steps says that nothing needs saving (owner, 27-11-2026). The green bar says the board
+already runs these settings and that they stay after a restart. The table's heading is The settings your board runs
+now. When no change stayed, a line says these are the start point's settings. The line beside Start over says
+Nothing to save. Keep playing.
+
 Changelog: 26-11-2026 22:48:33
 
 Release 5.1.0.
