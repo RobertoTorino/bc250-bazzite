@@ -5,6 +5,8 @@ left during a session, the program names, and the proposal."""
 
 from pathlib import Path
 
+import pytest
+
 from vram_manager import swap, watch
 from vram_manager.watch import Session
 
@@ -36,6 +38,12 @@ class Journal:
     def __call__(self, args):
         self.calls.append(args)
         return self.oomd if "systemd-oomd.service" in args else self.kernel if "-k" in args else ""
+
+
+@pytest.fixture(autouse=True)
+def no_desktop_files(monkeypatch):
+    """The names come from the unit alone: the desktop files of the machine that runs the tests stay out."""
+    monkeypatch.setattr(watch, "DESKTOP_DIRS", ())
 
 
 def make(tmp_path, sys_root, proc_root, journal=None, clock=lambda: 1000.0):
@@ -185,3 +193,61 @@ def test_the_proposal():
     assert gpu == watch.Proposal("Proposal from 3 sessions: GTT limit 7.4 GiB.", "", watch.gtt_pages(ram))
     assert watch.propose([done(watch.KILLED_GPU)] * 3, zram, ram, watch.gtt_pages(ram)).pages is None
     assert watch.gtt_pages(9650) == (9650 - 2048) * 256
+
+
+class Clock:
+    def __init__(self, now: float = 1000.0):
+        self.now = now
+
+    def __call__(self) -> float:
+        return self.now
+
+
+def test_the_history_and_the_programs(tmp_path, sys_root, proc_root):
+    """One point a minute with the minute's peaks, kept for 24 hours; each program's runs, peak and average."""
+    board(proc_root, swap_free_kb=4000000, pressure=5.0)
+    clock = Clock()
+    folder, w = make(tmp_path, sys_root, proc_root, clock=clock)
+    program(folder, "app-code-1.scope", 2000)
+    for _ in range(31):                         # one minute and two seconds, a look every two seconds
+        w.tick()
+        clock.now += 2
+    program(folder, "app-code-1.scope", 4000)
+    w.tick()
+    end(folder, "app-code-1.scope")
+    clock.now += 2
+    w.tick()
+    w.stop()
+    points = watch.read_history(watch.history_path())
+    assert [p.t for p in points] == [1000.0, 1060.0] and points[0].pressure == 5.0 and points[0].swap_mib == 917
+    stats = watch.read_stats(watch.programs_path())["code"]
+    assert (stats.runs, stats.peak_mib, stats.game, stats.killed) == (1, 4000, False, 0)
+    assert 2000 <= stats.average_mib <= 2100
+    old = watch.Point(1000.0 - watch.HISTORY_S - 1)
+    path = tmp_path / "h.jsonl"
+    watch.write_point(old, path)
+    watch.write_point(watch.Point(1000.0), path)
+    assert [p.t for p in watch.read_history(path)] == [1000.0]       # a point older than 24 hours goes
+
+
+def test_marked_programs_close_when_a_game_starts(tmp_path, sys_root, proc_root):
+    """Only marked programs, never Steam or a game; a game that runs at the watcher's start closes nothing."""
+    board(proc_root, swap_free_kb=4000000)
+    stopped = []
+    folder, w = make(tmp_path, sys_root, proc_root)
+    w.stopper = lambda unit: stopped.append(unit) or 0
+    watch.write_closes({"code", "steam", "Steam game 1"}, watch.closes_path())
+    for unit in ("app-code-1.scope", "app-org.kde.konsole-2.scope", "app-steam@autostart.service",
+                 "app-steam-app1-3.scope"):
+        program(folder, unit, 1500)
+    w.tick()
+    assert stopped == []                                    # the game ran already
+    program(folder, "app-steam-app3880967987-461439.scope", 3000)
+    w.tick()
+    assert stopped == ["app-code-1.scope"]
+    log = watch.closes_log_path().read_text()
+    assert log.endswith(" Closed code for Steam game 3880967987.\n")
+    end(folder, "app-code-1.scope")
+    w.tick()
+    assert watch.read_sessions(tmp_path / "sessions.jsonl")[-1].ended == watch.CLOSED_FOR_GAME
+    assert w.stats["Steam game 1"].game and w.stats["steam"].game and not w.stats["code"].game

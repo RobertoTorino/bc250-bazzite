@@ -46,7 +46,7 @@ chmod +x "$D/$APP/emulator/2.8.2/pcsx2.AppImage"
 ln -sfn 2.8.2 "$D/$APP/emulator/current"
 mkdir -p "$T/games" && touch "$T/games/My Game.iso"                           # a game that is there (the wrapper's gone check)
 bash "$RUN" -nogui -fullscreen -- "$T/games/My Game.iso" > "$T/run.log" 2>&1; rc=$?
-check "starts the current PCSX2 with the arguments as given" "[ $rc -eq 0 ] && grep -qxF 'args: -nogui -fullscreen -- $T/games/My Game.iso' $T/run.log"
+check "starts the current PCSX2 with the arguments as given" "[ $rc -eq 0 ] && grep -qxF 'args: -nogui -fullscreen -- $T/games/My Game.iso' $T/run.log $D/$APP/emulator.log"
 check "the game started goes to the app's log, by name" "grep -q ' INFO Started My Game.iso from a terminal, with' $D/$APP/$APP.log && ! grep -q '$T/games/' $D/$APP/$APP.log"
 
 echo "== 3. install a staged release (core bundled in the tarball) without the Desktop icon"

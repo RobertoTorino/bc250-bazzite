@@ -244,6 +244,41 @@ After three sessions, the line under the table proposes a change, from the newes
 **Use proposal…** writes it for the next boot. It asks first, and then asks for your password. The restart stays yours
 to do. When zram is at twice the RAM already, the line advises zswap with a swap file instead.
 
+## Programs
+
+**Programs…** under the Sessions table opens a window with the memory over time and every program the service has
+seen. It shows only what the service recorded while the suite's guard was on.
+
+**Memory over time** draws three lines, against the RAM as a dashed line:
+
+- **RAM in use**
+- **GPU borrows,** the GTT in use
+- **Swap in use**
+
+Each point is the peak of one minute. A red line marks where a lack of memory ended a program, with its name. Pick
+the last hour, the last 4 hours or the last 24 hours. The service keeps 24 hours.
+
+The table lists the programs, the largest first:
+
+- **Runs:** how often the program ran
+- **Peak** and **Average:** the program's own memory, swap included
+- **Killed:** how often a lack of memory ended it
+- **Close for games:** your mark
+
+### Closing programs for games
+
+Check **Close for games** for a program you do not need while you play. When a game starts, each checked program that
+runs gets systemd's stop signal, SIGTERM. A game is a Steam game or a game of the suite's emulators, started from
+Steam. Most programs save and quit on the stop signal. Some do not ask about unsaved files the way their close button
+does. Save your work before you start a game.
+
+The app checks no program by itself. Steam and the games say **Never** and cannot be checked, because closing them
+would end the game. When the service starts during a game, it closes nothing for that game. The programs stay closed
+after the game.
+
+Each close goes to `close-for-games.log`, with the program and the game. The program's session ends as **Closed for a
+game**.
+
 ## When it refuses
 
 The app reads and writes CMOS only when all the checks below pass. Otherwise, the buttons are off, or the app stops
@@ -315,6 +350,10 @@ The memory guard:
 - `~/.config/systemd/user/bc250-memory-watch.service`: the service that records the sessions.
 - `~/.local/share/bc250-memory-manager/sessions.jsonl`: the last 50 sessions, with the oldest first.
 - `~/.local/share/bc250-memory-manager/sessions-open.json`: the sessions of the programs that run now.
+- `~/.local/share/bc250-memory-manager/history.jsonl`: one point a minute for the last 24 hours.
+- `~/.local/share/bc250-memory-manager/programs.json`: each program's runs, peak, average and kills.
+- `~/.local/share/bc250-memory-manager/close-for-games.json`: the programs checked to close for games.
+- `~/.local/share/bc250-memory-manager/close-for-games.log`: each program closed for a game.
 
 How the app reads and writes CMOS: [Memory Manager internals](../development/memory-manager.md).
 
@@ -326,7 +365,7 @@ Install it from the BC250 Bazzite Suite portal, or from a clone or release folde
 ./install.sh                         # app menu entry and Desktop icon
 ./install.sh --no-desktop-shortcut   # app menu entry only
 ./install.sh --uninstall             # remove the app and the sessions service; keeps its settings and CMOS backups
-./install.sh --uninstall --purge     # also remove its settings and CMOS backups
+./install.sh --uninstall --purge     # also remove its settings, CMOS backups and memory records
 ```
 
 Reading and writing CMOS needs `pkexec` and the system `python3`. The GTT limit needs `rpm-ostree`. Bazzite has all

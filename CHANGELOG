@@ -1,3 +1,9 @@
+Changelog: 26-11-2026 13:11:12
+
+Fixed. The installer tests of the six emulator apps read the fake emulator's output from the app's emulator.log. The
+run wrappers write it there since 26-11-2026, so CI failed on pcsx2.sh, ppsspp.sh, rpcs3.sh, shadps4.sh, vita3k.sh
+and xenia.sh. The check that shadPS4 starts beside the AppImage reads the folder with the home folder written as ~.
+
 Changelog: 26-11-2026 07:45:43
 
 Added. The README links the suite's website in a highlighted block under the introduction (owner, 26-11-2026).

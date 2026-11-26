@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3623 test functions (4187 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3626 test functions (4190 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -37,7 +37,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/turing](#appsturing) | 9 | 77 | 1.4 s |
 | [apps/upscaler](#appsupscaler) | 11 | 119 | 1.6 s |
 | [apps/vita3k](#appsvita3k) | 9 | 85 | 5.3 s |
-| [apps/vram](#appsvram) | 9 | 75 | 0.6 s |
+| [apps/vram](#appsvram) | 10 | 78 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
 | [apps/xenia](#appsxenia) | 8 | 79 | 4.5 s |
 | [core](#core) | 32 | 246 | 4.6 s |
@@ -53,7 +53,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3623** | **182 s** |
+| **All** | | **3626** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -2424,7 +2424,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/vram
 
-75 tests in 9 files, 0.6 s in a local run.
+78 tests in 10 files, 0.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2485,6 +2485,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_privileged.py` | `test_command_runs_the_helper_isolated` |  |  | Command runs the helper isolated. |
 | `test_privileged.py` | `test_parse` |  |  | Parse. |
 | `test_privileged.py` | `test_report` |  |  | Report. |
+| `test_programs_dialog.py` | `test_the_programs_and_their_marks` |  |  | The programs and their marks. |
 | `test_swap.py` | `test_bazzite_is_no_files_and_reads_back` |  |  | Bazzite is no files and reads back. |
 | `test_swap.py` | `test_zswap_makes_the_file_first_and_turns_zram_off` |  |  | Zswap makes the file first and turns zram off. |
 | `test_swap.py` | `test_a_file_that_cannot_be_made_changes_nothing` |  |  | A file that cannot be made changes nothing. |
@@ -2503,6 +2504,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_watch.py` | `test_names` |  |  | Names. |
 | `test_watch.py` | `test_the_app_slice_comes_from_the_watchers_own_cgroup` |  |  | The app slice comes from the watchers own cgroup. |
 | `test_watch.py` | `test_the_proposal` |  |  | The proposal. |
+| `test_watch.py` | `test_the_history_and_the_programs` |  |  | One point a minute with the minute's peaks, kept for 24 hours; each program's runs, peak and average. |
+| `test_watch.py` | `test_marked_programs_close_when_a_game_starts` |  |  | Only marked programs, never Steam or a game; a game that runs at the watcher's start closes nothing. |
 
 ## apps/webcam
 

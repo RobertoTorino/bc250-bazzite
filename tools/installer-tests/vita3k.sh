@@ -43,7 +43,7 @@ printf '#!/bin/sh\necho "args: $*"\n' > "$D/$APP/emulator/4377/vita3k.AppImage"
 chmod +x "$D/$APP/emulator/4377/vita3k.AppImage"
 ln -sfn 4377 "$D/$APP/emulator/current"
 bash "$RUN" --pkg "/games/My Game.pkg" --zrif KO5i > "$T/run.log" 2>&1; rc=$?
-check "starts the current Vita3K with the arguments as given" "[ $rc -eq 0 ] && grep -qxF 'args: --pkg /games/My Game.pkg --zrif KO5i' $T/run.log"
+check "starts the current Vita3K with the arguments as given" "[ $rc -eq 0 ] && grep -qxF 'args: --pkg /games/My Game.pkg --zrif KO5i' $T/run.log $D/$APP/emulator.log"
 
 echo "== 3. install a staged release (core bundled in the tarball) without the Desktop icon"
 rm -rf "$T/stage"; /usr/bin/python3 "$NEXUS/tools/stage_app.py" vita3k "$T/stage" > /dev/null

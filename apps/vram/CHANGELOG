@@ -1,3 +1,13 @@
+Changelog: 26-11-2026 13:22:35
+
+Added. Programs under the Sessions table opens a window with the memory over time and every program the sessions
+service has seen. The graph shows RAM in use, GPU borrowing and swap in use for the last hour, 4 hours or 24 hours,
+with a red line where a lack of memory ended a program. The table lists each program's runs, its own peak and average
+memory and its kills, the largest first. A program checked to close for games gets systemd's stop signal when a Steam
+game or an emulator game starts. Steam and the games cannot be checked. Each close goes to close-for-games.log. The
+service keeps one point a minute for 24 hours. install.sh --uninstall --purge also removes these records. The owner
+asked for it on 26-11-2026.
+
 Changelog: 26-11-2026 12:37:41
 
 Added. A Memory guard box sets when systemd-oomd ends the program that uses the most memory. The suite's guard acts

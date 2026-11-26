@@ -804,6 +804,7 @@ Characters of the font that the apps use as icons in labels and buttons.
 | BC-250 Controller | ✓ ✕ › △ ○ □ |
 | BC-250 Core Unlock | ✔ ✖ ▶ ■ |
 | BC-250 GPU Manager | ✔ ✖ ⚠ ▶ ● |
+| BC-250 Memory Manager | ■ |
 | BC-250 PS Remote Play | ✓ ✗ |
 | BC-250 Persistent ACPI | ● |
 | BC-250 Quickfix | ● ○ |

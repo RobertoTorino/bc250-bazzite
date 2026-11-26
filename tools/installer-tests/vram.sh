@@ -68,11 +68,12 @@ check "sessions service stopped and removed" "[ ! -e $WATCH ] && grep -qx -- '--
 echo "== 5. reinstall, then uninstall --purge as the last venv user"
 rm "$D/bc250-bazzite-suite/venv-users/bc250-board-test"
 mkdir -p "$XDG_CONFIG_HOME/$APP" && touch "$XDG_CONFIG_HOME/$APP/$APP.ini"
+mkdir -p "$D/$APP" && touch "$D/$APP/sessions.jsonl" "$D/$APP/history.jsonl" "$D/$APP/programs.json" "$D/$APP/close-for-games.log"
 bash "$T/stage/install.sh" > "$T/log5" 2>&1 && bash "$T/stage/install.sh" --uninstall --purge >> "$T/log5" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "venv removed" "[ ! -e $D/bc250-bazzite-suite/venv ] && [ ! -e $D/bc250-bazzite-suite/venv-users ]"
 check "desktop icon removed" "[ ! -e $HOME/Desktop/$APP.desktop ]"
-check "settings and backups removed" "[ ! -e $XDG_CONFIG_HOME/$APP ] && [ ! -e $D/$APP ]"
+check "settings, backups and memory records removed" "[ ! -e $XDG_CONFIG_HOME/$APP ] && [ ! -e $D/$APP ]"
 
 [ $fail -eq 0 ] && echo "ALL OK" || for n in 1 2 3 4 5; do echo "--- log$n"; cat "$T/log$n"; done
 exit $fail

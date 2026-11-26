@@ -5,7 +5,7 @@
 #   ./install.sh                         # install or update
 #   ./install.sh --no-desktop-shortcut   # app menu entry only, no icon on the Desktop
 #   ./install.sh --uninstall             # remove the app; keeps its settings and CMOS backups
-#   ./install.sh --uninstall --purge     # also remove its settings and CMOS backups
+#   ./install.sh --uninstall --purge     # also remove its settings, CMOS backups and memory records
 #
 # Run it as your own user; nothing here needs root. The app reads the memory figures without root; it reads or
 # writes the CMOS memory block only when you ask, through a password prompt (pkexec) and the system python3, and
@@ -76,7 +76,8 @@ if $UNINSTALL; then
     found=false
     installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "${DATA_DIR:?}/$APP_ID/app" "$VENV_USERS/$APP_ID" \
         "$WATCH_FILE" && found=true
-    $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "${DATA_DIR:?}/$APP_ID/backups" && found=true
+    $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "${DATA_DIR:?}/$APP_ID/backups" "${DATA_DIR:?}/$APP_ID/"*.json* \
+        "${DATA_DIR:?}/$APP_ID/close-for-games.log" && found=true
     if ! $found; then
         info "$APP_NAME is not installed: nothing to remove."
         exit 0
@@ -100,10 +101,12 @@ if $UNINSTALL; then
         rm -rf "$VENV"
     fi
     if $PURGE; then
-        info "Removing the settings and the CMOS backups"
+        info "Removing the settings, the CMOS backups and the memory records"
         rm -rf "${CONFIG_DIR:?}/$APP_ID" "${DATA_DIR:?}/$APP_ID/backups"
+        rm -f "${DATA_DIR:?}/$APP_ID/"{sessions.jsonl,sessions-open.json,history.jsonl,programs.json} \
+            "${DATA_DIR:?}/$APP_ID/"{close-for-games.json,close-for-games.log}
     fi
-    rmdir "${DATA_DIR:?}/$APP_ID" 2>/dev/null || true     # gone unless backups are kept
+    rmdir "${DATA_DIR:?}/$APP_ID" 2>/dev/null || true     # gone unless backups or records are kept
     info "$APP_NAME is uninstalled."
     exit 0
 fi

@@ -305,9 +305,13 @@ class MainWindow(QMainWindow):
         self.proposal_button = QPushButton("Use proposal…")
         self.proposal_button.setToolTip("Write what the sessions propose. It takes effect after a restart")
         self.proposal_button.clicked.connect(self.use_proposal)
+        self.programs_button = QPushButton("Programs…")
+        self.programs_button.setToolTip("The memory over time, and every program the service has seen")
+        self.programs_button.clicked.connect(self.show_programs)
         row_proposal = QHBoxLayout()
         row_proposal.addWidget(self.proposal_note, 1)
         row_proposal.addWidget(self.proposal_button)
+        row_proposal.addWidget(self.programs_button)
         row_proposal.addWidget(InfoButton(
             "While the suite's guard is on, a service records every program that takes 1 GiB or more. It keeps the "
             "board's peaks while the program ran, and how it ended. <b>Killed</b> means the kernel ended it, "
@@ -765,6 +769,14 @@ class MainWindow(QMainWindow):
         else:
             self.proposal_note.setText(escape(self.proposal.text))
         self.proposal_button.setVisible(bool(self.proposal.zram_size or self.proposal.pages is not None))
+
+    def show_programs(self) -> None:
+        """The Programs window, from the records beside the sessions file."""
+        from .programs_dialog import ProgramsDialog
+        folder = self.sessions_file.parent
+        ProgramsDialog(self, self.memory.ram_mib or 0, folder / watch.history_path().name,
+                       folder / watch.programs_path().name, self.sessions_file, folder / watch.closes_path().name,
+                       manual_url=MANUAL_URL).exec()
 
     def use_proposal(self) -> None:
         """Writes what the sessions propose: the zram size and the GTT limit, for the next boot."""

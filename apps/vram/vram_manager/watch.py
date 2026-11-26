@@ -27,6 +27,16 @@ systemd-oomd and the kernel say who they ended in the journal: oomd's "Marked �
 swap used …" and "Memory pressure for … is …", the kernel's "oom-kill:… task_memcg=…". A program's own oom_kill count
 (memory.events) also tells a kernel kill.
 
+The Programs window (owner, 26-11-2026) reads two more records. HISTORY holds one point a minute for HISTORY_S, with
+the minute's peaks of the board's figures. PROGRAMS holds each program's runs, its own peak and average memory, and
+how often a lack of memory ended it, for every program the watcher has seen.
+
+The owner marks programs in that window to close for games (CLOSES). When a game's unit starts (a Steam shortcut or
+game, steam-app<number>), the watcher stops each marked program that runs with `systemctl --user stop`: systemd sends
+it SIGTERM, on which most programs save and quit. Steam and the games are never stopped. Each stop goes to
+CLOSES_LOG, and the program's session ends as "Closed for a game". A game that runs when the watcher starts closes
+nothing.
+
 Standard library and the app's own modules only, so the service starts without Qt."""
 
 from __future__ import annotations
@@ -52,6 +62,8 @@ GPU_SHARE = 0.5                 # a kill with the GPU borrowing this share of th
 PROPOSE_AFTER = 3               # the sessions a proposal needs
 LOOK_BACK = 10                  # the sessions a proposal looks at, newest first
 SPARE_MIB = 2048                # the RAM the Smooth profile's GTT limit leaves the system
+POINT_S = 60                    # one point of the history a minute
+HISTORY_S = 24 * 3600           # the history kept
 
 CLOSED = "Closed"
 GUARD_SWAP = "Guard: swap full"
@@ -61,7 +73,9 @@ KILLED_GPU = "Killed: GPU memory"
 KILLED_RAM = "Killed: RAM full"
 SESSION_ENDED = "Running when the session ended"
 RESTARTED = "Board restarted while it ran"
+CLOSED_FOR_GAME = "Closed for a game"
 SHORT_OF_SWAP = (GUARD_SWAP, KILLED_SWAP)
+SHORT = (GUARD_SWAP, GUARD_PRESSURE, KILLED_SWAP, KILLED_GPU, KILLED_RAM)     # ended by a lack of memory
 
 
 def data_dir() -> Path:
@@ -75,6 +89,22 @@ def sessions_path() -> Path:
 
 def open_path() -> Path:
     return data_dir() / "sessions-open.json"
+
+
+def history_path() -> Path:
+    return data_dir() / "history.jsonl"
+
+
+def programs_path() -> Path:
+    return data_dir() / "programs.json"
+
+
+def closes_path() -> Path:
+    return data_dir() / "close-for-games.json"
+
+
+def closes_log_path() -> Path:
+    return data_dir() / "close-for-games.log"
 
 
 @dataclass
@@ -103,6 +133,33 @@ class Board:
     swap_mib: int = 0
     swap_total_mib: int = 0
     pressure: float = 0.0
+
+
+@dataclass
+class Point:
+    """One minute of the history: its start and the minute's peaks."""
+    t: float
+    ram_mib: int = 0
+    gtt_mib: int = 0
+    swap_mib: int = 0
+    pressure: float = 0.0
+
+
+@dataclass
+class Stats:
+    """One program, over every run the watcher saw."""
+    program: str
+    game: bool = False              # a Steam game, or Steam itself: never closed for a game
+    runs: int = 0
+    peak_mib: int = 0
+    mib_seconds: float = 0.0        # its memory over time, for the average
+    seconds: float = 0.0
+    killed: int = 0                 # ended by a lack of memory
+    last: float = 0.0
+
+    @property
+    def average_mib(self) -> int:
+        return int(self.mib_seconds / self.seconds) if self.seconds else 0
 
 
 # --- Reading ---------------------------------------------------------------------------------------------------
@@ -180,6 +237,16 @@ def desktop_id(unit: str) -> str:
     return re.sub(r"-\d+$", "", name)
 
 
+def is_game(unit: str) -> bool:
+    """A Steam game's unit, a shortcut's too (the emulators' games): app-steam-app<number>-<n>.scope."""
+    return re.fullmatch(r"steam-app\d+", desktop_id(unit)) is not None
+
+
+def never_closed(unit: str) -> bool:
+    """Steam and its games: closing them for a game would end the game."""
+    return is_game(unit) or desktop_id(unit) == "steam"
+
+
 def steam_name(number: int, steam_dir: Path | None) -> str:
     """A Steam game's name: a shortcut's by its appid, else the installed game's manifest; "" when neither."""
     if steam_dir is None:
@@ -199,13 +266,13 @@ def steam_name(number: int, steam_dir: Path | None) -> str:
         return ""
 
 
-def program_name(unit: str, steam_dir: Path | None = None, dirs: tuple[Path, ...] = DESKTOP_DIRS) -> str:
+def program_name(unit: str, steam_dir: Path | None = None, dirs: tuple[Path, ...] | None = None) -> str:
     """A unit's name for people: a Steam game's name, the Name of the app's desktop file, else the app's ID."""
     app = desktop_id(unit)
     match = re.fullmatch(r"steam-app(\d+)", app)
     if match:
         return steam_name(int(match.group(1)), steam_dir) or f"Steam game {match.group(1)}"
-    for folder in dirs:
+    for folder in DESKTOP_DIRS if dirs is None else dirs:
         try:
             for line in (folder / f"{app}.desktop").read_text(errors="replace").splitlines():
                 if line.startswith("Name="):
@@ -271,6 +338,70 @@ def write_session(session: Session, path: Path | None = None) -> None:
     tmp.replace(path)
 
 
+def read_history(path: Path | None = None, since: float = 0.0) -> list[Point]:
+    out = []
+    try:
+        lines = (path or history_path()).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return out
+    for line in lines:
+        try:
+            point = Point(**json.loads(line))
+        except (ValueError, TypeError):
+            continue
+        if point.t >= since:
+            out.append(point)
+    return out
+
+
+def write_point(point: Point, path: Path | None = None) -> None:
+    """Adds the point and keeps the last HISTORY_S."""
+    path = path or history_path()
+    kept = read_history(path, point.t - HISTORY_S) + [point]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text("".join(json.dumps(asdict(p)) + "\n" for p in kept), encoding="utf-8")
+    tmp.replace(path)
+
+
+def read_stats(path: Path | None = None) -> dict[str, Stats]:
+    try:
+        data = json.loads((path or programs_path()).read_text(encoding="utf-8"))
+        return {name: Stats(**value) for name, value in data.items()}
+    except (OSError, ValueError, TypeError, AttributeError):
+        return {}
+
+
+def write_stats(stats: dict[str, Stats], path: Path | None = None) -> None:
+    path = path or programs_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps({name: asdict(s) for name, s in stats.items()}), encoding="utf-8")
+    tmp.replace(path)
+
+
+def read_closes(path: Path | None = None) -> set[str]:
+    """The programs marked to close for games, by name."""
+    try:
+        return {str(name) for name in json.loads((path or closes_path()).read_text(encoding="utf-8"))}
+    except (OSError, ValueError, TypeError):
+        return set()
+
+
+def write_closes(names: set[str], path: Path | None = None) -> None:
+    path = path or closes_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(sorted(names)), encoding="utf-8")
+
+
+def _stop(unit: str) -> int:
+    try:
+        return subprocess.run(["systemctl", "--user", "--no-block", "stop", unit], capture_output=True,
+                              timeout=30, check=False).returncode
+    except (OSError, subprocess.SubprocessError):
+        return 1
+
+
 def boot_id(proc_root: Path = Path("/proc")) -> str:
     return system._read(proc_root / "sys/kernel/random/boot_id") or ""
 
@@ -288,10 +419,23 @@ class Watcher:
     journal: Callable[[list[str]], str] = _journal
     clock: Callable[[], float] = time.time
     open: dict[str, Session] = field(default_factory=dict)
+    history: Path | None = None
+    programs: Path | None = None
+    closes: Path | None = None
+    closes_log: Path | None = None
+    stopper: Callable[[str], int] = _stop
 
     def __post_init__(self) -> None:
         self.record = self.record or sessions_path()
         self.open_file = self.open_file or open_path()
+        self.history = self.history or history_path()
+        self.programs = self.programs or programs_path()
+        self.closes = self.closes or closes_path()
+        self.closes_log = self.closes_log or closes_log_path()
+        self.stats = read_stats(self.programs)
+        self.point: Point | None = None
+        self.first = True                       # the first look: a game that runs already closes nothing
+        self.closed: set[str] = set()           # the units stopped for a game
         self.boot = boot_id(self.proc_root)
         try:
             left = {k: Session(**v) for k, v in json.loads(self.open_file.read_text(encoding="utf-8")).items()}
@@ -313,10 +457,19 @@ class Watcher:
         board = read_board(self.sys_root, self.proc_root)
         programs = read_programs(self.folder)
         now = self.clock()
+        started_game = ""
         for unit, (mib, kills) in programs.items():
             session = self.open.get(unit)
             if session is None:
                 session = self.open[unit] = Session(unit, program_name(unit, self.steam_dir), now, self.boot)
+                stats = self.stats.setdefault(session.program, Stats(session.program, never_closed(unit)))
+                stats.runs += 1
+                if is_game(unit) and not self.first:
+                    started_game = session.program
+            stats = self.stats.setdefault(session.program, Stats(session.program, never_closed(unit)))
+            stats.mib_seconds += mib * max(now - session.end, 0) if session.end else 0
+            stats.seconds += max(now - session.end, 0) if session.end else 0
+            stats.peak_mib, stats.last = max(stats.peak_mib, mib), now
             session.own_mib = max(session.own_mib, mib)
             session.oom_kills = kills
             session.ram_mib = max(session.ram_mib, board.ram_mib)
@@ -329,9 +482,44 @@ class Watcher:
             session = self.open.pop(unit)
             session.end = now
             session.ended = ending(session, self.journal)
+            if session.ended == CLOSED and unit in self.closed:
+                session.ended = CLOSED_FOR_GAME
+            self.closed.discard(unit)
+            if session.ended in SHORT and session.program in self.stats:
+                self.stats[session.program].killed += 1
             if session.own_mib >= MIN_MIB or session.ended != CLOSED:
                 write_session(session, self.record)
+        if started_game:
+            self.close_for(started_game)
+        self.first = False
+        self.add_point(board, now)
         self.save_open()
+
+    def close_for(self, game: str) -> None:
+        """Stops each running program marked to close for games, and says so in CLOSES_LOG."""
+        marked = read_closes(self.closes)
+        for unit, session in self.open.items():
+            if session.program in marked and not never_closed(unit) and unit not in self.closed:
+                code = self.stopper(unit)
+                said = "Closed" if code == 0 else f"Could not close (exit code {code})"
+                if code == 0:
+                    self.closed.add(unit)
+                stamp = time.strftime("%d-%m-%Y %H:%M:%S", time.localtime(self.clock()))
+                self.closes_log.parent.mkdir(parents=True, exist_ok=True)
+                with self.closes_log.open("a", encoding="utf-8") as log:
+                    log.write(f"{stamp} {said} {session.program} for {game}.\n")
+
+    def add_point(self, board: Board, now: float) -> None:
+        """The minute's peaks; a finished minute goes to HISTORY, and the statistics with it."""
+        if self.point is not None and now - self.point.t >= POINT_S:
+            write_point(self.point, self.history)
+            write_stats(self.stats, self.programs)
+            self.point = None
+        if self.point is None:
+            self.point = Point(now)
+        p = self.point
+        p.ram_mib, p.gtt_mib = max(p.ram_mib, board.ram_mib), max(p.gtt_mib, board.gtt_mib)
+        p.swap_mib, p.pressure = max(p.swap_mib, board.swap_mib), max(p.pressure, board.pressure)
 
     def stop(self) -> None:
         """The watcher stops (log out, shut down): the open sessions are written as still running then."""
@@ -341,6 +529,9 @@ class Watcher:
                 write_session(session, self.record)
         self.open.clear()
         self.save_open()
+        if self.point is not None:
+            write_point(self.point, self.history)
+        write_stats(self.stats, self.programs)
 
 
 # --- The proposal ----------------------------------------------------------------------------------------------

@@ -223,6 +223,15 @@ kernel logs `oom-kill:… task_memcg=…` with the unit's control group. A unit'
 tells a kernel kill. The sessions go to `sessions.jsonl`, and the open ones to `sessions-open.json`. An open session
 from another boot ID is written as "Board restarted while it ran".
 
+The watcher also writes the Programs window's records. Each minute's peaks go to `history.jsonl`, which keeps 24
+hours. Each program's runs, peak, time-weighted average and kills go to `programs.json`, keyed by its name. A unit
+named `steam-app<number>`, or Steam's own unit, is marked as a game and can never be closed.
+
+The programs checked in the Programs window are in `close-for-games.json`. When a new `steam-app<number>` unit appears
+after the watcher's first look, the watcher runs `systemctl --user --no-block stop` on each checked unit that runs.
+systemd sends SIGTERM to the unit's processes. Each stop goes to `close-for-games.log`, and the session ends as
+"Closed for a game".
+
 `propose()` looks at the newest ten sessions, once there are three. A session that ran out of swap proposes the next
 zram size. A kernel kill while the GPU borrowed half the RAM or more proposes `gtt_pages()`, the RAM less 2 GiB.
 

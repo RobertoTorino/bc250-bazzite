@@ -81,11 +81,11 @@ chmod +x "$D/$APP/emulator/0.19.0/Shadps4-sdl.AppImage"
 ln -sfn 0.19.0 "$D/$APP/emulator/current"
 mkdir -p "$T/games/My Game" && touch "$T/games/My Game/eboot.bin"           # a game that is there (the wrapper's gone check)
 (cd "$T" && bash "$RUN" -f true -g "$T/games/My Game/eboot.bin") > "$T/run.log" 2>&1; rc=$?
-check "starts the current shadPS4 with the arguments as given" "[ $rc -eq 0 ] && grep -qxF 'args: -f true -g $T/games/My Game/eboot.bin' $T/run.log"
-check "started beside the AppImage (no portable user folder)" "grep -qxF \"dir: $D/$APP/emulator/0.19.0\" $T/run.log || grep -qxF \"dir: $D/$APP/emulator/current\" $T/run.log"
+check "starts the current shadPS4 with the arguments as given" "[ $rc -eq 0 ] && grep -qxF 'args: -f true -g $T/games/My Game/eboot.bin' $T/run.log $D/$APP/emulator.log"
+check "started beside the AppImage (no portable user folder)" "grep -qxE \"dir: ~/.local/share/$APP/emulator/(0.19.0|current)\" $D/$APP/emulator.log"
 check "the game started goes to the app's log, by its folder's name" "grep -q ' INFO Started My Game from a terminal, with' $D/$APP/$APP.log && ! grep -q '$T/games/' $D/$APP/$APP.log"
 (cd "$T" && bash "$RUN" -b) > "$T/run.log" 2>&1; rc=$?
-check "shadPS4's own window is passed on and not logged as a game" "[ $rc -eq 0 ] && grep -qxF 'args: -b' $T/run.log && [ \$(grep -c Started $D/$APP/$APP.log) -eq 1 ]"
+check "shadPS4's own window is passed on and not logged as a game" "[ $rc -eq 0 ] && grep -qxF 'args: -b' $T/run.log $D/$APP/emulator.log && [ \$(grep -c Started $D/$APP/$APP.log) -eq 1 ]"
 
 echo "== 3. install a staged release (core bundled in the tarball) without the Desktop icon"
 rm -rf "$T/stage"; /usr/bin/python3 "$NEXUS/tools/stage_app.py" shadps4 "$T/stage" > /dev/null
