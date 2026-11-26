@@ -29,7 +29,7 @@ from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame, QGroupBox, QHBoxLayout, QHeaderView,
                              QLabel, QMainWindow, QMessageBox, QPushButton, QScrollArea, QSpinBox, QTableWidget,
-                             QTableWidgetItem, QVBoxLayout, QWidget)
+                             QTabWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 from bc250_core import SUITE_MANUAL_URL, window_title
 from bc250_core import __version__ as CORE_VERSION
@@ -55,6 +55,7 @@ PICK = object()                         # apply_ttm(): the limit the combo shows
 SMOOTH = "smooth"
 SMOOTH_PAGES = object()                 # PROFILES: the Smooth profile's limit, the RAM less watch.SPARE_MIB
 SMOOTH_SWAP = swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=swap.SWAPPINESS[swap.ZRAM])
+TASKBAR = 80                            # the room kept free under the window, for a taskbar (as Core Unlock's)
 RESTART_SECS = 15                       # the countdown before the window restarts the board, as Core Unlock's
 
 ABOUT = ("The learning steps find the memory settings that suit the games you play.<br><br>1. The start point is the "
@@ -191,8 +192,6 @@ class MainWindow(QMainWindow):
         self.programs_button = ActionPill("Programs", "Memory over time",
                                           "The memory over time, and every program the service has seen")
         self.programs_button.clicked.connect(self.show_programs)
-        self.advanced_pill = ActionPill("Advanced", "Show", "Each setting on its own, the memory map and CMOS")
-        self.advanced_pill.clicked.connect(self.toggle_advanced)
         self.countdown = 0                      # the seconds before the window restarts the board
         self.note = ""                          # what just happened, over the hint
         self._tick = QTimer(self)
@@ -383,7 +382,7 @@ class MainWindow(QMainWindow):
         lay_advanced.setContentsMargins(0, 0, 0, 0)
         for box in (mapped, split, limit, profiles, layout_box, guard_box, record_group):
             lay_advanced.addWidget(box)
-        self.advanced.hide()
+        lay_advanced.addStretch(1)
 
         bottom = QHBoxLayout()
         bottom.setSpacing(16)
@@ -397,32 +396,39 @@ class MainWindow(QMainWindow):
         bottom.addLayout(side, 1)
         right = QHBoxLayout()
         right.setSpacing(8)
-        for pill in (self.alt_pill, self.programs_button, self.advanced_pill):
+        for pill in (self.alt_pill, self.programs_button):
             right.addWidget(pill)
-        same_width([self.programs_button, self.advanced_pill])
         bottom.addLayout(right)
 
-        # The page scrolls when the window is lower than it (Advanced is long), as Core Unlock's.
-        body = QWidget()
-        lay = QVBoxLayout(body)
+        # Two tabs under the header (owner, 26-11-2026): the learning steps, and each setting on its own. The window
+        # is as high as the Learning tab, as Core Unlock's fits its page; Advanced scrolls inside its tab.
+        self.learning = QWidget()
+        lay_learning = QVBoxLayout(self.learning)
+        lay_learning.setSpacing(10)
+        lay_learning.addWidget(self.finished_bar)
+        for row in self.step_rows:
+            lay_learning.addWidget(row)
+        lay_learning.addLayout(self.content)
+        lay_learning.addLayout(bottom)
+        lay_learning.addStretch(1)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setWidget(self.advanced)
+        self.tabs = QTabWidget()
+        self.tabs.addTab(self.learning, "Learning")
+        self.tabs.addTab(scroll, "Advanced")
+        self.tabs.currentChanged.connect(lambda _i: self.fit())
+        self.body = QWidget()
+        lay = QVBoxLayout(self.body)
         lay.setSpacing(10)
         lay.addLayout(header)
-        lay.addWidget(self.finished_bar)
-        for row in self.step_rows:
-            lay.addWidget(row)
-        lay.addLayout(self.content)
-        lay.addLayout(bottom)
-        lay.addWidget(self.advanced)
-        lay.addStretch(1)
+        lay.addWidget(self.tabs, 1)
         version = QLabel(f"{APP_NAME} {__version__} · core {CORE_VERSION} · CMOS, the kernel arguments, the swap "
                          "layout and the guard are written only when you apply")
         version.setStyleSheet("color:palette(placeholder-text);")
         lay.addWidget(version, 0, Qt.AlignmentFlag.AlignRight)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setWidget(body)
-        self.setCentralWidget(scroll)
+        self.setCentralWidget(self.body)
 
         geometry = self.settings.window_state("geometry")
         if geometry is not None:
@@ -839,9 +845,21 @@ class MainWindow(QMainWindow):
                        folder / watch.programs_path().name, self.sessions_file, folder / watch.closes_path().name,
                        manual_url=MANUAL_URL).exec()
 
-    def toggle_advanced(self) -> None:
-        self.advanced.setVisible(self.advanced.isHidden())
-        self.advanced_pill.caption.setText("Hide" if self.advanced.isVisible() else "Show")
+    def fit(self) -> None:
+        """The window as high as the header and the Learning tab, at its width, but never higher than the screen
+        leaves room for. On the Advanced tab it keeps its height: that tab scrolls."""
+        if self.tabs.currentWidget() is not self.learning:
+            return
+        self.body.layout().activate()
+        tabs = self.tabs.tabBar().sizeHint().height() + self.learning.sizeHint().height() + 8
+        header = self.body.sizeHint().height() - self.tabs.sizeHint().height()
+        screen = self.screen() or QApplication.primaryScreen()
+        room = screen.availableGeometry().height() - TASKBAR if screen else 800
+        self.resize(self.width(), min(header + tabs, room))
+
+    def showEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        super().showEvent(event)
+        QTimer.singleShot(0, self.fit)
 
     # --- The learning steps ------------------------------------------------------------------------------------
 
@@ -1092,10 +1110,11 @@ class MainWindow(QMainWindow):
                 states[1] = "done"
                 lines[1] = ("The board started with the start point." if st.rounds[0].boot else
                             "Nothing waited for a restart.")
-                if trial is None and learn.baseline(st) == 0 and len(base) < learn.SESSIONS_A_ROUND:
+                if (trial is None and learn.baseline(st) == 0 and len(base) < learn.SESSIONS_A_ROUND
+                        and self.proposal() is None):
                     current, states[2] = 2, "running"
-                    lines[2] = (f"Play as usual. {len(base)} of {learn.SESSIONS_A_ROUND} sessions recorded. The window "
-                                "can stay closed.")
+                    lines[2] = (f"Play your games as usual. {len(base)} of {learn.SESSIONS_A_ROUND} game sessions "
+                                "recorded. The window can stay closed.")
                     if not self.recording():
                         states[2] = "stopped"
                         lines[2] = "Recording is off. Turn it on to record the sessions."
@@ -1105,7 +1124,10 @@ class MainWindow(QMainWindow):
                 else:
                     short = sum(s.ended in learn.ENDED_SHORT for s in first)
                     states[2] = "done"
-                    lines[2] = f"{len(first)} sessions recorded in round 1. {short} ended for lack of memory."
+                    lines[2] = (f"{len(first)} sessions recorded in round 1. {short} ended for lack of memory."
+                                if len(first) >= learn.SESSIONS_A_ROUND or not short else
+                                f"A game ran out of memory in round 1, so the app does not wait for "
+                                f"{learn.SESSIONS_A_ROUND} sessions.")
                     current = self.render_rounds(st, sessions, base, trial, waits, states, lines)
                     pill, alt, nxt, finished = self.round_actions
         if self.countdown:
@@ -1130,7 +1152,9 @@ class MainWindow(QMainWindow):
         self.finished_bar.setVisible(bool(finished))
         self.start_over_pill.setVisible(st is not None)
         self.next_label.setText(nxt)
-        self.hint.setText(self.note or hint or "Advanced has each setting on its own.")
+        self.hint.setText(self.note or hint or "The Advanced tab has each setting on its own.")
+        if self.isVisible():
+            QTimer.singleShot(0, self.fit)          # the step's table changes the Learning tab's height
         rounds = 1 + sum(1 for r in st.rounds if r.change) if st else 0
         self.round_box.set_value(str(rounds) if rounds else "—")
         self.round_box.caption.setText("Rounds" if finished else "Round")
@@ -1164,8 +1188,8 @@ class MainWindow(QMainWindow):
             self.show_compare(number, change, verdict)
             if not verdict.ready:
                 states[4] = "running"
-                lines[4] = (f"Play the same games again. {verdict.sessions} of {learn.SESSIONS_A_ROUND} sessions "
-                            f"recorded.{missing}")
+                lines[4] = (f"Play the same games again. {verdict.sessions} of {learn.SESSIONS_A_ROUND} game "
+                            f"sessions recorded.{missing}")
                 self.round_actions = (None, None, "Next: keep the change or undo it.", "")
                 return 4
             states[4] = "now"
@@ -1260,15 +1284,15 @@ class MainWindow(QMainWindow):
 
     def show_sessions(self, title: str, sessions: list[watch.Session]) -> None:
         if not sessions:
-            self.add_text("No session yet. A game or program of 1 GiB or more becomes one when it ends.", True, 13)
+            self.add_text("No game session yet. A game you play becomes one when it ends.", True, 13)
             return
         self.add_text(f"<b>{escape(title)}</b>")
         self.add_table(["Game", "How it ended", "RAM", "VRAM", "GPU borrows", "Swap", "Waited", "CPU"],
                        [(s.program, s.ended, system.mib_text(s.ram_mib), system.mib_text(s.vram_mib),
                          system.mib_text(s.gtt_mib), system.mib_text(s.swap_mib), f"{s.pressure:.0f}%",
                          f"{s.cpu:.0f}%") for s in sessions[::-1]])
-        self.add_text("Waited: the share of time the board waited for memory, at its peak. CPU is for context only.",
-                      True, 12)
+        self.add_text("Only games count. Waited: the share of time the board waited for memory, at its peak. CPU is "
+                      "for context only.", True, 12)
 
     def show_measured(self, sessions: list[watch.Session], settings: dict, change: learn.Change) -> None:
         self.add_text("<b>Why this change</b>")

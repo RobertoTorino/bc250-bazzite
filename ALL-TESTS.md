@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3640 test functions (4204 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3644 test functions (4208 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -37,7 +37,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/turing](#appsturing) | 9 | 77 | 1.4 s |
 | [apps/upscaler](#appsupscaler) | 12 | 120 | 1.6 s |
 | [apps/vita3k](#appsvita3k) | 9 | 85 | 5.3 s |
-| [apps/vram](#appsvram) | 11 | 87 | 0.6 s |
+| [apps/vram](#appsvram) | 11 | 91 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
 | [apps/xenia](#appsxenia) | 8 | 79 | 4.5 s |
 | [core](#core) | 32 | 247 | 4.6 s |
@@ -53,7 +53,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3640** | **182 s** |
+| **All** | | **3644** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -2428,7 +2428,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/vram
 
-87 tests in 11 files, 0.6 s in a local run.
+91 tests in 11 files, 0.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2454,7 +2454,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_kargs.py` | `test_read_next_boot` |  |  | Read next boot. |
 | `test_kargs.py` | `test_apply` |  |  | Apply. |
 | `test_kargs.py` | `test_apply_checks_the_next_boot_afterwards` |  |  | The owner's board, 01-11-2026: a key-only --delete-if-present matched nothing, rpm-ostree said "unchanged" and the app took it for done. |
-| `test_learn.py` | `test_nothing_before_three_sessions_and_nothing_without_a_reason` |  |  | Nothing before three sessions and nothing without a reason. |
+| `test_learn.py` | `test_a_failed_game_points_at_once_otherwise_three_sessions_and_a_reason` |  |  | Owner, 26-11-2026: a freeze means something needs adjustment, at once. |
 | `test_learn.py` | `test_a_full_swap_points_to_one_zram_size_up_with_the_running_compressor_and_swappiness` |  |  | A full swap points to one zram size up with the running compressor and swappiness. |
 | `test_learn.py` | `test_a_gpu_kill_points_to_a_lower_gtt_limit_then_the_guard` |  |  | A gpu kill points to a lower gtt limit then the guard. |
 | `test_learn.py` | `test_the_comparison_counts_the_games_of_both_rounds` |  |  | The comparison counts the games of both rounds. |
@@ -2519,6 +2519,10 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_watch.py` | `test_the_cpu_load` |  |  | The busy share of all cores between two looks; idle and iowait count as idle. |
 | `test_watch.py` | `test_the_history_and_the_programs` |  |  | One point a minute with the minute's peaks, kept for 24 hours; each program's runs, peak and average. |
 | `test_watch.py` | `test_marked_programs_close_when_a_game_starts` |  |  | Only marked programs, never Steam or a game; a game that runs at the watcher's start closes nothing. |
+| `test_watch.py` | `test_a_game_is_a_session_whatever_its_size_and_a_crash_says_so` |  |  | The owner's board, 26-11-2026: PS2 Lumines Plus took 1001 MiB and was left out; shadPS4 stopped on a trap, dumped core for 36 s, and was written as Closed. |
+| `test_watch.py` | `test_a_crash_is_told_at_once_with_the_memory_figures` |  |  | systemd-coredump names the process the moment it crashes; the game's cgroup holds it during the dump. |
+| `test_watch.py` | `test_a_memory_stall_ends_the_game_and_tells_it` |  |  | The pressure at STALL_PERCENT or more for STALL_S seconds while a game runs: SIGKILL, then a notification with a button that opens the window; the session ends as a memory stall. |
+| `test_watch.py` | `test_no_stall_without_a_game` |  |  | No stall without a game. |
 
 ## apps/webcam
 

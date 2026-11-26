@@ -251,6 +251,7 @@ systemd-oomd restarts with them. They stay across reboots and power offs. Bazzit
 Recording is a user service that writes the sessions in the app's own folder. The app turns it on and off without a
 password. A learning step that needs a restart restarts the board after a countdown of 15 seconds. Until that
 restart, an autostart entry of the app's own opens the window after the login. The app removes it after the restart.
+While a game runs and the board stalls for memory, the recording service ends the game with SIGKILL.
 """
 category = "sustainable"
 install = ["bash install.sh"]

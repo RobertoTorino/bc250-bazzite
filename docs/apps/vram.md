@@ -21,6 +21,7 @@
     Recording is a user service that writes the sessions in the app's own folder. The app turns it on and off without a
     password. A learning step that needs a restart restarts the board after a countdown of 15 seconds. Until that
     restart, an autostart entry of the app's own opens the window after the login. The app removes it after the restart.
+    While a game runs and the board stalls for memory, the recording service ends the game with SIGKILL.
 
 BC-250 Memory Manager sets up the memory of the **AMD BC-250** on **Bazzite**. It sets four things:
 
@@ -51,7 +52,8 @@ marks 6 GB as recommended for games.
 
 ## Learning the settings
 
-The window opens with five steps. The current step has a frame and its pill on its row. The line under the title
+The window has two tabs under its header. **Learning** has five steps. **Advanced** has each setting on its own,
+as described below. The window is as high as the Learning tab. The current step has a frame and its pill on its row. The line under the title
 says what to do. Done steps have a green check mark.
 
 1. **Start point:** **Write** writes the Games profile, with the 6 GB split and the 11.5 GiB GTT limit. It also brings
@@ -60,11 +62,13 @@ says what to do. Done steps have a green check mark.
 2. **Restart:** **Restart** restarts the board after a countdown of 15 seconds. **Restart now** does not wait, and
    **Cancel** stops the countdown. The window opens again after you log in. The step is done at once when nothing
    waits for a restart.
-3. **Play and record:** Play as usual. The window can stay closed. After 3 sessions, the step is done. The table
-   under the steps shows the sessions so far.
+3. **Play and record:** Play your games as usual. The window can stay closed. After 3 game sessions, the step is
+   done. When a game runs out of memory or freezes the board, the step is done at once. The table under the steps
+   shows the sessions so far. Only games count, not other programs.
 4. **Try one change:** The app proposes one change, from what it measured. The table under the steps shows the
    measurements. **Write** writes the change, and the board restarts after the countdown.
-5. **Play and compare:** Play the same games again. After 3 sessions, the app compares the two rounds. **Keep**
+5. **Play and compare:** Play the same games again. The app compares the two rounds after 3 sessions. It does so
+   sooner when each game that ran out of memory has been played again. **Keep**
    keeps the change. **Undo** writes back the setting from before, and the board restarts after the countdown. The
    pill on the step is the one the app advises. The other one is in the bottom row.
 
@@ -74,8 +78,8 @@ change. Recording stays on. When a game runs out of memory again, step 4 propose
 
 What points to a change, in this order:
 
-- **zram one size up:** a session ended with the swap full, or the board froze with the swap full.
-- **A GTT limit of the RAM less 2 GiB:** the kernel ended a program while the GPU borrowed half the RAM or more.
+- **zram one size up:** a session ended with the swap full, or the board froze or stalled with the swap full.
+- **A GTT limit of the RAM less 2 GiB:** a game ran out of memory while the GPU borrowed half the RAM or more.
 - **The suite's memory guard:** the kernel ended a program, or the board froze, with Bazzite's guard.
 
 The app tries each change once. A larger zram keeps the compressor and `vm.swappiness` the board runs. The split
@@ -92,12 +96,11 @@ The CPU load is in the tables for context only. It never decides anything.
 
 The header shows the split, the GTT limit and the swap of this boot, whether recording is on, and the round.
 **Start over** deletes the rounds and their verdicts, and goes back to step 1. The recorded sessions stay, and so
-do the board's settings. **Programs** opens the memory over time. **Advanced** shows each setting on its own, as
-described below.
+do the board's settings. **Programs** opens the memory over time.
 
 ## Using it
 
-**Advanced** under the steps shows each setting on its own. The top row of the window shows the **VRAM split**,
+The **Advanced** tab shows each setting on its own. The top row of the window shows the **VRAM split**,
 the GTT limit, **ttm.pages_limit**, and the **swap** layout that the kernel got at this boot. Above the memory map
 are the **GTT** and the **system RAM**.
 
@@ -268,11 +271,21 @@ The service looks every two seconds. It records these figures of the board:
 
 The CPU load is for context only.
 
+While a game runs, the service also does two things:
+
+- **A memory stall:** the wait for memory stays at 40% or more for 10 seconds. The service then ends the game, to
+  free the board. A notification says so, with a button that opens the window. Step 4 then has a change to try.
+- **A crash:** a notification says so at once, with the memory figures of that moment. The crash report can take
+  half a minute, and the game's window stays frozen until it is written.
+
+The 40% and the 10 seconds are starting values. We test them on the suite's boards.
+
 ## Sessions
 
 While recording is on, a service watches the programs of your desktop session. It looks every two seconds. A
-program that takes 1 GiB or more, its memory and swap together, becomes a session. A program that is killed always
-becomes one.
+program that takes 1 GiB or more, its memory and swap together, becomes a session. A game always becomes one,
+whatever its size. A program that is killed always becomes one too. A game is a Steam game, or a game of the suite's
+emulators started from Steam.
 
 During step 3, a table under the steps shows the sessions of round 1, the newest first. Each row has these
 columns:
@@ -294,6 +307,8 @@ The **How it ended** column says one of these:
 - **Killed: swap full:** the kernel ended it, and the swap was 95% full or more.
 - **Killed: GPU memory:** the kernel ended it, and the GPU borrowed half the RAM or more.
 - **Killed: RAM full:** the kernel ended it otherwise.
+- **Crashed:** the program crashed and wrote a crash dump. A crash is not a lack of memory.
+- **Ended: memory stall:** the app ended the game, because the board stalled for memory.
 - **Running when the session ended:** you logged out or shut down while it ran.
 - **Board restarted while it ran:** the board froze or lost power while it ran.
 
@@ -386,7 +401,7 @@ The learning steps:
 
 - **A change:** **Undo** in step 5 writes back the setting from before.
 - **All of it:** each setting above undoes on its own. **Start over** only deletes the rounds.
-- **Recording:** **Turn off** under Recording, under Advanced.
+- **Recording:** **Turn off** under Recording, on the Advanced tab.
 
 ## Files
 

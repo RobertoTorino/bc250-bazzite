@@ -32,11 +32,16 @@ def board(proc_root: Path, swap_free_kb: int, pressure: float = 0.0) -> None:
 
 
 class Journal:
-    def __init__(self, oomd: str = "", kernel: str = ""):
-        self.oomd, self.kernel, self.calls = oomd, kernel, []
+    def __init__(self, oomd: str = "", kernel: str = "", coredump: str = ""):
+        self.oomd, self.kernel, self.coredump, self.calls = oomd, kernel, coredump, []
+        self.crash = ""                     # systemd-coredump's first line, at the crash
 
     def __call__(self, args):
         self.calls.append(args)
+        if "systemd-coredump" in args:
+            return self.crash
+        if any(a.startswith("COREDUMP_USER_UNIT=") for a in args):
+            return self.coredump if f"COREDUMP_USER_UNIT={UNIT}" in args else ""
         return self.oomd if "systemd-oomd.service" in args else self.kernel if "-k" in args else ""
 
 
@@ -249,3 +254,85 @@ def test_marked_programs_close_when_a_game_starts(tmp_path, sys_root, proc_root)
     w.tick()
     assert watch.read_sessions(tmp_path / "sessions.jsonl")[-1].ended == watch.CLOSED_FOR_GAME
     assert w.stats["Steam game 1"].game and w.stats["steam"].game and not w.stats["code"].game
+
+
+def test_a_game_is_a_session_whatever_its_size_and_a_crash_says_so(tmp_path, sys_root, proc_root):
+    """The owner's board, 26-11-2026: PS2 Lumines Plus took 1001 MiB and was left out; shadPS4 stopped on a trap,
+    dumped core for 36 s, and was written as Closed."""
+    folder, w = make(tmp_path, sys_root, proc_root, Journal(coredump="Process 158297 (shadPS4:Main) of user 1000 "
+                                                                      "dumped core."))
+    small = "app-steam-app2964377542-1.scope"
+    program(folder, small, 1001)
+    program(folder, UNIT, 6000)
+    program(folder, "app-org.kde.konsole-1.scope", 900)          # not a game, too small: no session
+    w.tick()
+    for unit in (small, UNIT, "app-org.kde.konsole-1.scope"):
+        end(folder, unit)
+    w.tick()
+    sessions = {s.unit: s.ended for s in watch.read_sessions(tmp_path / "sessions.jsonl")}
+    assert sessions == {small: watch.CLOSED, UNIT: watch.CRASHED}
+
+
+class Clock2:
+    def __init__(self):
+        self.now = 1000.0
+
+    def __call__(self):
+        return self.now
+
+
+def test_a_crash_is_told_at_once_with_the_memory_figures(tmp_path, sys_root, proc_root):
+    """systemd-coredump names the process the moment it crashes; the game's cgroup holds it during the dump."""
+    board(proc_root, swap_free_kb=3000000, pressure=9.0)
+    journal = Journal()
+    folder, w = make(tmp_path, sys_root, proc_root, journal)
+    told = []
+    w.notifier = lambda summary, body, open_app=False: told.append((summary, body, open_app))
+    program(folder, UNIT, 6000)
+    (folder / UNIT / "cgroup.procs").write_text("158297\n")
+    w.tick()
+    assert told == []
+    journal.crash = "Process 158297 (shadPS4:Main) of user 1000 terminated abnormally with signal 5/TRAP, processing..."
+    w.tick()
+    w.tick()                                                 # told once
+    assert len(told) == 1 and told[0][0] == "Steam game 3880967987 crashed" and not told[0][2]
+    assert "Memory was not short, so no memory setting points to a change." in told[0][1]
+    assert ["-b", "--since", "@998", "-t", "systemd-coredump"] in journal.calls
+
+
+def test_a_memory_stall_ends_the_game_and_tells_it(tmp_path, sys_root, proc_root):
+    """The pressure at STALL_PERCENT or more for STALL_S seconds while a game runs: SIGKILL, then a notification
+    with a button that opens the window; the session ends as a memory stall. Other programs stay."""
+    clock = Clock2()
+    board(proc_root, swap_free_kb=100000, pressure=55.0)
+    folder, w = make(tmp_path, sys_root, proc_root, clock=clock)
+    told, killed = [], []
+    w.notifier = lambda summary, body, open_app=False: told.append((summary, open_app))
+    w.killer = lambda unit: killed.append(unit) or 0
+    program(folder, UNIT, 7000)
+    program(folder, "app-code-1.scope", 1500)
+    w.tick()
+    clock.now += 6
+    w.tick()
+    assert killed == []                                      # not long enough yet
+    clock.now += 5
+    w.tick()
+    assert killed == [UNIT] and told == [("Steam game 3880967987 was ended", True)]
+    end(folder, UNIT)
+    clock.now += 2
+    w.tick()
+    [s] = watch.read_sessions(tmp_path / "sessions.jsonl")
+    assert (s.unit, s.ended) == (UNIT, watch.STALLED) and s.ended in watch.SHORT
+
+
+def test_no_stall_without_a_game(tmp_path, sys_root, proc_root):
+    clock = Clock2()
+    board(proc_root, swap_free_kb=100000, pressure=90.0)
+    folder, w = make(tmp_path, sys_root, proc_root, clock=clock)
+    killed = []
+    w.killer = lambda unit: killed.append(unit) or 0
+    program(folder, "app-code-1.scope", 1500)
+    for _ in range(10):
+        w.tick()
+        clock.now += 2
+    assert killed == []

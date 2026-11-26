@@ -11,13 +11,17 @@ GAMES = learn.settings(6144, 3014656, swap.Setup(), guard.BAZZITE)
 
 def played(program: str, ended: str = watch.CLOSED, start: float = 100.0, boot: str = "boot-2", swap_mib: int = 1000,
            pressure: float = 10.0, cpu: float = 50.0) -> Session:
-    return Session("u", program, start, boot, 3000, 8000, 2000, swap_mib, 4823, RAM, pressure, 0, start + 60, ended,
+    return Session("app-steam-app1-1.scope", program, start, boot, 3000, 8000, 2000, swap_mib, 4823, RAM, pressure, 0, start + 60, ended,
                    vram_mib=5000, cpu=cpu)
 
 
-def test_nothing_before_three_sessions_and_nothing_without_a_reason():
-    assert learn.propose([played("A", watch.KILLED_SWAP)] * 2, GAMES, RAM, set()) is None
+def test_a_failed_game_points_at_once_otherwise_three_sessions_and_a_reason():
+    """Owner, 26-11-2026: a freeze means something needs adjustment, at once."""
+    assert learn.propose([played("A")] * 2, GAMES, RAM, set()) is None
     assert learn.propose([played("A")] * 3, GAMES, RAM, set()) is None
+    assert learn.propose([played("A", watch.KILLED_SWAP)], GAMES, RAM, set()).kind == learn.ZRAM
+    assert learn.propose([played("A", watch.STALLED, swap_mib=4800)], GAMES, RAM, set()).kind == learn.ZRAM
+    assert learn.propose([played("A", watch.CRASHED)], GAMES, RAM, set()) is None      # a crash is no lack of memory
 
 
 def test_a_full_swap_points_to_one_zram_size_up_with_the_running_compressor_and_swappiness():
@@ -54,7 +58,8 @@ def test_the_comparison_counts_the_games_of_both_rounds():
     before = [played("LUMINES", watch.KILLED_SWAP, pressure=38), played("Hades"), played("C", pressure=20)]
     after = [played("LUMINES", pressure=9), played("Hades", pressure=5)]
     v = learn.compare(before, after)
-    assert not v.ready and v.missing == ["C"] and v.sessions == 2
+    assert v.ready and v.missing == ["C"] and v.sessions == 2        # the failed game was played again
+    assert not learn.compare([played("A"), played("B"), played("C")], [played("A")]).ready
     v = learn.compare(before, after + [played("New game")])
     assert v.ready and v.kind == learn.BETTER
     assert v.rows[0] == ("Ended for lack of memory", "1 of 2", "0 of 2", learn.BETTER)
@@ -78,6 +83,8 @@ def test_the_rounds_their_sessions_and_the_state_file(tmp_path):
     sessions = [played("old", start=50, boot="boot-0"), played("A", start=150, boot="boot-1"),
                 played("B", start=200), played("C", start=300), played("D", start=400)]
     assert [s.program for s in learn.round_sessions(st, sessions, 0)] == ["B", "C", "D"]   # not the write boot's
+    code = Session("app-code-1.scope", "Visual Studio Code", 250, "boot-2", 1600)
+    assert code not in learn.round_sessions(st, sessions + [code], 0)                     # games only
     assert learn.restart_waits(st, "boot-1") and not learn.restart_waits(st, "boot-2")
     zram = learn.settings(6144, 3014656, swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=60), guard.BAZZITE)
     change = learn.Change(learn.ZRAM, asdict(swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=60)),

@@ -39,6 +39,14 @@ def settings_dir(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def no_notifications_or_kills(monkeypatch):
+    """No test shows a desktop notification or ends a real unit."""
+    from vram_manager import watch
+    monkeypatch.setattr(watch, "_notify", lambda *a, **k: None)
+    monkeypatch.setattr(watch, "_kill", lambda unit: 1)
+
+
+@pytest.fixture(autouse=True)
 def roomy_disk(monkeypatch):
     """The swap file's disk has 100 GiB free, whatever the temp folder's file system has."""
     from vram_manager import swap

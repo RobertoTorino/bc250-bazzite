@@ -12,7 +12,8 @@ borrows (amdgpu's mem_info_gtt_used), the VRAM in use (mem_info_vram_used), the 
 last look (/proc/stat, all cores together). The CPU load is for context only: nothing is decided on it. It also reads each program of the session:
 the units under the user manager's app.slice, with their memory and swap (memory.current, memory.swap.current).
 
-A program is a session when it took MIN_MIB or more at its peak, or when it was killed. A session keeps the board's
+A program is a session when it took MIN_MIB or more at its peak, when it was killed, or when it is a game (owner,
+26-11-2026: a PS2 game of 1001 MiB was left out). A session keeps the board's
 peaks while it ran. When the program's unit is gone, the watcher writes the session to SESSIONS, newest last, and
 keeps the last KEEP. How it ended:
 
@@ -22,11 +23,13 @@ keeps the last KEEP. How it ended:
     Killed: swap full               the kernel's OOM killer ended it, with the swap full at the peak
     Killed: GPU memory              the same, with the GPU borrowing half the RAM or more at the peak
     Killed: RAM full                the same, otherwise
+    Crashed                         a process of it dumped core (systemd-coredump): not a lack of memory
     Running when the session ended  the watcher was stopped (log out, shut down) while it ran
     Board restarted while it ran    found open at the next boot: the board froze or lost power
 
 systemd-oomd and the kernel say who they ended in the journal: oomd's "Marked … for killing due to memory used … and
-swap used …" and "Memory pressure for … is …", the kernel's "oom-kill:… task_memcg=…". A program's own oom_kill count
+swap used …" and "Memory pressure for … is …", the kernel's "oom-kill:… task_memcg=…", systemd-coredump an entry
+with COREDUMP_USER_UNIT, the unit (owner's board, 26-11-2026: shadPS4 stopped on a trap and took 36 s to dump). A program's own oom_kill count
 (memory.events) also tells a kernel kill.
 
 The Programs window (owner, 26-11-2026) reads two more records. HISTORY holds one point a minute for HISTORY_S, with
@@ -39,6 +42,17 @@ it SIGTERM, on which most programs save and quit. Steam and the games are never 
 CLOSES_LOG, and the program's session ends as "Closed for a game". A game that runs when the watcher starts closes
 nothing.
 
+When a game freezes the board for lack of memory, the watcher ends it (owner, 26-11-2026: "end the game, then
+notify"): when the memory pressure stays at STALL_PERCENT or more for STALL_S seconds while a game runs, it sends the
+game's unit SIGKILL (systemctl --user kill), which frees its memory at once. The session ends as "Ended: memory
+stall", a lack of memory, so the learning steps point to a change at once. A notification says so, with a button
+that opens the window. The values are starting values to test on the board.
+
+When a game crashes, systemd-coredump logs "Process <pid> (<name>) of user <uid> terminated abnormally" at once,
+then writes the crash dump, which took 36 s for shadPS4 on the owner's board (26-11-2026); the game's window stays
+frozen meanwhile. The watcher looks for that line while a game runs, finds the game by the process's cgroup, and
+notifies at once with the memory figures of that moment (owner, 26-11-2026: "notify on crash").
+
 Standard library and the app's own modules only, so the service starts without Qt."""
 
 from __future__ import annotations
@@ -46,6 +60,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import signal
 import subprocess
 import sys
@@ -64,6 +79,9 @@ GPU_SHARE = 0.5                 # a kill with the GPU borrowing this share of th
 SPARE_MIB = 2048                # the RAM the Smooth profile's GTT limit leaves the system
 POINT_S = 60                    # one point of the history a minute
 HISTORY_S = 24 * 3600           # the history kept
+STALL_PERCENT = 40.0            # a game is ended when the memory pressure stays at this or more ...
+STALL_S = 10                    # ... for this long (starting values, owner 26-11-2026)
+CRASH = re.compile(r"Process (\d+) \((.*)\) of user \d+ terminated abnormally")
 
 CLOSED = "Closed"
 GUARD_SWAP = "Guard: swap full"
@@ -71,11 +89,13 @@ GUARD_PRESSURE = "Guard: memory pressure"
 KILLED_SWAP = "Killed: swap full"
 KILLED_GPU = "Killed: GPU memory"
 KILLED_RAM = "Killed: RAM full"
+CRASHED = "Crashed"
+STALLED = "Ended: memory stall"
 SESSION_ENDED = "Running when the session ended"
 RESTARTED = "Board restarted while it ran"
 CLOSED_FOR_GAME = "Closed for a game"
 SHORT_OF_SWAP = (GUARD_SWAP, KILLED_SWAP)
-SHORT = (GUARD_SWAP, GUARD_PRESSURE, KILLED_SWAP, KILLED_GPU, KILLED_RAM)     # ended by a lack of memory
+SHORT = (GUARD_SWAP, GUARD_PRESSURE, KILLED_SWAP, KILLED_GPU, KILLED_RAM, STALLED)  # ended by a lack of memory
 
 
 def data_dir() -> Path:
@@ -327,7 +347,7 @@ def ending(session: Session, journal: Callable[[list[str]], str] = _journal) -> 
     killed = session.oom_kills > 0 or any(
         "oom-kill:" in line and f"/{session.unit}," in line for line in journal([*since, "-k"]).splitlines())
     if not killed:
-        return CLOSED
+        return CRASHED if journal([*since, f"COREDUMP_USER_UNIT={session.unit}"]).strip() else CLOSED
     if session.swap_total_mib and session.swap_mib >= session.swap_total_mib * SWAP_FULL:
         return KILLED_SWAP
     if session.ram_total_mib and session.gtt_mib >= session.ram_total_mib * GPU_SHARE:
@@ -425,6 +445,31 @@ def _stop(unit: str) -> int:
         return 1
 
 
+def _kill(unit: str) -> int:
+    try:
+        return subprocess.run(["systemctl", "--user", "kill", "--signal=SIGKILL", unit], capture_output=True,
+                              timeout=30, check=False).returncode
+    except (OSError, subprocess.SubprocessError):
+        return 1
+
+
+def _notify(summary: str, body: str, open_app: bool = False) -> None:
+    """A desktop notification through notify-send that stays until clicked; with *open_app*, a button that opens the
+    window. notify-send waits for the button, so it runs on its own, in a shell that starts the app."""
+    from . import APP_NAME, ROOT
+    args = ["notify-send", "--app-name", APP_NAME, "--icon", str(ROOT / "images" / f"{APP_ID}-128.png"),
+            "--urgency", "critical", "--expire-time", "0", summary, body]
+    if open_app:
+        args += ["--action", "open=Open Memory Manager"]
+        command = (f'[ "$({shlex.join(args)})" = open ] && cd {shlex.quote(str(ROOT))} && '
+                   f"exec {shlex.quote(sys.executable)} -m vram_manager")
+        args = ["sh", "-c", command]
+    try:
+        subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    except OSError:
+        pass
+
+
 def boot_id(proc_root: Path = Path("/proc")) -> str:
     return system._read(proc_root / "sys/kernel/random/boot_id") or ""
 
@@ -447,6 +492,8 @@ class Watcher:
     closes: Path | None = None
     closes_log: Path | None = None
     stopper: Callable[[str], int] = _stop
+    killer: Callable[[str], int] | None = None      # _kill, looked up at the start (tests replace it)
+    notifier: Callable[..., None] | None = None     # _notify, the same
 
     def __post_init__(self) -> None:
         self.record = self.record or sessions_path()
@@ -455,10 +502,16 @@ class Watcher:
         self.programs = self.programs or programs_path()
         self.closes = self.closes or closes_path()
         self.closes_log = self.closes_log or closes_log_path()
+        self.killer = self.killer or _kill
+        self.notifier = self.notifier or _notify
         self.stats = read_stats(self.programs)
         self.point: Point | None = None
         self.first = True                       # the first look: a game that runs already closes nothing
         self.closed: set[str] = set()           # the units stopped for a game
+        self.ended: set[str] = set()            # the games ended for a memory stall
+        self.crashed: set[str] = set()          # the games whose crash was told already
+        self.stall_since: float | None = None   # since when the memory pressure is at STALL_PERCENT or more
+        self.crash_seen = self.clock()          # the journal is read for crashes from here on
         self.boot = boot_id(self.proc_root)
         self.cpu = cpu_times(self.proc_root)    # the CPU load is the busy share since the last look
         try:
@@ -468,7 +521,7 @@ class Watcher:
         for unit, session in left.items():
             if session.boot_id == self.boot:
                 self.open[unit] = session
-            elif session.own_mib >= MIN_MIB:
+            elif session.own_mib >= MIN_MIB or is_game(unit):
                 session.ended, session.end = RESTARTED, session.end or session.start
                 write_session(session, self.record)
         self.save_open()
@@ -511,13 +564,23 @@ class Watcher:
             session.ended = ending(session, self.journal)
             if session.ended == CLOSED and unit in self.closed:
                 session.ended = CLOSED_FOR_GAME
+            if unit in self.ended:
+                session.ended = STALLED
+            if session.ended == CRASHED and unit not in self.crashed:
+                self.tell_crash(session)            # missed while it ran
             self.closed.discard(unit)
+            self.ended.discard(unit)
+            self.crashed.discard(unit)
             if session.ended in SHORT and session.program in self.stats:
                 self.stats[session.program].killed += 1
-            if session.own_mib >= MIN_MIB or session.ended != CLOSED:
+            if session.own_mib >= MIN_MIB or session.ended != CLOSED or is_game(unit):
                 write_session(session, self.record)
         if started_game:
             self.close_for(started_game)
+        games = [u for u in self.open if is_game(u)]
+        if games:
+            self.watch_crashes(games, now)
+        self.watch_stall(games, board, now)
         self.first = False
         self.add_point(board, now)
         self.save_open()
@@ -536,6 +599,60 @@ class Watcher:
                 with self.closes_log.open("a", encoding="utf-8") as log:
                     log.write(f"{stamp} {said} {session.program} for {game}.\n")
 
+    def watch_crashes(self, games: list[str], now: float) -> None:
+        """A crash of a running game, told at once: systemd-coredump's first line names the process, the game's
+        cgroup holds it while the dump is written."""
+        text = self.journal(["-b", "--since", f"@{int(self.crash_seen)}", "-t", "systemd-coredump"])
+        self.crash_seen = now - SAMPLE_S                  # a line logged during this look is read again next time
+        for match in CRASH.finditer(text):
+            pid = match.group(1)
+            for unit in games:
+                if unit not in self.crashed and self.holds(unit, pid):
+                    self.tell_crash(self.open[unit])
+
+    def holds(self, unit: str, pid: str) -> bool:
+        if self.folder is None:
+            return False
+        try:
+            return any(pid in procs.read_text().split() for procs in (self.folder / unit).rglob("cgroup.procs"))
+        except OSError:
+            return False
+
+    def tell_crash(self, session: Session) -> None:
+        self.crashed.add(session.unit)
+        short = session.pressure >= STALL_PERCENT or (
+            session.swap_total_mib and session.swap_mib >= session.swap_total_mib * SWAP_FULL)
+        figures = (f"The board waited for memory {session.pressure:.0f}% of the time at most, and the swap held "
+                   f"{system.mib_text(session.swap_mib)} of {system.mib_text(session.swap_total_mib)}.")
+        self.notifier(f"{session.program} crashed",
+                      "The crash report takes a moment, then the game closes. " + figures
+                      + (" Memory was short, so watch the learning steps." if short else
+                         " Memory was not short, so no memory setting points to a change."))
+
+    def watch_stall(self, games: list[str], board: Board, now: float) -> None:
+        """The board stalls for memory while a game runs: after STALL_S seconds, the game is ended and told."""
+        if not games or board.pressure < STALL_PERCENT:
+            self.stall_since = None
+            return
+        if self.stall_since is None:
+            self.stall_since = now
+            return
+        if now - self.stall_since < STALL_S:
+            return
+        self.stall_since = None
+        for unit in games:
+            if unit in self.ended:
+                continue
+            session = self.open[unit]
+            code = self.killer(unit)
+            if code != 0:
+                continue
+            self.ended.add(unit)
+            self.notifier(f"{session.program} was ended",
+                          f"The board waited for memory {board.pressure:.0f}% of the time for {STALL_S} s, and froze. "
+                          "Memory Manager ended the game to free the board. Its learning steps have a change to try.",
+                          open_app=True)
+
     def add_point(self, board: Board, now: float) -> None:
         """The minute's peaks; a finished minute goes to HISTORY, and the statistics with it."""
         if self.point is not None and now - self.point.t >= POINT_S:
@@ -551,8 +668,8 @@ class Watcher:
 
     def stop(self) -> None:
         """The watcher stops (log out, shut down): the open sessions are written as still running then."""
-        for session in self.open.values():
-            if session.own_mib >= MIN_MIB:
+        for unit, session in self.open.items():
+            if session.own_mib >= MIN_MIB or is_game(unit):
                 session.ended = SESSION_ENDED
                 write_session(session, self.record)
         self.open.clear()

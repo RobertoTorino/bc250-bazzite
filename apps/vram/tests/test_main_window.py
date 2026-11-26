@@ -544,7 +544,7 @@ def learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, boot):
 
 def play(sys_root, boot, start, *games):
     for n, (program, ended) in enumerate(games):
-        watch.write_session(watch.Session(f"u{n}", program, start + n, boot, 3000, 8000, 2000,
+        watch.write_session(watch.Session(f"app-steam-app{n + 1}-1.scope", program, start + n, boot, 3000, 8000, 2000,
                                           4800 if ended == watch.KILLED_SWAP else 1000, 4823, 9650,
                                           38.0 if ended == watch.KILLED_SWAP else 5.0, 0, start + n + 60, ended,
                                           vram_mib=5000, cpu=60.0), sys_root.parent / "sessions.jsonl")
@@ -585,7 +585,7 @@ def test_the_learning_steps_from_the_start_point_to_the_learned_profile(qapp, sy
     (proc_root / "cmdline").write_text("BOOT_IMAGE=x rw ttm.pages_limit=3014656\n")
     w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-2")
     assert not resume.armed() and states(w)[:3] == ["done", "done", "running"]
-    assert "0 of 3 sessions recorded" in w.step_rows[2].line.text()
+    assert "0 of 3 game sessions recorded" in w.step_rows[2].line.text()
     play(sys_root, "boot-2", 2100, ("LUMINES", watch.KILLED_SWAP), ("Hades", watch.CLOSED), ("Tetris", watch.CLOSED))
     w.refresh_sessions(force=True)
     assert states(w) == ["done", "done", "done", "now", "later"]
@@ -605,7 +605,8 @@ def test_the_learning_steps_from_the_start_point_to_the_learned_profile(qapp, sy
     w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-3")
     play(sys_root, "boot-3", 3100, ("LUMINES", watch.CLOSED), ("Hades", watch.CLOSED))
     w.refresh_sessions(force=True)
-    assert states(w)[4] == "running" and "Not played yet in this round: Tetris." in w.step_rows[4].line.text()
+    assert states(w)[4] == "now"                                # LUMINES, which ran out of memory, played again
+    assert w.step_rows[4].line.text() == "Better. Keep the change, or undo it. Not played yet in this round: Tetris."
     play(sys_root, "boot-3", 3200, ("Tetris", watch.CLOSED))
     w.refresh_sessions(force=True)
     assert states(w)[4] == "now" and w.step_rows[4].line.text() == "Better. Keep the change, or undo it."

@@ -223,7 +223,8 @@ shortcut's `AppName` by its `appid`, a Steam game's `appmanifest_<id>.acf`, or t
 When a unit is gone, the watcher looks in the journal since the session started. systemd-oomd logs `Marked … for
 killing due to memory used … and swap used …` for the swap and `Memory pressure for … is …` for the pressure. The
 kernel logs `oom-kill:… task_memcg=…` with the unit's control group. A unit's `oom_kill` count in `memory.events` also
-tells a kernel kill. The sessions go to `sessions.jsonl`, and the open ones to `sessions-open.json`. An open session
+tells a kernel kill. When nothing ended it, an entry of `systemd-coredump` with `COREDUMP_USER_UNIT` set to the unit
+means a crash. The sessions go to `sessions.jsonl`, and the open ones to `sessions-open.json`. An open session
 from another boot ID is written as "Board restarted while it ran".
 
 The watcher also writes the Programs window's records. Each minute's peaks go to `history.jsonl`, which keeps 24
@@ -234,6 +235,18 @@ The programs checked in the Programs window are in `close-for-games.json`. When 
 after the watcher's first look, the watcher runs `systemctl --user --no-block stop` on each checked unit that runs.
 systemd sends SIGTERM to the unit's processes. Each stop goes to `close-for-games.log`, and the session ends as
 "Closed for a game".
+
+While a game runs, the watcher reads `journalctl -b -t systemd-coredump` since its last look. This line comes at
+the crash, before the dump:
+
+```
+Process <pid> (<name>) of user <uid> terminated abnormally with signal <n>/<NAME>, processing...
+```
+
+The watcher finds the game whose control group holds the PID and notifies at once. When the `full avg10` pressure
+stays at `STALL_PERCENT`, 40%, for `STALL_S`, 10 seconds, the watcher runs `systemctl --user kill --signal=SIGKILL`
+on each running game. The session then ends as a memory stall. Notifications go through `notify-send`. The one after
+a stall has a button. A shell waits for it and then starts the app.
 
 A session and a minute's point keep the peaks of the VRAM in use and the CPU load as well. Records from before keep
 reading, with 0 for both.
@@ -255,12 +268,12 @@ copy of Core Unlock's `StepRow` on core's theme. The autostart entry and the res
 `restart_boot` is the boot ID a written change waits in. While the board runs that boot, the step offers the restart
 and the autostart entry is there. A later boot clears both.
 
-A round's sessions are the recorded ones that began after its `since` and before the next round's. Sessions of its
+A round's sessions are the recorded games that began after its `since` and before the next round's. Sessions of its
 `boot` ran the old setting and do not count. The baseline is the last round with the start point, a kept change or
 the settings after an undo. Its sessions are those of every such round with the same settings, so an undo goes on
 with what the earlier rounds recorded.
 
-`propose()` needs three baseline sessions. It proposes the first of these that was not tried yet:
+`propose()` needs three baseline sessions, or one that ended for lack of memory or a freeze. It proposes the first of these that was not tried yet:
 
 - the next zram size, with the running compressor and `vm.swappiness`, when a session ended with the swap full
 - `gtt_pages()`, the RAM less 2 GiB, after a kernel kill with the GPU borrowing half the RAM or more

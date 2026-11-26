@@ -17,11 +17,15 @@ The owner's rules (26-11-2026):
       the start point stays: the change is undone.
     - A comparison counts only the games played in both rounds, and names the games still missing.
     - Only a setting a measurement points to changes, and a change is tried once. The CPU load is context only.
+    - A game that ended for a lack of memory or froze points to a change at once, without waiting for
+      SESSIONS_A_ROUND sessions; the next round is ready to compare once each such game was played again (owner,
+      26-11-2026: "a freeze means something needs adjustment, the app should do that and then try again").
 
 What points to what (propose(), in this order):
 
-    zram        a session ended with the swap full, or the board froze with it full: one zram size up
-    GTT limit   the kernel ended a program while the GPU borrowed half the RAM or more: the RAM less 2 GiB
+    zram        a session ended with the swap full, or the board froze or stalled with it full: one zram size up
+    GTT limit   the kernel ended a program, or the app ended a stalled game, while the GPU borrowed half the RAM or
+                more: the RAM less 2 GiB
     guard       the kernel ended a program, or the board froze, with Bazzite's guard: the suite's guard
 
 The split stays at the start point's: nothing measured yet tells when another split is better (Board Test, test 37:
@@ -29,8 +33,8 @@ The split stays at the start point's: nothing measured yet tells when another sp
 
 The state is one JSON file beside the sessions (LEARN): the rounds, each with the time it began, the boot its setting
 was written in (the sessions of that boot ran the old one), the settings it ran with, its change and the verdict; and
-the boot a written change waits in for a restart. A round's sessions are the recorded ones that began in it, after
-its write boot. Standard library and the app's own modules only."""
+the boot a written change waits in for a restart. A round's sessions are the recorded games that began in it, after
+its write boot: other programs do not count (owner, 26-11-2026). Standard library and the app's own modules only."""
 
 from __future__ import annotations
 
@@ -79,7 +83,7 @@ class Change:
 
 @dataclass
 class Verdict:
-    ready: bool                         # enough sessions, and a game in both rounds
+    ready: bool                         # a game in both rounds, and enough sessions or each failed game again
     kind: str                           # BETTER, WORSE or SAME
     rows: list[tuple[str, str, str, str]]   # measured, round before, this round, BETTER/WORSE/SAME or "Context"
     missing: list[str]                  # the games of the round before not played in this one yet
@@ -118,7 +122,8 @@ def clear_state(path: Path | None = None) -> None:
 def round_sessions(state: State, sessions: list[watch.Session], index: int) -> list[watch.Session]:
     r = state.rounds[index]
     until = state.rounds[index + 1].since if index + 1 < len(state.rounds) else float("inf")
-    return [s for s in sessions if r.since <= s.start < until and not (r.boot and s.boot_id == r.boot)]
+    return [s for s in sessions if r.since <= s.start < until and not (r.boot and s.boot_id == r.boot)
+            and watch.is_game(s.unit)]
 
 
 def trial(state: State) -> int | None:
@@ -162,16 +167,16 @@ def _names(sessions: list[watch.Session]) -> str:
 
 
 def _swap_full(s: watch.Session) -> bool:
-    return s.ended in watch.SHORT_OF_SWAP or (s.ended == watch.RESTARTED and bool(s.swap_total_mib)
+    return s.ended in watch.SHORT_OF_SWAP or (s.ended in (watch.RESTARTED, watch.STALLED) and bool(s.swap_total_mib)
                                               and s.swap_mib >= s.swap_total_mib * watch.SWAP_FULL)
 
 
 def propose(sessions: list[watch.Session], now: dict, ram_mib: int, done: set[tuple[str, str]],
             zram_compressor: str = "zstd", swappiness: int | None = None) -> Change | None:
     """The one change the baseline's sessions point to and that was not tried yet; None when they point to none,
-    or before SESSIONS_A_ROUND sessions. *now*: the baseline's settings(). A larger zram keeps the compressor and
+    or before SESSIONS_A_ROUND sessions unless one ended for a lack of memory or froze. *now*: the baseline's settings(). A larger zram keeps the compressor and
     vm.swappiness the board has (*zram_compressor*, *swappiness*: the running ones, for Bazzite's own layout)."""
-    if len(sessions) < SESSIONS_A_ROUND:
+    if len(sessions) < SESSIONS_A_ROUND and not any(s.ended in ENDED_SHORT for s in sessions):
         return None
 
     def fresh(kind: str, value: object) -> bool:
@@ -190,10 +195,11 @@ def propose(sessions: list[watch.Session], now: dict, ram_mib: int, done: set[tu
             label = next(lbl for lbl, size, _f in swap.ZRAM_SIZES if size == bigger)
             return Change(ZRAM, asdict(new), asdict(setup), f"The swap ran full in {_names(full)}.",
                           f"zram {label[0].lower() + label[1:]}")
-    gpu = [s for s in sessions if s.ended == watch.KILLED_GPU]
+    gpu = [s for s in sessions if s.ended == watch.KILLED_GPU or (
+        s.ended == watch.STALLED and s.ram_total_mib and s.gtt_mib >= s.ram_total_mib * watch.GPU_SHARE)]
     pages = watch.gtt_pages(ram_mib) if ram_mib else None
     if gpu and pages and now["pages"] and now["pages"] > pages and fresh(GTT, pages):
-        return Change(GTT, pages, now["pages"], f"The kernel ended {_names(gpu)} while the GPU filled the RAM.",
+        return Change(GTT, pages, now["pages"], f"{_names(gpu)} ran out of memory while the GPU filled the RAM.",
                       f"a GTT limit of {system.mib_text(kargs.mib(pages))}")
     killed = [s for s in sessions if s.ended in KILLED]
     froze = [s for s in sessions if s.ended == watch.RESTARTED]
@@ -222,7 +228,9 @@ def compare(before: list[watch.Session], after: list[watch.Session]) -> Verdict:
     missing = [g for g in games_before if g not in games_after]
     a = [s for s in before if s.program in common]
     b = [s for s in after if s.program in common]
-    ready = len(after) >= SESSIONS_A_ROUND and bool(common)
+    failed = list(dict.fromkeys(s.program for s in before if s.ended in ENDED_SHORT))
+    tried_again = bool(failed) and all(g in games_after for g in failed)
+    ready = bool(common) and (len(after) >= SESSIONS_A_ROUND or tried_again)
     (ka, na), (kb, nb) = _share(a), _share(b)
     wait_a = max((s.pressure for s in a), default=0.0)
     wait_b = max((s.pressure for s in b), default=0.0)

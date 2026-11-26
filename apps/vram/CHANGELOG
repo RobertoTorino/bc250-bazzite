@@ -1,3 +1,20 @@
+Changelog: 26-11-2026 22:38:46
+
+Added. The window has two tabs under its header, Learning and Advanced, and is as high as the Learning tab (owner,
+26-11-2026). The Advanced pill is gone. While a game runs, the recording service watches for two things. When the
+wait for memory stays at 40% or more for 10 seconds, it ends the game with SIGKILL to free the board. A notification
+then says so, with a button that opens the window. When a game crashes, a notification says so at once, with the
+memory figures of that moment. A game that ran out of memory or froze the board points to a change at once, without
+waiting for 3 sessions. The next round can be compared once that game was played again. A stall with the swap full
+points to a larger zram, and with the GPU borrowing half the RAM, to the lower GTT limit.
+
+Changelog: 26-11-2026 22:29:18
+
+Fixed. A game is always a session, whatever its size. On the owner's board, a PS2 game of 1001 MiB was left out,
+because a session needed 1 GiB. Only games count in the learning rounds, so Visual Studio Code no longer counts as a
+game session. A program that crashed and wrote a crash dump now ends as Crashed, not Closed. A crash is not a lack of
+memory and points to no change. Step 3 and step 5 say game sessions.
+
 Changelog: 26-11-2026 20:03:05
 
 Release 5.0.0.
