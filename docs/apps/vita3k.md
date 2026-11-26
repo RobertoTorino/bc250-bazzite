@@ -292,6 +292,12 @@ The app keeps the three older files. **Clear logs**, the tab beside View logs, e
 tab. It also removes the three older files. The log holds what the app did. It holds neither your SteamGridDB key
 nor anything personal.
 
+Two buttons sit above the log. **Vita3K Manager** shows the app's own log. **Vita3K** shows what Vita3K
+printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-vita3k-manager/emulator.log`. Each
+game's part opens with a line that says how the wrapper started Vita3K. It ends with a line that gives Vita3K's exit
+code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps
+the three older files. With **Vita3K** chosen, **Clear logs** empties that log and removes its three older files.
+
 ## From a terminal
 
 `bc250-vita3k-run` starts the installed Vita3K with the options you give it. The Steam shortcuts use it. So they
@@ -304,6 +310,10 @@ bc250-vita3k-run --pkg "/path/to/game.pkg" --zrif KO5i...      # install a game 
 bc250-vita3k-run "/path/to/game.vpk"                           # install a game and start it
 bc250-vita3k-run                                               # Vita3K's own window
 ```
+
+The run wrapper stays while Vita3K runs. It passes a stop from Steam on to Vita3K, and ends with Vita3K's exit
+code. What Vita3K prints goes to `~/.local/share/bc250-vita3k-manager/emulator.log`, not to the terminal. The
+View logs tab shows it.
 
 ## New Vita3K builds
 
@@ -373,6 +383,7 @@ any other game. Game Mode runs every game through X11 already.
 | Vita3K's shader cache and log | `~/.cache/AppImage-Cache/Vita3K` |
 | The app's settings | `~/.config/bc250-vita3k-manager` |
 | The app's log | `~/.local/share/bc250-vita3k-manager/bc250-vita3k-manager.log` |
+| What Vita3K printed while a game ran | `~/.local/share/bc250-vita3k-manager/emulator.log` |
 | The Steam shortcuts | Steam's `shortcuts.vdf` and `grid` folder, per Steam user |
 | The covers found on SteamGridDB | `~/.local/share/bc250-vita3k-manager/covers` |
 | Launchers | `~/.local/bin/bc250-vita3k-manager`, `~/.local/bin/bc250-vita3k-run` |

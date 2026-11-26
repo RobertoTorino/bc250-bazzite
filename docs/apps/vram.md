@@ -16,14 +16,19 @@
     in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit. The zswap
     layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started or
     stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap file.
+    The memory guard is four systemd-oomd drop-ins of the app's own in /etc. They take effect at once, because
+    systemd-oomd restarts with them. They stay across reboots and power offs. Bazzite's own guard removes them. With
+    the guard, a user service records the sessions in the app's own folder.
 
-BC-250 Memory Manager sets up the memory of the **AMD BC-250** on **Bazzite**. It sets three things:
+BC-250 Memory Manager sets up the memory of the **AMD BC-250** on **Bazzite**. It sets four things:
 
 - the **VRAM split** in the board's CMOS
 - the **GTT limit** on the kernel command line
 - the **swap layout**
+- the **memory guard**, which ends a program before the board freezes
 
 It also shows the memory figures that go with them, such as the GTT, the TTM limit, the system RAM and the swap.
+With the suite's guard, it records how much memory each program needed, and how it ended.
 
 ## The split, GTT and RAM
 
@@ -124,16 +129,25 @@ round **i** at the end of each row explains the split or the limit, with a link 
 
 ## Profiles
 
-Under **Profiles: the split and the GTT limit at once**, two buttons set both:
+Under **Profiles: the split, the GTT limit, the swap and the guard at once**, three buttons set several settings:
 
 - **Default profile…:** The firmware's 512 MB split and the kernel's GTT limit, half the RAM. A board runs this
   without any change, as after a CMOS clear on a kernel command line without `ttm.pages_limit`.
 - **Games profile…:** The 6 GB split that prevents the framebuffer pin failures (Board Test, test 37), and the
   11.5 GiB limit. The limit is all the RAM with that split. The suite's boards run this profile.
+- **Smooth profile…:** The 6 GB split, and a GTT limit of the RAM less 2 GiB. With 9.4 GiB of RAM, that is 7.4 GiB.
+  It also sets zram the size of the RAM with zstd and `vm.swappiness` 180, and the suite's memory guard.
+
+The Default and Games profiles leave the swap layout and the guard as they are.
+
+The GTT limit of the Smooth profile keeps 2 GiB of RAM for the system. When a program's GPU work fills the rest, that
+program gets an error, and the board keeps running. Without the room, the GPU can take all the RAM. Swap cannot hold
+what the GPU borrows, so the board then stalls.
 
 A profile writes only what differs from the board. The split goes to CMOS. The limit goes to the next boot's kernel
-arguments. The profile asks once and names what it will write. Each part it writes then asks for your password. A
-profile the board already has is off. Both take effect after you restart the board, which stays yours to do.
+arguments. The swap layout and the guard go to files in /etc. The profile asks once and names what it will write.
+Each part it writes then asks for your password. A profile the board already has is off. The split, the limit and the
+swap take effect after you restart the board, which stays yours to do. The guard takes effect at once.
 
 ## The swap layout
 
@@ -173,6 +187,62 @@ After you leave the zswap layout, the swap file stays on the disk.
 The button is off until the board has restarted, because the file is in use until then.
 
 The round **i** at the end of the row explains the terms, with a link to this chapter.
+
+## The memory guard
+
+When the RAM and the swap run out, the board stalls. Games freeze, and the desktop stops answering. The kernel ends a
+program only at the end, which can take minutes. systemd-oomd ends the program that uses the most memory before
+that.
+
+Under **Memory guard** you pick when systemd-oomd acts:
+
+- **The suite's guard:** when memory pressure stays above 60% for 10 seconds, or when the swap is 90% full.
+- **Bazzite's own:** when memory pressure stays above 80% for 20 seconds. Bazzite does not watch the swap.
+
+Memory pressure is the share of time the programs wait for memory. The suite's values are starting values. We test
+them on the suite's boards.
+
+**Apply…** asks first, names what will change, and then asks for your password. The guard takes effect at once,
+without a restart. Apply is off while the guard you picked is the one already written.
+
+The suite's guard also starts the service that records the sessions. Bazzite's own guard stops that service. The
+recorded sessions stay.
+
+## Sessions
+
+While the suite's guard is on, a service watches the programs of your desktop session. It looks every two seconds. A
+program that takes 1 GiB or more, its memory and swap together, becomes a session. A program that is killed always
+becomes one.
+
+The **Sessions** table shows the newest three. Each row has these columns:
+
+- **Program:** the game's name in Steam, or the app's name
+- **Ended:** how the program ended
+- **RAM:** the board's peak RAM in use while it ran
+- **GPU borrows:** the board's peak GTT in use
+- **Swap:** the board's peak swap in use
+- **Pressure:** the highest memory pressure, as the share of time every task waited for memory
+
+Hover over a row to see when the program ran, and how much it took itself.
+
+The **Ended** column says one of these:
+
+- **Closed:** the program ended by itself, or you closed it.
+- **Guard: swap full:** systemd-oomd ended it, because the swap was over the guard's limit.
+- **Guard: memory pressure:** systemd-oomd ended it, because memory pressure stayed over the guard's limit.
+- **Killed: swap full:** the kernel ended it, and the swap was 95% full or more.
+- **Killed: GPU memory:** the kernel ended it, and the GPU borrowed half the RAM or more.
+- **Killed: RAM full:** the kernel ended it otherwise.
+- **Running when the session ended:** you logged out or shut down while it ran.
+- **Board restarted while it ran:** the board froze or lost power while it ran.
+
+After three sessions, the line under the table proposes a change, from the newest ten sessions:
+
+- **A larger zram,** one size up, when the swap ran out in a session.
+- **A GTT limit of the RAM less 2 GiB,** when the kernel ended a program while the GPU filled the RAM.
+
+**Use proposal…** writes it for the next boot. It asks first, and then asks for your password. The restart stays yours
+to do. When zram is at twice the RAM already, the line advises zswap with a swap file instead.
 
 ## When it refuses
 
@@ -218,6 +288,12 @@ The swap layout:
 - **Without the app:** remove the files below with `sudo rm`. When the swap unit is there, run
   `sudo systemctl disable var-swap-swapfile.swap` first. Then restart.
 
+The memory guard:
+
+- **In the app:** pick **Bazzite's own** under Memory guard and apply it. This takes effect at once.
+- **Without the app:** remove the four guard files below with `sudo rm`. Then run `sudo systemctl daemon-reload`,
+  `sudo systemctl restart systemd-oomd` and `systemctl --user daemon-reload`.
+
 ## Files
 
 - `~/.config/bc250-memory-manager/bc250-memory-manager.ini`: the pending changes and the split to undo to. The
@@ -232,6 +308,14 @@ The swap layout:
 - `/etc/systemd/system/var-swap-swapfile.swap`: the swap file's unit.
 - `/var/swap/swapfile`: the swap file.
 
+- `/etc/systemd/oomd.conf.d/90-bc250-memory-manager.conf`: the guard's limits and duration.
+- `/etc/systemd/system/-.slice.d/90-bc250-memory-manager.conf`: the swap, watched for the whole board.
+- `/etc/systemd/system/user@.service.d/90-bc250-memory-manager.conf`: memory pressure, watched for your session.
+- `/etc/systemd/user/slice.d/90-bc250-memory-manager.conf`: the limit for the apps and games in your session.
+- `~/.config/systemd/user/bc250-memory-watch.service`: the service that records the sessions.
+- `~/.local/share/bc250-memory-manager/sessions.jsonl`: the last 50 sessions, with the oldest first.
+- `~/.local/share/bc250-memory-manager/sessions-open.json`: the sessions of the programs that run now.
+
 How the app reads and writes CMOS: [Memory Manager internals](../development/memory-manager.md).
 
 ## Install
@@ -241,7 +325,7 @@ Install it from the BC250 Bazzite Suite portal, or from a clone or release folde
 ```bash
 ./install.sh                         # app menu entry and Desktop icon
 ./install.sh --no-desktop-shortcut   # app menu entry only
-./install.sh --uninstall             # remove the app; keeps its settings and CMOS backups
+./install.sh --uninstall             # remove the app and the sessions service; keeps its settings and CMOS backups
 ./install.sh --uninstall --purge     # also remove its settings and CMOS backups
 ```
 

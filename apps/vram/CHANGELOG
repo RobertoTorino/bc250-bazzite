@@ -1,3 +1,16 @@
+Changelog: 26-11-2026 12:37:41
+
+Added. A Memory guard box sets when systemd-oomd ends the program that uses the most memory. The suite's guard acts
+at 60% memory pressure for 10 seconds, or when the swap is 90% full. Bazzite's own acts at 80% for 20 seconds and
+does not watch the swap. The guard takes effect at once, through four drop-ins of the app's own in /etc and the new
+root helper guard.py. With the suite's guard, a user service records the sessions: each program that takes 1 GiB or
+more, the board's peak RAM, GPU borrowing, swap and memory pressure while it ran, and how it ended. The Sessions box
+shows the newest three and proposes a larger zram or a lower GTT limit after three sessions. Use proposal writes it
+for the next boot. The Smooth profile sets the 6 GB split, a GTT limit of the RAM less 2 GiB, zram the size of the
+RAM with vm.swappiness 180 and the suite's guard. The installer restarts the sessions service with an update and
+removes it with the app. The window opens 1060 pixels high. The owner asked for it after kernel OOM kills on
+25-11-2026 and 26-11-2026.
+
 Changelog: 25-11-2026 06:54:51
 
 Release 4.8.2.

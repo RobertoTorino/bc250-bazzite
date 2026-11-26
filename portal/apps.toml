@@ -246,6 +246,9 @@ and removes the kernel argument. Both take effect after a restart. The swap layo
 in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit. The zswap
 layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started or
 stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap file.
+The memory guard is four systemd-oomd drop-ins of the app's own in /etc. They take effect at once, because
+systemd-oomd restarts with them. They stay across reboots and power offs. Bazzite's own guard removes them. With
+the guard, a user service records the sessions in the app's own folder.
 """
 category = "sustainable"
 install = ["bash install.sh"]

@@ -4,7 +4,7 @@ import json
 import pytest
 from PyQt6.QtWidgets import QMessageBox
 
-from vram_manager import cmos, main_window, privileged, swap
+from vram_manager import cmos, guard, main_window, privileged, service, swap, watch
 from vram_manager.main_window import MainWindow
 from conftest import FakeOstree
 from dumps import BOARD_1, FakePort, bank
@@ -77,10 +77,31 @@ class Swapper:
         return privileged.Result(True, json.loads(json.dumps(data)), "")
 
 
-def make(qapp, sys_root, proc_root, board, ostree=None, swapper=None):
+class Guarder:
+    """Runs the guard helper's own code on the temp /etc, as pkexec would run guard.py; systemctl --user recorded."""
+    def __init__(self, etc):
+        self.etc, self.calls, self.systemctl = etc, [], []
+
+    def __call__(self, args):
+        self.calls.append(args)
+        try:
+            data = guard.apply(args[1], self.etc, lambda cmd: 0)
+        except guard.GuardError as exc:
+            return privileged.Result(False, {}, str(exc))
+        return privileged.Result(True, data, "")
+
+    def user(self, cmd):
+        self.systemctl.append(cmd)
+        return 0, "", ""
+
+
+def make(qapp, sys_root, proc_root, board, ostree=None, swapper=None, guarder=None):
     swapper = swapper or Swapper(sys_root.parent)
+    guarder = guarder or Guarder(swapper.etc)
     return MainWindow(sys_root, proc_root, runner=board, commands=ostree or FakeOstree(), swapper=swapper,
-                      etc_root=swapper.etc, var_root=swapper.var)
+                      etc_root=swapper.etc, var_root=swapper.var, guarder=guarder,
+                      config_dir=sys_root.parent / "config", sessions_file=sys_root.parent / "sessions.jsonl",
+                      python="/venv/bin/python", app_root=sys_root.parent / "app", user_commands=guarder.user)
 
 
 def test_shows_the_board(qapp, sys_root, proc_root):
@@ -433,4 +454,82 @@ def test_a_swap_layout_that_fails_says_why_and_stays_to_apply(qapp, sys_root, pr
     w.swap_button.click()
     assert answer["warnings"] == ["Not authorized"] and w.swap_button.isEnabled() and w.swap_note.isHidden()
     assert w.layout_combo.currentData() == swap.ZRAM
+    w.close()
+
+
+def test_the_guard_takes_effect_at_once_with_the_sessions_service(qapp, sys_root, proc_root, answer):
+    """The suite's guard (owner, 26-11-2026): the four files, the user manager reloaded, the sessions service on;
+    Bazzite's own takes both away again. Apply is off for the guard that is written."""
+    swapper = Swapper(sys_root.parent)
+    guarder = Guarder(swapper.etc)
+    w = make(qapp, sys_root, proc_root, Board(), swapper=swapper, guarder=guarder)
+    assert w.guard_combo.currentData() == guard.BAZZITE and not w.guard_button.isEnabled()
+    assert w.proposal_note.text() == "Sessions are recorded while the suite's guard is on."
+    w.guard_combo.setCurrentIndex(w.guard_combo.findData(guard.SUITE))
+    assert w.guard_button.isEnabled()
+    w.apply_guard()
+    assert answer["questions"][-1] == (
+        "Write the memory guard \"The suite's guard: memory pressure 60% for 10 s, or swap 90% full\"?\n\n"
+        "systemd-oomd ends the program that uses the most memory when memory pressure stays above 60% for 10 s.\n"
+        "It does the same when the swap is 90% full.\nA service records the sessions.\n"
+        "It takes effect at once, without a restart.\n\nYou will be asked for your password.")
+    assert guarder.calls == [["--guard", "suite"]] and guard.read_guard(swapper.etc) == guard.SUITE
+    unit = service.unit_path(sys_root.parent / "config")
+    assert f"WorkingDirectory={sys_root.parent / 'app'}" in unit.read_text()
+    assert "ExecStart=/venv/bin/python -m vram_manager.watch" in unit.read_text()
+    assert guarder.systemctl[0] == ["systemctl", "--user", "daemon-reload"]
+    assert ["systemctl", "--user", "restart", service.UNIT] in guarder.systemctl
+    assert not w.guard_button.isEnabled() and w.guard_note.isHidden()
+    w.guard_combo.setCurrentIndex(w.guard_combo.findData(guard.BAZZITE))
+    w.apply_guard()
+    assert guard.read_guard(swapper.etc) == guard.BAZZITE and not unit.exists()
+    assert ["systemctl", "--user", "disable", "--now", service.UNIT] in guarder.systemctl
+    w.close()
+
+
+def test_the_smooth_profile_writes_all_four(qapp, sys_root, proc_root, answer):
+    """The board runs the Games profile with Bazzite's swap and guard: the Smooth profile keeps the split and writes
+    the GTT limit of the RAM less 2 GiB, zram the size of the RAM and the suite's guard, after one question."""
+    board, ostree = Board(), FakeOstree()
+    swapper = Swapper(sys_root.parent)
+    w = make(qapp, sys_root, proc_root, board, ostree, swapper)
+    pages = watch.gtt_pages(9650)
+    assert w.profile_steps(main_window.SMOOTH) == [
+        f"the {main_window.ttm_label(pages)} to the next boot's kernel arguments",
+        "zram the size of the RAM with vm.swappiness 180 for the next boot", "the suite's memory guard"]
+    w.apply_profile(main_window.SMOOTH)
+    assert answer["questions"][-1] == (
+        "Write the 7.4 GiB GTT limit to the next boot's kernel arguments, zram the size of the RAM with "
+        "vm.swappiness 180 for the next boot and the suite's memory guard?\n\nBoth take effect after you restart "
+        "the board.\nThe app leaves the restart to you.\nThe guard takes effect at once.\n\nYou will be asked "
+        "for your password once for each.")
+    assert board.calls == [] and f"ttm.pages_limit={pages}" in ostree.arguments
+    assert swap.read_setup(swapper.etc, swapper.var) == main_window.SMOOTH_SWAP
+    assert guard.read_guard(swapper.etc) == guard.SUITE
+    assert answer["infos"][-1].startswith("Done. The app wrote the 7.4 GiB GTT limit")
+    assert w.profile_steps(main_window.SMOOTH) == [] and not w.profile_buttons[main_window.SMOOTH].isEnabled()
+    assert w.profile_buttons["games"].isEnabled()         # Games has the 11.5 GiB limit
+    w.close()
+
+
+def test_the_sessions_and_their_proposal(qapp, sys_root, proc_root, answer):
+    """Three sessions, one of them killed with the swap full: the newest first, and the proposal of a larger zram,
+    written for the next boot."""
+    swapper = Swapper(sys_root.parent)
+    path = sys_root.parent / "sessions.jsonl"
+    for n, ended in enumerate((watch.CLOSED, watch.CLOSED, watch.KILLED_SWAP)):
+        watch.write_session(watch.Session(f"u{n}", f"Game {n}", 1795000000 + n, "boot-1", 7000, 9100, 300,
+                                          4800 if n == 2 else 1000, 4823, 9650, 41.4, 0, 1795000100, ended), path)
+    w = make(qapp, sys_root, proc_root, Board(), swapper=swapper)
+    t = w.sessions_table
+    assert t.rowCount() == 3 and t.item(0, 0).text() == "Game 2" and t.item(0, 1).text() == watch.KILLED_SWAP
+    assert [t.item(0, c).text() for c in range(2, 6)] == ["8.9 GiB", "300 MiB", "4.7 GiB", "41%"]
+    assert w.proposal_note.text() == "Proposal from 3 sessions: zram the RAM."
+    assert not w.proposal_button.isHidden()
+    w.use_proposal()
+    assert answer["questions"][-1] == ("Write what the sessions propose?\n\nzram gets the size the RAM, with zstd.\n"
+                                       "It takes effect after you restart the board.\n\nYou will be asked for your "
+                                       "password.")
+    assert swap.read_setup(swapper.etc, swapper.var) == swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=180)
+    assert w.proposal_note.text() == "Proposal from 3 sessions: zram one and a half times the RAM."
     w.close()

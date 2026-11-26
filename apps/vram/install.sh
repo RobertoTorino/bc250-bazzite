@@ -17,6 +17,9 @@
 #    Qt; nothing is layered). It is removed with the last suite app that uses it.
 #  * ~/.local/share/bc250-memory-manager/backups: the CMOS block before and after each change, and CMOS reads.
 #  * ~/.local/bin/bc250-memory-manager to start it from a terminal, plus an app menu entry and a Desktop icon.
+#  * ~/.config/systemd/user/bc250-memory-watch.service: the service that records the sessions, written by the app
+#    with the suite's memory guard. An update restarts it with the new version; --uninstall removes it, since it
+#    starts the app's own files. The guard's files in /etc stay, as the swap layout's do.
 set -euo pipefail
 
 APP_ID="bc250-memory-manager"
@@ -31,6 +34,8 @@ LAUNCHER="$HOME/.local/bin/$APP_ID"
 MENU_ENTRY="$DATA_DIR/applications/$APP_ID.desktop"
 DESKTOP_DIR=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
 DESKTOP_ICON="$DESKTOP_DIR/$APP_ID.desktop"
+WATCH_UNIT="bc250-memory-watch.service"
+WATCH_FILE="$CONFIG_DIR/systemd/user/$WATCH_UNIT"
 
 SRC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 # bc250_core: bundled next to vram_manager in a release; in the suite checkout it lives in core/.
@@ -70,11 +75,17 @@ installed_here() {
 if $UNINSTALL; then
     found=false
     installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "${DATA_DIR:?}/$APP_ID/app" "$VENV_USERS/$APP_ID" \
-        && found=true
+        "$WATCH_FILE" && found=true
     $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "${DATA_DIR:?}/$APP_ID/backups" && found=true
     if ! $found; then
         info "$APP_NAME is not installed: nothing to remove."
         exit 0
+    fi
+    if [ -f "$WATCH_FILE" ]; then
+        info "Stopping and removing the sessions service $WATCH_UNIT"
+        systemctl --user disable --now "$WATCH_UNIT" >/dev/null 2>&1 || true
+        rm -f "$WATCH_FILE"
+        systemctl --user daemon-reload >/dev/null 2>&1 || true
     fi
     info "Removing the launcher, the menu entry and the app"
     rm -f "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON"
@@ -180,6 +191,12 @@ if $DESKTOP_SHORTCUT && [ -d "$DESKTOP_DIR" ]; then
     command -v gio >/dev/null 2>&1 && gio set "$DESKTOP_ICON" metadata::trusted true 2>/dev/null || true
 elif ! $DESKTOP_SHORTCUT; then
     rm -f "$DESKTOP_ICON"
+fi
+
+if [ -f "$WATCH_FILE" ]; then
+    info "Restarting the sessions service $WATCH_UNIT with the new version"
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+    systemctl --user try-restart "$WATCH_UNIT" >/dev/null 2>&1 || true
 fi
 
 info "Done. Start \"$APP_NAME\" from the app menu$($DESKTOP_SHORTCUT && echo ' or the Desktop'), or run: $APP_ID"

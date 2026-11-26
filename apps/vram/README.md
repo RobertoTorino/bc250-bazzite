@@ -8,8 +8,10 @@
 
 BC-250 Memory Manager sets the VRAM split of the **AMD BC-250** on **Bazzite** in the board's CMOS. It also sets
 the GTT limit (`ttm.pages_limit`) on the kernel command line, and the swap layout. The swap layout is zram, or zswap
-with a swap file. The app shows the GTT, the TTM limit, the system RAM and the swap that go with them. Each setting
-changes only when you apply it, and takes effect after a restart.
+with a swap file. It also sets the memory guard, which ends a program before the board freezes. The app shows
+the GTT, the TTM limit, the system RAM and the swap that go with them. With the suite's guard, it records how much
+memory each program needed. Each setting changes only when you apply it. The guard takes effect at once, the others
+after a restart.
 
 How to install and use it: [BC-250 Memory Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/vram/).
 

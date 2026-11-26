@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Running the CMOS helper (cmos.py) and the swap layout's helper (swap.py) as root through polkit, rpm-ostree for the kernel arguments (kargs.py), and
+"""Running the CMOS helper (cmos.py), the swap layout's helper (swap.py) and the memory guard's (guard.py) as root
+through polkit, rpm-ostree for the kernel arguments (kargs.py), and
 the report of a CMOS read.
 
 A helper runs with the system Python in isolated mode (-I), so nothing from the user's environment or the
@@ -17,10 +18,11 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import cmos, swap
+from . import cmos, guard, swap
 
 CMOS_SCRIPT = Path(cmos.__file__).resolve()
 SWAP_SCRIPT = Path(swap.__file__).resolve()
+GUARD_SCRIPT = Path(guard.__file__).resolve()
 SYSTEM_PYTHON = Path("/usr/bin/python3")
 NOT_INSTALLED = -2                      # run_command: the command is not on this system (kargs.py has the same)
 FAILED = -1                             # run_command: it did not start, or did not end in time
@@ -90,6 +92,11 @@ def run(args: list[str], script: Path = CMOS_SCRIPT) -> Result:
 def run_swap(args: list[str]) -> Result:
     """The swap layout's helper (swap.py)."""
     return run(args, SWAP_SCRIPT)
+
+
+def run_guard(args: list[str]) -> Result:
+    """The memory guard's helper (guard.py)."""
+    return run(args, GUARD_SCRIPT)
 
 
 def report(data: dict, sys_root: Path = Path("/sys"), now: float | None = None) -> str:

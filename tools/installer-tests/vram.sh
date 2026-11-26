@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Exercise apps/vram/install.sh: install from the checkout (core bundled, shared venv, no sudo), a staged
 # release replacing it, uninstall with and without other venv users (CMOS backups kept), --purge (backups removed), and
-# the refusal to run as root.
+# the refusal to run as root. The sessions service: restarted by an update, removed by the uninstall.
 # Runs with the shims from shims.sh (CI).
 set -u
 SUITE=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
@@ -15,8 +15,12 @@ check() { if eval "$2"; then echo "  ok   $1"; else echo "  FAIL $1"; fail=1; fi
 D=$XDG_DATA_HOME
 APP=bc250-memory-manager
 A=$D/$APP/app
-# sudo must never be needed: make it fail loudly.
+# sudo must never be needed: make it fail loudly. systemctl only records.
 printf '#!/bin/sh\necho "sudo called: $*" >&2\nexit 1\n' > "$T/shims/sudo"
+printf '#!/bin/sh\necho "$*" >> "%s"\n' "$T/systemctl.log" > "$T/shims/systemctl"
+chmod +x "$T/shims/systemctl"
+: > "$T/systemctl.log"
+WATCH=$XDG_CONFIG_HOME/systemd/user/bc250-memory-watch.service
 
 echo "== 1. install from the suite checkout"
 bash "$SUITE/apps/vram/install.sh" > "$T/log1" 2>&1; rc=$?
@@ -24,6 +28,8 @@ check "exit 0" "[ $rc -eq 0 ]"
 check "no sudo used" "! grep -q 'sudo called' $T/log1 && [ -z \"\$(ls -A $T/opt)\" ]"
 check "app copied" "[ -f $A/vram_manager/main_window.py ] && [ -f $A/images/$APP.webp ] && [ -f $A/images/$APP-128.png ]"
 check "CMOS helper copied" "[ -f $A/vram_manager/cmos.py ]"
+check "guard helper and watcher copied" "[ -f $A/vram_manager/guard.py ] && [ -f $A/vram_manager/watch.py ]"
+check "no sessions service: systemctl not asked" "[ ! -s $T/systemctl.log ]"
 check "core bundled from checkout" "[ -f $A/bc250_core/theme.py ]"
 check "no tests or caches copied" "[ ! -d $A/tests ] && ! find $A -name __pycache__ | grep -q ."
 check "shared venv" "[ -x $D/bc250-bazzite-suite/venv/bin/python ]"
@@ -36,11 +42,13 @@ check "core imports from the app copy" "(cd $A && /usr/bin/python3 -c 'import im
 
 echo "== 2. install a staged release (core bundled in the tarball) without the Desktop icon"
 rm -rf "$T/stage"; /usr/bin/python3 "$NEXUS/tools/stage_app.py" vram "$T/stage" > /dev/null
+mkdir -p "$(dirname "$WATCH")" && printf '[Service]\nExecStart=/venv/bin/python -m vram_manager.watch\n' > "$WATCH"
 echo "# release marker" >> "$T/stage/bc250_core/__init__.py"
 bash "$T/stage/install.sh" --no-desktop-shortcut > "$T/log2" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "the release's own core used" "grep -q 'release marker' $A/bc250_core/__init__.py"
 check "desktop icon removed" "[ ! -e $HOME/Desktop/$APP.desktop ]"
+check "sessions service restarted" "grep -qx -- '--user try-restart bc250-memory-watch.service' $T/systemctl.log"
 
 echo "== 3. refuses to run as root"
 fakeroot -- bash "$T/stage/install.sh" > "$T/log3" 2>&1; rc=$?
@@ -55,6 +63,7 @@ check "app gone, backup kept" "[ ! -e $A ] && [ -f $D/$APP/backups/cmos-1.json ]
 check "venv kept" "[ -x $D/bc250-bazzite-suite/venv/bin/python ]"
 check "own marker gone" "[ ! -e $D/bc250-bazzite-suite/venv-users/$APP ]"
 check "launcher and menu entry gone" "[ ! -e $HOME/.local/bin/$APP ] && [ ! -e $D/applications/$APP.desktop ]"
+check "sessions service stopped and removed" "[ ! -e $WATCH ] && grep -qx -- '--user disable --now bc250-memory-watch.service' $T/systemctl.log"
 
 echo "== 5. reinstall, then uninstall --purge as the last venv user"
 rm "$D/bc250-bazzite-suite/venv-users/bc250-board-test"

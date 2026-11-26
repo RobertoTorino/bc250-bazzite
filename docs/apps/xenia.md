@@ -277,6 +277,12 @@ The app keeps the three older files. **Clear logs**, the tab beside View logs, e
 tab. It also removes the three older files. The log holds what the app did. It holds neither your SteamGridDB key
 nor anything personal.
 
+Two buttons sit above the log. **Xenia Manager** shows the app's own log. **Xenia** shows what Xenia
+printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-xenia-manager/emulator.log`. Each
+game's part opens with a line that says how the wrapper started Xenia. It ends with a line that gives Xenia's exit
+code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps
+the three older files. With **Xenia** chosen, **Clear logs** empties that log and removes its three older files.
+
 ## From a terminal
 
 `bc250-xenia-run` starts the installed Xenia with the options you give it. The Steam shortcuts use it. So they
@@ -287,6 +293,10 @@ bc250-xenia-run --fullscreen=true "/path/to/game.iso"   # a game full screen (St
 bc250-xenia-run "/path/to/game.iso"                     # a game in a window
 bc250-xenia-run                                         # Xenia's own window
 ```
+
+The run wrapper stays while Xenia runs. It passes a stop from Steam on to Xenia, and ends with Xenia's exit
+code. What Xenia prints goes to `~/.local/share/bc250-xenia-manager/emulator.log`, not to the terminal. The
+View logs tab shows it.
 
 ## New Xenia builds
 
@@ -343,6 +353,7 @@ the window on the desktop too. The run wrapper has nothing to change for it.
 | Your games | `~/Games/XBOX360` (the app's own folder), and `Games/XBOX360` on a removable drive |
 | The app's settings | `~/.config/bc250-xenia-manager` |
 | The app's log | `~/.local/share/bc250-xenia-manager/bc250-xenia-manager.log` |
+| What Xenia printed while a game ran | `~/.local/share/bc250-xenia-manager/emulator.log` |
 | The Steam shortcuts | Steam's `shortcuts.vdf` and `grid` folder, per Steam user |
 | The pictures found on SteamGridDB | `~/.local/share/bc250-xenia-manager/covers` |
 | Launchers | `~/.local/bin/bc250-xenia-manager`, `~/.local/bin/bc250-xenia-run` |

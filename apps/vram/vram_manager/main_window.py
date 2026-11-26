@@ -1,15 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The main window: the memory the system has now (split, GTT, RAM, swap), a live map of it, the VRAM split in
 CMOS with apply, undo and a read of the CMOS block, the GTT limit (ttm.pages_limit) in the next boot's kernel
-arguments, and the swap layout of the next boot.
+arguments, the swap layout of the next boot, the memory guard and the sessions the watcher recorded.
 
 A split is written to CMOS, a GTT limit to the next boot's kernel arguments with rpm-ostree, a swap layout to files
-of the app's own in /etc (swap.py); all take effect at the next boot. The window remembers each change with the boot it was made in, and after a reboot says whether the
+of the app's own in /etc (swap.py); all take effect at the next boot. The memory guard (guard.py) takes effect at
+once, and turns the sessions' watcher (watch.py, service.py) on and off with it. The window remembers each change with the boot it was made in, and after a reboot says whether the
 kernel got it."""
 
 from __future__ import annotations
 
 import json
+import sys
 import time
 from html import escape
 from pathlib import Path
@@ -17,18 +19,19 @@ from typing import Callable
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QCloseEvent
-from PyQt6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHBoxLayout, QLabel, QMainWindow, QMessageBox,
-                             QPushButton, QSpinBox, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+                             QMainWindow, QMessageBox, QPushButton, QSpinBox, QTableWidget, QTableWidgetItem,
+                             QVBoxLayout, QWidget)
 
 from bc250_core import SUITE_MANUAL_URL, window_title
 from bc250_core import __version__ as CORE_VERSION
-from bc250_core.platform import data_home
+from bc250_core.platform import config_home, data_home
 from bc250_core.settings import SettingsStore
 from bc250_core.theme import BLUE, GREY, PURPLE
 from bc250_core.widgets import AppHeader, InfoButton, MetricBox, StatusText, TextDialog, accent_button, hint_label
 
-from . import APP_ID, APP_NAME, INFO, LOGO_PATH, __version__
-from . import cmos, kargs, privileged, swap, system
+from . import APP_ID, APP_NAME, INFO, LOGO_PATH, ROOT, __version__
+from . import cmos, guard, kargs, privileged, service, swap, system, watch
 from .memory_map import MemoryMap, gtt_ceiling
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/vram/"
@@ -39,10 +42,17 @@ FIRMWARE_MB = 512                       # the split the firmware starts with aft
 SUITE_PAGES = 3014656                   # the suite's GTT limit, 11.5 GiB (Board Test, test 37)
 PICK = object()                         # apply_ttm(): the limit the combo shows
 
-# The profiles (owner, 01-11-2026): both values at once, each written only where it differs.
+SMOOTH = "smooth"
+SMOOTH_PAGES = object()                 # PROFILES: the Smooth profile's limit, the RAM less watch.SPARE_MIB
+SMOOTH_SWAP = swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=swap.SWAPPINESS[swap.ZRAM])
+SESSION_ROWS = 3                        # the sessions the window shows, newest first
+
+# The profiles (owner, 01-11-2026): both values at once, each written only where it differs. The Smooth profile
+# (owner, 26-11-2026) also writes the swap layout and the suite's memory guard.
 PROFILES = {
     "defaults": ("Default profile", FIRMWARE_MB, None),
     "games": ("Games profile", RECOMMENDED_MB, SUITE_PAGES),
+    SMOOTH: ("Smooth profile", RECOMMENDED_MB, SMOOTH_PAGES),
 }
 
 
@@ -81,9 +91,13 @@ class MainWindow(QMainWindow):
                  runner: Callable[[list[str]], privileged.Result] = privileged.run,
                  commands: kargs.Run = privileged.run_command,
                  swapper: Callable[[list[str]], privileged.Result] = privileged.run_swap,
-                 etc_root: Path = Path("/etc"), var_root: Path = Path("/var")):
+                 etc_root: Path = Path("/etc"), var_root: Path = Path("/var"),
+                 guarder: Callable[[list[str]], privileged.Result] = privileged.run_guard,
+                 config_dir: Path | None = None, sessions_file: Path | None = None,
+                 python: str = sys.executable, app_root: Path = ROOT,
+                 user_commands: kargs.Run = privileged.run_command):
         super().__init__()
-        self.resize(900, 940)
+        self.resize(900, 1060)
         self.sys_root = sys_root
         self.proc_root = proc_root
         self.runner = runner
@@ -91,6 +105,12 @@ class MainWindow(QMainWindow):
         self.swapper = swapper                  # runs swap.py as root for the swap layout
         self.etc_root = etc_root
         self.var_root = var_root
+        self.guarder = guarder                  # runs guard.py as root for the memory guard
+        self.config_dir = config_dir or config_home()      # the sessions service's unit goes under it
+        self.sessions_file = sessions_file or watch.sessions_path()
+        self.python, self.app_root = python, app_root    # what the sessions service starts
+        self.user_commands = user_commands      # runs systemctl --user for the guard and the sessions service
+        self.sessions_seen: float | None = None  # the sessions file's time when last shown
         self.settings = ManagerSettings(INFO, self)
         self.swap_setup = swap.read_setup(etc_root, var_root)
         self.memory = system.read_memory(sys_root, proc_root)
@@ -179,12 +199,14 @@ class MainWindow(QMainWindow):
         lay_limit.addWidget(self.ttm_note)
         lay_limit.addWidget(self.ttm_reason)
 
-        profiles = QGroupBox("Profiles: the split and the GTT limit at once")
+        profiles = QGroupBox("Profiles: the split, the GTT limit, the swap and the guard at once")
         self.profile_buttons: dict[str, QPushButton] = {}
         row_profiles = QHBoxLayout()
-        for key, (name, mb, pages) in PROFILES.items():
+        for key in PROFILES:
+            name, mb, pages, setup, _guard = self.profile_values(key)
             button = QPushButton(f"{name}…")
-            button.setToolTip(f"{split_label(mb)} split, {ttm_label(pages)}")
+            button.setToolTip(f"{split_label(mb)} split, {ttm_label(pages)}"
+                              + (", zram the size of the RAM, the suite's memory guard" if setup else ""))
             button.clicked.connect(lambda _c, k=key: self.apply_profile(k))
             self.profile_buttons[key] = button
             row_profiles.addWidget(button)
@@ -194,9 +216,11 @@ class MainWindow(QMainWindow):
             "limit, half the RAM. A board without changes runs like this. The <b>Games profile</b> has the "
             f"{split_label(RECOMMENDED_MB)} split and the 11.5 GiB limit. The split prevents the framebuffer pin "
             "failures (Board Test, test 37). The limit is all the RAM with that split. The suite's boards run this "
-            "profile. A profile writes only what differs from the board. The split goes to CMOS, and the limit goes "
-            "to the next boot's kernel arguments. Each of the two asks for your password. Both take effect after you "
-            f"restart the board. <a href='{MANUAL_URL}#profiles'>Wiki</a>", "About the profiles"))
+            "profile. The <b>Smooth profile</b> has the 6 GB split and a GTT limit of the RAM less 2 GiB. It also "
+            "sets zram the size of the RAM and the suite's memory guard. The Default and Games profiles leave the swap "
+            "and the guard as they are. A profile writes only what differs from the board. Each part asks for your "
+            "password. The split, the limit and the swap take effect after you restart the board. The guard takes "
+            f"effect at once. <a href='{MANUAL_URL}#profiles'>Wiki</a>", "About the profiles"))
         lay_profiles = QVBoxLayout(profiles)
         lay_profiles.addLayout(row_profiles)
 
@@ -247,6 +271,54 @@ class MainWindow(QMainWindow):
         lay_swap.addWidget(self.swap_note)
         lay_swap.addWidget(self.swap_reason)
 
+        guard_box = QGroupBox("Memory guard: what ends a program before the board freezes")
+        self.guard_combo = QComboBox()
+        for key, label in guard.GUARDS.items():
+            self.guard_combo.addItem(label, key)
+        self.guard_combo.currentIndexChanged.connect(self.on_guard_pick)
+        self.guard_button = accent_button("Apply…", "Write this guard. It takes effect at once")
+        self.guard_button.clicked.connect(lambda: self.apply_guard())
+        row_guard = QHBoxLayout()
+        row_guard.addWidget(QLabel("Guard:"))
+        row_guard.addWidget(self.guard_combo, 1)
+        row_guard.addWidget(self.guard_button)
+        row_guard.addWidget(InfoButton(
+            "When the RAM and the swap run out, the board stalls until the kernel ends a program. That can take "
+            "minutes. systemd-oomd ends the program that uses the most memory before that. <b>Bazzite's own</b> guard "
+            "acts at 80% memory pressure for 20 s and does not watch the swap. <b>The suite's guard</b> acts at 60% for "
+            "10 s, or when the swap is 90% full. It also records the sessions below. It takes effect at once, without "
+            f"a restart. <a href='{MANUAL_URL}#the-memory-guard'>Wiki</a>", "About the memory guard"))
+        self.guard_note = hint_label("")
+        lay_guard = QVBoxLayout(guard_box)
+        lay_guard.addLayout(row_guard)
+        lay_guard.addWidget(self.guard_note)
+
+        sessions_box = QGroupBox("Sessions: the board's peaks while each program ran")
+        self.sessions_table = QTableWidget(0, 6)
+        self.sessions_table.setHorizontalHeaderLabels(["Program", "Ended", "RAM", "GPU borrows", "Swap", "Pressure"])
+        self.sessions_table.verticalHeader().setVisible(False)
+        self.sessions_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.sessions_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.sessions_table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.sessions_table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.proposal_note = hint_label("")
+        self.proposal_button = QPushButton("Use proposal…")
+        self.proposal_button.setToolTip("Write what the sessions propose. It takes effect after a restart")
+        self.proposal_button.clicked.connect(self.use_proposal)
+        row_proposal = QHBoxLayout()
+        row_proposal.addWidget(self.proposal_note, 1)
+        row_proposal.addWidget(self.proposal_button)
+        row_proposal.addWidget(InfoButton(
+            "While the suite's guard is on, a service records every program that takes 1 GiB or more. It keeps the "
+            "board's peaks while the program ran, and how it ended. <b>Killed</b> means the kernel ended it, "
+            "<b>Guard</b> means systemd-oomd did. <b>Pressure</b> is the share of time every task waited for memory. "
+            "After 3 sessions the app proposes a larger zram when the swap ran out, or a lower GTT limit when the GPU "
+            f"filled the RAM. <a href='{MANUAL_URL}#sessions'>Wiki</a>", "About the sessions"))
+        lay_sessions = QVBoxLayout(sessions_box)
+        lay_sessions.addWidget(self.sessions_table)
+        lay_sessions.addLayout(row_proposal)
+        self.proposal = watch.Proposal("")
+
         central = QWidget()
         lay = QVBoxLayout(central)
         lay.addLayout(header)
@@ -256,9 +328,11 @@ class MainWindow(QMainWindow):
         lay.addWidget(limit)
         lay.addWidget(profiles)
         lay.addWidget(layout_box)
+        lay.addWidget(guard_box)
+        lay.addWidget(sessions_box)
         lay.addStretch(1)
-        version = QLabel(f"{APP_NAME} {__version__} · core {CORE_VERSION} · CMOS, the kernel arguments and the swap "
-                         "layout are written only when you apply")
+        version = QLabel(f"{APP_NAME} {__version__} · core {CORE_VERSION} · CMOS, the kernel arguments, the swap "
+                         "layout and the guard are written only when you apply")
         version.setStyleSheet("color:palette(placeholder-text);")
         lay.addWidget(version, 0, Qt.AlignmentFlag.AlignRight)
         self.setCentralWidget(central)
@@ -333,19 +407,38 @@ class MainWindow(QMainWindow):
         """The split in CMOS: the one waiting for a reboot, else the one this boot got."""
         return self.settings.get("pending_mb") or self.memory.vram_mib
 
+    def profile_values(self, key: str) -> tuple[str, int, int | None, swap.Setup | None, str | None]:
+        """A profile's name, split and limit, and the swap layout and guard it also writes (None: left as they
+        are). The Smooth profile's limit is the RAM the split leaves, less watch.SPARE_MIB."""
+        name, mb, pages = PROFILES[key]
+        if pages is not SMOOTH_PAGES:
+            return name, mb, pages, None, None
+        m = self.memory
+        ram = (m.vram_mib + m.ram_mib - mb) if m.vram_mib and m.ram_mib else (m.ram_mib or 0)
+        names = self.zram_compressors()
+        setup = SMOOTH_SWAP if SMOOTH_SWAP.compressor in names else swap.Setup(
+            swap.ZRAM, SMOOTH_SWAP.zram_size, names[0], swappiness=SMOOTH_SWAP.swappiness)
+        return name, mb, watch.gtt_pages(ram) if ram else None, setup, guard.SUITE
+
     def profile_steps(self, key: str) -> list[str]:
         """What a profile would write, in words: the split (when CMOS can be written and it differs), the limit
-        (when rpm-ostree works and it differs). Empty when the board has the profile, or nothing can be written."""
-        _name, mb, pages = PROFILES[key]
+        (when rpm-ostree works and it differs), and for the Smooth profile the swap layout and the guard where they
+        differ. Empty when the board has the profile, or nothing can be written."""
+        _name, mb, pages, setup, wanted = self.profile_values(key)
         steps = []
         if not self.block_problem and mb != self.written_split():
             steps.append(f"the {split_label(mb)} split to CMOS")
         if not self.next_boot.error and pages != self.next_boot.pages:
             steps.append(f"the {ttm_label(pages)} to the next boot's kernel arguments")
+        if setup is not None and setup != self.swap_setup:
+            steps.append(f"zram the size of the RAM with vm.swappiness {setup.swappiness} for the next boot")
+        if wanted is not None and wanted != guard.read_guard(self.etc_root):
+            steps.append("the suite's memory guard")
         return steps
 
     def refresh_usage(self) -> None:
         self.map.set_usage(system.read_usage(self.sys_root, self.proc_root))
+        self.refresh_sessions()
 
     def refresh(self) -> None:
         m = self.memory
@@ -393,6 +486,8 @@ class MainWindow(QMainWindow):
         previous = self.settings.get("previous_mb")
         self.undo_button.setEnabled(not problem and bool(previous) and previous != (pending or m.vram_mib))
         self.undo_button.setToolTip(f"Write back {split_label(previous)}" if previous else "Nothing to undo yet")
+        self.refresh_guard()
+        self.refresh_sessions(force=True)
         self.on_pick()
 
     def ttm_tip(self) -> str:
@@ -551,15 +646,20 @@ class MainWindow(QMainWindow):
             + "\nIt takes effect after you restart the board.\n\nYou will be asked for your password.")
         if answer != QMessageBox.StandardButton.Yes:
             return
+        self.write_swap(setup, "Swap layout")
+
+    def write_swap(self, setup: swap.Setup, title: str) -> bool:
+        """Writes the layout for the next boot through the helper. True when it is written."""
         result = self.swapper(swap.arguments(setup))
         if not result.ok:
-            QMessageBox.warning(self, window_title("Swap layout"), result.error or "The write failed.")
+            QMessageBox.warning(self, window_title(title), result.error or "The write failed.")
             self.on_swap_pick()
-            return
+            return False
         self.settings.set("pending_swap", setup.layout)
         self.settings.set("pending_swap_boot_id", self.memory.boot_id)
         self.settings.set("swap_outcome", "")
         self.refresh()
+        return True
 
     def delete_swap_file(self) -> None:
         path = self.var_root / swap.SWAP_FILE
@@ -573,6 +673,131 @@ class MainWindow(QMainWindow):
         result = self.swapper(["--delete-file"])
         if not result.ok:
             QMessageBox.warning(self, window_title("Delete swap file"), result.error or "The file was not deleted.")
+        self.refresh()
+
+    # --- The memory guard and the sessions ---------------------------------------------------------------------
+
+    def refresh_guard(self) -> None:
+        """The guard box: the written guard in the combo, and a note when the sessions service is missing."""
+        written = guard.read_guard(self.etc_root)
+        self.guard_combo.blockSignals(True)
+        self.guard_combo.setCurrentIndex(self.guard_combo.findData(written))
+        self.guard_combo.blockSignals(False)
+        missing = written == guard.SUITE and not service.installed(self.config_dir)
+        self.guard_note.setText("The service that records the sessions is not set up. Apply the guard again."
+                                if missing else "")
+        self.guard_note.setVisible(bool(self.guard_note.text()))
+        self.on_guard_pick()
+
+    def on_guard_pick(self) -> None:
+        picked = self.guard_combo.currentData()
+        written = guard.read_guard(self.etc_root)
+        self.guard_button.setEnabled(picked != written or (picked == guard.SUITE
+                                                           and not service.installed(self.config_dir)))
+
+    def apply_guard(self, key: str | None = None, ask: bool = True) -> bool:
+        """Writes the guard (the combo's, or *key*), reloads the user manager and turns the sessions service on or
+        off with it. True when it is written."""
+        key = key or self.guard_combo.currentData()
+        if ask:
+            if key == guard.SUITE:
+                facts = [f"systemd-oomd ends the program that uses the most memory when memory pressure stays above "
+                         f"{guard.PRESSURE_PERCENT}% for {guard.DURATION_S} s.",
+                         f"It does the same when the swap is {guard.SWAP_PERCENT}% full.",
+                         "A service records the sessions."]
+            else:
+                facts = ["It removes the app's own guard files from /etc.", "systemd-oomd then works as Bazzite sets it.",
+                         "The service that records the sessions stops. The recorded sessions stay."]
+            answer = QMessageBox.question(
+                self, window_title("Memory guard"),
+                f"Write the memory guard \"{guard.GUARDS[key]}\"?\n\n" + "\n".join(facts)
+                + "\nIt takes effect at once, without a restart.\n\nYou will be asked for your password.")
+            if answer != QMessageBox.StandardButton.Yes:
+                return False
+        result = self.guarder(["--guard", key])
+        if not result.ok:
+            QMessageBox.warning(self, window_title("Memory guard"), result.error or "The write failed.")
+            self.refresh_guard()
+            return False
+        self.user_commands(["systemctl", "--user", "daemon-reload"])    # the session's slices to systemd-oomd again
+        error = ""
+        if key == guard.SUITE:
+            error = service.enable(self.user_commands, self.config_dir, self.python, self.app_root)
+        else:
+            service.disable(self.user_commands, self.config_dir)
+        if error:
+            QMessageBox.warning(self, window_title("Memory guard"), error)
+        self.refresh_guard()
+        self.refresh_sessions(force=True)
+        self.on_pick()                          # the profiles: the Smooth one may have nothing left to write
+        return True
+
+    def refresh_sessions(self, force: bool = False) -> None:
+        """The sessions table, newest first, and the proposal; read again only when the file changed."""
+        try:
+            changed = self.sessions_file.stat().st_mtime
+        except OSError:
+            changed = 0.0
+        if not force and changed == self.sessions_seen:
+            return
+        self.sessions_seen = changed
+        sessions = watch.read_sessions(self.sessions_file)
+        shown = sessions[::-1][:SESSION_ROWS]
+        table = self.sessions_table
+        table.setRowCount(len(shown))
+        for row, s in enumerate(shown):
+            cells = (s.program, s.ended, system.mib_text(s.ram_mib), system.mib_text(s.gtt_mib),
+                     system.mib_text(s.swap_mib), f"{s.pressure:.0f}%")
+            tip = (f"{time.strftime('%d-%m-%Y %H:%M', time.localtime(s.start))} to "
+                   f"{time.strftime('%H:%M', time.localtime(s.end))}. The program itself took up to "
+                   f"{system.mib_text(s.own_mib)}.")
+            for column, text in enumerate(cells):
+                item = QTableWidgetItem(text)
+                item.setToolTip(tip)
+                table.setItem(row, column, item)
+        table.setVisible(bool(shown))
+        if shown:
+            table.setFixedHeight(table.horizontalHeader().sizeHint().height() + len(shown) * table.rowHeight(0) + 4)
+        nxt = None if self.next_boot.error else self.next_boot.pages
+        self.proposal = watch.propose(sessions, self.swap_setup, self.memory.ram_mib or 0, nxt)
+        if not sessions and guard.read_guard(self.etc_root) != guard.SUITE:
+            self.proposal_note.setText("Sessions are recorded while the suite's guard is on.")
+        else:
+            self.proposal_note.setText(escape(self.proposal.text))
+        self.proposal_button.setVisible(bool(self.proposal.zram_size or self.proposal.pages is not None))
+
+    def use_proposal(self) -> None:
+        """Writes what the sessions propose: the zram size and the GTT limit, for the next boot."""
+        p = self.proposal
+        facts = []
+        setup = None
+        if p.zram_size:
+            written = self.swap_setup
+            names = self.zram_compressors()
+            compressor = written.compressor if written.layout == swap.ZRAM else ("zstd" if "zstd" in names else names[0])
+            swappiness = written.swappiness if written.layout == swap.ZRAM and written.swappiness is not None \
+                else swap.SWAPPINESS[swap.ZRAM]
+            setup = swap.Setup(swap.ZRAM, p.zram_size, compressor, swappiness=swappiness)
+            label = next(lbl for lbl, size, _f in swap.ZRAM_SIZES if size == p.zram_size)
+            facts.append(f"zram gets the size {label[0].lower() + label[1:]}, with {compressor}.")
+        if p.pages is not None:
+            facts.append(f"The {ttm_label(p.pages)} goes to the next boot's kernel arguments.")
+        if not facts:
+            return
+        answer = QMessageBox.question(
+            self, window_title("Use proposal"),
+            "Write what the sessions propose?\n\n" + "\n".join(facts)
+            + "\nIt takes effect after you restart the board.\n\nYou will be asked for your password.")
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        if setup is not None and not self.write_swap(setup, "Use proposal"):
+            return
+        if p.pages is not None and not self.apply_ttm(p.pages, ask=False):
+            return
+        QMessageBox.information(
+            self, window_title("Use proposal"),
+            "Done.\n\nRestart the board to use it. The app does not restart the board by itself. Use the menu, or "
+            "run systemctl reboot in a terminal.")
         self.refresh()
 
     # --- Actions ----------------------------------------------------------------------------------------------
@@ -697,26 +922,35 @@ class MainWindow(QMainWindow):
     def apply_profile(self, key: str) -> None:
         """Writes a profile's split and limit where they differ from the board, after one question; one password
         prompt for each (CMOS through pkexec, the kernel arguments through rpm-ostree)."""
-        name, mb, pages = PROFILES[key]
+        name, mb, pages, setup, wanted = self.profile_values(key)
         steps = self.profile_steps(key)
         if not steps:
             return
-        two = len(steps) > 1
+        guard_step = wanted is not None and wanted != guard.read_guard(self.etc_root)
+        later = len(steps) - guard_step                 # the steps that wait for a restart
+        listed = steps[0] if len(steps) == 1 else f"{', '.join(steps[:-1])} and {steps[-1]}"
+        effect = {0: "", 1: "It takes effect after you restart the board.\nThe app leaves the restart to you.\n",
+                  2: "Both take effect after you restart the board.\nThe app leaves the restart to you.\n"}.get(
+            later, "They take effect after you restart the board.\nThe app leaves the restart to you.\n")
+        if guard_step:
+            effect += "The guard takes effect at once.\n"
+        many = len(steps) > 1
         answer = QMessageBox.question(
             self, window_title(name),
-            f"Write {' and '.join(steps)}?\n\n{'Both take' if two else 'It takes'} effect after you restart the "
-            "board.\nThe app leaves the restart to you.\n\nYou will be asked for your password"
-            + (" once for each." if two else "."))
+            f"Write {listed}?\n\n{effect}\nYou will be asked for your password" + (" once for each." if many else "."))
         if answer != QMessageBox.StandardButton.Yes:
             return
         if not self.block_problem and mb != self.written_split() and not self.write_split(mb, name, ask=False):
             return
         if not self.next_boot.error and pages != self.next_boot.pages and not self.apply_ttm(pages, ask=False):
             return
-        QMessageBox.information(
-            self, window_title(name),
-            f"Done. The app wrote {' and '.join(steps)}.\n\nRestart the board to use it. The app does not restart "
-            "the board by itself. Use the menu, or run systemctl reboot in a terminal.")
+        if setup is not None and setup != self.swap_setup and not self.write_swap(setup, name):
+            return
+        if guard_step and not self.apply_guard(wanted, ask=False):
+            return
+        done = ("Restart the board to use it. The app does not restart the board by itself. Use the menu, or run "
+                "systemctl reboot in a terminal." if later else "It is active now.")
+        QMessageBox.information(self, window_title(name), f"Done. The app wrote {listed}.\n\n{done}")
 
     def save_backup(self, data: dict) -> Path:
         folder = backups_dir()

@@ -179,6 +179,53 @@ another label. A swap file that is in `/proc/swaps` is never resized or deleted.
 `read_setup()` reads the written layout back from the files, without root. The window compares it with the layout
 picked, and Apply is off while they are equal.
 
+## The memory guard
+
+`vram_manager/guard.py` holds the two guards and is the root helper that writes one, run through pkexec like
+`swap.py`. Bazzite's own guard comes from the image:
+
+- `/usr/lib/systemd/oomd.conf.d/10-oomd-defaults.conf` sets `DefaultMemoryPressureDurationSec=20s`.
+- The `slice.d` drop-ins of the system and the user manager set `ManagedOOMMemoryPressure=kill` at 80%.
+- No unit has `ManagedOOMSwap`, so systemd-oomd does not watch the swap.
+
+The suite's guard is four files of the app's own:
+
+| File | What it does |
+|---|---|
+| `/etc/systemd/oomd.conf.d/90-bc250-memory-manager.conf` | `SwapUsedLimit=90%`, `DefaultMemoryPressureLimit=60%`, `DefaultMemoryPressureDurationSec=10s` |
+| `/etc/systemd/system/-.slice.d/90-bc250-memory-manager.conf` | `ManagedOOMSwap=kill` for the whole board |
+| `/etc/systemd/system/user@.service.d/90-bc250-memory-manager.conf` | `ManagedOOMMemoryPressure=kill` at 60% for the session |
+| `/etc/systemd/user/slice.d/90-bc250-memory-manager.conf` | The same for the session's slices, in place of the image's 80% |
+
+The helper reloads systemd and restarts systemd-oomd. The window then reloads the user manager, which hands its
+slices' settings to systemd-oomd again. `oomctl` shows the limits systemd-oomd uses. `read_guard()` reads the written
+guard back without root. Only the four files exactly as the app writes them count as the suite's guard.
+
+## The sessions
+
+`vram_manager/watch.py` is the watcher, and `vram_manager/service.py` writes its user unit,
+`bc250-memory-watch.service`. The window writes, enables and starts it with the suite's guard, and removes it with
+Bazzite's own. The watcher needs no Qt. It runs from the app folder with the suite's Python.
+
+Every two seconds the watcher reads these:
+
+- `/proc/meminfo` for the RAM and the swap in use
+- `mem_info_gtt_used` for the RAM the GPU borrows
+- `full avg10` in `/proc/pressure/memory`
+- each unit under the user manager's `app.slice`, with `memory.current`, `memory.swap.current` and `memory.events`
+
+The watcher finds `app.slice` from its own control group in `/proc/self/cgroup`. A unit's name for people is a Steam
+shortcut's `AppName` by its `appid`, a Steam game's `appmanifest_<id>.acf`, or the `Name` of the app's desktop file.
+
+When a unit is gone, the watcher looks in the journal since the session started. systemd-oomd logs `Marked … for
+killing due to memory used … and swap used …` for the swap and `Memory pressure for … is …` for the pressure. The
+kernel logs `oom-kill:… task_memcg=…` with the unit's control group. A unit's `oom_kill` count in `memory.events` also
+tells a kernel kill. The sessions go to `sessions.jsonl`, and the open ones to `sessions-open.json`. An open session
+from another boot ID is written as "Board restarted while it ran".
+
+`propose()` looks at the newest ten sessions, once there are three. A session that ran out of swap proposes the next
+zram size. A kernel kill while the GPU borrowed half the RAM or more proposes `gtt_pages()`, the RAM less 2 GiB.
+
 ## The GTT limit on the kernel command line
 
 `vram_manager/kargs.py` reads and changes `ttm.pages_limit` in the next boot's kernel arguments with rpm-ostree.
