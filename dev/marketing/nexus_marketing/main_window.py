@@ -44,6 +44,9 @@ from bc250_core.widgets import same_width
 from . import APP_ID, APP_NAME, CHECKOUT, INFO, LOGO_PATH
 from . import article
 
+# The repository of this suite's website: Publish takes no other (owner, 26-11-2026: the PS5 article went to the
+# BC-250 website, as both twins shared one settings file)
+WEBSITE_REPO = "RobertoTorino/bc250-suite"
 WIKI = "https://robertotorino.github.io/bc250-bazzite/development/dashboard/#marketing"
 PREVIEW = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / APP_ID / "preview"
 SHOTS_TOOL = CHECKOUT / "tools" / "portal_shots.py"
@@ -72,6 +75,20 @@ def stills_current(folder: Path = article.SHOTS) -> bool | None:
     return stamp == module.fingerprint()
 
 
+def origin(folder: Path | None) -> str:
+    """The GitHub repository the checkout in *folder* pushes to, as owner/name; empty when it has none."""
+    if folder is None:
+        return ""
+    config = configparser.ConfigParser()
+    try:
+        config.read(folder / ".git" / "config", encoding="utf-8")
+        url = config.get('remote "origin"', "url")
+    except (OSError, configparser.Error):
+        return ""
+    found = re.search(r"github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$", url)
+    return f"{found.group(1)}/{found.group(2)}" if found else ""
+
+
 def website_url(folder: Path | None) -> str | None:
     """The address of the website the folder publishes to: its CNAME (a domain of its own) when it has one, else
     GitHub Pages' address of its origin on GitHub, https://<owner>.github.io/<repository>/. None without either."""
@@ -83,14 +100,8 @@ def website_url(folder: Path | None) -> str | None:
         domain = ""
     if domain:
         return f"https://{domain}/"
-    config = configparser.ConfigParser()
-    try:
-        config.read(folder / ".git" / "config", encoding="utf-8")
-        origin = config.get('remote "origin"', "url")
-    except (OSError, configparser.Error):
-        return None
-    found = re.search(r"github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$", origin)
-    return f"https://{found.group(1).lower()}.github.io/{found.group(2)}/" if found else None
+    owner, _, name = origin(folder).partition("/")
+    return f"https://{owner.lower()}.github.io/{name}/" if name else None
 
 
 class GlobeButton(QToolButton):
@@ -253,10 +264,14 @@ class MainWindow(QMainWindow):
         self._busy(self.process is not None)
 
     # --- the website -------------------------------------------------------------------------------------------
+    def key(self, name: str) -> str:
+        """A setting of this suite's twin: both twins share the app's ID, so its settings file."""
+        return f"{suite_slug()}/{name}"
+
     def website(self) -> Path | None:
-        """The website's folder, a git checkout; None when none is chosen or it is no checkout anymore."""
-        chosen = self.settings.value("website_folder", "")
-        return Path(chosen) if chosen and (Path(chosen) / ".git").exists() else None
+        """The website's folder, a checkout of WEBSITE_REPO; None when none is chosen or it is no such checkout."""
+        chosen = self.settings.value(self.key("website_folder"), "")
+        return Path(chosen) if chosen and is_website(Path(chosen)) else None
 
     def _show_website(self) -> None:
         folder = self.website()
@@ -292,7 +307,10 @@ class MainWindow(QMainWindow):
         if not (Path(chosen) / ".git").exists():
             self.say("That folder is no git checkout. Choose the folder of the website's repository.", ok=False)
             return False
-        self.settings.setValue("website_folder", chosen)
+        if not is_website(Path(chosen)):
+            self.say(f"That folder is no checkout of {WEBSITE_REPO}, this suite's website. Choose that one.", ok=False)
+            return False
+        self.settings.setValue(self.key("website_folder"), chosen)
         self.refresh()
         return True
 
@@ -334,11 +352,11 @@ class MainWindow(QMainWindow):
 
     def on_export(self) -> None:
         settings = self.settings
-        start = settings.value("export_folder", str(Path.home()))
+        start = settings.value(self.key("export_folder"), str(Path.home()))
         chosen = QFileDialog.getExistingDirectory(self, "Export the article to", start)
         if not chosen:
             return
-        settings.setValue("export_folder", chosen)
+        settings.setValue(self.key("export_folder"), chosen)
         folder = export_folder(Path(chosen))
         article.write(article.build(), folder)
         if folder == Path(chosen):                      # a git checkout: Publish's count follows
@@ -416,6 +434,11 @@ class MainWindow(QMainWindow):
             self.process.kill()
             self.process.waitForFinished(2000)
         super().closeEvent(event)
+
+
+def is_website(folder: Path) -> bool:
+    """Whether *folder* is a checkout of this suite's website, WEBSITE_REPO."""
+    return (folder / ".git").exists() and origin(folder).lower() == WEBSITE_REPO.lower()
 
 
 def suite_slug() -> str:

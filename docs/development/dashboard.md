@@ -619,7 +619,8 @@ The pills:
 - **Text check** runs `tools/text_check.py` on `copy.md`. Its output shows below the table.
 - **Publish** sends the article to the website. Its caption says how many files differ from the website's folder,
   or **Up to date**. The first click asks for the website's folder, the checkout of its repository. The app
-  remembers it. Then Publish asks first. It writes the article into the folder and removes the pictures it no
+  takes only a checkout of `RobertoTorino/bc250-suite`, this suite's website, and remembers it.
+  Then Publish asks first. It writes the article into the folder and removes the pictures it no
   longer has. It commits only the article's files as "see the changelog" and pushes to GitHub. The website shows
   the new article a minute or two later. Other files in the folder, such as `.nojekyll`, stay as they are.
   **Other folder…** in the question takes another folder. The pill is off while the website is up to date.

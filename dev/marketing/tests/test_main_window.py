@@ -6,7 +6,14 @@ from __future__ import annotations
 import datetime
 
 from nexus_marketing import article
-from nexus_marketing.main_window import MainWindow, export_folder
+from nexus_marketing.main_window import WEBSITE_REPO, MainWindow, export_folder
+
+
+def checkout(folder, repo=WEBSITE_REPO):
+    """A folder that looks like a git checkout of *repo* on GitHub."""
+    (folder / ".git").mkdir(parents=True)
+    (folder / ".git" / "config").write_text(f'[remote "origin"]\n\turl = https://github.com/{repo}.git\n')
+    return folder
 
 
 def test_a_row_for_every_app():
@@ -44,9 +51,8 @@ def test_export_writes_into_a_git_checkout_itself(tmp_path):
 def test_publish_says_when_the_website_is_behind(tmp_path):
     window = MainWindow(stills=lambda: True)
     assert window.publish_pill.caption.text() == "Choose the folder"
-    site = tmp_path / "site"
-    (site / ".git").mkdir(parents=True)
-    window.settings.setValue("website_folder", str(site))
+    site = checkout(tmp_path / "site")
+    window.settings.setValue(window.key("website_folder"), str(site))
     window.refresh()
     assert window.publish_pill.caption.text().endswith("changes") and window.publish_pill.isEnabled()
     article.publish(article.build(), site)
@@ -71,12 +77,31 @@ def test_website_url_from_the_remote_or_the_cname(tmp_path):
 def test_the_globe_is_on_with_a_website(tmp_path):
     window = MainWindow(stills=lambda: True)
     assert not window.globe_button.isEnabled()
-    site = tmp_path / "site"
-    (site / ".git").mkdir(parents=True)
-    (site / ".git" / "config").write_text('[remote "origin"]\n\turl = https://github.com/RobertoTorino/bc250-suite.git\n')
-    window.settings.setValue("website_folder", str(site))
+    site = checkout(tmp_path / "site")
+    window.settings.setValue(window.key("website_folder"), str(site))
     window.refresh()
-    assert window.globe_button.isEnabled() and "robertotorino.github.io/bc250-suite/" in window.globe_button.toolTip()
+    assert window.globe_button.isEnabled()
+    assert "robertotorino.github.io/bc250-suite/" in window.globe_button.toolTip()
+    window.close()
+
+
+def test_only_this_suites_website_and_its_own_settings(tmp_path, monkeypatch):
+    """The twin publishes only to its own suite's website, and keeps its folders under its own name in the settings
+    file both twins share (owner, 26-11-2026: the PS5 article was pushed to the BC-250 website)."""
+    from nexus_marketing import main_window
+    assert WEBSITE_REPO == "RobertoTorino/bc250-suite"
+    window = MainWindow(stills=lambda: True)
+    assert window.key("website_folder") == f"{main_window.suite_slug()}/website_folder"
+    other = checkout(tmp_path / "other", "RobertoTorino/console-suite")
+    window.settings.setValue(window.key("website_folder"), str(other))
+    window.settings.setValue("website_folder", str(other))          # the shared key of before is not read
+    window.refresh()
+    assert window.website() is None and window.publish_pill.caption.text() == "Choose the folder"
+    monkeypatch.setattr(main_window.QFileDialog, "getExistingDirectory", lambda *args: str(other))
+    assert not window.choose_website()
+    own = checkout(tmp_path / "own")
+    monkeypatch.setattr(main_window.QFileDialog, "getExistingDirectory", lambda *args: str(own))
+    assert window.choose_website() and window.website() == own
     window.close()
 
 

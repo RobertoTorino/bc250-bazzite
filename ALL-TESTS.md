@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3578 test functions (4142 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3579 test functions (4143 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -46,14 +46,14 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
 | [dev/garbage](#devgarbage) | 1 | 8 |  |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
-| [dev/marketing](#devmarketing) | 2 | 28 |  |
+| [dev/marketing](#devmarketing) | 2 | 29 |  |
 | [dev/nrt](#devnrt) | 4 | 135 | 24.8 s |
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [dev/studio](#devstudio) | 6 | 65 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3578** | **182 s** |
+| **All** | | **3579** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -3166,7 +3166,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/marketing
 
-28 tests in 2 files.
+29 tests in 2 files.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3196,6 +3196,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_publish_says_when_the_website_is_behind` |  |  | Publish says when the website is behind. |
 | `test_main_window.py` | `test_website_url_from_the_remote_or_the_cname` |  |  | Website url from the remote or the cname. |
 | `test_main_window.py` | `test_the_globe_is_on_with_a_website` |  |  | The globe is on with a website. |
+| `test_main_window.py` | `test_only_this_suites_website_and_its_own_settings` |  |  | The twin publishes only to its own suite's website, and keeps its folders under its own name in the settings file both twins share (owner, 26-11-2026: the PS5 article was pushed to the BC-250 website). |
 | `test_main_window.py` | `test_each_suite_has_its_own_preview_file` |  |  | Both suites' twins have the same app ID, so the preview is named after the suite (owner, 25-11-2026). |
 | `test_main_window.py` | `test_the_pencil_opens_copy_md` |  |  | The pencil beside the line that names copy.md opens the file in the default editor (owner, 26-11-2026). |
 
