@@ -49,8 +49,8 @@ launch = [["Open", "~/.local/bin/bc250-board-test"]]
 [apps.gpu]
 name = "BC-250 GPU Manager"
 summary = "Manage the cyan-skillfish GPU governor, with tuning, safe points, profiles and backups."
-tag = "bc250-gpu-v0.8.0"
-sha256 = "9443755244130307b71d7fdb886937a244de7c69b47ed94953a612b5ccaa8c4b"
+tag = "bc250-gpu-v0.8.1"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -76,8 +76,8 @@ launch = [["Open", "~/.local/bin/bc250-governor-manager"]]
 [apps.upscaler]
 name = "BC-250 Upscaler Manager"
 summary = "Deploy HelixSR into games. HelixSR is a drop-in upscaler for FSR 3.1 with DLSS-style networks."
-tag = "bc250-upscaler-v5.9.1"
-sha256 = "edb5a11dd4bacb24edbbfe30d7906f15f7b61a161388fb794a7160e7deabe2dd"
+tag = "bc250-upscaler-v5.9.2"
+sha256 = ""
 required = false
 changes_board = false
 category = "graphics"
@@ -89,8 +89,8 @@ launch = [["Open", "~/.local/bin/bc250-upscaler"]]
 [apps.compute]
 name = "BC-250 CU Unlock"
 summary = "Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock."
-tag = "bc250-compute-v2.0.1"
-sha256 = "0b97479b3beffe75af0464b66923af5cc35d89d0f8735c8a83d3e89db263edef"
+tag = "bc250-compute-v2.0.2"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -114,8 +114,8 @@ launch = [["Open", "~/.local/bin/bc250-bisect-gui"]]
 [apps.cores]
 name = "BC-250 Core Unlock"
 summary = "Tell bad CPU cores apart from an unstable core unlock, before you persist the 8C/16T unlock."
-tag = "bc250-cores-v2.0.0"
-sha256 = "eb338354ea2d00f151a0d9caa51dabaf727d1ec9e9a1a8d3a0367adbf03f7345"
+tag = "bc250-cores-v2.0.1"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """

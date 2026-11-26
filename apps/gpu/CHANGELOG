@@ -1,3 +1,7 @@
+Changelog: 26-11-2026 20:47:21
+
+Release 0.8.1.
+
 Changelog: 26-11-2026 20:33:42
 
 Fixed. The mouse wheel changes a list, a number field or a slider only after a click on it. Before, a wheel
