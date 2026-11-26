@@ -1,3 +1,7 @@
+Changelog: 26-11-2026 08:47:01
+
+Release 28.3.0.
+
 Changelog: 26-11-2026 06:54:24
 
 Added. Sys info says when the GPU's VRAM comes out of the board's own memory. RAM and VRAM then add up to less than the board has, because the firmware keeps a part. Only root can read the exact total, so Sys info says that too.
