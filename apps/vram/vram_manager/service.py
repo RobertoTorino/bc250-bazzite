@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The user service that records the sessions (watch.py) with the desktop session: bc250-memory-watch.service in
-~/.config/systemd/user. The app writes, enables and starts it with the suite's memory guard, and stops and removes it
-with Bazzite's own. install.sh restarts it with a new version and removes it with the app, since it starts the app's
+~/.config/systemd/user. The app writes, enables and starts it when recording is turned on, and stops and removes it
+when it is turned off (owner, 26-11-2026: recording on its own, not with the memory guard). install.sh restarts it with a new version and removes it with the app, since it starts the app's
 own files. As HDMI-CEC's watcher service does."""
 
 from __future__ import annotations

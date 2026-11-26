@@ -114,7 +114,8 @@ INFO = AppInfo(app_id=APP_ID, name=APP_NAME, version=__version__, logo=LOGO_PATH
 
 `__main__.py` starts every app the same way, in three steps:
 
-1. `create_app()` sets the names, style, fonts and icon.
+1. `create_app()` sets the names, style, fonts and icon. It also makes the mouse wheel change a list, a number
+   field or a slider only after a click on it.
 2. `instance.already_running()` brings an open window to the front instead of opening a second one.
 3. `exec_app()` runs the event loop and handles SIGTERM.
 

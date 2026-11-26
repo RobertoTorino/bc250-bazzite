@@ -4,7 +4,7 @@ import json
 import pytest
 from PyQt6.QtWidgets import QMessageBox
 
-from vram_manager import cmos, guard, main_window, privileged, service, swap, watch
+from vram_manager import cmos, guard, learn, main_window, privileged, resume, service, swap, watch
 from vram_manager.main_window import MainWindow
 from conftest import FakeOstree
 from dumps import BOARD_1, FakePort, bank
@@ -108,7 +108,7 @@ def test_shows_the_board(qapp, sys_root, proc_root):
     w = make(qapp, sys_root, proc_root, Board())
     assert w.vram_box.value.text() == "6.0 GiB" and w.gtt_box.value.text() == "9.4 GiB"
     assert w.swap_box.value.text() == "zram"
-    assert w.ttm_box.value.text() == "11.5 GiB" and w.ttm_box.caption.text() == "ttm.pages_limit"
+    assert w.ttm_box.value.text() == "11.5 GiB" and w.ttm_box.caption.text() == "GTT limit"
     assert w.gtt_box.caption.text() == "GTT: all the RAM"
     assert "above the RAM, so the GTT is all the RAM, 9.4 GiB" in w.ttm_box.toolTip()
     assert w.details.text() == "vm.swappiness 10"
@@ -242,7 +242,7 @@ def test_ttm_apply_reboot_and_default(qapp, sys_root, proc_root, answer):
     assert w.badge.text() == "6.0 GiB split"
     assert w.ttm_note.text() == ("The 16.0 GiB GTT limit from the last change is active. The GPU may borrow up to "
                                  "9.4 GiB of the RAM, all of it.")
-    assert w.ttm_box.value.text() == "16.0 GiB" and w.ttm_box.caption.text() == "ttm.pages_limit"
+    assert w.ttm_box.value.text() == "16.0 GiB" and w.ttm_box.caption.text() == "GTT limit"
 
     # Back to the kernel's default: the argument is removed.
     w.ttm_combo.setCurrentIndex(w.ttm_combo.findData(None))
@@ -457,33 +457,42 @@ def test_a_swap_layout_that_fails_says_why_and_stays_to_apply(qapp, sys_root, pr
     w.close()
 
 
-def test_the_guard_takes_effect_at_once_with_the_sessions_service(qapp, sys_root, proc_root, answer):
-    """The suite's guard (owner, 26-11-2026): the four files, the user manager reloaded, the sessions service on;
-    Bazzite's own takes both away again. Apply is off for the guard that is written."""
+def test_the_guard_takes_effect_at_once(qapp, sys_root, proc_root, answer):
+    """The suite's guard (owner, 26-11-2026): the four files and the user manager reloaded; Bazzite's own takes them
+    away again. Recording goes on and off on its own. Apply is off for the guard that is written."""
     swapper = Swapper(sys_root.parent)
     guarder = Guarder(swapper.etc)
     w = make(qapp, sys_root, proc_root, Board(), swapper=swapper, guarder=guarder)
     assert w.guard_combo.currentData() == guard.BAZZITE and not w.guard_button.isEnabled()
-    assert w.proposal_note.text() == "Sessions are recorded while the suite's guard is on."
     w.guard_combo.setCurrentIndex(w.guard_combo.findData(guard.SUITE))
     assert w.guard_button.isEnabled()
     w.apply_guard()
     assert answer["questions"][-1] == (
         "Write the memory guard \"The suite's guard: memory pressure 60% for 10 s, or swap 90% full\"?\n\n"
         "systemd-oomd ends the program that uses the most memory when memory pressure stays above 60% for 10 s.\n"
-        "It does the same when the swap is 90% full.\nA service records the sessions.\n"
+        "It does the same when the swap is 90% full.\n"
         "It takes effect at once, without a restart.\n\nYou will be asked for your password.")
     assert guarder.calls == [["--guard", "suite"]] and guard.read_guard(swapper.etc) == guard.SUITE
-    unit = service.unit_path(sys_root.parent / "config")
-    assert f"WorkingDirectory={sys_root.parent / 'app'}" in unit.read_text()
-    assert "ExecStart=/venv/bin/python -m vram_manager.watch" in unit.read_text()
-    assert guarder.systemctl[0] == ["systemctl", "--user", "daemon-reload"]
-    assert ["systemctl", "--user", "restart", service.UNIT] in guarder.systemctl
-    assert not w.guard_button.isEnabled() and w.guard_note.isHidden()
+    assert guarder.systemctl == [["systemctl", "--user", "daemon-reload"]]
+    assert not w.guard_button.isEnabled() and not w.recording()
     w.guard_combo.setCurrentIndex(w.guard_combo.findData(guard.BAZZITE))
     w.apply_guard()
-    assert guard.read_guard(swapper.etc) == guard.BAZZITE and not unit.exists()
-    assert ["systemctl", "--user", "disable", "--now", service.UNIT] in guarder.systemctl
+    assert guard.read_guard(swapper.etc) == guard.BAZZITE
+    w.close()
+
+
+def test_recording_on_and_off(qapp, sys_root, proc_root):
+    guarder = Guarder(Swapper(sys_root.parent).etc)
+    w = make(qapp, sys_root, proc_root, Board(), guarder=guarder)
+    assert w.record_box.value.text() == "Off" and w.record_pill.text() == "Turn on"
+    w.record_pill.click()
+    unit = service.unit_path(sys_root.parent / "config")
+    assert "ExecStart=/venv/bin/python -m vram_manager.watch" in unit.read_text()
+    assert f"WorkingDirectory={sys_root.parent / 'app'}" in unit.read_text()
+    assert ["systemctl", "--user", "restart", service.UNIT] in guarder.systemctl
+    assert w.record_box.value.text() == "On" and w.record_pill.text() == "Turn off"
+    w.record_pill.click()
+    assert not unit.exists() and ["systemctl", "--user", "disable", "--now", service.UNIT] in guarder.systemctl
     w.close()
 
 
@@ -512,24 +521,137 @@ def test_the_smooth_profile_writes_all_four(qapp, sys_root, proc_root, answer):
     w.close()
 
 
-def test_the_sessions_and_their_proposal(qapp, sys_root, proc_root, answer):
-    """Three sessions, one of them killed with the swap full: the newest first, and the proposal of a larger zram,
-    written for the next boot."""
-    swapper = Swapper(sys_root.parent)
-    path = sys_root.parent / "sessions.jsonl"
-    for n, ended in enumerate((watch.CLOSED, watch.CLOSED, watch.KILLED_SWAP)):
-        watch.write_session(watch.Session(f"u{n}", f"Game {n}", 1795000000 + n, "boot-1", 7000, 9100, 300,
-                                          4800 if n == 2 else 1000, 4823, 9650, 41.4, 0, 1795000100, ended), path)
-    w = make(qapp, sys_root, proc_root, Board(), swapper=swapper)
-    t = w.sessions_table
-    assert t.rowCount() == 3 and t.item(0, 0).text() == "Game 2" and t.item(0, 1).text() == watch.KILLED_SWAP
-    assert [t.item(0, c).text() for c in range(2, 6)] == ["8.9 GiB", "300 MiB", "4.7 GiB", "41%"]
-    assert w.proposal_note.text() == "Proposal from 3 sessions: zram the RAM."
-    assert not w.proposal_button.isHidden()
-    w.use_proposal()
-    assert answer["questions"][-1] == ("Write what the sessions propose?\n\nzram gets the size the RAM, with zstd.\n"
-                                       "It takes effect after you restart the board.\n\nYou will be asked for your "
-                                       "password.")
-    assert swap.read_setup(swapper.etc, swapper.var) == swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=180)
-    assert w.proposal_note.text() == "Proposal from 3 sessions: zram one and a half times the RAM."
+class Clock:
+    def __init__(self):
+        self.now = 1000.0
+
+    def __call__(self):
+        return self.now
+
+
+def learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, boot):
+    (proc_root / "sys/kernel/random/boot_id").write_text(boot + "\n")
+    w = make(qapp, sys_root, proc_root, Board(), ostree, swapper)
+    w.close()
+    guarder = Guarder(swapper.etc)
+    return MainWindow(sys_root, proc_root, runner=Board(), commands=ostree, swapper=swapper, etc_root=swapper.etc,
+                      var_root=swapper.var, guarder=guarder, config_dir=sys_root.parent / "config",
+                      sessions_file=sys_root.parent / "sessions.jsonl", python="/venv/bin/python",
+                      app_root=sys_root.parent / "app", user_commands=guarder.user,
+                      learn_file=sys_root.parent / "learn.json", restarter=lambda: restarts.append(1) or True,
+                      clock=clock)
+
+
+def play(sys_root, boot, start, *games):
+    for n, (program, ended) in enumerate(games):
+        watch.write_session(watch.Session(f"u{n}", program, start + n, boot, 3000, 8000, 2000,
+                                          4800 if ended == watch.KILLED_SWAP else 1000, 4823, 9650,
+                                          38.0 if ended == watch.KILLED_SWAP else 5.0, 0, start + n + 60, ended,
+                                          vram_mib=5000, cpu=60.0), sys_root.parent / "sessions.jsonl")
+
+
+def states(w):
+    return [row.state for row in w.step_rows]
+
+
+def test_the_learning_steps_from_the_start_point_to_the_learned_profile(qapp, sys_root, proc_root, answer):
+    """The board has a 16 GiB GTT limit for the next boot: the start point writes the Games profile's 11.5 GiB and
+    recording on, then the restart; round 1 with a full swap points to zram the RAM, written with a restart; round 2
+    is better and kept, and nothing more points anywhere."""
+    ostree = FakeOstree("BOOT_IMAGE=x rw ttm.pages_limit=4194304")
+    swapper, clock, restarts = Swapper(sys_root.parent), Clock(), []
+    w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-1")
+    assert states(w) == ["now", "later", "later", "later", "later"]
+    assert (w.step_pill.text(), w.step_pill.caption.text()) == ("Write", "Games profile")
+    assert w.start_over_pill.isHidden() and w.alt_pill.isHidden() and w.record_box.value.text() == "Off"
+    w.step_pill.click()
+    assert answer["questions"][-1].startswith("Write the start point?\n\nIt writes the 11.5 GiB GTT limit to the "
+                                              "next boot's kernel arguments and recording on.")
+    assert "ttm.pages_limit=3014656" in ostree.arguments and w.recording()
+    assert states(w)[:2] == ["done", "now"] and w.step_pill.text() == "Restart" and resume.armed()
+    w.step_pill.click()                                     # the countdown
+    assert w.countdown == main_window.RESTART_SECS and w.step_pill.text() == "Restart now"
+    assert w.alt_pill.text() == "Cancel"
+    w.alt_pill.click()
+    assert w.countdown == 0 and w.step_pill.text() == "Restart" and restarts == []
+    w.step_pill.click()
+    w.step_pill.click()                                     # Restart now
+    assert restarts == [1]
+    w.close()
+
+    # After the restart: round 1. The window opened by the autostart entry removes it.
+    clock.now = 2000.0
+    ostree.arguments = "BOOT_IMAGE=x rw ttm.pages_limit=3014656"
+    (proc_root / "cmdline").write_text("BOOT_IMAGE=x rw ttm.pages_limit=3014656\n")
+    w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-2")
+    assert not resume.armed() and states(w)[:3] == ["done", "done", "running"]
+    assert "0 of 3 sessions recorded" in w.step_rows[2].line.text()
+    play(sys_root, "boot-2", 2100, ("LUMINES", watch.KILLED_SWAP), ("Hades", watch.CLOSED), ("Tetris", watch.CLOSED))
+    w.refresh_sessions(force=True)
+    assert states(w) == ["done", "done", "done", "now", "later"]
+    assert w.step_rows[3].line.text() == "The swap ran full in LUMINES. Try zram the RAM."
+    assert (w.step_pill.text(), w.step_pill.caption.text()) == ("Write", "and restart")
+    clock.now = 2500.0
+    w.step_pill.click()
+    assert answer["questions"][-1].startswith("Try zram the RAM?\n\nThe swap ran full in LUMINES.\nThe board "
+                                              "restarts 15 s after the write.")
+    assert swap.read_setup(swapper.etc, swapper.var) == swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=10)
+    assert w.countdown and w.round_box.value.text() == "2" and resume.armed()
+    w.restart_now()
+    w.close()
+
+    # Round 2: the same games, none short of memory. Better: Keep on the step, Undo beside it.
+    clock.now = 3000.0
+    w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-3")
+    play(sys_root, "boot-3", 3100, ("LUMINES", watch.CLOSED), ("Hades", watch.CLOSED))
+    w.refresh_sessions(force=True)
+    assert states(w)[4] == "running" and "Not played yet in this round: Tetris." in w.step_rows[4].line.text()
+    play(sys_root, "boot-3", 3200, ("Tetris", watch.CLOSED))
+    w.refresh_sessions(force=True)
+    assert states(w)[4] == "now" and w.step_rows[4].line.text() == "Better. Keep the change, or undo it."
+    assert (w.step_pill.text(), w.alt_pill.text()) == ("Keep", "Undo")
+    w.step_pill.click()
+    assert w.finished_bar.text() == "Done. Your board runs the Learned profile." and not w.finished_bar.isHidden()
+    assert states(w) == ["done"] * 5 and w.round_box.caption.text() == "Rounds"
+    assert learn.read_state(sys_root.parent / "learn.json").rounds[1].verdict == learn.KEPT
+    w.close()
+
+
+def test_a_change_that_is_no_better_is_undone(qapp, sys_root, proc_root, answer):
+    ostree = FakeOstree()
+    swapper, clock, restarts = Swapper(sys_root.parent), Clock(), []
+    w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-1")
+    assert w.step_pill.text() == "Write"                    # recording is off
+    w.step_pill.click()
+    assert states(w)[:3] == ["done", "done", "running"] and not resume.armed()   # nothing waited for a restart
+    assert w.step_rows[1].line.text() == "Nothing waited for a restart."
+    play(sys_root, "boot-1", 1100, ("LUMINES", watch.KILLED_SWAP), ("Hades", watch.CLOSED), ("Tetris", watch.CLOSED))
+    w.refresh_sessions(force=True)
+    clock.now = 1500.0
+    w.step_pill.click()
+    w.restart_now()
+    w.close()
+    clock.now = 3000.0
+    w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-2")
+    play(sys_root, "boot-2", 3100, ("LUMINES", watch.KILLED_SWAP), ("Hades", watch.CLOSED), ("Tetris", watch.CLOSED))
+    w.refresh_sessions(force=True)
+    assert w.step_rows[4].line.text() == "No better. Undo the change, or keep it."
+    assert (w.step_pill.text(), w.alt_pill.text()) == ("Undo", "Keep")
+    w.step_pill.click()
+    assert answer["questions"][-1].startswith("Undo zram the RAM?")
+    assert swap.read_setup(swapper.etc, swapper.var) == swap.Setup()
+    assert states(w)[4] == "now" and w.countdown == main_window.RESTART_SECS
+    w.cancel_restart()
+    assert w.step_pill.text() == "Restart" and "Restart the board" in w.step_rows[4].line.text()
+    w.close()
+
+    # After the restart: zram was tried, so round 1's kernel kill points to the suite's guard, which takes effect at
+    # once. Start over deletes the rounds.
+    w = learner(qapp, sys_root, proc_root, ostree, swapper, clock, restarts, "boot-3")
+    assert w.finished_bar.isHidden() and states(w)[3:] == ["now", "done"]
+    assert w.step_rows[3].line.text() == "The kernel ended LUMINES. Try the suite's memory guard."
+    assert w.step_rows[4].line.text() == "The change was undone."
+    assert (w.step_pill.text(), w.step_pill.caption.text()) == ("Write", "Takes effect at once")
+    w.start_over_pill.click()
+    assert learn.read_state(sys_root.parent / "learn.json") is None and states(w)[0] == "now"
     w.close()

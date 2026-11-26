@@ -18,8 +18,10 @@
 #  * ~/.local/share/bc250-memory-manager/backups: the CMOS block before and after each change, and CMOS reads.
 #  * ~/.local/bin/bc250-memory-manager to start it from a terminal, plus an app menu entry and a Desktop icon.
 #  * ~/.config/systemd/user/bc250-memory-watch.service: the service that records the sessions, written by the app
-#    with the suite's memory guard. An update restarts it with the new version; --uninstall removes it, since it
+#    when recording is turned on. An update restarts it with the new version; --uninstall removes it, since it
 #    starts the app's own files. The guard's files in /etc stay, as the swap layout's do.
+#  * ~/.config/autostart/bc250-memory-manager-resume.desktop: opens the window after the next login while a
+#    learning step waits for a restart. The app removes it after the restart; --uninstall removes it too.
 set -euo pipefail
 
 APP_ID="bc250-memory-manager"
@@ -36,6 +38,7 @@ DESKTOP_DIR=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
 DESKTOP_ICON="$DESKTOP_DIR/$APP_ID.desktop"
 WATCH_UNIT="bc250-memory-watch.service"
 WATCH_FILE="$CONFIG_DIR/systemd/user/$WATCH_UNIT"
+RESUME_ENTRY="$CONFIG_DIR/autostart/$APP_ID-resume.desktop"
 
 SRC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 # bc250_core: bundled next to vram_manager in a release; in the suite checkout it lives in core/.
@@ -75,7 +78,7 @@ installed_here() {
 if $UNINSTALL; then
     found=false
     installed_here "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "${DATA_DIR:?}/$APP_ID/app" "$VENV_USERS/$APP_ID" \
-        "$WATCH_FILE" && found=true
+        "$WATCH_FILE" "$RESUME_ENTRY" && found=true
     $PURGE && installed_here "${CONFIG_DIR:?}/$APP_ID" "${DATA_DIR:?}/$APP_ID/backups" "${DATA_DIR:?}/$APP_ID/"*.json* \
         "${DATA_DIR:?}/$APP_ID/close-for-games.log" && found=true
     if ! $found; then
@@ -89,7 +92,7 @@ if $UNINSTALL; then
         systemctl --user daemon-reload >/dev/null 2>&1 || true
     fi
     info "Removing the launcher, the menu entry and the app"
-    rm -f "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON"
+    rm -f "$LAUNCHER" "$MENU_ENTRY" "$DESKTOP_ICON" "$RESUME_ENTRY"
     command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q "$DATA_DIR/applications" || true
     rm -rf "${DATA_DIR:?}/$APP_ID/app"
     rm -f "$VENV_USERS/$APP_ID"
@@ -103,7 +106,7 @@ if $UNINSTALL; then
     if $PURGE; then
         info "Removing the settings, the CMOS backups and the memory records"
         rm -rf "${CONFIG_DIR:?}/$APP_ID" "${DATA_DIR:?}/$APP_ID/backups"
-        rm -f "${DATA_DIR:?}/$APP_ID/"{sessions.jsonl,sessions-open.json,history.jsonl,programs.json} \
+        rm -f "${DATA_DIR:?}/$APP_ID/"{sessions.jsonl,sessions-open.json,history.jsonl,programs.json,learn.json} \
             "${DATA_DIR:?}/$APP_ID/"{close-for-games.json,close-for-games.log}
     fi
     rmdir "${DATA_DIR:?}/$APP_ID" 2>/dev/null || true     # gone unless backups or records are kept

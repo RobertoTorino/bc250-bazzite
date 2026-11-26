@@ -204,14 +204,17 @@ guard back without root. Only the four files exactly as the app writes them coun
 ## The sessions
 
 `vram_manager/watch.py` is the watcher, and `vram_manager/service.py` writes its user unit,
-`bc250-memory-watch.service`. The window writes, enables and starts it with the suite's guard, and removes it with
-Bazzite's own. The watcher needs no Qt. It runs from the app folder with the suite's Python.
+`bc250-memory-watch.service`. The window writes, enables and starts it when recording is turned on, and removes it
+when it is turned off. The guard does not touch it. The watcher needs no Qt. It runs from the app folder with the
+suite's Python.
 
 Every two seconds the watcher reads these:
 
 - `/proc/meminfo` for the RAM and the swap in use
 - `mem_info_gtt_used` for the RAM the GPU borrows
+- `mem_info_vram_used` for the VRAM in use
 - `full avg10` in `/proc/pressure/memory`
+- the `cpu` line of `/proc/stat`, for the CPU load since the last look, with idle and iowait as idle
 - each unit under the user manager's `app.slice`, with `memory.current`, `memory.swap.current` and `memory.events`
 
 The watcher finds `app.slice` from its own control group in `/proc/self/cgroup`. A unit's name for people is a Steam
@@ -232,8 +235,40 @@ after the watcher's first look, the watcher runs `systemctl --user --no-block st
 systemd sends SIGTERM to the unit's processes. Each stop goes to `close-for-games.log`, and the session ends as
 "Closed for a game".
 
-`propose()` looks at the newest ten sessions, once there are three. A session that ran out of swap proposes the next
-zram size. A kernel kill while the GPU borrowed half the RAM or more proposes `gtt_pages()`, the RAM less 2 GiB.
+A session and a minute's point keep the peaks of the VRAM in use and the CPU load as well. Records from before keep
+reading, with 0 for both.
+
+## The learning steps
+
+The rules are in `vram_manager/learn.py`, which needs no Qt. Each step's row comes from `vram_manager/steps.py`, a
+copy of Core Unlock's `StepRow` on core's theme. The autostart entry and the restart come from
+`vram_manager/resume.py`, as in Core Unlock.
+
+`learn.json` holds the rounds. Each round has these fields:
+
+- `since`: when its setting was written
+- `settings`: the split, the next boot's GTT limit, the swap layout and the guard it runs with
+- `boot`: the boot ID it was written in, empty when it took effect at once
+- `change`: the change it tries, or none for the start point and after an undo
+- `verdict`: empty, `kept` or `undone`
+
+`restart_boot` is the boot ID a written change waits in. While the board runs that boot, the step offers the restart
+and the autostart entry is there. A later boot clears both.
+
+A round's sessions are the recorded ones that began after its `since` and before the next round's. Sessions of its
+`boot` ran the old setting and do not count. The baseline is the last round with the start point, a kept change or
+the settings after an undo. Its sessions are those of every such round with the same settings, so an undo goes on
+with what the earlier rounds recorded.
+
+`propose()` needs three baseline sessions. It proposes the first of these that was not tried yet:
+
+- the next zram size, with the running compressor and `vm.swappiness`, when a session ended with the swap full
+- `gtt_pages()`, the RAM less 2 GiB, after a kernel kill with the GPU borrowing half the RAM or more
+- the suite's guard, after a kernel kill or a freeze with Bazzite's guard
+
+`compare()` takes the games played in both rounds. Fewer endings for lack of memory or a freeze, as a share of the
+sessions, decide first. The peak wait for memory decides next, with a margin of `WAIT_MARGIN`, 5 points. Otherwise,
+the verdict is the same, and the window advises the undo.
 
 ## The GTT limit on the kernel command line
 

@@ -34,6 +34,7 @@ def settings_dir(tmp_path, monkeypatch):
     from PyQt6.QtCore import QSettings
     QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, str(tmp_path / "settings"))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config-home"))    # the resume entry (resume.py)
     return tmp_path / "settings"
 
 

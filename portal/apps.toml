@@ -247,8 +247,10 @@ in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for z
 layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started or
 stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap file.
 The memory guard is four systemd-oomd drop-ins of the app's own in /etc. They take effect at once, because
-systemd-oomd restarts with them. They stay across reboots and power offs. Bazzite's own guard removes them. With
-the guard, a user service records the sessions in the app's own folder.
+systemd-oomd restarts with them. They stay across reboots and power offs. Bazzite's own guard removes them.
+Recording is a user service that writes the sessions in the app's own folder. The app turns it on and off without a
+password. A learning step that needs a restart restarts the board after a countdown of 15 seconds. Until that
+restart, an autostart entry of the app's own opens the window after the login. The app removes it after the restart.
 """
 category = "sustainable"
 install = ["bash install.sh"]

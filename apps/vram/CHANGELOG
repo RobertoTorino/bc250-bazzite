@@ -1,3 +1,18 @@
+Changelog: 26-11-2026 19:49:10
+
+Breaking. The window opens with five learning steps, as Core Unlock's window does (owner, 26-11-2026). Step 1 writes
+the Games profile as the start point, with Bazzite's own swap layout and guard, and turns on recording. Step 2
+restarts the board. Step 3 records 3 game sessions. Step 4 proposes one change that a measurement points to: zram one
+size up after a full swap, a GTT limit of the RAM less 2 GiB after a kill for GPU memory, or the suite's guard after a
+kernel kill or a freeze. Step 5 compares the games played in both rounds, and you keep the change or undo it. When
+nothing points to a change, the board runs the Learned profile. A restart comes after a countdown of 15 seconds, and
+an autostart entry opens the window after the login. Start over deletes the rounds. The rounds are in learn.json.
+Each setting on its own is under Advanced, unchanged. The Sessions box and Use proposal are gone, because the steps
+do their work. Recording now goes on and off on its own, under Recording, and the memory guard no longer starts or
+stops it. The recorder also keeps the peak VRAM in use and the CPU load, which is for context only. The header shows
+the split, the GTT limit, the swap, recording and the round. install.sh --uninstall removes the autostart entry, and
+--purge also removes learn.json.
+
 Changelog: 26-11-2026 13:46:24
 
 Release 4.9.0.

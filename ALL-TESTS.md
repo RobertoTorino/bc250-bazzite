@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3626 test functions (4190 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3636 test functions (4200 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -37,10 +37,10 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/turing](#appsturing) | 9 | 77 | 1.4 s |
 | [apps/upscaler](#appsupscaler) | 11 | 119 | 1.6 s |
 | [apps/vita3k](#appsvita3k) | 9 | 85 | 5.3 s |
-| [apps/vram](#appsvram) | 10 | 78 | 0.6 s |
+| [apps/vram](#appsvram) | 11 | 87 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
 | [apps/xenia](#appsxenia) | 8 | 79 | 4.5 s |
-| [core](#core) | 32 | 246 | 4.6 s |
+| [core](#core) | 32 | 247 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
@@ -53,7 +53,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3626** | **182 s** |
+| **All** | | **3636** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -2424,7 +2424,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/vram
 
-78 tests in 10 files, 0.6 s in a local run.
+87 tests in 11 files, 0.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2450,6 +2450,12 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_kargs.py` | `test_read_next_boot` |  |  | Read next boot. |
 | `test_kargs.py` | `test_apply` |  |  | Apply. |
 | `test_kargs.py` | `test_apply_checks_the_next_boot_afterwards` |  |  | The owner's board, 01-11-2026: a key-only --delete-if-present matched nothing, rpm-ostree said "unchanged" and the app took it for done. |
+| `test_learn.py` | `test_nothing_before_three_sessions_and_nothing_without_a_reason` |  |  | Nothing before three sessions and nothing without a reason. |
+| `test_learn.py` | `test_a_full_swap_points_to_one_zram_size_up_with_the_running_compressor_and_swappiness` |  |  | A full swap points to one zram size up with the running compressor and swappiness. |
+| `test_learn.py` | `test_a_gpu_kill_points_to_a_lower_gtt_limit_then_the_guard` |  |  | A gpu kill points to a lower gtt limit then the guard. |
+| `test_learn.py` | `test_the_comparison_counts_the_games_of_both_rounds` |  |  | The comparison counts the games of both rounds. |
+| `test_learn.py` | `test_equal_endings_go_by_the_wait_and_otherwise_the_change_is_no_better` |  |  | Equal endings go by the wait and otherwise the change is no better. |
+| `test_learn.py` | `test_the_rounds_their_sessions_and_the_state_file` |  |  | The rounds their sessions and the state file. |
 | `test_main_window.py` | `test_shows_the_board` |  | 0.1 s | Shows the board. |
 | `test_main_window.py` | `test_apply_reboot_and_undo` |  |  | Apply reboot and undo. |
 | `test_main_window.py` | `test_reboot_without_the_split` |  |  | Reboot without the split. |
@@ -2468,9 +2474,11 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_swap_layout_is_written_once_and_waits_for_a_restart` |  |  | Swap layout is written once and waits for a restart. |
 | `test_main_window.py` | `test_zswap_layout_makes_the_file_and_offers_its_deletion_afterward` |  |  | Zswap layout makes the file and offers its deletion afterward. |
 | `test_main_window.py` | `test_a_swap_layout_that_fails_says_why_and_stays_to_apply` |  |  | A swap layout that fails says why and stays to apply. |
-| `test_main_window.py` | `test_the_guard_takes_effect_at_once_with_the_sessions_service` |  |  | The suite's guard (owner, 26-11-2026): the four files, the user manager reloaded, the sessions service on; Bazzite's own takes both away again. |
+| `test_main_window.py` | `test_the_guard_takes_effect_at_once` |  |  | The suite's guard (owner, 26-11-2026): the four files and the user manager reloaded; Bazzite's own takes them away again. |
+| `test_main_window.py` | `test_recording_on_and_off` |  |  | Recording on and off. |
 | `test_main_window.py` | `test_the_smooth_profile_writes_all_four` |  |  | The board runs the Games profile with Bazzite's swap and guard: the Smooth profile keeps the split and writes the GTT limit of the RAM less 2 GiB, zram the size of the RAM and the suite's guard, after one question. |
-| `test_main_window.py` | `test_the_sessions_and_their_proposal` |  |  | Three sessions, one of them killed with the swap full: the newest first, and the proposal of a larger zram, written for the next boot. |
+| `test_main_window.py` | `test_the_learning_steps_from_the_start_point_to_the_learned_profile` |  |  | The board has a 16 GiB GTT limit for the next boot: the start point writes the Games profile's 11.5 GiB and recording on, then the restart; round 1 with a full swap points to zram the RAM, written with a restart; round 2 is better and kept, and nothing more points anywhere. |
+| `test_main_window.py` | `test_a_change_that_is_no_better_is_undone` |  |  | A change that is no better is undone. |
 | `test_memory_map.py` | `test_usage_of_the_owner_board` |  |  | Usage of the owner board. |
 | `test_memory_map.py` | `test_usage_with_zswap_and_disk_swap` |  |  | Usage with zswap and disk swap. |
 | `test_memory_map.py` | `test_usage_without_files` |  |  | Usage without files. |
@@ -2503,7 +2511,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_watch.py` | `test_only_the_last_sessions_are_kept` |  |  | Only the last sessions are kept. |
 | `test_watch.py` | `test_names` |  |  | Names. |
 | `test_watch.py` | `test_the_app_slice_comes_from_the_watchers_own_cgroup` |  |  | The app slice comes from the watchers own cgroup. |
-| `test_watch.py` | `test_the_proposal` |  |  | The proposal. |
+| `test_watch.py` | `test_what_the_learning_steps_write` |  |  | What the learning steps write. |
+| `test_watch.py` | `test_the_cpu_load` |  |  | The busy share of all cores between two looks; idle and iowait count as idle. |
 | `test_watch.py` | `test_the_history_and_the_programs` |  |  | One point a minute with the minute's peaks, kept for 24 hours; each program's runs, peak and average. |
 | `test_watch.py` | `test_marked_programs_close_when_a_game_starts` |  |  | Only marked programs, never Steam or a game; a game that runs at the watcher's start closes nothing. |
 
@@ -2715,7 +2724,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## core
 
-246 tests in 32 files, 4.6 s in a local run.
+247 tests in 32 files, 4.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2951,6 +2960,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_widgets.py` | `test_an_apps_own_theme` |  | 0.1 s | An app that is not a suite's (Nexus Releases) draws the widgets with its own theme: the surfaces, the muted text and the accent follow set_theme(), and create_app(theme=) sets it (owner, 26-10-2026: a Nexus app takes Nexus's design). |
 | `test_widgets.py` | `test_info_button_opens_its_text_below_it` |  |  | The info symbol (owner, 01-11-2026): a click opens the text in a popup that stays; links work in it. |
 | `test_widgets.py` | `test_action_pill_stands_in_for_a_button` |  |  | Action pill stands in for a button. |
+| `test_widgets.py` | `test_wheel_guard_leaves_a_value_until_a_click` |  |  | Over a list, a number field or a slider without the focus, the wheel changes nothing and the turn is left ignored, which QApplication::notify then hands to the parent (the page scrolls). |
 | `test_wifi.py` | `test_module_tables` |  |  | Module tables. |
 | `test_wifi.py` | `test_no_adapter_on_the_board` |  |  | No adapter on the board. |
 | `test_wifi.py` | `test_the_owners_stick_in_storage_mode` |  |  | The owners stick in storage mode. |

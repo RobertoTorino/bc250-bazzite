@@ -1,11 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The main window: the memory the system has now (split, GTT, RAM, swap), a live map of it, the VRAM split in
-CMOS with apply, undo and a read of the CMOS block, the GTT limit (ttm.pages_limit) in the next boot's kernel
-arguments, the swap layout of the next boot, the memory guard and the sessions the watcher recorded.
+"""The main window. The learning steps first (owner, 26-11-2026: a step window as Core Unlock's, the app learns the
+settings from the games played, learn.py): the header with the settings they change, recording and the round, five
+step rows with the current step's pill on its row, what the current step shows under them, and one row with Start
+over, what comes next, Programs and Advanced. A change that needs a restart is written, then the board restarts after
+a countdown, and the window opens again after the login (resume.py).
+
+Advanced holds each setting on its own, as before: the memory the system has now (GTT, RAM) with a live map of it,
+the VRAM split in CMOS with apply, undo and a read of the CMOS block, the GTT limit (ttm.pages_limit) in the next
+boot's kernel arguments, the profiles, the swap layout of the next boot, the memory guard and recording.
 
 A split is written to CMOS, a GTT limit to the next boot's kernel arguments with rpm-ostree, a swap layout to files
 of the app's own in /etc (swap.py); all take effect at the next boot. The memory guard (guard.py) takes effect at
-once, and turns the sessions' watcher (watch.py, service.py) on and off with it. The window remembers each change with the boot it was made in, and after a reboot says whether the
+once. Recording (watch.py, service.py) goes on and off on its own. The window remembers each change with the boot it was made in, and after a reboot says whether the
 kernel got it."""
 
 from __future__ import annotations
@@ -15,24 +21,28 @@ import sys
 import time
 from html import escape
 from pathlib import Path
+from dataclasses import asdict
 from typing import Callable
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QCloseEvent
-from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QGroupBox, QHBoxLayout, QHeaderView, QLabel,
-                             QMainWindow, QMessageBox, QPushButton, QSpinBox, QTableWidget, QTableWidgetItem,
-                             QVBoxLayout, QWidget)
+from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame, QGroupBox, QHBoxLayout, QHeaderView,
+                             QLabel, QMainWindow, QMessageBox, QPushButton, QScrollArea, QSpinBox, QTableWidget,
+                             QTableWidgetItem, QVBoxLayout, QWidget)
 
 from bc250_core import SUITE_MANUAL_URL, window_title
 from bc250_core import __version__ as CORE_VERSION
 from bc250_core.platform import config_home, data_home
 from bc250_core.settings import SettingsStore
-from bc250_core.theme import BLUE, GREY, PURPLE
-from bc250_core.widgets import AppHeader, InfoButton, MetricBox, StatusText, TextDialog, accent_button, hint_label
+from bc250_core.theme import ACCENT, BLUE, GREEN, GREY, ORANGE, PURPLE, RED, muted
+from bc250_core.widgets import (ActionPill, AppHeader, InfoButton, MetricBox, RefreshButton, StatusText, TextDialog,
+                                accent_button, hint_label, same_width)
 
 from . import APP_ID, APP_NAME, INFO, LOGO_PATH, ROOT, __version__
-from . import cmos, guard, kargs, privileged, service, swap, system, watch
+from . import cmos, guard, kargs, learn, privileged, resume, service, swap, system, watch
 from .memory_map import MemoryMap, gtt_ceiling
+from .steps import STEPS, StepRow
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/vram/"
 REFRESH_MS = 2000                       # the memory map's live figures
@@ -45,7 +55,14 @@ PICK = object()                         # apply_ttm(): the limit the combo shows
 SMOOTH = "smooth"
 SMOOTH_PAGES = object()                 # PROFILES: the Smooth profile's limit, the RAM less watch.SPARE_MIB
 SMOOTH_SWAP = swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=swap.SWAPPINESS[swap.ZRAM])
-SESSION_ROWS = 3                        # the sessions the window shows, newest first
+RESTART_SECS = 15                       # the countdown before the window restarts the board, as Core Unlock's
+
+ABOUT = ("The learning steps find the memory settings that suit the games you play.<br><br>1. The start point is the "
+         "Games profile, with Bazzite's swap and guard, and recording on.<br>2. The board restarts.<br>3. You play "
+         f"as usual. The app records {learn.SESSIONS_A_ROUND} sessions.<br>4. The app proposes one change, from what "
+         "it measured. The board restarts.<br>5. You play the same games again. The app compares the two rounds, and "
+         "you keep the change or undo it.<br><br>Then step 4 again, until nothing measured asks for a change. "
+         f"<a href='{MANUAL_URL}#learning-the-settings'>Wiki</a>")
 
 # The profiles (owner, 01-11-2026): both values at once, each written only where it differs. The Smooth profile
 # (owner, 26-11-2026) also writes the swap layout and the suite's memory guard.
@@ -54,6 +71,12 @@ PROFILES = {
     "games": ("Games profile", RECOMMENDED_MB, SUITE_PAGES),
     SMOOTH: ("Smooth profile", RECOMMENDED_MB, SMOOTH_PAGES),
 }
+
+
+def tried_text(tried: int, kept: int, undone: int) -> str:
+    if tried == 1:
+        return f"The change was {'kept' if kept else 'undone'}."
+    return f"{tried} changes tried. {kept} kept, {undone} undone."
 
 
 class ManagerSettings(SettingsStore):
@@ -95,9 +118,10 @@ class MainWindow(QMainWindow):
                  guarder: Callable[[list[str]], privileged.Result] = privileged.run_guard,
                  config_dir: Path | None = None, sessions_file: Path | None = None,
                  python: str = sys.executable, app_root: Path = ROOT,
-                 user_commands: kargs.Run = privileged.run_command):
+                 user_commands: kargs.Run = privileged.run_command, learn_file: Path | None = None,
+                 restarter: Callable[[], bool] = resume.restart, clock: Callable[[], float] = time.time):
         super().__init__()
-        self.resize(900, 1060)
+        self.resize(900, 900)
         self.sys_root = sys_root
         self.proc_root = proc_root
         self.runner = runner
@@ -111,6 +135,9 @@ class MainWindow(QMainWindow):
         self.python, self.app_root = python, app_root    # what the sessions service starts
         self.user_commands = user_commands      # runs systemctl --user for the guard and the sessions service
         self.sessions_seen: float | None = None  # the sessions file's time when last shown
+        self.learn_file = learn_file or learn.learn_path()
+        self.restarter, self.clock = restarter, clock
+        self.state = learn.read_state(self.learn_file)
         self.settings = ManagerSettings(INFO, self)
         self.swap_setup = swap.read_setup(etc_root, var_root)
         self.memory = system.read_memory(sys_root, proc_root)
@@ -120,19 +147,66 @@ class MainWindow(QMainWindow):
         header = AppHeader(LOGO_PATH, APP_NAME, __version__)
         self.badge = StatusText()
         header.add_state(self.badge)
+        header.add_action(InfoButton(ABOUT, "About the learning steps"))
+        refresh = RefreshButton()
+        refresh.clicked.connect(self.refresh)
+        header.add_action(refresh)
 
+        # The header (owner, 26-11-2026): the settings the learning changes, recording and the round.
         self.vram_box = MetricBox("VRAM split", PURPLE)
-        self.gtt_box = MetricBox("GTT (RAM the GPU borrows)", BLUE)
-        self.ttm_box = MetricBox("ttm.pages_limit", BLUE)
-        self.ram_box = MetricBox("System RAM", GREY)
+        self.ttm_box = MetricBox("GTT limit", BLUE)
         self.swap_box = MetricBox("Swap", GREY)
-        for box in (self.vram_box, self.gtt_box, self.ttm_box, self.ram_box, self.swap_box):
+        self.record_box = MetricBox("Recording", GREY)
+        self.round_box = MetricBox("Round", GREY)
+        boxes = [self.vram_box, self.ttm_box, self.swap_box, self.record_box, self.round_box]
+        for box in boxes:
             header.add_second(box)
+        same_width(boxes)
+        # Under Advanced: the GTT and the RAM, beside vm.swappiness.
+        self.gtt_box = MetricBox("GTT (RAM the GPU borrows)", BLUE)
+        self.ram_box = MetricBox("System RAM", GREY)
         self.details = hint_label("")
 
+        self.finished_bar = QLabel()
+        self.finished_bar.setWordWrap(True)
+        self.finished_bar.setStyleSheet(f"background:{GREEN}; color:white; font-size:17px; font-weight:800; "
+                                        "padding:12px; border-radius:8px;")
+        self.finished_bar.hide()
+        self.step_rows = [StepRow(i) for i in range(len(STEPS))]
+        self.step_pill = ActionPill("Write", "Games profile", colour=ACCENT)
+        self.step_pill.clicked.connect(lambda: self.step_action and self.step_action())
+        self.step_action: Callable[[], None] | None = None
+        self.content = QVBoxLayout()            # what the current step shows under the rows
+        self.content.setSpacing(6)
+
+        self.start_over_pill = ActionPill("Start over", "Back to the start point", colour=RED)
+        self.start_over_pill.clicked.connect(self.start_over)
+        self.next_label = QLabel()
+        self.next_label.setWordWrap(True)
+        self.next_label.setStyleSheet(f"font-size:13px; font-weight:600; color:{ACCENT};")
+        self.hint = hint_label("")
+        self.alt_pill = ActionPill("Undo", "Back to the round before")
+        self.alt_pill.clicked.connect(lambda: self.alt_action and self.alt_action())
+        self.alt_action: Callable[[], None] | None = None
+        self.programs_button = ActionPill("Programs", "Memory over time",
+                                          "The memory over time, and every program the service has seen")
+        self.programs_button.clicked.connect(self.show_programs)
+        self.advanced_pill = ActionPill("Advanced", "Show", "Each setting on its own, the memory map and CMOS")
+        self.advanced_pill.clicked.connect(self.toggle_advanced)
+        self.countdown = 0                      # the seconds before the window restarts the board
+        self.note = ""                          # what just happened, over the hint
+        self._tick = QTimer(self)
+        self._tick.setInterval(1000)
+        self._tick.timeout.connect(self.on_tick)
+
+        lay_map_boxes = QHBoxLayout()
+        for box in (self.gtt_box, self.ram_box):
+            lay_map_boxes.addWidget(box)
+        lay_map_boxes.addWidget(self.details, 1)
         mapped = QGroupBox("Memory map")
         self.map = MemoryMap(self.memory)
         lay_map = QVBoxLayout(mapped)
+        lay_map.addLayout(lay_map_boxes)
         lay_map.addWidget(self.map)
         lay_map.addWidget(hint_label("Hover over a part to see what it is. When you pick a new split or GTT limit "
                                      "below, the next boot shows under the bar."))
@@ -140,7 +214,6 @@ class MainWindow(QMainWindow):
         self.timer.setInterval(REFRESH_MS)
         self.timer.timeout.connect(self.refresh_usage)
         self.timer.start()
-
         split = QGroupBox("VRAM split in CMOS")
         self.combo = QComboBox()
         for mb in SPLITS:
@@ -286,60 +359,70 @@ class MainWindow(QMainWindow):
             "When the RAM and the swap run out, the board stalls until the kernel ends a program. That can take "
             "minutes. systemd-oomd ends the program that uses the most memory before that. <b>Bazzite's own</b> guard "
             "acts at 80% memory pressure for 20 s and does not watch the swap. <b>The suite's guard</b> acts at 60% for "
-            "10 s, or when the swap is 90% full. It also records the sessions below. It takes effect at once, without "
-            f"a restart. <a href='{MANUAL_URL}#the-memory-guard'>Wiki</a>", "About the memory guard"))
-        self.guard_note = hint_label("")
+            "10 s, or when the swap is 90% full. It takes effect at once, without a restart. "
+            f"<a href='{MANUAL_URL}#the-memory-guard'>Wiki</a>", "About the memory guard"))
         lay_guard = QVBoxLayout(guard_box)
         lay_guard.addLayout(row_guard)
-        lay_guard.addWidget(self.guard_note)
 
-        sessions_box = QGroupBox("Sessions: the board's peaks while each program ran")
-        self.sessions_table = QTableWidget(0, 6)
-        self.sessions_table.setHorizontalHeaderLabels(["Program", "Ended", "RAM", "GPU borrows", "Swap", "Pressure"])
-        self.sessions_table.verticalHeader().setVisible(False)
-        self.sessions_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.sessions_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.sessions_table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self.sessions_table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.proposal_note = hint_label("")
-        self.proposal_button = QPushButton("Use proposal…")
-        self.proposal_button.setToolTip("Write what the sessions propose. It takes effect after a restart")
-        self.proposal_button.clicked.connect(self.use_proposal)
-        self.programs_button = QPushButton("Programs…")
-        self.programs_button.setToolTip("The memory over time, and every program the service has seen")
-        self.programs_button.clicked.connect(self.show_programs)
-        row_proposal = QHBoxLayout()
-        row_proposal.addWidget(self.proposal_note, 1)
-        row_proposal.addWidget(self.proposal_button)
-        row_proposal.addWidget(self.programs_button)
-        row_proposal.addWidget(InfoButton(
-            "While the suite's guard is on, a service records every program that takes 1 GiB or more. It keeps the "
-            "board's peaks while the program ran, and how it ended. <b>Killed</b> means the kernel ended it, "
-            "<b>Guard</b> means systemd-oomd did. <b>Pressure</b> is the share of time every task waited for memory. "
-            "After 3 sessions the app proposes a larger zram when the swap ran out, or a lower GTT limit when the GPU "
-            f"filled the RAM. <a href='{MANUAL_URL}#sessions'>Wiki</a>", "About the sessions"))
-        lay_sessions = QVBoxLayout(sessions_box)
-        lay_sessions.addWidget(self.sessions_table)
-        lay_sessions.addLayout(row_proposal)
-        self.proposal = watch.Proposal("")
+        record_group = QGroupBox("Recording")
+        self.record_pill = ActionPill("Turn on", "Recording")
+        self.record_pill.clicked.connect(self.toggle_recording)
+        row_record = QHBoxLayout()
+        row_record.addWidget(hint_label("A user service records the memory while each program of 1 GiB or more "
+                                        "runs. The learning steps need it. It needs no password."), 1)
+        row_record.addWidget(self.record_pill)
+        row_record.addWidget(InfoButton(
+            "The service looks every two seconds. It records the RAM, the VRAM and the swap in use, what the GPU "
+            "borrows, the wait for memory and the CPU load. The CPU load is for context only. A program that takes "
+            "1 GiB or more becomes a session, with how it ended. It runs with your desktop session, whatever the "
+            f"memory guard. <a href='{MANUAL_URL}#recording'>Wiki</a>", "About recording"))
+        QVBoxLayout(record_group).addLayout(row_record)
 
-        central = QWidget()
-        lay = QVBoxLayout(central)
+        self.advanced = QWidget()
+        lay_advanced = QVBoxLayout(self.advanced)
+        lay_advanced.setContentsMargins(0, 0, 0, 0)
+        for box in (mapped, split, limit, profiles, layout_box, guard_box, record_group):
+            lay_advanced.addWidget(box)
+        self.advanced.hide()
+
+        bottom = QHBoxLayout()
+        bottom.setSpacing(16)
+        bottom.addWidget(self.start_over_pill)
+        side = QVBoxLayout()
+        side.setSpacing(4)
+        side.addStretch(1)
+        side.addWidget(self.next_label)
+        side.addWidget(self.hint)
+        side.addStretch(1)
+        bottom.addLayout(side, 1)
+        right = QHBoxLayout()
+        right.setSpacing(8)
+        for pill in (self.alt_pill, self.programs_button, self.advanced_pill):
+            right.addWidget(pill)
+        same_width([self.programs_button, self.advanced_pill])
+        bottom.addLayout(right)
+
+        # The page scrolls when the window is lower than it (Advanced is long), as Core Unlock's.
+        body = QWidget()
+        lay = QVBoxLayout(body)
+        lay.setSpacing(10)
         lay.addLayout(header)
-        lay.addWidget(self.details)
-        lay.addWidget(mapped)
-        lay.addWidget(split)
-        lay.addWidget(limit)
-        lay.addWidget(profiles)
-        lay.addWidget(layout_box)
-        lay.addWidget(guard_box)
-        lay.addWidget(sessions_box)
+        lay.addWidget(self.finished_bar)
+        for row in self.step_rows:
+            lay.addWidget(row)
+        lay.addLayout(self.content)
+        lay.addLayout(bottom)
+        lay.addWidget(self.advanced)
         lay.addStretch(1)
         version = QLabel(f"{APP_NAME} {__version__} · core {CORE_VERSION} · CMOS, the kernel arguments, the swap "
                          "layout and the guard are written only when you apply")
         version.setStyleSheet("color:palette(placeholder-text);")
         lay.addWidget(version, 0, Qt.AlignmentFlag.AlignRight)
-        self.setCentralWidget(central)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setWidget(body)
+        self.setCentralWidget(scroll)
 
         geometry = self.settings.window_state("geometry")
         if geometry is not None:
@@ -451,7 +534,7 @@ class MainWindow(QMainWindow):
         self.ram_box.set_value(system.mib_text(m.ram_mib))
         self.swap_box.set_value(m.swap_text)
         self.ttm_box.set_value(system.mib_text(m.ttm_limit_mib), self.ttm_tip())
-        self.ttm_box.caption.setText("ttm.pages_limit" if m.ttm_on_cmdline else "ttm.pages_limit (default)")
+        self.ttm_box.caption.setText("GTT limit" if m.ttm_on_cmdline else "GTT limit (default)")
         self.gtt_box.caption.setText("GTT: all the RAM" if m.gtt_capped else "GTT (RAM the GPU borrows)")
         self.details.setText(f"vm.swappiness {m.swappiness}" if m.swappiness is not None else "")
         self.details.setToolTip("How readily Linux moves pages out of the RAM into swap, from 0 to 200. At 0, Linux "
@@ -491,8 +574,8 @@ class MainWindow(QMainWindow):
         self.undo_button.setEnabled(not problem and bool(previous) and previous != (pending or m.vram_mib))
         self.undo_button.setToolTip(f"Write back {split_label(previous)}" if previous else "Nothing to undo yet")
         self.refresh_guard()
-        self.refresh_sessions(force=True)
         self.on_pick()
+        self.refresh_sessions(force=True)
 
     def ttm_tip(self) -> str:
         m = self.memory
@@ -679,39 +762,29 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, window_title("Delete swap file"), result.error or "The file was not deleted.")
         self.refresh()
 
-    # --- The memory guard and the sessions ---------------------------------------------------------------------
+    # --- The memory guard and recording ------------------------------------------------------------------------
 
     def refresh_guard(self) -> None:
-        """The guard box: the written guard in the combo, and a note when the sessions service is missing."""
+        """The guard box: the written guard in the combo."""
         written = guard.read_guard(self.etc_root)
         self.guard_combo.blockSignals(True)
         self.guard_combo.setCurrentIndex(self.guard_combo.findData(written))
         self.guard_combo.blockSignals(False)
-        missing = written == guard.SUITE and not service.installed(self.config_dir)
-        self.guard_note.setText("The service that records the sessions is not set up. Apply the guard again."
-                                if missing else "")
-        self.guard_note.setVisible(bool(self.guard_note.text()))
         self.on_guard_pick()
 
     def on_guard_pick(self) -> None:
-        picked = self.guard_combo.currentData()
-        written = guard.read_guard(self.etc_root)
-        self.guard_button.setEnabled(picked != written or (picked == guard.SUITE
-                                                           and not service.installed(self.config_dir)))
+        self.guard_button.setEnabled(self.guard_combo.currentData() != guard.read_guard(self.etc_root))
 
     def apply_guard(self, key: str | None = None, ask: bool = True) -> bool:
-        """Writes the guard (the combo's, or *key*), reloads the user manager and turns the sessions service on or
-        off with it. True when it is written."""
+        """Writes the guard (the combo's, or *key*) and reloads the user manager. True when it is written."""
         key = key or self.guard_combo.currentData()
         if ask:
             if key == guard.SUITE:
                 facts = [f"systemd-oomd ends the program that uses the most memory when memory pressure stays above "
                          f"{guard.PRESSURE_PERCENT}% for {guard.DURATION_S} s.",
-                         f"It does the same when the swap is {guard.SWAP_PERCENT}% full.",
-                         "A service records the sessions."]
+                         f"It does the same when the swap is {guard.SWAP_PERCENT}% full."]
             else:
-                facts = ["It removes the app's own guard files from /etc.", "systemd-oomd then works as Bazzite sets it.",
-                         "The service that records the sessions stops. The recorded sessions stay."]
+                facts = ["It removes the app's own guard files from /etc.", "systemd-oomd then works as Bazzite sets it."]
             answer = QMessageBox.question(
                 self, window_title("Memory guard"),
                 f"Write the memory guard \"{guard.GUARDS[key]}\"?\n\n" + "\n".join(facts)
@@ -724,20 +797,31 @@ class MainWindow(QMainWindow):
             self.refresh_guard()
             return False
         self.user_commands(["systemctl", "--user", "daemon-reload"])    # the session's slices to systemd-oomd again
-        error = ""
-        if key == guard.SUITE:
-            error = service.enable(self.user_commands, self.config_dir, self.python, self.app_root)
-        else:
-            service.disable(self.user_commands, self.config_dir)
-        if error:
-            QMessageBox.warning(self, window_title("Memory guard"), error)
         self.refresh_guard()
-        self.refresh_sessions(force=True)
         self.on_pick()                          # the profiles: the Smooth one may have nothing left to write
+        self.render_steps()
         return True
 
+    def recording(self) -> bool:
+        return service.installed(self.config_dir)
+
+    def set_recording(self, on: bool) -> bool:
+        """Turns the recording service on or off. True when it is as asked."""
+        if on:
+            error = service.enable(self.user_commands, self.config_dir, self.python, self.app_root)
+            if error:
+                QMessageBox.warning(self, window_title("Recording"), error)
+                return False
+        else:
+            service.disable(self.user_commands, self.config_dir)
+        self.render_steps()
+        return True
+
+    def toggle_recording(self) -> None:
+        self.set_recording(not self.recording())
+
     def refresh_sessions(self, force: bool = False) -> None:
-        """The sessions table, newest first, and the proposal; read again only when the file changed."""
+        """The steps again when the sessions file changed: a session recorded moves a round on."""
         try:
             changed = self.sessions_file.stat().st_mtime
         except OSError:
@@ -745,30 +829,7 @@ class MainWindow(QMainWindow):
         if not force and changed == self.sessions_seen:
             return
         self.sessions_seen = changed
-        sessions = watch.read_sessions(self.sessions_file)
-        shown = sessions[::-1][:SESSION_ROWS]
-        table = self.sessions_table
-        table.setRowCount(len(shown))
-        for row, s in enumerate(shown):
-            cells = (s.program, s.ended, system.mib_text(s.ram_mib), system.mib_text(s.gtt_mib),
-                     system.mib_text(s.swap_mib), f"{s.pressure:.0f}%")
-            tip = (f"{time.strftime('%d-%m-%Y %H:%M', time.localtime(s.start))} to "
-                   f"{time.strftime('%H:%M', time.localtime(s.end))}. The program itself took up to "
-                   f"{system.mib_text(s.own_mib)}.")
-            for column, text in enumerate(cells):
-                item = QTableWidgetItem(text)
-                item.setToolTip(tip)
-                table.setItem(row, column, item)
-        table.setVisible(bool(shown))
-        if shown:
-            table.setFixedHeight(table.horizontalHeader().sizeHint().height() + len(shown) * table.rowHeight(0) + 4)
-        nxt = None if self.next_boot.error else self.next_boot.pages
-        self.proposal = watch.propose(sessions, self.swap_setup, self.memory.ram_mib or 0, nxt)
-        if not sessions and guard.read_guard(self.etc_root) != guard.SUITE:
-            self.proposal_note.setText("Sessions are recorded while the suite's guard is on.")
-        else:
-            self.proposal_note.setText(escape(self.proposal.text))
-        self.proposal_button.setVisible(bool(self.proposal.zram_size or self.proposal.pages is not None))
+        self.render_steps()
 
     def show_programs(self) -> None:
         """The Programs window, from the records beside the sessions file."""
@@ -778,39 +839,460 @@ class MainWindow(QMainWindow):
                        folder / watch.programs_path().name, self.sessions_file, folder / watch.closes_path().name,
                        manual_url=MANUAL_URL).exec()
 
-    def use_proposal(self) -> None:
-        """Writes what the sessions propose: the zram size and the GTT limit, for the next boot."""
-        p = self.proposal
-        facts = []
-        setup = None
-        if p.zram_size:
-            written = self.swap_setup
-            names = self.zram_compressors()
-            compressor = written.compressor if written.layout == swap.ZRAM else ("zstd" if "zstd" in names else names[0])
-            swappiness = written.swappiness if written.layout == swap.ZRAM and written.swappiness is not None \
-                else swap.SWAPPINESS[swap.ZRAM]
-            setup = swap.Setup(swap.ZRAM, p.zram_size, compressor, swappiness=swappiness)
-            label = next(lbl for lbl, size, _f in swap.ZRAM_SIZES if size == p.zram_size)
-            facts.append(f"zram gets the size {label[0].lower() + label[1:]}, with {compressor}.")
-        if p.pages is not None:
-            facts.append(f"The {ttm_label(p.pages)} goes to the next boot's kernel arguments.")
-        if not facts:
+    def toggle_advanced(self) -> None:
+        self.advanced.setVisible(self.advanced.isHidden())
+        self.advanced_pill.caption.setText("Hide" if self.advanced.isVisible() else "Show")
+
+    # --- The learning steps ------------------------------------------------------------------------------------
+
+    def board_settings(self) -> dict:
+        """What the board runs from the next boot on: the split in CMOS, the next boot's GTT limit, the swap layout
+        and the guard."""
+        pages = None if self.next_boot.error else self.next_boot.pages
+        return learn.settings(self.written_split(), pages, self.swap_setup, guard.read_guard(self.etc_root))
+
+    def start_steps(self) -> list[str]:
+        """What the start point would write, in words: the Games profile's split and limit, Bazzite's swap and
+        guard where they differ, and recording on. Empty when the board has it all."""
+        steps = self.profile_steps("games")
+        if self.swap_setup != swap.Setup():
+            steps.append("Bazzite's own swap layout for the next boot")
+        if guard.read_guard(self.etc_root) != guard.BAZZITE:
+            steps.append("Bazzite's own memory guard")
+        if not self.recording():
+            steps.append("recording on")
+        return steps
+
+    def running_compressor(self) -> str:
+        """The compressor the board's zram uses now (the selected one in comp_algorithm), else zstd."""
+        for path in sorted((self.sys_root / "block").glob("zram*/comp_algorithm")):
+            name = system._selected(system._read(path))
+            if name:
+                return name
+        return "zstd"
+
+    def proposal(self) -> learn.Change | None:
+        st = self.state
+        base = learn.baseline(st)
+        return learn.propose(learn.baseline_sessions(st, watch.read_sessions(self.sessions_file)),
+                             st.rounds[base].settings, self.memory.ram_mib or 0, learn.tried(st),
+                             self.running_compressor(), self.memory.swappiness)
+
+    def save_state(self) -> None:
+        learn.write_state(self.state, self.learn_file)
+
+    def begin_round(self, change: learn.Change | None, waits: bool) -> None:
+        """A new round from now, with the settings just written; a restart waits when *waits*."""
+        self.note = ""
+        boot = self.memory.boot_id if waits else ""
+        rounds = self.state.rounds if self.state else []
+        rounds.append(learn.Round(self.clock(), self.board_settings(), boot, asdict(change) if change else None))
+        self.state = learn.State(rounds, boot or (self.state.restart_boot if self.state else ""))
+        self.save_state()
+        if waits:
+            resume.arm()
+
+    def write_start(self) -> None:
+        """Step 1: the start point, after one question; one password prompt for each part that needs root."""
+        steps = self.start_steps()
+        if steps:
+            listed = steps[0] if len(steps) == 1 else f"{', '.join(steps[:-1])} and {steps[-1]}"
+            answer = QMessageBox.question(
+                self, window_title("Start point"),
+                f"Write the start point?\n\nIt writes {listed}.\nThe split, the GTT limit and the swap take effect "
+                "after a restart.\nThe guard and recording take effect at once.\n\nYou will be asked for your "
+                "password once for each part.")
+            if answer != QMessageBox.StandardButton.Yes:
+                return
+        _name, mb, pages, _setup, _guard = self.profile_values("games")
+        waits = False
+        if not self.block_problem and mb != self.written_split():
+            if not self.write_split(mb, "Start point", ask=False):
+                return
+            waits = True
+        if not self.next_boot.error and pages != self.next_boot.pages:
+            if not self.apply_ttm(pages, ask=False):
+                return
+            waits = True
+        if self.swap_setup != swap.Setup():
+            if not self.write_swap(swap.Setup(), "Start point"):
+                return
+            waits = True
+        if guard.read_guard(self.etc_root) != guard.BAZZITE and not self.apply_guard(guard.BAZZITE, ask=False):
             return
+        if not self.recording() and not self.set_recording(True):
+            return
+        waits = waits or self.waiting_for_restart()
+        self.begin_round(None, waits)
+        self.refresh()
+
+    def waiting_for_restart(self) -> bool:
+        """A split, a GTT limit or a swap layout written earlier that the running boot does not have yet."""
+        return bool(self.settings.get("pending_mb") or self.settings.get("pending_swap")
+                    or (not self.next_boot.error and self.next_boot.pages != self.memory.ttm_cmdline_pages))
+
+    def write_change(self, change: learn.Change, value: object) -> bool:
+        """Writes one setting of a change (its value, or its before for an undo). True when it is written."""
+        if change.kind == learn.ZRAM:
+            return self.write_swap(swap.Setup(**value), "Try one change")
+        if change.kind == learn.GTT:
+            return self.apply_ttm(value, ask=False)
+        return self.apply_guard(value, ask=False)
+
+    def try_change(self) -> None:
+        """Step 4: the proposed change, after one question; then the board restarts after the countdown."""
+        change = self.proposal()
+        if change is None:
+            return
+        at_once = change.kind == learn.GUARD
+        effect = ("It takes effect at once." if at_once else
+                  f"The board restarts {RESTART_SECS} s after the write.\nSave your work in other apps first.")
         answer = QMessageBox.question(
-            self, window_title("Use proposal"),
-            "Write what the sessions propose?\n\n" + "\n".join(facts)
-            + "\nIt takes effect after you restart the board.\n\nYou will be asked for your password.")
+            self, window_title("Try one change"),
+            f"Try {change.label}?\n\n{change.reason}\n{effect}\n\nYou will be asked for your password.")
+        if answer != QMessageBox.StandardButton.Yes or not self.write_change(change, change.value):
+            return
+        self.begin_round(change, not at_once)
+        self.refresh()
+        if not at_once:
+            self.start_countdown()
+
+    def keep(self) -> None:
+        index = learn.trial(self.state)
+        if index is None:
+            return
+        self.state.rounds[index].verdict = learn.KEPT
+        self.save_state()
+        self.render_steps()
+
+    def undo_change(self) -> None:
+        """Step 5: the setting before the change written back; a new round with it, then the restart."""
+        index = learn.trial(self.state)
+        if index is None:
+            return
+        change = learn.Change(**self.state.rounds[index].change)
+        at_once = change.kind == learn.GUARD
+        effect = ("It takes effect at once." if at_once else
+                  f"The board restarts {RESTART_SECS} s after the write.\nSave your work in other apps first.")
+        answer = QMessageBox.question(
+            self, window_title("Undo"),
+            f"Undo {change.label}?\n\nThe setting from the round before comes back.\n{effect}\n\n"
+            "You will be asked for your password.")
+        if answer != QMessageBox.StandardButton.Yes or not self.write_change(change, change.before):
+            return
+        self.state.rounds[index].verdict = learn.UNDONE
+        self.begin_round(None, not at_once)
+        self.refresh()
+        if not at_once:
+            self.start_countdown()
+
+    def start_over(self) -> None:
+        answer = QMessageBox.question(
+            self, window_title("Start over"),
+            "Start the learning over?\n\nThe rounds and their verdicts are deleted.\nThe recorded sessions stay.\n"
+            "The board's settings stay as they are until you write the start point.")
         if answer != QMessageBox.StandardButton.Yes:
             return
-        if setup is not None and not self.write_swap(setup, "Use proposal"):
+        self.stop_countdown()
+        learn.clear_state(self.learn_file)
+        self.state = None
+        resume.disarm()
+        self.note = ""
+        self.render_steps()
+
+    def start_countdown(self) -> None:
+        self.note = ""
+        self.countdown = RESTART_SECS
+        self._tick.start()
+        self.render_steps()
+
+    def stop_countdown(self) -> None:
+        self._tick.stop()
+        self.countdown = 0
+
+    def on_tick(self) -> None:
+        self.countdown -= 1
+        if self.countdown <= 0:
+            self.restart_now()
             return
-        if p.pages is not None and not self.apply_ttm(p.pages, ask=False):
+        self.render_steps()
+
+    def restart_now(self) -> None:
+        self.stop_countdown()
+        if not self.restarter():
+            self.note = "The window could not restart the board. Restart it by hand."
+        self.render_steps()
+
+    def cancel_restart(self) -> None:
+        self.stop_countdown()
+        self.note = "The restart is off. Restart the board when you like. The window opens again after the login."
+        self.render_steps()
+
+    def settings_text(self, settings: dict, key: str) -> str:
+        value = settings.get(key)
+        if key == "split":
+            return split_label(value).split("  ")[0] if value else "—"
+        if key == "pages":
+            return system.mib_text(kargs.mib(value)) if value else "Kernel default"
+        if key == "swap":
+            setup = swap.Setup(**value)
+            if setup.layout == swap.ZRAM:
+                label = next((lbl for lbl, size, _f in swap.ZRAM_SIZES if size == setup.zram_size), setup.zram_size)
+                return f"zram {label[0].lower() + label[1:]}"
+            return "zswap with a swap file" if setup.layout == swap.ZSWAP_FILE else "Bazzite's own"
+        return "The suite's" if value == guard.SUITE else "Bazzite's"
+
+    def render_steps(self) -> None:
+        """The steps from the learning's state, the sessions and the board: each row's state and line, the current
+        step's pill, what it shows under the rows, and the bottom row."""
+        if not hasattr(self, "advanced"):        # not built yet: a write during the build refreshes
             return
-        QMessageBox.information(
-            self, window_title("Use proposal"),
-            "Done.\n\nRestart the board to use it. The app does not restart the board by itself. Use the menu, or "
-            "run systemctl reboot in a terminal.")
-        self.refresh()
+        st, boot = self.state, self.memory.boot_id
+        if st is not None and not st.rounds:
+            st = self.state = None
+        sessions = watch.read_sessions(self.sessions_file)
+        if st is not None and not learn.restart_waits(st, boot) and st.restart_boot:
+            st.restart_boot = ""                # the restart is done
+            self.save_state()
+        if st is None or not learn.restart_waits(st, boot):
+            resume.disarm()
+        lines = ["Write the start point.", "The changes take effect after a restart.",
+                 f"Play as usual. The app records {learn.SESSIONS_A_ROUND} game sessions.",
+                 "The app proposes one change, from what it measured.",
+                 "Play the same games again. Keep the change or undo it."]
+        states = ["later"] * len(STEPS)
+        pill: tuple[str, str, Callable[[], None]] | None = None
+        alt: tuple[str, str, Callable[[], None]] | None = None
+        nxt, hint, finished = "", "", ""
+        self.clear_content()
+        current = 0
+        if st is None:
+            steps = self.start_steps()
+            states[0] = "now"
+            if steps:
+                lines[0] = "Write the Games profile as the start point. You will be asked for your password."
+                pill = ("Write", "Games profile", self.write_start)
+            else:
+                lines[0] = "Your board has the start point already. Click Start to begin round 1."
+                pill = ("Start", "Round 1", self.write_start)
+            self.show_start(steps)
+            nxt = "Next: restart, in step 2." if steps else "Next: play, in step 3."
+        else:
+            waits = learn.restart_waits(st, boot)
+            trial = learn.trial(st)
+            first = learn.round_sessions(st, sessions, 0)
+            base = learn.baseline_sessions(st, sessions)
+            states[0], lines[0] = "done", "Start point written."
+            if len(st.rounds) == 1 and waits:
+                current, states[1] = 1, "now"
+                lines[1] = "Restart the board. The window opens again after you log in."
+                pill = ("Restart", "The board", self.start_countdown)
+                nxt = "Next: play, in step 3."
+            else:
+                states[1] = "done"
+                lines[1] = ("The board started with the start point." if st.rounds[0].boot else
+                            "Nothing waited for a restart.")
+                if trial is None and learn.baseline(st) == 0 and len(base) < learn.SESSIONS_A_ROUND:
+                    current, states[2] = 2, "running"
+                    lines[2] = (f"Play as usual. {len(base)} of {learn.SESSIONS_A_ROUND} sessions recorded. The window "
+                                "can stay closed.")
+                    if not self.recording():
+                        states[2] = "stopped"
+                        lines[2] = "Recording is off. Turn it on to record the sessions."
+                        pill = ("Turn on", "Recording", lambda: self.set_recording(True))
+                    self.show_sessions("Round 1, recorded so far", base)
+                    nxt = "Next: one change, in step 4."
+                else:
+                    short = sum(s.ended in learn.ENDED_SHORT for s in first)
+                    states[2] = "done"
+                    lines[2] = f"{len(first)} sessions recorded in round 1. {short} ended for lack of memory."
+                    current = self.render_rounds(st, sessions, base, trial, waits, states, lines)
+                    pill, alt, nxt, finished = self.round_actions
+        if self.countdown:
+            pill = ("Restart now", "Don't wait", self.restart_now)
+            alt = ("Cancel", "Restart later", self.cancel_restart)
+            nxt = f"Restarting in {self.countdown} s."
+            hint = "Save your work in other apps first."
+        for index, row in enumerate(self.step_rows):
+            row.set_state(states[index], lines[index])
+            row.set_pill(None)
+        self.step_action = pill[2] if pill else None
+        if pill:
+            self.step_pill.setText(pill[0])
+            self.step_pill.caption.setText(pill[1])
+            self.step_rows[current].set_pill(self.step_pill)
+        self.alt_action = alt[2] if alt else None
+        self.alt_pill.setVisible(alt is not None)
+        if alt:
+            self.alt_pill.setText(alt[0])
+            self.alt_pill.caption.setText(alt[1])
+        self.finished_bar.setText(finished)
+        self.finished_bar.setVisible(bool(finished))
+        self.start_over_pill.setVisible(st is not None)
+        self.next_label.setText(nxt)
+        self.hint.setText(self.note or hint or "Advanced has each setting on its own.")
+        rounds = 1 + sum(1 for r in st.rounds if r.change) if st else 0
+        self.round_box.set_value(str(rounds) if rounds else "—")
+        self.round_box.caption.setText("Rounds" if finished else "Round")
+        self.record_box.set_value("On" if self.recording() else "Off")
+        self.record_box.set_colour(GREEN if self.recording() else GREY)
+        self.record_pill.setText("Turn off" if self.recording() else "Turn on")
+
+    def render_rounds(self, st: learn.State, sessions: list[watch.Session], base: list[watch.Session],
+                      trial: int | None, waits: bool, states: list[str], lines: list[str]) -> int:
+        """Steps 4 and 5 from round 1 on. Sets self.round_actions (pill, alt, next, finished); returns the current
+        step."""
+        tried = [r for r in st.rounds if r.change]
+        kept = sum(r.verdict == learn.KEPT for r in tried)
+        undone = sum(r.verdict == learn.UNDONE for r in tried)
+        self.round_actions = (None, None, "", "")
+        if trial is not None:
+            change = learn.Change(**st.rounds[trial].change)
+            number = len(tried) + 1
+            if waits:
+                states[3] = "now"
+                lines[3] = f"{change.label[0].upper() + change.label[1:]} is written. Restart to begin round {number}."
+                self.round_actions = (("Restart", "The board", self.start_countdown), None,
+                                      "Next: play the same games, in step 5.", "")
+                self.show_measured(base, st.rounds[learn.baseline(st)].settings, change)
+                return 3
+            states[3] = "done"
+            lines[3] = f"Round {number}: {change.label}."
+            after = learn.round_sessions(st, sessions, trial)
+            verdict = learn.compare(base, after)
+            missing = f" Not played yet in this round: {', '.join(verdict.missing)}." if verdict.missing else ""
+            self.show_compare(number, change, verdict)
+            if not verdict.ready:
+                states[4] = "running"
+                lines[4] = (f"Play the same games again. {verdict.sessions} of {learn.SESSIONS_A_ROUND} sessions "
+                            f"recorded.{missing}")
+                self.round_actions = (None, None, "Next: keep the change or undo it.", "")
+                return 4
+            states[4] = "now"
+            keep = ("Keep", change.label, self.keep)
+            undo = ("Undo", "Back to the round before", self.undo_change)
+            if verdict.kind == learn.BETTER:
+                lines[4] = f"Better. Keep the change, or undo it.{missing}"
+                self.round_actions = (keep, undo, "Next: the next change, in step 4.", "")
+            else:
+                lines[4] = (f"{'Worse' if verdict.kind == learn.WORSE else 'No better'}. Undo the change, or keep "
+                            f"it.{missing}")
+                self.round_actions = (undo, keep, "Next: the next change, in step 4.", "")
+            return 4
+        if tried:
+            states[4], lines[4] = "done", tried_text(len(tried), kept, undone)
+        if waits:
+            states[4] = "now"
+            lines[4] = "Undone. Restart the board to bring back the settings from before."
+            self.round_actions = (("Restart", "The board", self.start_countdown), None,
+                                  "Next: the next change, in step 4.", "")
+            return 4
+        change = self.proposal()
+        settings = st.rounds[learn.baseline(st)].settings
+        if change is not None:
+            states[3] = "now"
+            at_once = change.kind == learn.GUARD
+            lines[3] = f"{change.reason} Try {change.label}."
+            self.round_actions = (("Write", "Takes effect at once" if at_once else "and restart", self.try_change),
+                                  None, "Next: play the same games, in step 5.", "")
+            self.show_measured(base, settings, change)
+            return 3
+        states[3] = "done"
+        lines[3] = tried_text(len(tried), kept, undone) if tried else "Nothing measured asked for a change."
+        states[4], lines[4] = "done", "Nothing more to change. The measurements ask for nothing."
+        self.show_learned(st)
+        self.round_actions = (None, None, "Nothing to do.", "Done. Your board runs the Learned profile.")
+        return 4
+
+    # --- What the current step shows ---------------------------------------------------------------------------
+
+    def clear_content(self) -> None:
+        while self.content.count():
+            widget = self.content.takeAt(0).widget()
+            if widget is not None:
+                widget.hide()                   # at once: deleteLater() leaves it drawn until the event loop
+                widget.setParent(None)
+                widget.deleteLater()
+
+    def add_text(self, text: str, muted_text: bool = False, size: int = 14) -> QLabel:
+        label = QLabel(text)
+        label.setWordWrap(True)
+        label.setStyleSheet(f"font-size:{size}px;" + (f"color:{muted()};" if muted_text else ""))
+        self.content.addWidget(label)
+        label.show()
+        return label
+
+    def add_table(self, headers: list[str], rows: list[tuple], colours: dict | None = None) -> QTableWidget:
+        table = QTableWidget(len(rows), len(headers))
+        table.setHorizontalHeaderLabels(headers)
+        for r, cells in enumerate(rows):
+            for c, value in enumerate(cells):
+                item = QTableWidgetItem(str(value))
+                if c:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                colour = (colours or {}).get(value) if c == len(headers) - 1 else None
+                if colour:
+                    item.setForeground(QColor(colour))
+                table.setItem(r, c, item)
+        table.verticalHeader().setVisible(False)
+        header = table.horizontalHeader()
+        for c in range(1, len(headers)):
+            header.setSectionResizeMode(c, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        table.setFixedHeight(header.sizeHint().height() + max(len(rows), 1) * table.verticalHeader().defaultSectionSize()
+                             + 4)
+        self.content.addWidget(table)
+        table.show()
+        return table
+
+    def show_start(self, steps: list[str]) -> None:
+        self.add_text("<b>The Games profile, the start point</b>")
+        for line in (f"{split_label(RECOMMENDED_MB).split('  ')[0]} split. It prevents the framebuffer pin failures "
+                     "(Board Test, test 37).", f"GTT limit {system.mib_text(kargs.mib(SUITE_PAGES))}.",
+                     "Swap and memory guard as Bazzite sets them.",
+                     "Recording on. It records memory, swap, CPU and how each game ended."):
+            self.add_text(f"• {line}", size=13)
+        if steps:
+            self.add_text(f"The app writes {', '.join(steps)}.", True, 13)
+
+    def show_sessions(self, title: str, sessions: list[watch.Session]) -> None:
+        if not sessions:
+            self.add_text("No session yet. A game or program of 1 GiB or more becomes one when it ends.", True, 13)
+            return
+        self.add_text(f"<b>{escape(title)}</b>")
+        self.add_table(["Game", "How it ended", "RAM", "VRAM", "GPU borrows", "Swap", "Waited", "CPU"],
+                       [(s.program, s.ended, system.mib_text(s.ram_mib), system.mib_text(s.vram_mib),
+                         system.mib_text(s.gtt_mib), system.mib_text(s.swap_mib), f"{s.pressure:.0f}%",
+                         f"{s.cpu:.0f}%") for s in sessions[::-1]])
+        self.add_text("Waited: the share of time the board waited for memory, at its peak. CPU is for context only.",
+                      True, 12)
+
+    def show_measured(self, sessions: list[watch.Session], settings: dict, change: learn.Change) -> None:
+        self.add_text("<b>Why this change</b>")
+        self.add_table(["Measured", "Value"], learn.measured(sessions, settings, self.memory.ram_mib or 0))
+        self.add_text("One change per round, so the comparison shows what it did. The next round plays the same "
+                      "games.", True, 13)
+
+    def show_compare(self, number: int, change: learn.Change, verdict: learn.Verdict) -> None:
+        self.add_text(f"<b>Before the change against round {number}, the same games</b>")
+        self.add_table(["Measured", "Before", f"Round {number}: {change.label}", ""], verdict.rows,
+                       {learn.BETTER: GREEN, learn.WORSE: RED, learn.SAME: ORANGE})
+
+    def show_learned(self, st: learn.State) -> None:
+        start, now = st.rounds[0].settings, st.rounds[learn.baseline(st)].settings
+        why = {learn.ZRAM: "swap", learn.GTT: "pages", learn.GUARD: "guard"}
+        reasons = {why[r.change["kind"]]: r.change["reason"] for r in st.rounds
+                   if r.change and r.verdict == learn.KEPT}
+        names = (("VRAM split", "split"), ("GTT limit", "pages"), ("Swap", "swap"), ("Memory guard", "guard"))
+        self.add_text("<b>The Learned profile</b>")
+        self.add_table(["Setting", "Start point", "Learned", "Why"],
+                       [(name, self.settings_text(start, key), self.settings_text(now, key),
+                         reasons.get(key, "Unchanged")) for name, key in names])
+        self.add_text("Recording stays on. When a game runs out of memory again, the app proposes a new change.",
+                      True, 13)
 
     # --- Actions ----------------------------------------------------------------------------------------------
 

@@ -55,7 +55,9 @@ def make(tmp_path, sys_root, proc_root, journal=None, clock=lambda: 1000.0):
 
 def test_a_program_that_took_a_gib_is_a_session(tmp_path, sys_root, proc_root):
     board(proc_root, swap_free_kb=2000000, pressure=12.5)
+    (proc_root / "stat").write_text("cpu  100 0 100 800 0 0 0 0 0 0\n")
     folder, w = make(tmp_path, sys_root, proc_root)
+    (proc_root / "stat").write_text("cpu  250 0 150 900 0 0 0 0 0 0\n")      # 200 of 300 busy since
     program(folder, UNIT, 6000, swap_mib=1500)
     program(folder, "app-org.kde.konsole-423093.scope", 50)      # too small to be a session
     w.tick()
@@ -69,6 +71,7 @@ def test_a_program_that_took_a_gib_is_a_session(tmp_path, sys_root, proc_root):
     [s] = watch.read_sessions(tmp_path / "sessions.jsonl")
     assert (s.unit, s.ended, s.own_mib, s.pressure, s.boot_id) == (UNIT, watch.CLOSED, 7500, 12.5, "boot-1")
     assert (s.ram_mib, s.gtt_mib, s.swap_mib, s.swap_total_mib) == (9162, 280, 2870, 4823)
+    assert (s.vram_mib, s.cpu) == (924, 66.7)                     # the VRAM in use, the CPU load's peak
     assert s.program == "Steam game 3880967987"                    # no Steam folder in the test
 
 
@@ -173,26 +176,21 @@ def test_the_app_slice_comes_from_the_watchers_own_cgroup(tmp_path):
     assert watch.app_slice(tmp_path) is None
 
 
-def done(ended: str, swap_mib: int = 0) -> Session:
-    return Session("u", "p", 0, "b", 2000, 9000, 300, swap_mib, 4824, 9650, 20.0, 0, 1, ended)
-
-
-def test_the_proposal():
-    bazzite, ram = swap.Setup(), 9650
-    assert watch.propose([done(watch.CLOSED)] * 2, bazzite, ram, 3014656).text == ("A proposal needs 3 sessions. 2 "
-                                                                                   "recorded so far.")
-    calm = watch.propose([done(watch.CLOSED)] * 3, bazzite, ram, 3014656)
-    assert calm == watch.Proposal("No change: none of the last 3 sessions ran out of memory.")
-    short = watch.propose([done(watch.CLOSED)] * 2 + [done(watch.KILLED_SWAP)], bazzite, ram, 3014656)
-    assert short == watch.Proposal("Proposal from 3 sessions: zram the RAM.", "ram", None)
-    zram = swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=180)
-    assert watch.propose([done(watch.RESTARTED, swap_mib=4800)] * 3, zram, ram, 3014656).zram_size == "ram * 1.5"
-    largest = swap.Setup(swap.ZRAM, "ram * 2", "zstd", swappiness=180)
-    assert "Try zswap" in watch.propose([done(watch.GUARD_SWAP)] * 3, largest, ram, None).text
-    gpu = watch.propose([done(watch.KILLED_GPU)] * 3, zram, ram, 3014656)
-    assert gpu == watch.Proposal("Proposal from 3 sessions: GTT limit 7.4 GiB.", "", watch.gtt_pages(ram))
-    assert watch.propose([done(watch.KILLED_GPU)] * 3, zram, ram, watch.gtt_pages(ram)).pages is None
+def test_what_the_learning_steps_write():
     assert watch.gtt_pages(9650) == (9650 - 2048) * 256
+    assert watch.bigger_zram(swap.Setup()) == "ram"                 # Bazzite's own is half the RAM
+    assert watch.bigger_zram(swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=180)) == "ram * 1.5"
+    assert watch.bigger_zram(swap.Setup(swap.ZRAM, "ram * 2", "zstd", swappiness=180)) == ""
+
+
+def test_the_cpu_load(tmp_path):
+    """The busy share of all cores between two looks; idle and iowait count as idle."""
+    (tmp_path / "stat").write_text("cpu  100 0 100 700 100 0 0 0 0 0\ncpu0 1 1 1 1 1 0 0 0 0 0\n")
+    before = watch.cpu_times(tmp_path)
+    assert before == (200, 1000)
+    (tmp_path / "stat").write_text("cpu  250 0 150 1000 200 0 0 0 0 0\n")
+    assert watch.cpu_load(before, watch.cpu_times(tmp_path)) == 33.3
+    assert watch.cpu_times(tmp_path / "none") == (0, 0) and watch.cpu_load((0, 0), (0, 0)) == 0.0
 
 
 class Clock:

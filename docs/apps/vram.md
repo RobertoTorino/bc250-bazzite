@@ -17,8 +17,10 @@
     layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started or
     stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap file.
     The memory guard is four systemd-oomd drop-ins of the app's own in /etc. They take effect at once, because
-    systemd-oomd restarts with them. They stay across reboots and power offs. Bazzite's own guard removes them. With
-    the guard, a user service records the sessions in the app's own folder.
+    systemd-oomd restarts with them. They stay across reboots and power offs. Bazzite's own guard removes them.
+    Recording is a user service that writes the sessions in the app's own folder. The app turns it on and off without a
+    password. A learning step that needs a restart restarts the board after a countdown of 15 seconds. Until that
+    restart, an autostart entry of the app's own opens the window after the login. The app removes it after the restart.
 
 BC-250 Memory Manager sets up the memory of the **AMD BC-250** on **Bazzite**. It sets four things:
 
@@ -28,7 +30,8 @@ BC-250 Memory Manager sets up the memory of the **AMD BC-250** on **Bazzite**. I
 - the **memory guard**, which ends a program before the board freezes
 
 It also shows the memory figures that go with them, such as the GTT, the TTM limit, the system RAM and the swap.
-With the suite's guard, it records how much memory each program needed, and how it ended.
+It records how much memory each game needed, and how it ended. From those records, five steps learn the settings
+that suit the games you play.
 
 ## The split, GTT and RAM
 
@@ -46,21 +49,63 @@ must fit in the split itself. When a game fills a 512 MB split, the GPU cannot s
 ends. Board Test reports this as a framebuffer pin failure (test 37). A 6 GB split fixes it. That is why the app
 marks 6 GB as recommended for games.
 
+## Learning the settings
+
+The window opens with five steps. The current step has a frame and its pill on its row. The line under the title
+says what to do. Done steps have a green check mark.
+
+1. **Start point:** **Write** writes the Games profile, with the 6 GB split and the 11.5 GiB GTT limit. It also brings
+   back Bazzite's own swap layout and memory guard, and turns on recording. It writes only what differs from the
+   board. It asks once, and each part asks for your password.
+2. **Restart:** **Restart** restarts the board after a countdown of 15 seconds. **Restart now** does not wait, and
+   **Cancel** stops the countdown. The window opens again after you log in. The step is done at once when nothing
+   waits for a restart.
+3. **Play and record:** Play as usual. The window can stay closed. After 3 sessions, the step is done. The table
+   under the steps shows the sessions so far.
+4. **Try one change:** The app proposes one change, from what it measured. The table under the steps shows the
+   measurements. **Write** writes the change, and the board restarts after the countdown.
+5. **Play and compare:** Play the same games again. After 3 sessions, the app compares the two rounds. **Keep**
+   keeps the change. **Undo** writes back the setting from before, and the board restarts after the countdown. The
+   pill on the step is the one the app advises. The other one is in the bottom row.
+
+Then step 4 comes again with the next change. When nothing measured asks for a change, a green bar says **Done. Your
+board runs the Learned profile.** A table compares the start point with the Learned profile, with the reason for each
+change. Recording stays on. When a game runs out of memory again, step 4 proposes a new change.
+
+What points to a change, in this order:
+
+- **zram one size up:** a session ended with the swap full, or the board froze with the swap full.
+- **A GTT limit of the RAM less 2 GiB:** the kernel ended a program while the GPU borrowed half the RAM or more.
+- **The suite's memory guard:** the kernel ended a program, or the board froze, with Bazzite's guard.
+
+The app tries each change once. A larger zram keeps the compressor and `vm.swappiness` the board runs. The split
+stays at 6 GB, because nothing measured yet tells when another split is better.
+
+How the app compares two rounds:
+
+- It counts only the games played in both rounds. Step 5 names a game you have not played again yet.
+- A round is better when fewer of its sessions ended for lack of memory or a freeze.
+- When those are equal, a round is better when the peak wait for memory is 5 points lower.
+- Otherwise, the change is no better, and the app advises you to undo it.
+
+The CPU load is in the tables for context only. It never decides anything.
+
+The header shows the split, the GTT limit and the swap of this boot, whether recording is on, and the round.
+**Start over** deletes the rounds and their verdicts, and goes back to step 1. The recorded sessions stay, and so
+do the board's settings. **Programs** opens the memory over time. **Advanced** shows each setting on its own, as
+described below.
+
 ## Using it
 
-The top row shows what the kernel got at this boot:
+**Advanced** under the steps shows each setting on its own. The top row of the window shows the **VRAM split**,
+the GTT limit, **ttm.pages_limit**, and the **swap** layout that the kernel got at this boot. Above the memory map
+are the **GTT** and the **system RAM**.
 
-- the **VRAM split**
-- the **GTT**
-- the GTT limit, **ttm.pages_limit**
-- the **system RAM**
-- the **swap** layout
+The GTT limit box is marked default when the limit is not on the command line. When the limit is above the RAM,
+the GTT box says so. The GTT is then all the RAM, and a higher limit has no effect. While a new limit waits for a
+restart, the GTT limit box's caption names it ("next boot 16.0 GiB"). Hover over a box for the details.
 
-The ttm.pages_limit box is marked default when the limit is not on the command line. When the limit is above the
-RAM, the GTT box says so. The GTT is then all the RAM, and a higher limit has no effect. While a new limit waits for
-a restart, the ttm.pages_limit box's caption names it ("next boot 16.0 GiB"). Hover over a box for the details.
-
-Under the row is `vm.swappiness`. It says how readily Linux moves pages out of the RAM into swap, from 0 to 200. 60
+Beside them is `vm.swappiness`. It says how readily Linux moves pages out of the RAM into swap, from 0 to 200. 60
 is the kernel's default. A higher value prefers swap to the file cache, which is usual with zram. **Swap layout**
 sets it for the next boot.
 
@@ -205,27 +250,43 @@ them on the suite's boards.
 **Apply…** asks first, names what will change, and then asks for your password. The guard takes effect at once,
 without a restart. Apply is off while the guard you picked is the one already written.
 
-The suite's guard also starts the service that records the sessions. Bazzite's own guard stops that service. The
-recorded sessions stay.
+The guard does not turn recording on or off.
+
+## Recording
+
+Under **Recording**, **Turn on** starts a user service that records the sessions. **Turn off** stops it. It needs no
+password. Step 1 of the learning steps turns it on. The **Recording** box in the header says whether it is on.
+
+The service looks every two seconds. It records these figures of the board:
+
+- the RAM in use
+- the VRAM in use
+- what the GPU borrows, the GTT in use
+- the swap in use
+- the wait for memory
+- the CPU load of all cores
+
+The CPU load is for context only.
 
 ## Sessions
 
-While the suite's guard is on, a service watches the programs of your desktop session. It looks every two seconds. A
+While recording is on, a service watches the programs of your desktop session. It looks every two seconds. A
 program that takes 1 GiB or more, its memory and swap together, becomes a session. A program that is killed always
 becomes one.
 
-The **Sessions** table shows the newest three. Each row has these columns:
+During step 3, a table under the steps shows the sessions of round 1, the newest first. Each row has these
+columns:
 
-- **Program:** the game's name in Steam, or the app's name
-- **Ended:** how the program ended
+- **Game:** the game's name in Steam, or the app's name
+- **How it ended:** how the program ended
 - **RAM:** the board's peak RAM in use while it ran
+- **VRAM:** the board's peak VRAM in use
 - **GPU borrows:** the board's peak GTT in use
 - **Swap:** the board's peak swap in use
-- **Pressure:** the highest memory pressure, as the share of time every task waited for memory
+- **Waited:** the highest memory pressure, as the share of time every task waited for memory
+- **CPU:** the board's peak CPU load, for context only
 
-Hover over a row to see when the program ran, and how much it took itself.
-
-The **Ended** column says one of these:
+The **How it ended** column says one of these:
 
 - **Closed:** the program ended by itself, or you closed it.
 - **Guard: swap full:** systemd-oomd ended it, because the swap was over the guard's limit.
@@ -236,18 +297,10 @@ The **Ended** column says one of these:
 - **Running when the session ended:** you logged out or shut down while it ran.
 - **Board restarted while it ran:** the board froze or lost power while it ran.
 
-After three sessions, the line under the table proposes a change, from the newest ten sessions:
-
-- **A larger zram,** one size up, when the swap ran out in a session.
-- **A GTT limit of the RAM less 2 GiB,** when the kernel ended a program while the GPU filled the RAM.
-
-**Use proposal…** writes it for the next boot. It asks first, and then asks for your password. The restart stays yours
-to do. When zram is at twice the RAM already, the line advises zswap with a swap file instead.
-
 ## Programs
 
-**Programs…** under the Sessions table opens a window with the memory over time and every program the service has
-seen. It shows only what the service recorded while the suite's guard was on.
+**Programs** in the bottom row opens a window with the memory over time and every program the service has seen. It
+shows only what the service recorded while recording was on.
 
 **Memory over time** draws three lines, against the RAM as a dashed line:
 
@@ -329,6 +382,12 @@ The memory guard:
 - **Without the app:** remove the four guard files below with `sudo rm`. Then run `sudo systemctl daemon-reload`,
   `sudo systemctl restart systemd-oomd` and `systemctl --user daemon-reload`.
 
+The learning steps:
+
+- **A change:** **Undo** in step 5 writes back the setting from before.
+- **All of it:** each setting above undoes on its own. **Start over** only deletes the rounds.
+- **Recording:** **Turn off** under Recording, under Advanced.
+
 ## Files
 
 - `~/.config/bc250-memory-manager/bc250-memory-manager.ini`: the pending changes and the split to undo to. The
@@ -354,6 +413,9 @@ The memory guard:
 - `~/.local/share/bc250-memory-manager/programs.json`: each program's runs, peak, average and kills.
 - `~/.local/share/bc250-memory-manager/close-for-games.json`: the programs checked to close for games.
 - `~/.local/share/bc250-memory-manager/close-for-games.log`: each program closed for a game.
+- `~/.local/share/bc250-memory-manager/learn.json`: the learning steps' rounds, their settings and verdicts.
+- `~/.config/autostart/bc250-memory-manager-resume.desktop`: opens the window after the next login while a learning
+  step waits for a restart.
 
 How the app reads and writes CMOS: [Memory Manager internals](../development/memory-manager.md).
 

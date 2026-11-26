@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Sets the memory layout of the BC-250: the VRAM split in CMOS and the GTT limit (ttm.pages_limit) on the kernel
 command line, and the swap layout (zram, or zswap with a swap file), and shows the GTT, the TTM limit and the swap
-that go with them; and the memory guard (systemd-oomd's limits) with the sessions it records. The board changes
-only when you apply one: the guard at once, the rest after a reboot."""
+that go with them; and the memory guard (systemd-oomd's limits). It records the sessions, and five learning steps
+learn the settings from them. The board changes only when you apply one: the guard at once, the rest after a
+reboot."""
 
 APP_NAME = "BC-250 Memory Manager"
 APP_ID = "bc250-memory-manager"

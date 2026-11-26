@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The sessions: what each program asked of the memory while it ran, and how it ended (owner, 26-11-2026).
 
-The watcher runs in the desktop session as a user service (service.py) while the suite's memory guard is on:
+The watcher runs in the desktop session as a user service (service.py) while recording is on (owner, 26-11-2026:
+recording on its own, not with the memory guard):
 
     python -m vram_manager.watch
 
 Every SAMPLE_S seconds it reads the board's figures: the RAM in use (MemTotal minus MemAvailable), the RAM the GPU
-borrows (amdgpu's mem_info_gtt_used), the swap in use and the memory pressure ("full avg10" in
-/proc/pressure/memory, the share of time every task waited for memory). It also reads each program of the session:
+borrows (amdgpu's mem_info_gtt_used), the VRAM in use (mem_info_vram_used), the swap in use, the memory pressure
+("full avg10" in /proc/pressure/memory, the share of time every task waited for memory) and the CPU load since the
+last look (/proc/stat, all cores together). The CPU load is for context only: nothing is decided on it. It also reads each program of the session:
 the units under the user manager's app.slice, with their memory and swap (memory.current, memory.swap.current).
 
 A program is a session when it took MIN_MIB or more at its peak, or when it was killed. A session keeps the board's
@@ -59,8 +61,6 @@ MIN_MIB = 1024                  # a program is a session when it took this much 
 KEEP = 50                       # the sessions kept in SESSIONS
 SWAP_FULL = 0.95                # a kill with the swap this full at the peak: "swap full"
 GPU_SHARE = 0.5                 # a kill with the GPU borrowing this share of the RAM at the peak: "GPU memory"
-PROPOSE_AFTER = 3               # the sessions a proposal needs
-LOOK_BACK = 10                  # the sessions a proposal looks at, newest first
 SPARE_MIB = 2048                # the RAM the Smooth profile's GTT limit leaves the system
 POINT_S = 60                    # one point of the history a minute
 HISTORY_S = 24 * 3600           # the history kept
@@ -123,6 +123,8 @@ class Session:
     oom_kills: int = 0              # memory.events oom_kill, last seen
     end: float = 0.0
     ended: str = ""
+    vram_mib: int = 0               # the board's peak VRAM in use
+    cpu: float = 0.0                # the board's peak CPU load, percent of all cores
 
 
 @dataclass
@@ -133,6 +135,8 @@ class Board:
     swap_mib: int = 0
     swap_total_mib: int = 0
     pressure: float = 0.0
+    vram_mib: int = 0
+    cpu: float = 0.0
 
 
 @dataclass
@@ -143,6 +147,8 @@ class Point:
     gtt_mib: int = 0
     swap_mib: int = 0
     pressure: float = 0.0
+    vram_mib: int = 0
+    cpu: float = 0.0
 
 
 @dataclass
@@ -164,6 +170,23 @@ class Stats:
 
 # --- Reading ---------------------------------------------------------------------------------------------------
 
+def cpu_times(proc_root: Path = Path("/proc")) -> tuple[int, int]:
+    """All cores' busy and total time so far (the "cpu" line of /proc/stat, idle and iowait as idle); (0, 0) when
+    it cannot be read."""
+    try:
+        fields = [int(v) for v in (proc_root / "stat").read_text().splitlines()[0].split()[1:]]
+    except (OSError, ValueError, IndexError):
+        return 0, 0
+    total = sum(fields[:8])                     # guest time is counted in user time already
+    return total - sum(fields[3:5]), total
+
+
+def cpu_load(before: tuple[int, int], now: tuple[int, int]) -> float:
+    """The CPU load between two cpu_times(), in percent."""
+    busy, total = now[0] - before[0], now[1] - before[1]
+    return round(100.0 * busy / total, 1) if total > 0 else 0.0
+
+
 def read_board(sys_root: Path = Path("/sys"), proc_root: Path = Path("/proc")) -> Board:
     info = system._meminfo(proc_root)
     usage = system.read_usage(sys_root, proc_root)
@@ -176,7 +199,7 @@ def read_board(sys_root: Path = Path("/sys"), proc_root: Path = Path("/proc")) -
         pass
     total = info.get("MemTotal", 0)
     return Board(ram_mib=(total - info.get("MemAvailable", total)) // 1024, ram_total_mib=total // 1024,
-                 gtt_mib=usage.gtt_used_mib or 0,
+                 gtt_mib=usage.gtt_used_mib or 0, vram_mib=usage.vram_used_mib or 0,
                  swap_mib=(info.get("SwapTotal", 0) - info.get("SwapFree", 0)) // 1024,
                  swap_total_mib=info.get("SwapTotal", 0) // 1024, pressure=pressure)
 
@@ -437,6 +460,7 @@ class Watcher:
         self.first = True                       # the first look: a game that runs already closes nothing
         self.closed: set[str] = set()           # the units stopped for a game
         self.boot = boot_id(self.proc_root)
+        self.cpu = cpu_times(self.proc_root)    # the CPU load is the busy share since the last look
         try:
             left = {k: Session(**v) for k, v in json.loads(self.open_file.read_text(encoding="utf-8")).items()}
         except (OSError, ValueError, TypeError):
@@ -455,6 +479,8 @@ class Watcher:
 
     def tick(self) -> None:
         board = read_board(self.sys_root, self.proc_root)
+        cpu, self.cpu = self.cpu, cpu_times(self.proc_root)
+        board.cpu = cpu_load(cpu, self.cpu)
         programs = read_programs(self.folder)
         now = self.clock()
         started_game = ""
@@ -476,6 +502,7 @@ class Watcher:
             session.gtt_mib = max(session.gtt_mib, board.gtt_mib)
             session.swap_mib = max(session.swap_mib, board.swap_mib)
             session.pressure = max(session.pressure, board.pressure)
+            session.vram_mib, session.cpu = max(session.vram_mib, board.vram_mib), max(session.cpu, board.cpu)
             session.swap_total_mib, session.ram_total_mib = board.swap_total_mib, board.ram_total_mib
             session.end = now
         for unit in [u for u in self.open if u not in programs]:
@@ -520,6 +547,7 @@ class Watcher:
         p = self.point
         p.ram_mib, p.gtt_mib = max(p.ram_mib, board.ram_mib), max(p.gtt_mib, board.gtt_mib)
         p.swap_mib, p.pressure = max(p.swap_mib, board.swap_mib), max(p.pressure, board.pressure)
+        p.vram_mib, p.cpu = max(p.vram_mib, board.vram_mib), max(p.cpu, board.cpu)
 
     def stop(self) -> None:
         """The watcher stops (log out, shut down): the open sessions are written as still running then."""
@@ -534,14 +562,7 @@ class Watcher:
         write_stats(self.stats, self.programs)
 
 
-# --- The proposal ----------------------------------------------------------------------------------------------
-
-@dataclass(frozen=True)
-class Proposal:
-    text: str
-    zram_size: str = ""             # a zram size to write, "" for none
-    pages: int | None = None        # a GTT limit to write, None for none
-
+# --- What the learning steps write (learn.py) ----------------------------------------------------------------
 
 def gtt_pages(ram_mib: int) -> int:
     """The Smooth profile's GTT limit: the RAM less SPARE_MIB, in 4 KiB pages."""
@@ -556,34 +577,6 @@ def bigger_zram(setup: swap.Setup) -> str:
     if setup.layout == swap.ZRAM and setup.zram_size in sizes[:-1]:
         return sizes[sizes.index(setup.zram_size) + 1]
     return ""
-
-
-def propose(sessions: list[Session], setup: swap.Setup, ram_mib: int, next_pages: int | None) -> Proposal:
-    """What the recorded sessions ask for: a larger zram when swap ran out, a GTT limit below the RAM when the GPU's
-    borrowing filled it. Nothing before PROPOSE_AFTER sessions."""
-    if len(sessions) < PROPOSE_AFTER:
-        return Proposal(f"A proposal needs {PROPOSE_AFTER} sessions. {len(sessions)} recorded so far.")
-    recent = sessions[-LOOK_BACK:]
-    short_swap = any(s.ended in SHORT_OF_SWAP or (s.ended == RESTARTED and s.swap_total_mib
-                                                   and s.swap_mib >= s.swap_total_mib * SWAP_FULL) for s in recent)
-    short_gpu = any(s.ended == KILLED_GPU for s in recent)
-    zram = bigger_zram(setup) if short_swap else ""
-    pages = gtt_pages(ram_mib) if short_gpu and ram_mib else None
-    if pages is not None and next_pages is not None and next_pages <= pages:
-        pages = None                                # the next boot's limit leaves the room already
-    parts = []
-    if zram:
-        label = next(lbl for lbl, size, _f in swap.ZRAM_SIZES if size == zram)
-        parts.append(f"zram {label[0].lower() + label[1:]}")
-    if pages is not None:
-        parts.append(f"GTT limit {system.mib_text(pages // 256)}")
-    count = len(recent)
-    if parts:
-        return Proposal(f"Proposal from {count} sessions: {' and '.join(parts)}.", zram, pages)
-    if short_swap:
-        return Proposal(f"Swap ran out in the last {count} sessions, and zram is at its largest. Try zswap with a swap "
-                        "file.")
-    return Proposal(f"No change: none of the last {count} sessions ran out of memory.")
 
 
 # --- The service -----------------------------------------------------------------------------------------------
