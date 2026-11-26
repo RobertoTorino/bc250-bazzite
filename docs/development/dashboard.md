@@ -606,6 +606,8 @@ The pills:
   in a Flatpak shows it whole.
 - **Export** writes the article to a new folder in the folder you choose. The folder holds `index.html` with its
   pictures and fonts. An export never writes over a folder that is there already.
+  A git checkout, such as the website's folder, is the exception. There, Export writes the files straight into it,
+  over the old ones. It removes nothing. Publish then commits and pushes them.
 - **Screenshots** takes the stills of the portal again.
 - **Text check** runs `tools/text_check.py` on `copy.md`. Its output shows below the table.
 - **Publish** sends the article to the website. Its caption says how many files differ from the website's folder,

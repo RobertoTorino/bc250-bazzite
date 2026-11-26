@@ -1,3 +1,13 @@
+Changelog: 26-11-2026 00:56:55
+
+Fixed. Export into a git checkout, such as the website's folder, writes the article straight into it, over the old files. It made a dated folder inside the repository before.
+
+Fixed. The app has its .gitignore, as every app must.
+
+Changelog: 26-11-2026 00:49:26
+
+Fixed. The page builds on Python 3.12 again. Loading the portal's manifest.py failed there, because its dataclass could not find its module.
+
 Changelog: 26-11-2026 00:01:43
 
 Fixed. The copy lists Twitch among the portal's shortcuts.

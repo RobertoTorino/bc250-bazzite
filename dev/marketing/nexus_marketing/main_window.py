@@ -311,6 +311,10 @@ class MainWindow(QMainWindow):
         settings.setValue("export_folder", chosen)
         folder = export_folder(Path(chosen))
         article.write(article.build(), folder)
+        if folder == Path(chosen):                      # a git checkout: Publish's count follows
+            self._show_website()
+            self.say(f"The article is in {private(folder)}. Publish commits it and pushes it.")
+            return
         self.say(f"The article is in {private(folder)}. Open index.html there, or put the folder on a web server.")
 
     # --- the tools ---------------------------------------------------------------------------------------------
@@ -391,7 +395,10 @@ def suite_slug() -> str:
 
 def export_folder(parent: Path, now: datetime.datetime | None = None) -> Path:
     """A new folder in *parent* for the article, named by the date and time. It never takes a folder that is there
-    already, so an export never writes over anything."""
+    already, so an export never writes over anything. A git checkout, as the website's, gets the article itself:
+    its files go straight in, over the old ones (owner, 26-11-2026: the dated folder landed in the repository)."""
+    if (parent / ".git").exists():
+        return parent
     stamp = (now or datetime.datetime.now()).strftime("%Y-%m-%d-%H%M%S")
     name = suite_slug() + "-article"
     folder = parent / f"{name}-{stamp}"

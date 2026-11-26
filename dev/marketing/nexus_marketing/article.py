@@ -20,6 +20,7 @@ from __future__ import annotations
 import importlib.util
 import re
 import shutil
+import sys
 import tomllib
 from dataclasses import dataclass, field
 from html import escape
@@ -77,6 +78,7 @@ def categories(root: Path = CHECKOUT) -> dict[str, str]:
     manifest = next((root / "portal").glob("*/manifest.py"))
     spec = importlib.util.spec_from_file_location("portal_manifest", manifest)
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module             # dataclasses look their module up while the class is built
     spec.loader.exec_module(module)
     return dict(module.CATEGORIES)
 

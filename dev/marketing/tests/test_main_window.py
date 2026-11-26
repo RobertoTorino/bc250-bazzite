@@ -35,6 +35,12 @@ def test_export_never_takes_a_folder_that_is_there(tmp_path):
     assert export_folder(tmp_path, now).name == "bc250-bazzite-suite-article-2026-11-25-213005-2"
 
 
+def test_export_writes_into_a_git_checkout_itself(tmp_path):
+    """A git checkout, as the website's (owner, 26-11-2026): the article goes straight in, no dated folder."""
+    (tmp_path / ".git").mkdir()
+    assert export_folder(tmp_path) == tmp_path
+
+
 def test_publish_says_when_the_website_is_behind(tmp_path):
     window = MainWindow(stills=lambda: True)
     assert window.publish_pill.caption.text() == "Choose the folder"
