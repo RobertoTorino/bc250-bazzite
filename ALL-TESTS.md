@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3573 test functions (4137 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3578 test functions (4142 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -46,14 +46,14 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
 | [dev/garbage](#devgarbage) | 1 | 8 |  |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
-| [dev/marketing](#devmarketing) | 2 | 26 |  |
+| [dev/marketing](#devmarketing) | 2 | 28 |  |
 | [dev/nrt](#devnrt) | 4 | 135 | 24.8 s |
 | [dev/sounds](#devsounds) | 2 | 22 | 0.7 s |
 | [dev/studio](#devstudio) | 6 | 65 |  |
 | [dev/text](#devtext) | 5 | 44 |  |
-| [portal](#portal) | 17 | 224 | 29.0 s |
+| [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3573** | **182 s** |
+| **All** | | **3578** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -3166,7 +3166,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/marketing
 
-26 tests in 2 files.
+28 tests in 2 files.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3183,11 +3183,12 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_article.py` | `test_write_puts_every_file_beside_the_page` |  |  | Write puts every file beside the page. |
 | `test_article.py` | `test_every_file_of_the_page_exists` |  |  | Every file of the page exists. |
 | `test_article.py` | `test_the_preview_is_one_file_with_nothing_beside_it` |  |  | A browser in a sandbox (a Flatpak) gets only the file it opens: the preview refers to no file beside it. |
-| `test_article.py` | `test_the_quickfix_card_names_four_and_more` |  |  | Four quickfixes by name, then "and more..." (owner, 25-11-2026): not the one named as the app's own tile. |
+| `test_article.py` | `test_the_quickfix_card_has_only_its_line_from_the_copy` |  |  | The quickfix card is like every other card: its one line from copy.md, no list of names under it (owner, 26-11-2026). |
 | `test_article.py` | `test_and_more_sits_above_the_safety_band` |  |  | And more sits above the safety band. |
 | `test_article.py` | `test_changes_and_publish_touch_only_the_articles_files` |  |  | Changes and publish touch only the articles files. |
 | `test_article.py` | `test_publish_commands_commit_the_articles_files_and_push` |  |  | Run against a local bare repository: the commit has the article's files, its message, and reaches the remote. |
 | `test_article.py` | `test_each_headline_line_in_the_copy_is_a_line_on_the_page` |  |  | copy.md sets where the headline breaks: a line there is a line on the page (owner, 25-11-2026). |
+| `test_article.py` | `test_the_specs_row_has_its_numbers_and_their_notes` |  |  | The board's numbers sit under the hero, a label with asterisks has its note at the bottom (owner, 26-11-2026), and a copy.md without the "Specs" part has no row. |
 | `test_main_window.py` | `test_a_row_for_every_app` |  |  | A row for every app. |
 | `test_main_window.py` | `test_current_stills_cannot_be_taken_again` |  |  | Current stills cannot be taken again. |
 | `test_main_window.py` | `test_export_never_takes_a_folder_that_is_there` |  |  | Export never takes a folder that is there. |
@@ -3196,6 +3197,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_website_url_from_the_remote_or_the_cname` |  |  | Website url from the remote or the cname. |
 | `test_main_window.py` | `test_the_globe_is_on_with_a_website` |  |  | The globe is on with a website. |
 | `test_main_window.py` | `test_each_suite_has_its_own_preview_file` |  |  | Both suites' twins have the same app ID, so the preview is named after the suite (owner, 25-11-2026). |
+| `test_main_window.py` | `test_the_pencil_opens_copy_md` |  |  | The pencil beside the line that names copy.md opens the file in the default editor (owner, 26-11-2026). |
 
 ## dev/nrt
 
@@ -3493,7 +3495,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## portal
 
-224 tests in 17 files, 29.0 s in a local run.
+227 tests in 17 files, 29.0 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3625,6 +3627,9 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_sysinfo.py` | `test_the_owners_board` |  |  | The owners board. |
 | `test_sysinfo.py` | `test_two_gpus_a_sata_drive_and_a_usb_stick` |  |  | Two gpus a sata drive and a usb stick. |
 | `test_sysinfo.py` | `test_the_screens_in_use` |  |  | The screens the desktop shows now get a row each under their output, with the mode in use (owner, 22-11-2026); a screen the desktop does not show, or a mode Qt does not know, gets none. |
+| `test_sysinfo.py` | `test_a_fractional_scale_shows_the_outputs_own_resolution` |  |  | Qt's size times 175 % is half a pixel off; the output's listed mode is what it runs (owner, 26-11-2026: a 4K TV at 175 % showed 4388 × 2468 at 200 %). |
+| `test_sysinfo.py` | `test_the_clock_now_without_cpufreq` |  |  | A board without cpufreq (no ACPI override) reports no max clock, so the fastest core's clock of the moment shows (owner, 26-11-2026). |
+| `test_sysinfo.py` | `test_vram_taken_from_the_boards_memory_is_explained` |  |  | The firmware's memory map reserves exactly the VRAM's 6 GiB (as on the owner's BC-250, 26-11-2026), so the Memory section says why RAM and VRAM do not add up to the board's memory; a GPU with its own memory gets no line. |
 | `test_sysinfo.py` | `test_a_system_that_reports_nothing` |  |  | No sysfs, /proc or /etc (another OS, a container): only what Python itself knows. |
 | `test_sysinfo.py` | `test_as_text` |  |  | As text. |
 | `test_touchpad_and_raise.py` | `test_a_finger_moves_the_pointer_and_a_press_clicks` |  |  | A finger moves the pointer and a press clicks. |

@@ -8,16 +8,34 @@ Run tools/text_check.py --details on this file to check it. -->
 
 ## Headline
 
-One portal. Every part of your BC-250.
+One portal. Every part of your AMD BC-250.
 
 ## Claim
 
 Test it, tune it, unlock it and play on it. The BC250 Bazzite Suite brings {apps} apps running in Bazzite on
 the AMD BC-250. One portal installs them opens them and keeps them up to date.
 
+## Specs
+
+<!-- The board's numbers in a row under the hero: the number, a space, then its label as the page shows it. A label
+that ends in asterisks has its note under "Spec notes", at the bottom of the page. -->
+
+- 8 ZEN 2 CPU CORES*
+- 16 THREADS*
+- 3.5 GHz
+- 40 COMPUTE UNITS*
+- 16 GIGABYTE GDDR6
+- 3840 PIXELS 4K ULTRA HD
+- 2 TERABYTE SSD NVME**
+
+## Spec notes
+
+- * The most the board can unlock in theory. Every board is unique.
+- ** Storage depends on your own setup. This is a real-life example.
+
 ## Portal
 
-The portal runs fullscreen. It suits a TV and a controller as much as a desk.
+The portal runs fullscreen. It works as well on a TV with a controller as on a monitor with a keyboard and mouse.
 
 - A big tile for every app, sharp on a 4K screen
 - The keyboard, the mouse or a controller, all alike
@@ -88,7 +106,7 @@ asks before it installs or opens them. Every change is software-only, and you ca
 | controller | Your DualSense in top form. Battery, firmware updates from the official server and the Edge's profiles. |
 | ssd | Know how your SSDs are doing. It shows their health, power cycles and power-on hours. |
 | btpair | Your Bluetooth keyboard, mouse and controllers, paired at boot. No USB keyboard or mouse needed. |
-| quickfix | Always installed. Every quickfix is a tile of its own. |
+| quickfix | Always installed. Quickfixes for MangoHud, GPU metrics, sensors, the journal, the IOMMU and more. |
 | password | A random password of 8 or 15 characters, kept nowhere. |
 
 ## Video

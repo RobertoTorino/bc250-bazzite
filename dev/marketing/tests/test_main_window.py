@@ -89,3 +89,14 @@ def test_each_suite_has_its_own_preview_file(monkeypatch, tmp_path):
     window.on_preview()
     assert [path.name for path in tmp_path.iterdir()] == [main_window.suite_slug() + ".html"]
     window.close()
+
+
+def test_the_pencil_opens_copy_md(monkeypatch):
+    """The pencil beside the line that names copy.md opens the file in the default editor (owner, 26-11-2026)."""
+    from nexus_marketing import main_window
+    opened = []
+    monkeypatch.setattr(main_window.QDesktopServices, "openUrl", lambda url: opened.append(url.toLocalFile()))
+    window = MainWindow(stills=lambda: True)
+    window.edit_button.click()
+    assert opened == [str(article.COPY)]
+    window.close()

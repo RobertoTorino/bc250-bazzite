@@ -579,20 +579,27 @@ The article is a web page to share, in the suite's own design. It covers the por
 development apps. It has these parts:
 
 - a hero with the headline and the buttons
+- the board's numbers, when `copy.md` has them
 - the number of apps, categories and quickfixes
 - the portal, with a picture of its Settings page
 - each category with a picture of its tab and a card per app
 - **And more...**, the small touches of the portal and the apps
 - the Portal Tour, the four steps to get it, and the links
-- the license and the disclaimer from the suite's README
+- the license and the disclaimer from the suite's README, then the notes on the board's numbers
 
-The links go to the latest release, the wiki, the Portal Tour page and the repository on GitHub. Each app's card
-opens its chapter of the wiki. An app that changes the board carries **Changes the board** on its card.
+The board's numbers come from the **Specs** part of `copy.md`. Each line is a number, a space and its label.
+A label that ends in `*` or `**` gets a small mark. Its note under **Spec notes** starts with the same mark.
+The notes show at the bottom of the page.
+
+The links go to the latest release, the wiki, the Portal Tour and the repository on GitHub. **Watch the tour**
+and the video's picture play the video itself. Only the footer's link opens the Portal Tour page. Each app's card
+opens its chapter of the wiki. An app that changes the board carries **Changes the board** on its card, in the portal's orange.
 
 The article keeps up with the suite by itself. The apps, their order, their categories and their marks come from
 `portal/apps.toml`. The words come from `dev/marketing/nexus_marketing/copy.md`, with a line for each category and
 each app. The window lists every app of the portal with its line. **Apps with a line** turns red when an app has
-none. The app's tests fail then too. Write the new line in `copy.md`, then click the round symbol to read it again.
+none. The app's tests fail then too. The pencil after the line under the table opens `copy.md` in your
+text editor. Write the new line there, then click the round symbol to read it again.
 
 The pictures of the portal are stills of the real portal from this checkout, in `dev/marketing/images/shots/`.
 `tools/portal_shots.py` takes them offscreen, the way `tools/portal_tour.py` records the Portal Tour. **Screenshots** shows whether they

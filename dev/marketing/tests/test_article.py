@@ -58,6 +58,9 @@ def test_the_page_links_the_release_the_wiki_the_video_and_github():
     assert f'href="{article.SUITE_REPO_URL}/releases/latest"' in page
     assert f'href="{article.SUITE_MANUAL_URL}"' in page
     assert f'href="{article.SUITE_MANUAL_URL}portal-tour/"' in page
+    # Watch the tour and the poster play the video itself, not its wiki page (owner, 26-11-2026)
+    assert page.count(f'href="{article.SUITE_MANUAL_URL}videos/portal-tour.mp4"') == 4      # the hero, See it in action, Get it
+    assert page.count(f'href="{article.SUITE_MANUAL_URL}portal-tour/"') == 1               # the footer's link
     assert f'href="{article.SUITE_REPO_URL}"' in page
 
 
@@ -102,7 +105,7 @@ def test_write_puts_every_file_beside_the_page(tmp_path):
     page = article.write(built, tmp_path / "out")
     assert page.read_text(encoding="utf-8") == built.html
     assert all((tmp_path / "out" / name).is_file() for name in built.files)
-    for target in re.findall(r'(?:src|href)="((?!https?:|data:)[^"]+)"', built.html):
+    for target in re.findall(r'(?:src|href)="((?!https?:|data:|#)[^"]+)"', built.html):
         assert (tmp_path / "out" / target).is_file(), target
 
 
@@ -118,12 +121,12 @@ def test_the_preview_is_one_file_with_nothing_beside_it():
     assert not re.findall(r'url\("?(?!data:)[^)"]+"?\)', page)
 
 
-def test_the_quickfix_card_names_four_and_more():
-    """Four quickfixes by name, then "and more..." (owner, 25-11-2026): not the one named as the app's own tile."""
-    app = next(app for app in article.apps() if app.quickfixes)
-    named = [name for name in app.quickfixes if name != app.short]
+def test_the_quickfix_card_has_only_its_line_from_the_copy():
+    """The quickfix card is like every other card: its one line from copy.md, no list of names under it (owner,
+    26-11-2026)."""
     page = article.build().html
-    assert f"<p>{', '.join(named[:4])} and more...</p>" in page
+    card = re.search(r'<a class="card" href="[^"]*apps/quickfix/">(.*?)</a>', page, flags=re.S).group(1)
+    assert re.findall(r"<p>(.*?)</p>", card) == [article.inline(article.table(article.read_copy()["Apps"])["quickfix"])]
 
 
 def test_and_more_sits_above_the_safety_band():
@@ -178,3 +181,23 @@ def test_each_headline_line_in_the_copy_is_a_line_on_the_page(tmp_path, monkeypa
     path.write_text(copy, encoding="utf-8")
     monkeypatch.setattr(article, "COPY", path)
     assert "<h1>One portal. Every part<br>of your board.</h1>" in article.build().html
+
+
+def test_the_specs_row_has_its_numbers_and_their_notes(tmp_path, monkeypatch):
+    """The board's numbers sit under the hero, a label with asterisks has its note at the bottom (owner,
+    26-11-2026), and a copy.md without the "Specs" part has no row."""
+    plain = re.sub(r"## Specs.*?(?=## Portal)", "", article.COPY.read_text(encoding="utf-8"), flags=re.S)
+    copy = tmp_path / "copy.md"
+    copy.write_text(plain.replace("## Portal", "## Specs\n\n- 3.5 GHz\n- 40 COMPUTE UNITS*\n- 2 TB**\n\n"
+                                  "## Spec notes\n\n- * In theory.\n- ** An example.\n\n## Portal"), encoding="utf-8")
+    monkeypatch.setattr(article, "COPY", copy)
+    assert article.specs(article.read_copy(copy)["Specs"]) == [("3.5", "GHz", ""), ("40", "COMPUTE UNITS", "*"),
+                                                               ("2", "TB", "**")]
+    page = article.build().html
+    assert page.index("</header>") < page.index('class="band band--specs"') < page.index("<span>Apps</span>")
+    assert '<span>COMPUTE UNITS<sup><a href="#spec-notes">*</a></sup></span>' in page
+    assert page.index('id="spec-notes"') > page.index("<h4>Disclaimer</h4>")
+    assert '<p><span class="mark">**</span> An example.</p>' in page
+    copy.write_text(plain, encoding="utf-8")
+    page = article.build().html
+    assert "band--specs" not in page and "spec-notes" not in page

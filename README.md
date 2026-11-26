@@ -9,6 +9,10 @@
 These tools are for the AMD BC-250 running Bazzite. The **[portal](portal)** installs, opens, updates and removes
 them. BC-250 Board Test and BC-250 Quickfix are always installed. Every other app is optional.
 
+> [!TIP]
+> **[Visit the BC250 Bazzite Suite website](https://robertotorino.github.io/bc250-suite/).** It shows every app, the
+> Portal Tour and the download on one page.
+
 **Beta:** The suite is in active development. Features and layout may still change between releases.
 
 ![The wiki](portal/images/wiki.webp)

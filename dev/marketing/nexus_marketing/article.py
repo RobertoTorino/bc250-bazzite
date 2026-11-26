@@ -4,15 +4,16 @@
 What it is made of, so it keeps up with the suite:
   * portal/apps.toml: the apps, in the portal's order and categories, with their names, the quickfixes and the
     "changes the board" mark; the category names come from the portal's manifest.py
-  * copy.md beside this file: the words, a line for each category and each app (missing() lists what lacks one)
+  * copy.md beside this file: the words, a line for each category and each app (missing() lists what lacks one),
+    and the board's numbers with their notes, when it has a "Specs" part
   * the README's License section's first paragraph (the licenses: the paragraphs after it name development
     apps) and its Disclaimer, word for word
   * the portal's pictures: the suite's icon and the apps' tile icons
   * the stills of the portal (tools/portal_shots.py) in images/shots/ of the app folder
   * images/hero.webp in the app folder as the hero's background, when there is one; else a drawn placeholder
 
-The links go to the latest release (the newest portal), the wiki with a chapter per app, the wiki's Portal Tour page
-(the video) and the repository on GitHub. Only the portal and its apps are in it: the development apps in dev/ never
+The links go to the latest release (the newest portal), the wiki with a chapter per app, the Portal Tour video
+itself (owner, 26-11-2026: no detour through the wiki), the wiki's Portal Tour page and the repository on GitHub. Only the portal and its apps are in it: the development apps in dev/ never
 are (owner, 25-11-2026)."""
 
 from __future__ import annotations
@@ -37,9 +38,10 @@ SHOTS = ROOT / "images" / "shots"                   # the stills of the portal, 
 HERO = ROOT / "images" / "hero.webp"                # the hero's background; a drawn placeholder without it
 RELEASE_URL = f"{SUITE_REPO_URL}/releases/latest"   # GitHub's Latest release is the newest portal
 TOUR_URL = f"{SUITE_MANUAL_URL}portal-tour/"
-QUICKFIXES_NAMED = 4                                # the quickfix card names this many, then "and more..."
+VIDEO_URL = f"{SUITE_MANUAL_URL}videos/portal-tour.mp4"   # the video itself, as the Portal Tour page plays it
 FONTS = ("Inter-SemiBold.ttf", "Inter-Bold.ttf", "Inter-ExtraBold.ttf", "Inter-LICENSE.txt")
 SECTIONS = ("Headline", "Claim", "Portal", "And more", "Safety", "Categories", "Apps", "Video", "Get it", "Closing")
+NOTE_MARK = re.compile(r"\s*(\*+)$")              # a spec's note: one asterisk or more at the end of its label
 
 
 @dataclass
@@ -140,6 +142,24 @@ def missing(root: Path = CHECKOUT, path: Path = COPY) -> list[str]:
     return problems
 
 
+def specs(lines: list[str]) -> list[tuple[str, str, str]]:
+    """The board's numbers under the hero, from copy.md's "Specs" items: (number, label, note mark). An item is the
+    number, a space and its label, written as the page shows it. A label that ends in asterisks has the note in
+    "Spec notes" that starts with the same asterisks."""
+    found = []
+    for item in items(lines):
+        number, _, label = item.partition(" ")
+        mark = NOTE_MARK.search(label)
+        found.append((number, NOTE_MARK.sub("", label), mark.group(1) if mark else ""))
+    return found
+
+
+def spec_notes(lines: list[str]) -> list[tuple[str, str]]:
+    """The notes of the specs, from copy.md's "Spec notes" items: (mark, text). Each item starts with its asterisks."""
+    return [(found.group(1), found.group(2)) for found in (re.match(r"^(\*+)\s+(.*)$", item) for item in items(lines))
+            if found]
+
+
 # --- the license and the disclaimer, from the README ---------------------------------------------------------------
 
 def readme_section(heading: str, root: Path = CHECKOUT) -> list[str]:
@@ -206,9 +226,21 @@ def build(root: Path = CHECKOUT, shot_folder: Path = SHOTS, hero: Path = HERO) -
         hero_class, hero_style = "hero", ' style="background-image:url(images/hero.webp)"'
 
     buttons = (f'<a class="button button--primary" href="{RELEASE_URL}">Download the latest release</a>'
-               f'<a class="button" href="{TOUR_URL}">Watch the tour</a>'
+               f'<a class="button" href="{VIDEO_URL}">Watch the tour</a>'
                f'<a class="button" href="{SUITE_MANUAL_URL}">Read the wiki</a>'
                f'<a class="button" href="{SUITE_REPO_URL}">View on GitHub</a>')
+
+    def sup(mark: str) -> str:
+        return f'<sup><a href="#spec-notes">{escape(mark)}</a></sup>' if mark else ""
+
+    # the board's numbers and their notes: only when copy.md has them
+    numbers = specs(words.get("Specs", []))
+    spec_band = ('<div class="band band--specs"><div class="inner numbers specs">'
+                 + "".join(f"<div><strong>{escape(number)}</strong><span>{inline(label)}{sup(mark)}</span></div>"
+                           for number, label, mark in numbers) + "</div></div>\n") if numbers else ""
+    notes = spec_notes(words.get("Spec notes", []))
+    notes_html = ('<div id="spec-notes">' + "".join(f'<p><span class="mark">{escape(mark)}</span> {inline(note)}</p>'
+                                                    for mark, note in notes) + "</div>") if notes else ""
     page = [f"""<header class="{hero_class}"{hero_style}>
 <div class="inner">
 <img class="hero__logo" src="images/suite.webp" alt="">
@@ -218,7 +250,7 @@ def build(root: Path = CHECKOUT, shot_folder: Path = SHOTS, hero: Path = HERO) -
 <div class="buttons">{buttons}</div>
 </div>
 </header>
-<div class="band"><div class="inner numbers">
+{spec_band}<div class="band"><div class="inner numbers">
 <div><strong>{count}</strong><span>Apps</span></div>
 <div><strong>{len(names)}</strong><span>Categories</span></div>
 <div><strong>{quickfixes}</strong><span>Quickfixes</span></div>
@@ -238,14 +270,10 @@ def build(root: Path = CHECKOUT, shot_folder: Path = SHOTS, hero: Path = HERO) -
         cards = []
         for app in (app for app in entries if app.category == key):
             mark = '<span class="tag">Changes the board</span>' if app.changes_board else ""
-            # four quickfixes by name, then "and more" (owner, 25-11-2026): not the one named as the app's tile
-            named = [name for name in app.quickfixes if name != app.short]
-            more = " and more..." if len(named) > QUICKFIXES_NAMED else ""
-            fixes = f'<p>{escape(", ".join(named[:QUICKFIXES_NAMED]))}{more}</p>' if named else ""
             files[f"images/apps/{app.key}.webp"] = root / "portal" / "images" / "apps" / f"{app.key}.webp"
             cards.append(f"""<a class="card" href="{SUITE_MANUAL_URL}apps/{app.key}/">
 <header><img src="images/apps/{app.key}.webp" alt=""><h3>{escape(app.short)}</h3></header>
-<p>{inline(app_lines.get(app.key, ""))}</p>{fixes}{mark}
+<p>{inline(app_lines.get(app.key, ""))}</p>{mark}
 </a>""")
         page.append(f"""<section class="category {"dark" if index % 2 == 0 else "glow"}" id="{key}"><div class="inner">
 <p class="kicker">{escape(name)}</p>
@@ -258,7 +286,7 @@ def build(root: Path = CHECKOUT, shot_folder: Path = SHOTS, hero: Path = HERO) -
     video = ""
     if poster.is_file():
         files["images/tour.webp"] = poster
-        video = (f'<a class="video" href="{TOUR_URL}">'
+        video = (f'<a class="video" href="{VIDEO_URL}">'
                  '<img class="shot" src="images/tour.webp" alt="The Portal Tour"></a>')
     page.append(f"""<section class="more"><div class="inner">
 <p class="kicker">And more...</p>
@@ -266,7 +294,7 @@ def build(root: Path = CHECKOUT, shot_folder: Path = SHOTS, hero: Path = HERO) -
 <ul class="chips">{"".join(f"<li>{inline(item)}</li>" for item in items(words.get("And more", [])))}</ul>
 </div></section>""")
     page.append(f"""<section class="safety"><div class="inner">
-<p class="kicker" style="color:#fff">Changes the board</p>
+<p class="kicker kicker--warn">Changes the board</p>
 <p class="lead">{inline(text("Safety"))}</p>
 </div></section>
 <section class="dark"><div class="inner split">
@@ -274,7 +302,7 @@ def build(root: Path = CHECKOUT, shot_folder: Path = SHOTS, hero: Path = HERO) -
 <p class="kicker">The Portal Tour</p>
 <h2>See it in action</h2>
 <p class="lead">{inline(text("Video"))}</p>
-<a class="button button--primary" href="{TOUR_URL}">Watch the tour</a>
+<a class="button button--primary" href="{VIDEO_URL}">Watch the tour</a>
 </div>
 <div>{video}</div>
 </div></section>
@@ -292,6 +320,7 @@ def build(root: Path = CHECKOUT, shot_folder: Path = SHOTS, hero: Path = HERO) -
 {"".join(f"<p>{inline(p)}</p>" for p in readme_section("License", root)[:1])}
 <h4>Disclaimer</h4>
 {"".join(f"<p>{inline(p)}</p>" for p in readme_section("Disclaimer", root))}
+{notes_html}
 </div></footer>""")
 
     html = f"""<!DOCTYPE html>

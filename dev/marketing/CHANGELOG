@@ -1,3 +1,29 @@
+Changelog: 26-11-2026 07:27:53
+
+Added. A small pencil after the line that names copy.md opens the file in your default text editor (owner, 26-11-2026). The line stays on one line.
+
+Changelog: 26-11-2026 07:16:40
+
+Fixed. Watch the tour and the picture under See it in action play the Portal Tour video itself (owner, 26-11-2026). Before, they opened its wiki page first. The footer's Portal Tour link still opens that page.
+
+Changelog: 26-11-2026 07:11:08
+
+Fixed. The Quickfix card shows only its line from copy.md, like every other card (owner, 26-11-2026). It listed four quickfixes by name under it before. A card's text takes at most four lines.
+
+Changelog: 26-11-2026 07:02:21
+
+Fixed. The row of the board's numbers spreads wider on a big screen.
+
+Fixed. The memory and storage numbers drop the words MEMORY and STORAGE.
+
+Changelog: 26-11-2026 06:47:47
+
+Added. A row with the board's numbers under the hero, from the new Specs part of copy.md. A label that ends in asterisks gets a small mark, and its note from Spec notes shows at the bottom of the page (owner, 26-11-2026).
+
+Fixed. Changes the board is in the portal's orange, on the cards and above the safety band.
+
+Fixed. The Portal line in copy.md names a TV with a controller and a monitor with a keyboard and mouse. It said "a desk" before.
+
 Changelog: 26-11-2026 00:56:55
 
 Fixed. Export into a git checkout, such as the website's folder, writes the article straight into it, over the old files. It made a dated folder inside the repository before.

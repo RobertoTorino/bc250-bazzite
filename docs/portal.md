@@ -410,9 +410,10 @@ Start Nexus Dashboard for BC-250 from the checkout, or give it a menu entry with
 
     - the board
     - the BIOS, with UEFI and Secure Boot
-    - the CPU, with its model, the cores and threads online, the top clock and the microcode
+    - the CPU, with its model, the cores and threads online, the top clock, the clock of the
+      fastest core at that moment and the microcode
     - each GPU, with its name, driver, VRAM, shared memory, clock levels, VBIOS and PCIe link
-    - the memory
+    - the memory, and whether the GPU's VRAM comes out of it
     - the drives, with the free space in your home folder
     - the displays, with each output, the monitor's name and its preferred mode
     - the resolution, refresh rate and scale of each screen in use

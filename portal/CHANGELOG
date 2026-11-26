@@ -1,3 +1,13 @@
+Changelog: 26-11-2026 06:54:24
+
+Added. Sys info says when the GPU's VRAM comes out of the board's own memory. RAM and VRAM then add up to less than the board has, because the firmware keeps a part. Only root can read the exact total, so Sys info says that too.
+
+Changelog: 26-11-2026 06:47:47
+
+Fixed. Sys info shows the resolution and scale a screen really runs at. A 4K screen at 175 % showed as 4388 × 2468 at 200 %, because Qt rounds a fractional scale up.
+
+Added. Sys info shows the clock of the fastest core at that moment. A board without frequency scaling reports no top clock, so the CPU showed no clock at all.
+
 Changelog: 26-11-2026 05:26:33
 
 Release 28.2.0. Pins bc250-rpcs3-v7.9.2, bc250-consoles-v5.8.2, bc250-clb-v4.8.2, bc250-shadps4-v7.8.2, bc250-ppsspp-v5.9.2, bc250-pcsx2-v7.9.2, bc250-vita3k-v5.10.2, bc250-xenia-v5.10.2.

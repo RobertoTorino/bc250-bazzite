@@ -22,6 +22,7 @@ from PyQt6.QtGui import QCloseEvent, QColor, QDesktopServices, QIcon, QPainter, 
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QFileDialog,
+    QHBoxLayout,
     QHeaderView,
     QLabel,
     QMainWindow,
@@ -125,6 +126,24 @@ class GlobeButton(QToolButton):
         return QIcon(pixmap)
 
 
+class EditButton(QToolButton):
+    """A small round pencil, of the info symbol's size and look, beside the line that names copy.md: it opens the
+    file in the default editor for its type (owner, 26-11-2026)."""
+
+    SIZE = InfoButton.SIZE
+
+    def __init__(self, tooltip: str, parent: QWidget | None = None):
+        super().__init__(parent)
+        self.setText("✎")
+        self.setToolTip(tooltip)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFixedSize(self.SIZE, self.SIZE)
+        self.setStyleSheet(
+            f"QToolButton {{ border:1px solid {accent()}; border-radius:{self.SIZE // 2}px; color:white; "
+            f"background:{accent()}; font-weight:800; padding:0 0 1px 0; }}"
+            "QToolButton:hover, QToolButton:focus { border-color:white; }")
+
+
 class MainWindow(QMainWindow):
     def __init__(self, stills=stills_current):
         """*stills*: stills_current, or a test's own."""
@@ -181,8 +200,16 @@ class MainWindow(QMainWindow):
         heading.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         heading.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         layout.addWidget(self.table, 3)
-        layout.addWidget(hint_label("The words are in dev/marketing/nexus_marketing/copy.md. Edit them there, then "
-                                    "read them again with the arrows."))
+        words = QHBoxLayout()
+        where = hint_label("The words are in dev/marketing/nexus_marketing/copy.md. Edit them there, then read them "
+                           "again with the arrows.")
+        where.setWordWrap(False)                    # one line, with the pencil right after it
+        words.addWidget(where)
+        self.edit_button = EditButton("Open copy.md in your text editor")
+        self.edit_button.clicked.connect(self.open_copy)
+        words.addWidget(self.edit_button)
+        words.addStretch(1)
+        layout.addLayout(words)
         self.output = Terminal()
         layout.addWidget(self.output, 1)
         self.line = QLabel()
@@ -248,6 +275,9 @@ class MainWindow(QMainWindow):
         self.globe_button.setEnabled(url is not None)
         self.globe_button.setToolTip(f"Open the website, {url}" if url else
                                      "Open the website. Choose its folder with Publish first.")
+
+    def open_copy(self) -> None:
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(article.COPY)))
 
     def open_website(self) -> None:
         url = website_url(self.website())

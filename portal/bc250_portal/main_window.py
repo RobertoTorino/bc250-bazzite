@@ -204,12 +204,16 @@ def shell_line(folder: PurePath, commands: tuple[str, ...]) -> str:
     return " && ".join([f"cd {shlex.quote(str(folder))}", *commands])
 
 
-def screens_in_use() -> dict[str, sysinfo.Mode]:
+def screens_in_use(window: QWidget | None = None) -> dict[str, sysinfo.Mode]:
     """The screens the desktop shows now, by output name, as Qt reports them: the resolution in pixels (its size
-    times the scale), the refresh rate and the scale."""
+    times the scale), the refresh rate and the scale. The screen *window* is on takes the window's scale: a screen
+    reports a fractional scale rounded up (175 % as 200 %), a shown window the real one."""
     found = {}
+    handle = window.windowHandle() if window is not None else None
     for screen in QApplication.screens():
         scale, size = screen.devicePixelRatio(), screen.geometry().size()
+        if handle is not None and handle.screen() is screen:
+            scale = handle.devicePixelRatio()
         found[screen.name()] = (round(size.width() * scale), round(size.height() * scale), screen.refreshRate(), scale)
     return found
 
@@ -1355,7 +1359,7 @@ class MainWindow(QMainWindow):
         """The Sys info window, read again each time it opens; one at a time."""
         if self.sysinfo_window is None:
             self.sysinfo_window = SysInfoDialog(self)
-        self.sysinfo_window.fill(sysinfo.collect(in_use=screens_in_use()))
+        self.sysinfo_window.fill(sysinfo.collect(in_use=screens_in_use(self)))
         self.sysinfo_window.show()
         self.sysinfo_window.raise_()
         self.sysinfo_window.activateWindow()
