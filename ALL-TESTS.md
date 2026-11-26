@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3636 test functions (4200 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3640 test functions (4204 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -17,13 +17,13 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/cec](#appscec) | 8 | 98 | 1.6 s |
 | [apps/check](#appscheck) | 4 | 35 | 2.5 s |
 | [apps/clb](#appsclb) | 12 | 88 | 2.9 s |
-| [apps/compute](#appscompute) | 8 | 76 | 0.4 s |
+| [apps/compute](#appscompute) | 9 | 77 | 0.4 s |
 | [apps/consoles](#appsconsoles) | 25 | 238 | 10.1 s |
 | [apps/controller](#appscontroller) | 13 | 164 | 6.3 s |
-| [apps/cores](#appscores) | 7 | 55 | 0.3 s |
+| [apps/cores](#appscores) | 8 | 56 | 0.3 s |
 | [apps/datstation](#appsdatstation) | 7 | 39 | 2.5 s |
 | [apps/fan](#appsfan) | 2 | 38 | 0.5 s |
-| [apps/gpu](#appsgpu) | 14 | 72 | 5.8 s |
+| [apps/gpu](#appsgpu) | 15 | 73 | 5.8 s |
 | [apps/mesh](#appsmesh) | 5 | 48 | 3.1 s |
 | [apps/overlay](#appsoverlay) | 1 | 12 | 0.3 s |
 | [apps/password](#appspassword) | 2 | 22 | 0.6 s |
@@ -35,7 +35,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/shadps4](#appsshadps4) | 17 | 158 | 8.0 s |
 | [apps/ssd](#appsssd) | 4 | 49 | 0.9 s |
 | [apps/turing](#appsturing) | 9 | 77 | 1.4 s |
-| [apps/upscaler](#appsupscaler) | 11 | 119 | 1.6 s |
+| [apps/upscaler](#appsupscaler) | 12 | 120 | 1.6 s |
 | [apps/vita3k](#appsvita3k) | 9 | 85 | 5.3 s |
 | [apps/vram](#appsvram) | 11 | 87 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
@@ -53,7 +53,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3636** | **182 s** |
+| **All** | | **3640** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -517,7 +517,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/compute
 
-76 tests in 8 files, 0.4 s in a local run.
+77 tests in 9 files, 0.4 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -597,6 +597,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_session.py` | `test_one_terminal_for_every_run` |  |  | The second run uses the same shell and terminal, so sudo, which remembers per terminal, asks only once. |
 | `test_session.py` | `test_stop_ends_the_script_and_keeps_the_terminal` |  |  | Stop ends the script and keeps the terminal. |
 | `test_session.py` | `test_a_test_run_blocks_sleep_until_it_ends` |  |  | With block_sleep the script runs under systemd-inhibit; its exit code comes through. |
+| `test_wheel_guard.py` | `test_the_wheel_changes_a_value_only_after_a_click` |  |  | The wheel changes a value only after a click. |
 
 ## apps/consoles
 
@@ -1016,7 +1017,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/cores
 
-55 tests in 7 files, 0.3 s in a local run.
+56 tests in 8 files, 0.3 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -1075,6 +1076,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_session.py` | `test_one_terminal_for_every_run` |  |  | The second run uses the same shell and terminal, so sudo, which remembers per terminal, asks only once. |
 | `test_session.py` | `test_stop_ends_the_script_and_keeps_the_terminal` |  |  | Stop ends the script and keeps the terminal. |
 | `test_session.py` | `test_a_test_run_blocks_sleep_until_it_ends` |  |  | With block_sleep the script runs under systemd-inhibit; its exit code comes through. |
+| `test_wheel_guard.py` | `test_the_wheel_changes_a_value_only_after_a_click` |  |  | The wheel changes a value only after a click. |
 
 ## apps/datstation
 
@@ -1169,7 +1171,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/gpu
 
-72 tests in 14 files, 5.8 s in a local run.
+73 tests in 15 files, 5.8 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -1243,6 +1245,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_sweep_window.py` | `test_installed_and_kept_are_finished` |  |  | Installed and kept are finished. |
 | `test_sweep_window.py` | `test_one_boot_each_restarts_and_goes_on_after_the_login` |  |  | One boot each restarts and goes on after the login. |
 | `test_sweep_window.py` | `test_a_crash_is_asked_in_the_window` |  |  | A crash is asked in the window. |
+| `test_wheel_guard.py` | `test_the_wheel_changes_a_value_only_after_a_click` |  |  | The wheel changes a value only after a click. |
 | `test_widgets.py` | `test_tooltip_filter_is_removed_when_the_app_quits` |  |  | Tooltip filter is removed when the app quits. |
 | `test_widgets.py` | `test_tooltip_border_is_the_outline` |  |  | Framed in the theme's outline, silver, not the accent (owner, 07-11-2026). |
 
@@ -2206,7 +2209,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/upscaler
 
-119 tests in 11 files, 1.6 s in a local run.
+120 tests in 12 files, 1.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2327,6 +2330,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_store_steam.py` | `test_store_round_trip` |  |  | Store round trip. |
 | `test_store_steam.py` | `test_store_tolerates_garbage` |  |  | Store tolerates garbage. |
 | `test_store_steam.py` | `test_steam_libraries_and_games` |  |  | Steam libraries and games. |
+| `test_wheel_guard.py` | `test_the_wheel_changes_a_value_only_after_a_click` |  |  | The wheel changes a value only after a click. |
 | `test_widgets.py` | `test_tooltip_filter_is_removed_when_the_app_quits` |  |  | Tooltip filter is removed when the app quits. |
 | `test_widgets.py` | `test_tooltip_border_is_the_outline` |  |  | Framed in the theme's outline, silver, not the accent (owner, 07-11-2026). |
 

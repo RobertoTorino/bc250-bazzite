@@ -83,7 +83,7 @@ asks before it installs or opens them. Every change is software-only, and you ca
 | compute | Unlock more compute units with confidence. It tells bad CUs apart from an unstable unlock. |
 | cores | Go for 8 cores and 16 threads. It finds bad cores before you make the unlock stick. |
 | acpi | Give the CPU its C-states and frequency scaling, through a persistent ACPI override. |
-| vram | Split the memory your way. It sets the VRAM split, with the GTT, TTM limit and swap to match. |
+| vram | Memory set for your games. It sets the VRAM split, GTT and swap, and learns from the games you play. |
 | fan | Stay cool under load. A thermal guard warns, cools and shuts down cleanly at a critical temperature. |
 | upscaler | Sharper games with HelixSR, a drop-in upscaler for FSR 3.1 with DLSS-style networks. |
 | ace | Async compute for your games. A patched RADV, built on the board and tested. |
