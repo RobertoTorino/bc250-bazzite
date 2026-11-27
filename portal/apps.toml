@@ -36,8 +36,8 @@
 [apps.check]
 name = "BC-250 Board Test"
 summary = "Read-only diagnostics, stress test and benchmarks. Always installed."
-tag = "bc250-check-v4.11.1"
-sha256 = "b6467bf91e9a7389ada2d426f505be47720348f0d9384b27d853fae72571a7ad"
+tag = "bc250-check-v4.11.2"
+sha256 = ""
 required = true
 changes_board = false
 category = "sustainable"
@@ -89,8 +89,8 @@ launch = [["Open", "~/.local/bin/bc250-upscaler"]]
 [apps.compute]
 name = "BC-250 CU Unlock"
 summary = "Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock."
-tag = "bc250-compute-v2.0.2"
-sha256 = "5d79f71f03dab6299f6d42fa7238d387c87cd5098771b4f918dbe1dac62a4921"
+tag = "bc250-compute-v2.0.3"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -230,8 +230,8 @@ launch = [["Open", "~/.local/bin/bc250-mesh-shaders"]]
 [apps.vram]
 name = "BC-250 Memory Manager"
 summary = "The VRAM split in CMOS, with the GTT, TTM limit and swap layout that go with it."
-tag = "bc250-vram-v5.1.1"
-sha256 = "8e858e8e1305964c6a12cf55c038dcf396ea3c133183aafb964099a099b2a322"
+tag = "bc250-vram-v5.2.0"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """
@@ -498,8 +498,8 @@ launch = [["Open", "~/.local/bin/bc250-bluetooth-pairing"]]
 [apps.quickfix]
 name = "BC-250 Quickfix"
 summary = "Small quickfixes for one job each. They cover Board Test's optional tools, MangoHud's config, GPU metrics, the sensors driver, the regulator's sensors, the memory map, the journal, the IOMMU and the CPU mitigations. Always installed."
-tag = "bc250-quickfix-v1.10.1"
-sha256 = "939d4314c66cf7e122e80fb0534b9139a651a197bb74d666160993cabb55d4f6"
+tag = "bc250-quickfix-v1.11.0"
+sha256 = ""
 required = true
 changes_board = false
 category = "utilities"
