@@ -644,14 +644,14 @@ with `umr`. It keeps a validated unlock across restarts.
 2. **Make it persistent:** `bc250-cu-unlock.sh --install <masks>`, or **Install** in BC-250 CU Unlock, saves the mask.
    A root systemd service then applies it at every boot, before the desktop starts. It turns on at the next
    restart. The unlock survives restarts, cold boots and Bazzite updates. CU Unlock offers **Install** only after
-   the bisect results show that the combined mask passed every round. The mask must also have the same number of WGPs on all 4 rows.
+   the bisect results show that the combined mask passed every round. The mask must also have 3, 4 or 5 WGPs on every row.
 3. **Undo:** run `sudo ./bc250-cu-unlock.sh --uninstall` or click **Uninstall** in CU Unlock. Then restart. The board
    is back at stock 24 CUs.
 
 Keep these caveats in mind:
 
-- Keep the 4 shader arrays even, for example 4/4/4/4 WGPs = 32 CUs. The GPU splits work across them in lockstep. An
-  uneven mask uses more power without being faster.
+- Keep the two halves of the GPU even. That means the same number of WGPs in SE0 and in SE1, for example 4/4/4/4
+  WGPs = 32 CUs or 4/5/4/5 = 36 CUs. A mask with more WGPs in one half uses more power without being faster.
 - Check the result here. Test 21 shows the live CU count. Test 41 (stress) and test 42 (benchmark) show whether the
   unlock is stable and what it adds. See [Example: 24 → 36 CU unlock](#example-24--36-cu-unlock).
 - A WGP that passed can still fail under other conditions, such as heat or a game. After a hang, remove the unlock

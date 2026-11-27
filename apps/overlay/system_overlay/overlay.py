@@ -5,6 +5,9 @@ remembers its position and choices."""
 
 from __future__ import annotations
 
+from collections import deque
+from dataclasses import replace
+
 from PyQt6.QtCore import QRectF, Qt, QTimer
 from PyQt6.QtGui import QAction, QActionGroup, QColor, QContextMenuEvent, QMouseEvent, QPainter, QPaintEvent, QPen
 from PyQt6.QtWidgets import QGridLayout, QLabel, QMenu, QWidget
@@ -16,6 +19,11 @@ from bc250_core.theme import ACCENT, ORANGE, RED, header_font
 from . import APP_NAME, INFO
 
 INTERVAL_MS = 1000
+# The GPU load is a snapshot: the governor counts a busy flag over 16 ms, about one frame. A reading between two
+# frames is 0 % while the GPU works (27-11-2026: 2 % of the readings under a constant full load). So the overlay
+# samples it more often and shows the average of the last second.
+GPU_SAMPLE_MS = 200
+GPU_SAMPLES = 5
 RADIUS = 10
 DASH = "—"
 DOT = " · "
@@ -136,6 +144,10 @@ class OverlayWindow(QWidget):
         self.timer = QTimer(self, interval=INTERVAL_MS)
         self.timer.timeout.connect(self.refresh)
         self.timer.start()
+        self.gpu_samples: deque[float] = deque(maxlen=GPU_SAMPLES)
+        self.gpu_timer = QTimer(self, interval=GPU_SAMPLE_MS)
+        self.gpu_timer.timeout.connect(self.sample_gpu)
+        self.gpu_timer.start()
 
         restore_geometry(self, self.settings.qsettings)
         self.refresh()
@@ -150,8 +162,18 @@ class OverlayWindow(QWidget):
         scale, size = screen.devicePixelRatio(), screen.geometry().size()
         return round(size.width() * scale), round(size.height() * scale), screen.refreshRate(), scale
 
+    def sample_gpu(self) -> None:
+        """One more GPU load snapshot for the average; without a reading the samples go."""
+        load = self.sensors.gpu_load()
+        if load is None:
+            self.gpu_samples.clear()
+        else:
+            self.gpu_samples.append(load)
+
     def refresh(self) -> None:
         reading = self.sensors.read()
+        if reading.gpu_load is not None and self.gpu_samples:
+            reading = replace(reading, gpu_load=sum(self.gpu_samples) / len(self.gpu_samples))
         for key, (text, colour) in format_reading(reading, self.screen_mode()).items():
             label = self.values[key]
             label.setText(text)

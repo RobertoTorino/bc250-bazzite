@@ -1,3 +1,9 @@
+Changelog: 27-11-2026 16:13:00
+
+Fixed. The core map shows a healthy core as On once the boot unlock is installed and the core is
+online. Before, the two unlocked cores stayed blue, Healthy, while the window said all 8 cores were on. The wiki's
+legend says the same now.
+
 Changelog: 26-11-2026 20:47:21
 
 Release 2.0.1.

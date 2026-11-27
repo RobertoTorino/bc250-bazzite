@@ -15,6 +15,7 @@ the checkout. Each app opens in a window of its own:
 - [Nexus Demo Recorder](../demo)
 - [Nexus Sound Lab](../sounds)
 - [Nexus Deps](../deps)
+- [Nexus Flight Recorder](../flight)
 - [Nexus Garbage Remover](../garbage)
 - [Nexus TTS](../text)
 - [Nexus Remix Studio](../studio)

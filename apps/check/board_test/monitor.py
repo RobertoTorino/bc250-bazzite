@@ -29,6 +29,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 RESCAN_S = 10.0
+# gpu_metrics' load is a snapshot: the governor counts a busy flag over 16 ms, about one frame, so one reading can
+# fall between two frames and say 0 % while the GPU works. A sample is the average of a few snapshots.
+GPU_SNAPSHOTS = 4
+GPU_SNAPSHOT_GAP_S = 0.015
 FPS_FRESH_S = 5.0
 _AMDGPU = re.compile(r"^drm-driver:\s*amdgpu\s*$", re.M)
 WINE_HELPERS = {"services.exe", "explorer.exe", "winedevice.exe", "plugplay.exe", "rpcss.exe",
@@ -78,8 +82,10 @@ def _read(path: Path, limit: int = 65536) -> str | None:
 class Sampler:
     """Pure-Python sampler (no Qt), so it can be tested against a fake /proc tree."""
 
-    def __init__(self, proc: Path = Path("/proc"), sys: Path = Path("/sys"), home: Path = Path.home()):
+    def __init__(self, proc: Path = Path("/proc"), sys: Path = Path("/sys"), home: Path = Path.home(),
+                 sleep=time.sleep):
         self.proc, self.sys, self.home = proc, sys, home
+        self._sleep = sleep                     # between the GPU load snapshots; a test's own
         self.available = (proc / "stat").exists()
         self.ncpu = os.cpu_count() or 1
         self.clk_tck = os.sysconf("SC_CLK_TCK") if hasattr(os, "sysconf") else 100
@@ -113,16 +119,31 @@ class Sampler:
         # Without fix-metrics a stock kernel's gpu_metrics holds 0 or 0xFFFF (the "0%" / "655%" overlay bug).
         mounts = _read(self.proc / "self" / "mountinfo") or ""
         if "gpu_metrics" in mounts:
-            try:
-                raw = (dev / "gpu_metrics").read_bytes()[:32]
-                # APU layout v2.x: header(4) temp_gfx temp_soc temp_core[8] temp_l3[2] average_gfx_activity
-                if len(raw) >= 30 and raw[2] == 2:
-                    (activity,) = struct.unpack_from("<H", raw, 28)
-                    if activity <= 100:
-                        return float(activity), "gpu_metrics"
-            except OSError:
-                pass
+            loads = []
+            for n in range(GPU_SNAPSHOTS):
+                if n:
+                    self._sleep(GPU_SNAPSHOT_GAP_S)
+                load = self._metrics_load(dev)
+                if load is None:
+                    break
+                loads.append(load)
+            if loads:
+                return sum(loads) / len(loads), "gpu_metrics"
         return None, "fdinfo"
+
+    @staticmethod
+    def _metrics_load(dev: Path) -> float | None:
+        """One snapshot of gpu_metrics' average_gfx_activity, in percent. The field is in hundredths of a percent, as
+        on other AMD APUs and as core's sensors read it; unpatched it holds 0xFFFF."""
+        try:
+            raw = (dev / "gpu_metrics").read_bytes()[:32]
+        except OSError:
+            return None
+        # APU layout v2.x: header(4) temp_gfx temp_soc temp_core[8] temp_l3[2] average_gfx_activity
+        if len(raw) < 30 or raw[2] != 2:
+            return None
+        (activity,) = struct.unpack_from("<H", raw, 28)
+        return activity / 100 if activity <= 10000 else None
 
     def _mangohud_dirs(self) -> list[Path]:
         dirs: list[Path] = []

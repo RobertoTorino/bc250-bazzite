@@ -128,29 +128,18 @@ def test_no_adapter_on_the_board(sys_root, modules):
     lines = wifi.report((), modules)
     assert levels(lines) == ["INFO", "HINT"]
     assert "The BC-250 has none of its own" in text(lines) and "MediaTek (mt76)" in text(lines)
-    assert "Wi-Fi Adapter" not in text(lines)                    # the app that built the AIC driver is gone
     assert levels(wifi.report((), wifi.read_modules(KERNEL, Path("/nowhere")))) == ["NOTE", "INFO", "HINT"]
 
 
-def test_the_owners_stick_in_storage_mode(sys_root, modules):
-    # As the board reported it on 19-10-2026: 1-5, a69c:5723 "Aic MSC", its disk on usb-storage.
-    usb(sys_root, "1-5", "a69c", "5723", "Aic MSC", {"1.0": ("08", "usb-storage", "usb_storage")})
-    (stick,) = wifi.find_adapters(sys_root, modules)
-    assert (stick.usb_id, stick.drivers, stick.claiming) == ("a69c:5723", ("usb_storage",), ())
-    assert stick.storage_mode and stick.aic_d80 and stick.verdict == "storage"
-    lines = wifi.report((stick,), modules)
-    assert lines[0] == ("INFO", "Aic MSC (a69c:5723, USB 1-5): driver usb_storage")
-    assert levels(lines) == ["INFO", "WARNING", "HINT"] and "does not work on Bazzite as it is" in lines[1][1]
-
-
-def test_the_owners_stick_in_wifi_mode(sys_root, modules):
-    # 17-10-2026: 2-5, a69c:8d81, Bluetooth on btusb, Wi-Fi on the out-of-tree aic8800_fdrv, wlan0.
+def test_a_stick_on_an_out_of_tree_driver(sys_root, modules):
+    # As a board reported it on 17-10-2026: 2-5, a69c:8d81, Bluetooth on btusb, Wi-Fi on a driver that is not the
+    # kernel's own, wlan0. No stick gets a treatment of its own: the interface is what counts.
     usb(sys_root, "2-5", "a69c", "8d81", "AIC 8800D80",
         {"1.0": ("e0", "btusb", "btusb"), "1.1": ("e0", "btusb", "btusb"), "1.2": ("ff", "aic8800_fdrv", None)})
     wlan(sys_root, "wlan0", sys_root / "bus/usb/devices/2-5:1.2")
     runner = lambda argv: IW_LINK.replace("wlan1", argv[2])                               # noqa: E731
     (stick,) = wifi.find_adapters(sys_root, modules, runner=runner)
-    assert stick.drivers == ("btusb", "aic8800_fdrv") and stick.wifi_drivers == ("aic8800_fdrv",)
+    assert stick.drivers == ("btusb", "aic8800_fdrv") and stick.wifi_drivers == ()
     assert stick.verdict == "connected" and stick.interfaces[0].link == wifi.Link(5180, -44, "540.4 MBit/s")
     lines = wifi.report((stick,), modules)
     assert lines == [("INFO", "AIC 8800D80 (a69c:8d81, USB 2-5): driver btusb, aic8800_fdrv, interface wlan0"),
@@ -160,20 +149,16 @@ def test_the_owners_stick_in_wifi_mode(sys_root, modules):
     write(sys_root / "class/net/wlan0/carrier", "0")
     (stick,) = wifi.find_adapters(sys_root, modules)
     lines = wifi.report((stick,), modules)
-    assert stick.verdict == "ready" and levels(lines) == ["INFO", "SUCCESS", "HINT"] and "WPA2" in lines[2][1]
+    assert stick.verdict == "ready" and levels(lines) == ["INFO", "SUCCESS", "HINT"]
+    assert lines[2] == ("HINT", "Connect it in the network settings.")
 
 
-def test_the_aic_stick_without_a_driver(sys_root, modules):
-    usb(sys_root, "2-5", "a69c", "8d81", "AIC 8800D80", {"1.0": ("e0", "btusb", "btusb"), "1.2": ("ff", None, None)})
+def test_a_stick_without_a_driver_gets_no_treatment_of_its_own(sys_root, modules):
+    usb(sys_root, "2-5", "a69c", "8d81", "AIC 8800D80", {"1.2": ("ff", None, None)})
     (stick,) = wifi.find_adapters(sys_root, modules)
-    assert stick.verdict == "aic"
+    assert stick.verdict == "no-driver"
     lines = wifi.report((stick,), modules)
-    assert levels(lines) == ["INFO", "WARNING", "HINT"] and "does not work on Bazzite as it is" in lines[1][1]
-    # An installed AIC loader has it, no interface came (the chip refused it):
-    usb(sys_root, "2-6", "a69c", "8d80", "AIC Wlan", {"1.0": ("ff", "aic_load_fw", None)})
-    loader = wifi.find_adapters(sys_root, modules)[1]
-    lines = wifi.report((loader,), modules)
-    assert loader.verdict == "aic" and levels(lines) == ["INFO", "NOTE", "HINT"] and "the chip refused it" in lines[1][1]
+    assert levels(lines)[:2] == ["INFO", "WARNING"] and "AIC8800" not in text(lines) and "WPA" not in text(lines)
 
 
 def test_a_realtek_stick_on_the_kernels_driver(sys_root, modules):
@@ -240,7 +225,7 @@ def test_a_stick_in_its_driver_disk_mode(sys_root, modules):
     usb(sys_root, "1-3", "0bda", "1a2b", "DISK", {"1.0": ("08", "usb-storage", "usb_storage")})
     (stick,) = wifi.find_adapters(sys_root, modules)
     lines = wifi.report((stick,), modules)
-    assert stick.verdict == "storage" and not stick.aic_d80 and "sudo eject /dev/sdX" in lines[2][1]
+    assert stick.verdict == "storage" and "sudo eject /dev/sdX" in lines[2][1]
 
 
 def test_an_intel_pcie_card(sys_root, modules):

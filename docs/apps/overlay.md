@@ -10,7 +10,7 @@ A small window that stays on top of your desktop and shows the **AMD BC-250**'s 
 | Row | What it shows | Source |
 |---|---|---|
 | CPU | load over the last second and the average core clock | `/proc/stat`, cpufreq |
-| GPU | load and clock, and the GPU's own power with **VRM Sensors** on | the GPU governor's `gpu_metrics`, `amdgpu`, `bc250_vrm` |
+| GPU | load averaged over the last second, the clock, and the GPU's own power with **VRM Sensors** on | the GPU governor's `gpu_metrics`, `amdgpu`, `bc250_vrm` |
 | Chip power | what the whole chip draws: CPU, GPU and the rest together | `amdgpu` (its PPT value) |
 | Governor | the GPU governor's current clock range | the governor, over D-Bus |
 | GPU volt | core voltage (vddgfx) | `amdgpu` |

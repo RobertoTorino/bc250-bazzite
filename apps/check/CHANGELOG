@@ -1,3 +1,16 @@
+Changelog: 27-11-2026 18:59:41
+
+Fixed. The monitor reads the GPU load of the governor's gpu_metrics in hundredths of a percent, as core's sensors
+do. Before, it took the field for whole percents, so every load above 1 % was thrown away and the monitor fell back to
+the programs' own GPU time, which showed about 0 % under a full GPU load on a board (27-11-2026). A wrong fact, now
+corrected. A sample is also the average of 4 snapshots 15 ms apart, since one snapshot covers 16 ms and can fall
+between two frames. New tests in test_monitor_gpu.py.
+
+Changelog: 27-11-2026 17:47:08
+
+Fixed. The Wi-Fi Adapter test no longer treats the AIC8800D80 stick as a case of its own. It reports every stick
+the same way. The wiki's Board Test chapter drops the sentence about that stick.
+
 Changelog: 27-11-2026 05:24:10
 
 Release 4.11.2.

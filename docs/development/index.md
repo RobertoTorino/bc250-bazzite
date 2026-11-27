@@ -33,7 +33,7 @@ dev/<name>/                   the development apps, run from the checkout and ne
                               Dashboard (the door to the others), dev/nrt/ Nexus Release Tool, dev/demo/ Nexus
                               Demo Recorder, dev/itests/ Nexus Installer Tests, dev/sounds/ Nexus Sound Lab,
                               dev/deps/ Nexus Deps, dev/text/ Nexus TTS, dev/studio/ Nexus Remix Studio,
-                              dev/garbage/ Nexus Garbage Remover
+                              dev/garbage/ Nexus Garbage Remover, dev/flight/ Nexus Flight Recorder
 docs/ mkdocs.yml              this wiki (MkDocs Material)
 icons/                        the category icons
 DESIGN.md design/colors/      every color of the suite and its samples (tools/make_design.py writes them)

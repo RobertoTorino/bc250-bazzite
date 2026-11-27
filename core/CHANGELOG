@@ -1,3 +1,9 @@
+Changelog: 27-11-2026 17:47:08
+
+Fixed. The Wi-Fi reader no longer knows the AIC8800D80 stick. Its storage mode, its out-of-tree driver and its WPA2
+hint are gone, since the stick and its driver app are. Such a stick is now reported like any other: by its
+interface, or as a stick without a driver. Every other verdict is unchanged.
+
 Changelog: 26-11-2026 20:03:05
 
 Version 6.9.1.

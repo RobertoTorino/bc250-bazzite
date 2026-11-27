@@ -34,13 +34,7 @@ USB_WIFI_VENDORS = {
 }
 PCI_VENDORS = {0x8086: "Intel", 0x10EC: "Realtek", 0x14C3: "MediaTek", 0x168C: "Qualcomm Atheros",
                0x17CB: "Qualcomm", 0x14E4: "Broadcom", 0x1814: "Ralink"}
-# The AIC8800D80 (the UGREEN AX900 and others), for which Bazzite's kernel has no driver: its storage mode, waiting
-# for its firmware, Wi-Fi mode.
-AIC_VENDORS = (0xA69C, 0x368B)
-AIC_STORAGE = {0x5721, 0x5722, 0x5723, 0x5724, 0x572C}
-AIC_D80 = AIC_STORAGE | {0x8D80, 0x8D81}
-AIC_MODULES = ("aic_load_fw", "aic8800_fdrv")   # an out-of-tree driver, when one is installed: not in modules.dep
-# Other sticks that come up as a small disk with the Windows driver, until something switches them.
+# Sticks that come up as a small disk with the Windows driver, until something switches them.
 STORAGE_MODE = {(0x0BDA, 0x1A2B): "Realtek", (0x0E8D, 0x2870): "MediaTek"}
 KERNEL_STICKS = "Most sticks with a Realtek (rtw88, rtw89) or MediaTek (mt76) chip have a driver in Bazzite's kernel."
 FIRMWARE_LINE = re.compile(r"^(?:\S+ )?(\S+): Direct firmware load for (\S+) failed with error", re.MULTILINE)
@@ -162,30 +156,23 @@ class Adapter:
         return f"{self.vendor:04x}:{self.product:04x}"
 
     @property
-    def aic_d80(self) -> bool:
-        return self.bus == "usb" and self.vendor in AIC_VENDORS and self.product in AIC_D80
-
-    @property
     def storage_mode(self) -> bool:
-        return self.bus == "usb" and ((self.vendor in AIC_VENDORS and self.product in AIC_STORAGE)
-                                      or (self.vendor, self.product) in STORAGE_MODE)
+        return self.bus == "usb" and (self.vendor, self.product) in STORAGE_MODE
 
     @property
     def wifi_drivers(self) -> tuple[str, ...]:
-        return tuple(d for d in self.drivers if d in self.claiming or d in AIC_MODULES)
+        return tuple(d for d in self.drivers if d in self.claiming)
 
     @property
     def verdict(self) -> str:
-        """connected, ready, blocked, firmware, storage, aic (an AIC8800D80 stick in Wi-Fi mode), no-interface (a
-        driver is bound, no interface came), not-loaded (the kernel has a driver, it is not loaded) or no-driver."""
+        """connected, ready, blocked, firmware, storage, no-interface (a driver is bound, no interface came),
+        not-loaded (the kernel has a driver, it is not loaded) or no-driver."""
         if self.interfaces:
             if any(i.soft_blocked or i.hard_blocked for i in self.interfaces):
                 return "blocked"
             return "connected" if any(i.carrier for i in self.interfaces) else "ready"
         if self.storage_mode:
             return "storage"
-        if self.aic_d80:
-            return "aic"
         if self.wifi_drivers:
             return "firmware" if self.firmware_missing else "no-interface"
         return "not-loaded" if self.claiming else "no-driver"
@@ -264,7 +251,7 @@ def find_adapters(sys_root: Path = Path("/sys"), modules: Modules | None = None,
             classes.append(_read(part / "bInterfaceClass").lower())
         claiming = list(dict.fromkeys(claiming))
         unclaimed_maker = vendor in USB_WIFI_VENDORS and not drivers and VENDOR_SPECIFIC in classes
-        known = vendor in AIC_VENDORS or (vendor, product) in STORAGE_MODE
+        known = (vendor, product) in STORAGE_MODE
         if not (ifaces or claiming or unclaimed_maker or known):
             continue
         name = _read(device / "product") or f"{USB_WIFI_VENDORS.get(vendor, 'USB')} device"
@@ -326,8 +313,7 @@ def report(adapters: tuple[Adapter, ...], modules: Modules) -> list[tuple[str, s
         elif verdict == "ready":
             names = ", ".join(i.name for i in a.interfaces)
             lines.append(("SUCCESS", f"{names} works but is not connected to a network."))
-            lines.append(("HINT", "Connect it in the network settings. AIC sticks do WPA2, not WPA3."
-                                  if a.aic_d80 else "Connect it in the network settings."))
+            lines.append(("HINT", "Connect it in the network settings."))
         elif verdict == "blocked":
             hard = any(i.hard_blocked for i in a.interfaces)
             lines.append(("WARNING", f"{a.interfaces[0].name} is switched off (rfkill, "
@@ -335,24 +321,9 @@ def report(adapters: tuple[Adapter, ...], modules: Modules) -> list[tuple[str, s
             lines.append(("HINT", "Turn Wi-Fi on in the network settings. Or turn it on with: rfkill unblock wifi"
                                   if not hard else "Turn on the adapter's own switch. Software cannot turn it on."))
         elif verdict == "storage":
-            if a.aic_d80:
-                lines.append(("WARNING", "The stick is in its storage mode. In this mode it shows a small disk with "
-                                         "the Windows driver. Bazzite's kernel has no driver for its AIC8800D80 chip. "
-                                         "This stick does not work on Bazzite as it is."))
-                lines.append(("HINT", KERNEL_STICKS))
-            else:
-                lines.append(("NOTE", "The stick is in its storage mode. In this mode it shows a small disk with the "
-                                      "Windows driver. Its Wi-Fi comes up once you eject that disk."))
-                lines.append(("HINT", "sudo eject /dev/sdX (the stick's disk, see lsblk), then look again."))
-        elif verdict == "aic":
-            if any(d in AIC_MODULES for d in a.drivers):
-                lines.append(("NOTE", "An installed AIC8800 driver has the stick. It made no interface, because the "
-                                      "chip refused it."))
-                lines.append(("HINT", "Read why with: journalctl -k -b | grep -i aic"))
-            else:
-                lines.append(("WARNING", "Bazzite's kernel has no driver for the AIC8800D80 chip. This stick does not "
-                                         "work on Bazzite as it is."))
-                lines.append(("HINT", KERNEL_STICKS))
+            lines.append(("NOTE", "The stick is in its storage mode. In this mode it shows a small disk with the "
+                                  "Windows driver. Its Wi-Fi comes up once you eject that disk."))
+            lines.append(("HINT", "sudo eject /dev/sdX (the stick's disk, see lsblk), then look again."))
         elif verdict == "firmware":
             lines.append(("WARNING", f"{', '.join(a.wifi_drivers)} has the adapter but not its firmware: "
                                      + ", ".join(a.firmware_missing) + "."))

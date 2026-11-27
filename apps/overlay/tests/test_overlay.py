@@ -160,3 +160,32 @@ def test_position_is_remembered(qapp, board):
     again = make(board)
     assert (again.x(), again.y()) == (123, 45)
     again.close()
+
+
+def test_the_gpu_load_is_the_average_of_the_last_samples(qapp, board):
+    """A single 0 % snapshot between high ones barely moves the number; a real drop shows after a second."""
+    w = make(board)
+    w.gpu_timer.stop()
+    loads = iter([100.0, 96.9, 0.0, 100.0, 98.4])
+    w.sensors.gpu_load = lambda: next(loads)
+    for _ in range(5):
+        w.sample_gpu()
+    w.sensors.gpu_load = lambda: 0.0                                 # the snapshot at the moment of the refresh
+    w.refresh()
+    assert w.values["gpu"].text().startswith("79 %")                 # not 0 %, and not the newest alone
+    w.sensors.gpu_load = lambda: 0.0
+    for _ in range(overlay.GPU_SAMPLES):
+        w.sample_gpu()
+    w.refresh()
+    assert w.values["gpu"].text().startswith("0 %")                  # a real drop shows
+    w.sensors.gpu_load = lambda: None                                # no reading anymore: nothing stale is shown
+    w.sample_gpu()
+    assert len(w.gpu_samples) == 0
+
+
+def test_without_samples_the_reading_itself_shows(qapp, board):
+    w = make(board)
+    w.gpu_timer.stop()
+    w.gpu_samples.clear()
+    w.refresh()
+    assert w.values["gpu"].text() == "46 % · 2000 MHz"

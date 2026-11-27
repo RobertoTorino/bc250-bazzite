@@ -275,7 +275,7 @@ Click a test name to open its page, or **Show in log** to open the run log at th
 
 * **CPU / GPU:** whole-system load. The GPU load comes from the kernel sensor, from the governor's patched
   `gpu_metrics` (fix-metrics on) or from the GPU time of your processes. Hover to see which, and what a sample
-  costs.
+  costs. The governor's value covers 16 ms at a time, so a sample is the average of 4 readings.
 * **🎮 Game:** while a game runs, its name, and the share of the CPU and GPU it uses. The name comes from Steam,
   or from the game's .exe. With MangoHud logging on, it also shows the FPS.
 * **↓ / ↑:** download and upload traffic over the wired and Wi-Fi interfaces, from `/proc/net/dev`.
@@ -557,8 +557,7 @@ test lists every Wi-Fi adapter it finds, with its USB or PCI ID and its driver. 
 * **firmware missing**. The driver took the adapter but did not get its firmware file at this boot.
 * **no driver**. The running kernel has no driver for the stick's ID, so it does not work on Bazzite as it is.
 * **storage mode**. The stick shows up as a small disk with the Windows driver. Most sticks switch when that disk
-  is ejected. An AIC8800D80 stick, such as the UGREEN AX900, has no driver in Bazzite's kernel. So it does not
-  work on Bazzite as it is.
+  is ejected.
 
 Sticks with a Realtek (rtw88, rtw89) or MediaTek (mt76) chip mostly have a driver in Bazzite's kernel. The test
 only reads. It loads no module and switches no stick. When there is no adapter at all, the test reports that
@@ -1078,14 +1077,15 @@ CUs at runtime by writing the GPU's WGP mask registers with `umr`. It keeps a va
 2. **Make it persistent:** `bc250-cu-unlock.sh --install <masks>`, or **Install** in its BC Unlock GUI,
    saves the mask and reapplies it at every boot through a root systemd service that starts before the
    desktop. It survives reboots, cold boots and Bazzite updates. The GUI only allows **Install** once the
-   bisect results show the combined mask passed every round with the same number of WGPs on all 4 rows.
+   bisect results show the combined mask passed every round with 3, 4 or 5 WGPs on every row.
 3. **Undo:** `sudo ./bc250-cu-unlock.sh --uninstall` or **Uninstall** in the GUI, then restart. Stock 24 CUs
    return.
 
 Caveats:
 
-- Keep the 4 shader arrays even, for example 4/4/4/4 WGPs = 32 CUs. The GPU splits work across them in
-  lockstep, so an uneven mask uses more power without being faster.
+- Keep the two halves of the GPU even: the same number of WGPs in SE0 and in SE1, for example 4/4/4/4 WGPs =
+  32 CUs or 4/5/4/5 = 36 CUs. A mask with more WGPs in one half uses more power without being faster. The
+  [CU Unlock chapter](compute.md#cu-levels) has the measured scores.
 - Check the result here. Test 21 shows the live CU count. Test 41 (stress) and test 42 (benchmark) show
   whether it's stable and what it adds. See [Example: 24 → 36 CU unlock](#example-24--36-cu-unlock).
 - A WGP that passed can still fail under other conditions, such as heat or a game. After a hang, uninstall and

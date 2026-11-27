@@ -1,3 +1,9 @@
+Changelog: 27-11-2026 18:49:04
+
+Fixed. The GPU row shows the average load of the last second. Before, it showed one snapshot per second, and the
+number dropped to 0 % now and then while the GPU was under full load. The governor counts the load over 16 ms, about
+one frame, so a single reading can fall between two frames.
+
 Changelog: 26-11-2026 20:03:05
 
 Release 4.9.1.

@@ -50,6 +50,7 @@ in a window of its own, which keeps running when the dashboard closes.
 | **Nexus Release Tool** | The release front end for a release's versions, CHANGELOG entries, pins and portal bump, and the board checks ([Releases](releases.md)). |
 | **Nexus Demo Recorder** | A portal installation recorded with OBS ([below](#demo-recorder)). |
 | **Nexus Deps** | The suite's Python packages and tools on this machine, what is missing or outdated, and Fix for it ([below](#deps)). |
+| **Nexus Flight Recorder** | What the board does, one line per second, kept for after a fault ([below](#flight-recorder)). |
 | **Nexus Garbage Remover** | The garbage on this machine, with its size, and Delete for it ([below](#garbage-remover)). |
 | **Nexus Installer Tests** | The suite's installer tests, one at a time ([below](#installer-tests)). |
 | **Nexus Marketing for BC-250** | Writes an article that presents the portal and its apps, as a web page to share ([below](#marketing)). |
@@ -538,6 +539,39 @@ Each card has one status, the most urgent that applies. The boxes at the top cou
 | **Check failed** | package | The check could not reach PyPI (no network). |
 
 The check sends the names and versions of the Python packages to PyPI and OSV.dev, nothing else.
+
+## Flight Recorder
+
+**Nexus Flight Recorder** (`dev/flight/`) writes down what the board does, one line per second. After a crash or a
+freeze, the minutes before it are on the disk. A test afterward often cannot bring a fault back, and the recording
+shows what the board was doing when it happened.
+
+A system service does the recording, `nexus-flight-recorder.service`. It also runs before you log in. Its files are
+in `/var/log/nexus-flight-recorder`, one per day, and the newest 7 days are kept. A day is about 13 MB. A line
+reaches the disk within 2 seconds. Each line holds:
+
+- the time, the boot it belongs to and the threads online
+- the CPU load and temperature
+- the GPU load, clock, voltage and temperature
+- both power rails with their current and temperature, the 12 V input and the chip's power
+- the memory, the GPU memory and the swap in use, and the memory pressure
+- the name of the program that used the most CPU in that second
+
+The window shows the service's state in its header. **Recording since** is the time it started. **Today's file** is
+its size, and **Days kept** counts the days on the disk. Three pills follow:
+
+- **Install**, **Start** or **Stop** does that with the recorder. It asks for your password.
+- **At boot** turns starting with the board on or off. It asks for your password.
+- **Open** opens the folder with the files.
+
+Type a time after **Show the minutes around**, such as `00:46`, and pick the day. The table then shows each value's
+last, lowest and highest between 5 minutes before and 5 minutes after that time. Without a time it shows the last
+10 minutes and follows the recording. The line under the table names the programs that were busiest in those
+minutes, and says when the board restarted in them.
+
+The recorder reads the board's own sensors and files in `/proc`. It writes nowhere but its folder. It uses about
+2 percent of one thread. `dev/flight/install.sh --uninstall` removes the menu entry and says how to remove the
+service.
 
 ## Garbage Remover
 
