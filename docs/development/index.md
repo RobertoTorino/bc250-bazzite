@@ -503,6 +503,16 @@ as `VERSION`, `TAG`, `ASSET` and `SHA256`. The tool checks these:
 A new shadPS4 can change what the app relies on, such as its `config.json` or the shadNet protocol. So a new pin
 also needs a look at what changed.
 
+KytyPS5 Manager was tried with one KytyPS5-Native release. It is pinned in
+`apps/kytyps5/kytyps5_manager/emulator.py` as `VERSION`, `PUBLISHED`, `SIZE_MB` and `SHA256`. KytyPS5-Native names
+a release after its date and commit, so the tool compares the dates. It checks these:
+
+- a release published later than the pinned one, with its Linux archive and the SHA-256 GitHub publishes for it
+- the SHA-256 of the pinned archive
+
+A new KytyPS5-Native can change its options, the files in its archive or its GPU helper. So a new pin also needs a
+look at what changed, and a try on the board.
+
 The PPSSPP, PCSX2 and RPCS3 Managers and Mesh Shaders each pin one release. For PCSX2, that is its stable channel.
 The pin is `VERSION` or `LANDMARK` in the app's `emulator.py`, and `DIRECTMESH` in `apps/mesh/bc250-mesh-shaders.sh`.
 RPCS3's `emulator.py` also holds the size of the pinned AppImage (`SIZE`). By that size, the app sees that RPCS3
@@ -611,7 +621,7 @@ commit. A new pin replaces the files and the three constants. First read the cha
 
 ```bash
 python3 tools/check_upstream.py            # all of them
-python3 tools/check_upstream.py helixsr    # one: shadps4, helixsr, ppsspp, pcsx2, rpcs3, directmesh,
+python3 tools/check_upstream.py helixsr    # one: shadps4, kytyps5, helixsr, ppsspp, pcsx2, rpcs3, directmesh,
                                                           # vita3k, xenia, mesa, ffmpeg, webcam, speedtest or vrm
 ```
 

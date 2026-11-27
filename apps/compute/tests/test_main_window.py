@@ -404,6 +404,7 @@ def test_a_failed_uneven_count_offers_the_lower_ones(qapp, results):
     w = window()
     assert [b.value.text() for b in w.uneven_boxes] == ["34 CUs"]
     assert dict(pills(w))["32 CUs"] is True
+    assert w.pill("40 CUs").caption.text() == "Not healthy"         # never reached: not "Failed together"
 
 
 def test_no_uneven_row_when_every_row_is_even(qapp, results):

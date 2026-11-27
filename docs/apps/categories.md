@@ -59,6 +59,7 @@ Every app with its icon and its category.
 | ![](../assets/apps/vita3k.webp){ .app-icon } [Vita3K Manager](vita3k.md) | Gaming |
 | ![](../assets/apps/xenia.webp){ .app-icon } [Xenia Manager](xenia.md) | Gaming |
 | ![](../assets/apps/datstation.webp){ .app-icon } [Bazzite DatStation](datstation.md) | Gaming |
+| ![](../assets/apps/kytyps5.webp){ .app-icon } [KytyPS5 Manager](kytyps5.md) | Gaming |
 | ![](../assets/apps/overlay.webp){ .app-icon } [BC-250 System Overlay](overlay.md) | Utilities |
 | ![](../assets/apps/turing.webp){ .app-icon } [BC-250 Turing Screen](turing.md) | Utilities |
 | ![](../assets/apps/webcam.webp){ .app-icon } [BC-250 Webcam](webcam.md) | Utilities |

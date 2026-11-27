@@ -912,7 +912,7 @@ class MainWindow(QWidget):
             if self.p.control == "failed":
                 lines = [f"The combined test of {level} CUs failed. WGPs that pass alone can fail together.",
                          "Pick a lower level, or stay at the stock CUs."]
-                actions = self._level_actions({c: m for c, m in levels.items() if c < level}, level)
+                actions = self._level_actions({c: m for c, m in levels.items() if c < level}, level, set(levels))
                 self.uneven = [u for u in bisect.uneven() if u[0] < level]
                 if self.p.this_boot_used:
                     actions.insert(0, ("Restart", "Back to stock", "Restarts the board. The masks go back to stock.",
@@ -955,14 +955,16 @@ class MainWindow(QWidget):
         return ("Choose and install", lines, self._map(bisect), actions, installed_line,
                 f"Highest healthy level: {top} CUs." if top else "")
 
-    def _level_actions(self, levels: dict[int, str], failed: int = 0) -> list[tuple]:
-        """24 CUs, 32 CUs and 40 CUs; a level is on only when the healthy WGPs reach it on every row."""
+    def _level_actions(self, levels: dict[int, str], failed: int = 0, healthy: set[int] | None = None) -> list[tuple]:
+        """24 CUs, 32 CUs and 40 CUs; a level is on only when the healthy WGPs reach it on every row. After a failed
+        combined test of *failed* CUs, a level at or above it that the healthy WGPs do reach (*healthy*) says so;
+        one they never reached stays "Not healthy"."""
         actions = [("24 CUs", "Stay stock", "Ends the test. Nothing is installed.", GREY, self._stay_stock)]
         for cus in (32, 40):
             mask = levels.get(cus)
             if mask:
                 caption, tip = "Test, then apply", f"A combined test of {mask}, then Install."
-            elif failed and cus >= failed:
+            elif failed and cus >= failed and (healthy is None or cus in healthy):
                 caption, tip = "Failed together", f"The combined test of {failed} CUs failed."
             else:
                 caption, tip = "Not healthy", f"Not every row has {cus // 8} healthy WGPs."

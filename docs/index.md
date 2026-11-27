@@ -56,6 +56,7 @@ They work beside the system Mesa.
 #### :material-gamepad-variant: Gaming
 
 [shadPS4 Manager](apps/shadps4.md) plays PS4 games with the shadPS4 emulator.
+[KytyPS5 Manager](apps/kytyps5.md) plays PS5 games with the KytyPS5-Native emulator.
 [RPCS3 Manager](apps/rpcs3.md) plays PS3 games with the RPCS3 emulator.
 [PPSSPP Manager](apps/ppsspp.md), [PCSX2 Manager](apps/pcsx2.md), [Vita3K Manager](apps/vita3k.md) and
 [Xenia Manager](apps/xenia.md) bring the PSP, PS2, PS Vita and Xbox 360 emulators.

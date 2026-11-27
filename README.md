@@ -67,6 +67,7 @@ This list follows the portal's categories.
 - <img src="portal/images/apps/pcsx2.webp" width="20" height="20" alt=""/> **[PCSX2 Manager](apps/pcsx2)**: PS2 games with the PCSX2 emulator. It gets a tested PCSX2 release and your PS2 BIOS. It finds your games and adds them to Steam.
 - <img src="portal/images/apps/vita3k.webp" width="20" height="20" alt=""/> **[Vita3K Manager](apps/vita3k)**: PS Vita games with the Vita3K emulator. It gets a tested Vita3K build. You install the firmware and your games through it, and it adds the games to Steam.
 - <img src="portal/images/apps/xenia.webp" width="20" height="20" alt=""/> **[Xenia Manager](apps/xenia)**: XBOX 360 games with the Xenia emulator, which is experimental on Linux. It gets a tested Xenia build. It finds your games and adds them to Steam.
+- <img src="portal/images/apps/kytyps5.webp" width="20" height="20" alt=""/> **[KytyPS5 Manager](apps/kytyps5)**: PS5 games with the KytyPS5-Native emulator. It sets up a tested KytyPS5-Native release, checks what the emulator needs from the board, finds your games and adds them to Steam.
 
 **Utilities**: handy tools around the board.
 

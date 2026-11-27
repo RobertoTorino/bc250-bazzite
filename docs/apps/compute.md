@@ -187,17 +187,13 @@ different game or in a hotter room.
 
 ## How it works
 
-The script writes the registers of a runtime CU unlock with [umr](https://gitlab.freedesktop.org/tomstdenis/umr):
+The script writes the three registers of a runtime CU unlock with [umr](https://gitlab.freedesktop.org/tomstdenis/umr):
 
-| Register                         | Per shader array | Meaning                                    | Written                                  |
-|----------------------------------|------------------|--------------------------------------------|------------------------------------------|
-| `CC_GC_SHADER_ARRAY_CONFIG`      | yes              | Bits 16-20 mark WGPs inactive              | Every WGP the row's mask leaves off      |
-| `SPI_PG_ENABLE_STATIC_WGP_MASK`  | yes              | WGPs that get work, 5 bits of 2 CUs each   | The row's mask                           |
-| `RLC_PG_ALWAYS_ON_WGP_MASK`      | no               | WGPs that are always on, one value for all rows | Not written, it stays as the chip set it |
-
-At stock, the chip keeps the two per-row registers in step. `CC_GC_SHADER_ARRAY_CONFIG` marks exactly the WGPs that
-`SPI_PG_ENABLE_STATIC_WGP_MASK` leaves off. The unlock keeps it that way. So a WGP that is off, or that failed its
-test, is never listed as active. For example, the mask `0x1b` goes with `0xffe40000`, and `0x0f` with `0xfff00000`.
+| Register                         | Per shader array | Meaning                                    |
+|----------------------------------|------------------|--------------------------------------------|
+| `CC_GC_SHADER_ARRAY_CONFIG`      | yes              | Bits 16-20 mark WGPs inactive, cleared to 0 |
+| `SPI_PG_ENABLE_STATIC_WGP_MASK`  | yes              | WGPs that get work, 5 bits of 2 CUs each   |
+| `RLC_PG_ALWAYS_ON_WGP_MASK`      | no               | Union of the four SPI masks                |
 
 The BC-250 has 4 shader arrays of 5 WGPs each, which is 40 CUs. The arrays are SE0.SH0, SE0.SH1, SE1.SH0 and
 SE1.SH1. Stock is 24 CUs.
@@ -278,7 +274,7 @@ chmod +x bc250-cu-bisect.sh
 ./bc250-cu-bisect.sh --baseline 0x0f,0x0f,0x0f,0x0f --control-only --rounds 1   # re-validate a combined mask, control only
 ./bc250-cu-bisect.sh --scan          # live masks and what a run needs, writes no register
 ./bc250-cu-bisect.sh --only control  # only the control's rounds, as the window's safety check does
-./bc250-cu-bisect.sh --reset && ./bc250-cu-bisect.sh --control-only --rounds 1 --writes spi,rlc   # SPI and the always-on mask only
+./bc250-cu-bisect.sh --reset && ./bc250-cu-bisect.sh --control-only --rounds 1 --writes spi,rlc   # SPI and RLC only
 ./bc250-cu-bisect.sh --status        # results so far, report on the Desktop
 ./bc250-cu-bisect.sh --same-boot     # no reboots: restore the baseline live between attempts
 ./bc250-cu-bisect.sh --auto          # no prompts, auto-reboot after each attempt (see below)

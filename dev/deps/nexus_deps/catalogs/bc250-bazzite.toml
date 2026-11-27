@@ -143,6 +143,10 @@ launchers = ["~/.local/bin/bc250-quickfix"]
 name = "BC-250 Password Generator"
 launchers = ["~/.local/bin/bc250-password"]
 
+[app.kytyps5]
+name = "KytyPS5 Manager"
+launchers = ["~/.local/bin/bc250-kytyps5"]
+
 [[tool]]
 name = "flashrom"
 rpm = "flashrom"
@@ -1205,6 +1209,10 @@ specifier = ">=6.11,<7"
 
 [[dependency.source]]
 owner = "password"
+specifier = ">=6.11,<7"
+
+[[dependency.source]]
+owner = "kytyps5"
 specifier = ">=6.11,<7"
 
 [[dependency]]

@@ -63,6 +63,7 @@ never acts in it. The same apps as above leave the controller to what they do.
 | ![](../assets/apps/vita3k.webp){ .app-icon } [Vita3K Manager](vita3k.md) | PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Steam. |
 | ![](../assets/apps/xenia.webp){ .app-icon } [Xenia Manager](xenia.md) | XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Steam. |
 | ![](../assets/apps/datstation.webp){ .app-icon } [Bazzite DatStation](datstation.md) | PlayStation quiz, console history, system versions, region codes, user guides and news, with your scores. |
+| ![](../assets/apps/kytyps5.webp){ .app-icon } [KytyPS5 Manager](kytyps5.md) | PS5 games with the KytyPS5-Native emulator. It sets up a tested KytyPS5-Native release, checks what the emulator needs from the board, finds your games and adds them to Steam. |
 
 **Utilities**: handy tools around the board.
 

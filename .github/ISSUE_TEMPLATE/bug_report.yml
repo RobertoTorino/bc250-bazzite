@@ -39,6 +39,7 @@ body:
         - btpair
         - quickfix
         - password
+        - kytyps5
     validations:
       required: true
   - type: textarea

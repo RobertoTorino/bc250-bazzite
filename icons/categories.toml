@@ -164,3 +164,8 @@ tile = "portal/images/apps/quickfix.webp"
 category = "utilities"
 icons = ["apps/password/images/bc250-password"]
 tile = "portal/images/apps/password.webp"
+
+[kytyps5]
+category = "gaming"
+icons = ["apps/kytyps5/images/bc250-kytyps5"]
+tile = "portal/images/apps/kytyps5.webp"
