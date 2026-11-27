@@ -1,3 +1,7 @@
+Changelog: 28-11-2026 00:26:08
+
+Fixed. The app folder's .gitignore opens with its license line.
+
 Changelog: 28-11-2026 00:03:11
 
 Added. KytyPS5 Manager, a new app for PS5 games with the KytyPS5-Native emulator, built like shadPS4 Manager. It

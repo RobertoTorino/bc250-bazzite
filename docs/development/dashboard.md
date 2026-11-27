@@ -369,7 +369,7 @@ It runs from the checkout, like every development app. Its catalog of the suite 
 dev/deps/run.sh                             # open it
 dev/deps/run.sh --fix                       # open it and offer Fix as soon as the check is done
 dev/deps/run.sh --remind                    # no window: the hourly check once, from a terminal
-dev/deps/run.sh --sync-upstreams            # the list of emulators and firmware in line with the apps' pins again
+dev/deps/run.sh --sync-upstreams            # the list of firmware in line with the portal's apps.toml again
 dev/deps/install.sh                         # app menu entry, Desktop icon and the hourly reminder
 dev/deps/install.sh --no-desktop-shortcut   # the same without the Desktop icon
 dev/deps/install.sh --uninstall             # remove them and the reminder; --purge also the settings
@@ -415,7 +415,7 @@ those. The card also lists the packages missing from the venv. The venv's `pytho
 so.
 
 Bazzite's updater still installs the image, the Flatpaks and Homebrew's packages every night by itself. Update only
-does it sooner. **Updates** in the header counts the updates, with the emulators' and the firmware's below.
+does it sooner. **Updates** in the header counts the updates, with the firmware's below.
 
 The **i** beside each card's name says what its Update does. It also says how to handle what goes wrong, such as
 going back to the version before, or keeping one package where it is. What needs care is said on the card itself,
@@ -435,26 +435,23 @@ the steps instead:
 - open Nexus Deps again for what the new Python left without packages
 - how to roll back
 
-**Emulators and firmware** follow. These are the programs and firmware the suite's apps use. Each is on a card with
-the latest version and an i that says how to handle it. None of them is installed from here.
+**Firmware** follows. This is the firmware the suite's apps work with. Each is on a card with the latest version
+and an i that says how to handle it. None of it is installed from here.
 
 | Card | Asked | What an update means |
 |---|---|---|
-| RPCS3, PCSX2, PPSSPP, Vita3K, Xenia Canary, shadPS4 | GitHub's latest release | Each app installs the build it was tested with (its pin). When **Installed** is behind the pin, open the app and use its Install. When **On GitHub** is newer than the pin, the new build comes with a release of the app, after a test on a board. |
 | DualSense firmware (and the Edge's) | Sony's firmware list | A new version since the last look. Connect the controller with a USB cable and update it in BC-250 Controller. |
 | PS4 system software | Sony's PS4 update list | A new version since the last look. Update it on the console. |
 | PS5 system software, PlayStation Portal | nothing a program can read | **On the device**: the i says where the device shows its updates. |
 
-GitHub is asked with the GitHub CLI's login (`gh auth login`). Without a login, GitHub allows 60 requests an hour.
-When those are used up, a card says that its hourly limit is used up, and until when.
+Sony's versions are news once. The first look learns them, and a later one shows what changed.
 
-An app installed without its emulator so far is no update, and the card says so. Sony's versions are news once. The
-first look learns them, and a later one shows what changed.
+Nexus Deps lists no emulators. Each emulator manager fetches the versions from GitHub and installs the one you
+choose.
 
-The list is `dev/deps/nexus_deps/catalogs/upstreams.json`. It says which program each app uses and how its versions
-compare. It is written by hand. The pins, repositories, names and launchers in it are read from the apps' code and
-the portal's `apps.toml`. After a pin moves, `dev/deps/run.sh --sync-upstreams` brings the list in line. CI fails
-until it is. CI also fails for a new emulator app the list does not hold.
+The list is `dev/deps/nexus_deps/catalogs/upstreams.json`. It is written by hand. The names and launchers of the apps
+in it are read from the portal's `apps.toml`. After an app is renamed, `dev/deps/run.sh --sync-upstreams` brings
+the list in line. CI fails until it is.
 
 **Python packages** are checked where each app runs. Nexus Deps finds every installed app by its launcher. It reads
 the package versions in that app's Python environment, the suite's shared one or the app's own. A card shows the
@@ -510,7 +507,7 @@ a desktop notification says so. It names any of these:
 - Bazzite's updater failing or not running
 - the machine's updates, per source, with how many
 - a venv left on an older Python
-- the emulators and firmware with news, each piece of news once
+- the firmware with news, each piece of news once
 - Python packages missing or to update
 - tools an installed app needs
 

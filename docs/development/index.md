@@ -485,9 +485,7 @@ gh issue close <number> --comment "PPSSPP pinned at 1.20."     # close one, sayi
 
 The run fails only when an upstream could not be checked. A moved pin means a new version of the app is due, with
 the new pin tried on the board first. Until then, users can choose the newer build themselves in the manager's
-version manager. A new pin also changes Nexus Deps' list of the programs the apps use. Run
-`dev/deps/run.sh --sync-upstreams` from the repository's root to update it. Otherwise, CI fails
-([Nexus Deps](dashboard.md#deps)).
+version manager.
 
 Each emulator manager pins the build that version of the app was tried with. **Install** installs that build and puts
 it back in use. In the manager's version manager (core's `builds`), you can download any other build the emulator

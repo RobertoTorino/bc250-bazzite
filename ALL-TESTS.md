@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3755 test functions (4319 cases counting the parametrized ones) in 45 test folders, and 46 installer tests.
+3746 test functions (4310 cases counting the parametrized ones) in 45 test folders, and 46 installer tests.
 
 ## Summary
 
@@ -44,7 +44,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [core](#core) | 32 | 246 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
-| [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
+| [dev/deps](#devdeps) | 6 | 96 | 7.4 s |
 | [dev/flight](#devflight) | 3 | 21 |  |
 | [dev/garbage](#devgarbage) | 1 | 9 |  |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
@@ -55,7 +55,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 257 | 11.1 s |
-| **All** | | **3755** | **182 s** |
+| **All** | | **3746** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -3178,7 +3178,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/deps
 
-105 tests in 6 files, 7.4 s in a local run.
+96 tests in 6 files, 7.4 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3250,21 +3250,12 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_system.py` | `test_dnf_with_nothing_newer_or_failing` |  |  | Dnf with nothing newer or failing. |
 | `test_system.py` | `test_a_flattened_image_has_dnf_instead_of_the_image` |  |  | A flattened image has dnf instead of the image. |
 | `test_system.py` | `test_mprime_is_checked_against_mersenne_orgs_page_and_updated_by_board_tests_installer` |  |  | Prime95's mprime, when Quickfix installed it: the release in ~/mprime/.release against the one the download page lists; Update runs Board Test's installer, which installs that release (owner, 20-11-2026). |
-| `test_upstreams.py` | `test_the_catalog_is_in_sync_with_the_apps` |  | 0.1 s | The pins, repos, names and launchers are the apps' own: dev/deps/run.sh --sync-upstreams fixes this. |
-| `test_upstreams.py` | `test_every_app_with_a_pinned_upstream_is_listed` |  |  | Every app with a pinned upstream is listed. |
-| `test_upstreams.py` | `test_the_constants_are_read_without_running_the_module` |  |  | The constants are read without running the module. |
-| `test_upstreams.py` | `test_a_moved_pin_makes_the_catalog_stale` |  | 0.1 s | A moved pin makes the catalog stale. |
-| `test_upstreams.py` | `test_an_emulator_at_its_pin_with_nothing_newer` |  |  | An emulator at its pin with nothing newer. |
-| `test_upstreams.py` | `test_installed_behind_the_pin_and_upstream_past_it` |  |  | Installed behind the pin and upstream past it. |
-| `test_upstreams.py` | `test_an_app_without_its_program_is_no_update` |  |  | An app without its program is no update. |
-| `test_upstreams.py` | `test_github_offline` |  |  | Github offline. |
-| `test_upstreams.py` | `test_the_comparisons` |  |  | The comparisons. |
+| `test_upstreams.py` | `test_the_catalog_is_in_sync_with_the_apps` |  | 0.1 s | The apps' names and launchers are the portal's: dev/deps/run.sh --sync-upstreams fixes this. |
+| `test_upstreams.py` | `test_no_emulator_is_listed` |  |  | Each emulator app chooses its version from GitHub's list itself (owner, 28-11-2026). |
+| `test_upstreams.py` | `test_a_renamed_app_makes_the_catalog_stale` |  |  | A renamed app makes the catalog stale. |
 | `test_upstreams.py` | `test_sonys_firmware_is_news_once` |  |  | The first look learns the versions; a later one names what changed; the one after says nothing again. |
 | `test_upstreams.py` | `test_the_ps4_list_is_read_by_its_one_attribute` |  |  | The ps4 list is read by its one attribute. |
 | `test_upstreams.py` | `test_devices_with_no_list_say_where_to_look` |  |  | Devices with no list say where to look. |
-| `test_upstreams.py` | `test_the_reminder_names_an_upstream_once` |  |  | The reminder names an upstream once. |
-| `test_upstreams.py` | `test_github_is_asked_signed_in` |  |  | Without a sign-in GitHub allows 60 requests an hour for the whole address, which the checks of a morning use up (owner, 14-11-2026: every card said "HTTP Error 403: rate limit exceeded"). |
-| `test_upstreams.py` | `test_the_token_is_gh_s_and_only_for_github` |  |  | The token is gh s and only for github. |
 | `test_window.py` | `test_window_displays_package_and_tool_results` |  | 0.3 s | Window displays package and tool results. |
 | `test_window.py` | `test_missing_package_in_an_app_environment_is_reported` |  | 0.4 s | Missing package in an app environment is reported. |
 | `test_window.py` | `test_tools_that_need_root_say_so` |  | 0.4 s | Tools that need root say so. |
@@ -3283,7 +3274,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_a_cards_update_asks_for_its_own_step_alone` |  | 0.3 s | A cards update asks for its own step alone. |
 | `test_window.py` | `test_fix_offered_for_the_machines_updates_alone` |  | 0.3 s | --fix from a notification about Homebrew alone: the question comes once both checks are done. |
 | `test_window.py` | `test_an_image_of_a_new_fedora_release_is_by_hand` |  | 0.3 s | A system-wide change has no Update: the card says why, and its i gives the steps. |
-| `test_window.py` | `test_the_emulators_and_firmware_have_a_section_of_their_own` |  | 0.3 s | The emulators and firmware have a section of their own. |
+| `test_window.py` | `test_the_firmware_has_a_section_of_its_own` |  |  | The firmware has a section of its own. |
 | `test_window.py` | `test_the_question_has_a_checkbox_per_package` |  |  | Only what stays checked is updated (owner, 19-11-2026: "no checkmark, no update/install"). |
 | `test_window.py` | `test_the_question_for_dnf_names_pkexec_and_the_kernels_restart` |  |  | The question for dnf names pkexec and the kernels restart. |
 | `test_window.py` | `test_a_dnf_card_updates_the_checked_packages_alone` |  |  | A dnf card updates the checked packages alone. |
