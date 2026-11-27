@@ -320,8 +320,9 @@ class MainWindow(QWidget):
         return self.step_boxes[self.step].line
 
     def _build_uneven(self) -> QWidget:
-        """Step 4's counts above the highest even level that add speed (progress.uneven), as pills (owner,
-        27-11-2026): each is tested as a whole and installed like a level. The link says how the counts work."""
+        """Step 4's counts above the highest even level (progress.uneven), as pills (owner, 27-11-2026): each is
+        tested as a whole and installed like a level. A count that runs slower than its number says what it runs
+        like. The link says how the counts work."""
         row = QWidget()
         box = QHBoxLayout(row)
         box.setContentsMargins(0, 0, 0, 0)
@@ -344,9 +345,11 @@ class MainWindow(QWidget):
             old.deleteLater()
         self.uneven_boxes = []
         for cus, rows, mask in counts:
-            pill = Pill(f"{cus} CUs", "\u00b7".join(map(str, rows)) + " WGPs",
+            speed = progress.speed_cus(mask)
+            pill = Pill(f"{cus} CUs", "\u00b7".join(map(str, rows)) + " WGPs" if speed == cus else f"Like {speed} CUs",
                         f"{cus} CUs with {'/'.join(map(str, rows))} WGPs on the rows SE0.SH0 to SE1.SH1. "
-                        f"A combined test of {mask}, then Install.", ACCENT)
+                        + ("" if speed == cus else f"Its two halves differ, so it runs as fast as {speed} CUs. ")
+                        + f"A combined test of {mask}, then Install.", ACCENT)
             pill.clicked.connect(lambda c=cus, m=mask: self._choose(c, m))
             self.uneven_layout.insertWidget(self.uneven_layout.count() - 1, pill)
             self.uneven_boxes.append(pill)

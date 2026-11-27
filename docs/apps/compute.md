@@ -76,7 +76,8 @@ causes.
     | 30  | 4·4·4·3      | 8 / 7             | 6610                | **+17%**       |
     | 32  | 4·4·4·4      | 8 / 8             | 7547                | **+33%**       |
 
-    CU Unlock offers a count in between in step 4 when it adds speed. `bc250-cu-unlock.sh` and the window accept
+    CU Unlock offers every count above your highest even level in step 4, each with the rows that give it the most
+    speed. A count that runs slower than its number says what it runs like. `bc250-cu-unlock.sh` and the window accept
     every mask with 3, 4 or 5 WGPs on every row. For a mask that runs slower than its count, such as
     `0x1f,0x1f,0x07,0x07` (5/5/3/3), they say what it runs like. They refuse a mask with fewer than 3 WGPs on a row.
 
@@ -534,8 +535,8 @@ Only install a mask that:
 > The two halves run in step, so the tenth WGP in SE0 has no partner. `38` CUs (`5/5/4/5`) performs the same as
 > `36` CUs (`4/5/4/5`). The extra WGP only adds power and heat.
 >
-> So the window offers `4/5/4/5`, which is `0x0f,0x1f,0x0f,0x1f`, as **36 CUs**. From the terminal, retest that
-> mask as a whole first:
+> So the window offers `4/5/4/5`, which is `0x0f,0x1f,0x0f,0x1f`, as **36 CUs**. It offers **38 CUs** too, marked
+> **Like 36 CUs**. From the terminal, retest the mask you choose as a whole first:
 > ```
 > ./bc250-cu-bisect.sh --reset && ./bc250-cu-bisect.sh --baseline 0x0f,0x1f,0x0f,0x1f --control-only --rounds 1
 > ```
@@ -661,9 +662,10 @@ During an attempt, the line under the pills shows the round, the WGP, the load t
 - **32 CUs** needs 4 healthy WGPs on every row.
 - **40 CUs** needs all 5 WGPs healthy on every row.
 
-A level that the healthy WGPs don't reach is off and says **Not healthy**. Under the pills, a second row offers the
-counts above your highest even level that add speed, for example **36 CUs** with **4·5·4·5 WGPs**. You test and
-install such a count the same way as a level. The link **What the counts in between give** leads to
+A level that the healthy WGPs don't reach is off and says **Not healthy**. Under the pills, a second row offers
+every count above your highest even level, for example **34 CUs**, **36 CUs** and **38 CUs**. Each gets the rows that
+give it the most speed. A count that runs as fast as its number shows its WGPs, such as **4·5·4·5 WGPs**. A slower
+one says what it runs like, such as **Like 36 CUs**. You test and install such a count the same way as a level. The link **What the counts in between give** leads to
 [24, 32 or 40 CUs, and the counts in between](#cu-levels). When you choose
 a count, the window first keeps a copy of the bisect results, in `bisect-runs.tsv` and `bisect-config`. Then it runs
 the combined test of that mask for one round. That is `--reset`, then `--baseline <mask> --control-only --rounds 1`.

@@ -1,3 +1,10 @@
+Changelog: 27-11-2026 20:55:57
+
+Added. Step 4 offers every count above the highest even level, up to all healthy WGPs, each with the rows that give
+it the most speed. On a board with one failing WGP that is 34, 36 and 38 CUs. A count that runs slower than its number
+says what it runs like, such as "Like 36 CUs" for 38. Before, only the counts that add speed were shown, so 34 and 38
+were missing (owner, 27-11-2026).
+
 Changelog: 27-11-2026 19:44:37
 
 Release 2.1.0.

@@ -601,7 +601,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_progress.py` | `test_the_uneven_counts_and_their_masks` |  |  | One WGP fails every time on a board with its own masks: 32 is the highest even level, 38 the healthy total. |
 | `test_progress.py` | `test_the_unlock_is_on_only_when_saved_before_this_boot` |  |  | The unlock is on only when saved before this boot. |
 | `test_progress.py` | `test_the_speed_of_a_mask_follows_the_measured_scores` |  |  | 4 CUs for each WGP in the smaller shader engine: within 1 % of what the board scored. |
-| `test_progress.py` | `test_only_counts_that_add_speed_are_offered` |  |  | Only counts that add speed are offered. |
+| `test_progress.py` | `test_every_count_above_the_highest_level_is_offered_with_its_best_rows` |  |  | Every count above the highest level is offered with its best rows. |
 | `test_resume.py` | `test_arm_and_disarm` |  |  | Arm and disarm. |
 | `test_resume.py` | `test_the_entry_opens_the_same_code_and_scripts` |  |  | Installed or from a checkout: this Python, this package's folder and the window's own scripts. |
 | `test_resume.py` | `test_restart_reports_when_it_may_not` |  |  | Restart reports when it may not. |
