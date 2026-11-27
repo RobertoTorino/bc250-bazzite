@@ -1,3 +1,12 @@
+Changelog: 27-11-2026 05:18:56
+
+Release 29.1.2.
+
+Changelog: 27-11-2026 04:55:23
+
+Fixed. Memory Manager's Changes the board text says that a fresh install of Bazzite does not reset the VRAM split
+(owner, 27-11-2026). The split is in the board's CMOS, not on the drive. The wiki chapter's box has the same text.
+
 Changelog: 27-11-2026 00:34:05
 
 Release 29.1.1. Pins bc250-vram-v5.1.1.

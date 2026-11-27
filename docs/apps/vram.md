@@ -8,7 +8,8 @@
     The app writes the VRAM split into the board's CMOS. It writes only the firmware's own memory block of 28 bytes in
     bank 2, with its checksum, and never a byte outside it. The firmware reads the split at the next boot. The board's
     battery keeps the CMOS. So the split stays across reboots and power offs until it is written again, or until the
-    CMOS is cleared. Clearing the CMOS with the jumper or the battery brings the firmware's 512 MB back. The GTT limit
+    CMOS is cleared. A fresh install of Bazzite does not reset it. Clearing the CMOS with the jumper or the battery
+    brings the firmware's 512 MB back. The GTT limit
     is a kernel argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself, the
     firmware or the real-time clock. The app refuses to write when the block's signature or checksum does not match. It
     also refuses when the kernel is locked down. Undo writes the previous split back. The Default profile writes 512 MB
@@ -41,6 +42,9 @@ The BC-250 has 16 GB of GDDR6, shared by the CPU and the GPU. At boot the firmwa
 - **The split (VRAM):** the part the GPU keeps for itself, from 512 MB up.
 - **System RAM:** the rest. Linux and the games run in it.
 
+The board keeps the split in its CMOS, not on the drive. So a fresh install of Bazzite leaves the split as it
+was. It does remove the GTT limit, which is a kernel argument.
+
 The GPU can also borrow system RAM on top of the split. That is the **GTT**. amdgpu sizes it from
 `ttm.pages_limit` on the kernel command line. By default, the limit is half the RAM. amdgpu never makes the GTT
 larger than the RAM.
@@ -52,8 +56,8 @@ marks 6 GB as recommended for games.
 
 ## Learning the settings
 
-The window has two tabs under its header. **Learning** has five steps. **Advanced** has each setting on its own,
-as described below. The window is as high as the Learning tab. The current step has a frame and its pill on its row. The line under the title
+The window has three tabs under its header. **Learning** has five steps. **Advanced** has each setting on its own,
+as described below. **Log** lists what the recording kept, as described under [Log](#log). The window is as high as the Learning tab. The current step has a frame and its pill on its row. The line under the title
 says what to do. Done steps have a green check mark.
 
 1. **Start point:** **Write** writes the Games profile, with the 6 GB split and the 11.5 GiB GTT limit. It also brings
@@ -280,6 +284,10 @@ While a game runs, the service also does two things:
 - **A crash:** a notification says so at once, with the memory figures of that moment. The crash report can take
   half a minute, and the game's window stays frozen until it is written.
 
+A program other than a game that crashes gets a notification when it ends. The notification names the process that
+crashed and its signal, such as SIGSEGV. A program another one started runs under that one's name. Steam started
+from the suite runs under BC250 Bazzite Suite, for example. The notification then names both.
+
 The 40% and the 10 seconds are starting values. We test them on the suite's boards.
 
 ## Sessions
@@ -313,6 +321,20 @@ The **How it ended** column says one of these:
 - **Ended: memory stall:** the app ended the game, because the board stalled for memory.
 - **Running when the session ended:** you logged out or shut down while it ran.
 - **Board restarted while it ran:** the board froze or lost power while it ran.
+
+## Log
+
+The **Log** tab lists each session the recording kept, the newest first. It keeps the last 50. Each row has these
+columns:
+
+- **When:** the day and time the program ended
+- **Program:** the game's name in Steam, or the app's name
+- **How it ended:** as in the list above, in red when something went wrong
+- **Memory then:** the board's peak RAM in use, swap in use and wait for memory while it ran
+- **What the crash report says:** for a crash, the process that crashed and its signal
+
+**Only what went wrong** hides the programs that closed as usual. A crash of a program started by another program
+shows both names. The crash report comes from systemd-coredump.
 
 ## Programs
 
@@ -378,6 +400,8 @@ The split:
 - **In the app:** Undo, then restart.
 - **Without the app:** clear CMOS with the jumper on the board, or take the battery out for a minute. The firmware
   then starts with its own default split.
+- **After a fresh install of Bazzite:** the split is still the one set before. Install the app again and use
+  **Default profile…** for the firmware's 512 MB, or pick another split.
 
 The GTT limit:
 

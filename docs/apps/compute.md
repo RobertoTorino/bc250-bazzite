@@ -233,7 +233,7 @@ The test plan:
 - AMD BC-250, Linux with bash 4+. Tested against Bazzite (Fedora Atomic).
 - `umr`, owned by root, in `/usr/bin`, `/usr/sbin` or `/usr/local/bin`.
   On Bazzite, run `sudo rpm-ostree install umr`, then restart. "Already requested" means it's waiting for that
-  restart.
+  restart. [Quickfix](quickfix.md#quickfix) installs it too, with the RPM packages.
 - A GPU load tool, preferably [memtest_vulkan](https://github.com/GpuZelenograd/memtest_vulkan/releases)
   in `~/.local/bin`. vkpeak, vkmark and glmark2 work too.
 - sudo rights, only for umr and the kernel log.

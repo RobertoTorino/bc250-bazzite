@@ -1,3 +1,9 @@
+Changelog: 27-11-2026 04:47:26
+
+Added. The Tools window lists umr in the RPM packages group, so Quickfix shows whether it is there and installs
+it (owner, 27-11-2026). BC-250 Board Test's test 21 reads the live CU masks with it, and BC-250 CU Unlock needs it. The CU Unlock
+wiki chapter says that Quickfix installs it.
+
 Changelog: 26-11-2026 20:03:05
 
 Release 1.10.1.

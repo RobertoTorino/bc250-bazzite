@@ -269,6 +269,42 @@ Nexus Deps upgrades the venv's packages within what `requirements-dev.txt` allow
 `/usr/bin/python3`, so a Bazzite image with a newer Python leaves the venv without its packages. Nexus Deps says so,
 and **Update** installs `requirements-dev.txt` for the new Python.
 
+### Starting the previous Bazzite version once
+
+A Bazzite update keeps the version before it on the drive. Starting that version once shows whether a problem came
+with the update, such as with its kernel. `rpm-ostree status` lists both versions, and a dot marks the running one.
+
+GRUB is the program that starts Bazzite. Its menu shows for one second, with the new version first and the previous
+one second. `grub2-reboot` chooses an entry for the next start only. Bazzite's `/boot/grub2/grub.cfg` never reads
+that choice, so the command alone changes nothing. It does read `/boot/grub2/custom.cfg`. Write the missing step
+there once, when the file does not exist yet:
+
+```bash
+sudo tee /boot/grub2/custom.cfg > /dev/null <<'EOF'
+# Start the entry that grub2-reboot chose, once.
+if [ "${next_entry}" ]; then
+  set default="${next_entry}"
+  set next_entry=
+  save_env next_entry
+fi
+EOF
+sudo grub2-script-check /boot/grub2/custom.cfg
+```
+
+Then choose the previous version and restart:
+
+```bash
+sudo grub2-reboot 1
+systemctl reboot
+```
+
+Entry `1` is the previous version and entry `0` is the new one. After the restart, `uname -r` shows the kernel of
+the previous version. The start after that one uses the new version again. `custom.cfg` can stay. It does nothing
+until `grub2-reboot` runs again.
+
+Each Bazzite version keeps its own `/etc`. A change made there while the previous version runs is missing in the
+new version. Make it again after the next start.
+
 ### Keeping it clean
 
 [Nexus Garbage Remover](dashboard.md#garbage-remover) shows what can go from the machine. It lists crash dumps, Steam's

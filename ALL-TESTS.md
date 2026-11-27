@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3645 test functions (4209 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3649 test functions (4213 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -37,7 +37,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/turing](#appsturing) | 9 | 77 | 1.4 s |
 | [apps/upscaler](#appsupscaler) | 12 | 120 | 1.6 s |
 | [apps/vita3k](#appsvita3k) | 9 | 85 | 5.3 s |
-| [apps/vram](#appsvram) | 11 | 92 | 0.6 s |
+| [apps/vram](#appsvram) | 11 | 96 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
 | [apps/xenia](#appsxenia) | 8 | 79 | 4.5 s |
 | [core](#core) | 32 | 247 | 4.6 s |
@@ -53,7 +53,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3645** | **182 s** |
+| **All** | | **3649** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -2428,7 +2428,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/vram
 
-92 tests in 11 files, 0.6 s in a local run.
+96 tests in 11 files, 0.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2484,6 +2484,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_the_learning_steps_from_the_start_point_to_the_learned_profile` |  |  | The board has a 16 GiB GTT limit for the next boot: the start point writes the Games profile's 11.5 GiB and recording on, then the restart; round 1 with a full swap points to zram the RAM, written with a restart; round 2 is better and kept, and nothing more points anywhere. |
 | `test_main_window.py` | `test_a_change_that_is_no_better_is_undone` |  |  | A change that is no better is undone. |
 | `test_main_window.py` | `test_a_round_that_asks_for_nothing_ends_on_the_start_point` |  |  | Three games that end as usual: the window is done, with nothing to save, and says the start point stays. |
+| `test_main_window.py` | `test_the_log_tab_lists_the_sessions_with_the_crash_report` |  |  | The owner's board, 27-11-2026: Steam, started from the suite, crashed in the suite's unit. |
+| `test_main_window.py` | `test_the_log_tab_says_when_nothing_is_recorded` |  |  | The log tab says when nothing is recorded. |
 | `test_memory_map.py` | `test_usage_of_the_owner_board` |  |  | Usage of the owner board. |
 | `test_memory_map.py` | `test_usage_with_zswap_and_disk_swap` |  |  | Usage with zswap and disk swap. |
 | `test_memory_map.py` | `test_usage_without_files` |  |  | Usage without files. |
@@ -2524,6 +2526,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_watch.py` | `test_a_crash_is_told_at_once_with_the_memory_figures` |  |  | systemd-coredump names the process the moment it crashes; the game's cgroup holds it during the dump. |
 | `test_watch.py` | `test_a_memory_stall_ends_the_game_and_tells_it` |  |  | The pressure at STALL_PERCENT or more for STALL_S seconds while a game runs: SIGKILL, then a notification with a button that opens the window; the session ends as a memory stall. |
 | `test_watch.py` | `test_no_stall_without_a_game` |  |  | No stall without a game. |
+| `test_watch.py` | `test_a_crash_names_the_process_and_where_it_ran` |  |  | The owner's board, 27-11-2026: Steam, started from the suite, crashed in the suite's unit. |
+| `test_watch.py` | `test_a_crash_report_without_an_entry_is_empty` |  |  | A crash report without an entry is empty. |
 
 ## apps/webcam
 

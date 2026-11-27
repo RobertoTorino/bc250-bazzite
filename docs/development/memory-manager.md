@@ -243,7 +243,12 @@ the crash, before the dump:
 Process <pid> (<name>) of user <uid> terminated abnormally with signal <n>/<NAME>, processing...
 ```
 
-The watcher finds the game whose control group holds the PID and notifies at once. When the `full avg10` pressure
+The watcher finds the game whose control group holds the PID and notifies at once. The session keeps the name and
+the signal in its `crash` field, such as `steam, SIGSEGV`. A crash found when a unit is gone gets them from
+`crash_report()`. It reads the `dumped core` line and `--output-fields=COREDUMP_SIGNAL_NAME` of the unit's entry. A
+process started by another program runs in that program's unit. Steam started from the suite crashed in the suite's
+unit on the owner's board. The notification then names the process and the program it ran under. The Log tab reads
+the same field. For a session recorded before the field, it reads the journal once. When the `full avg10` pressure
 stays at `STALL_PERCENT`, 40%, for `STALL_S`, 10 seconds, the watcher runs `systemctl --user kill --signal=SIGKILL`
 on each running game. The session then ends as a memory stall. Notifications go through `notify-send`. The one after
 a stall has a button. A shell waits for it and then starts the app.

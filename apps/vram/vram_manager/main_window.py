@@ -9,6 +9,8 @@ Advanced holds each setting on its own, as before: the memory the system has now
 the VRAM split in CMOS with apply, undo and a read of the CMOS block, the GTT limit (ttm.pages_limit) in the next
 boot's kernel arguments, the profiles, the swap layout of the next boot, the memory guard and recording.
 
+Log lists the sessions the recording kept, newest first, with how each ended and what the crash report says.
+
 A split is written to CMOS, a GTT limit to the next boot's kernel arguments with rpm-ostree, a swap layout to files
 of the app's own in /etc (swap.py); all take effect at the next boot. The memory guard (guard.py) takes effect at
 once. Recording (watch.py, service.py) goes on and off on its own. The window remembers each change with the boot it was made in, and after a reboot says whether the
@@ -27,7 +29,7 @@ from typing import Callable
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame, QGroupBox, QHBoxLayout, QHeaderView,
+from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QFrame, QGroupBox, QHBoxLayout, QHeaderView,
                              QLabel, QMainWindow, QMessageBox, QPushButton, QScrollArea, QSpinBox, QTableWidget,
                              QTabWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
@@ -57,6 +59,8 @@ SMOOTH_PAGES = object()                 # PROFILES: the Smooth profile's limit, 
 SMOOTH_SWAP = swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=swap.SWAPPINESS[swap.ZRAM])
 TASKBAR = 80                            # the room kept free under the window, for a taskbar (as Core Unlock's)
 RESTART_SECS = 15                       # the countdown before the window restarts the board, as Core Unlock's
+LOG_COLUMNS = ["When", "Program", "How it ended", "Memory then", "What the crash report says"]
+FINE = (watch.CLOSED, watch.CLOSED_FOR_GAME, watch.SESSION_ENDED)   # endings that are not a problem
 
 ABOUT = ("The learning steps find the memory settings that suit the games you play.<br><br>1. The start point is the "
          "Games profile, with Bazzite's swap and guard, and recording on.<br>2. The board restarts.<br>3. You play "
@@ -120,7 +124,8 @@ class MainWindow(QMainWindow):
                  config_dir: Path | None = None, sessions_file: Path | None = None,
                  python: str = sys.executable, app_root: Path = ROOT,
                  user_commands: kargs.Run = privileged.run_command, learn_file: Path | None = None,
-                 restarter: Callable[[], bool] = resume.restart, clock: Callable[[], float] = time.time):
+                 restarter: Callable[[], bool] = resume.restart, clock: Callable[[], float] = time.time,
+                 journal: Callable[[list[str]], str] = watch._journal):
         super().__init__()
         self.resize(900, 900)
         self.sys_root = sys_root
@@ -138,6 +143,8 @@ class MainWindow(QMainWindow):
         self.sessions_seen: float | None = None  # the sessions file's time when last shown
         self.learn_file = learn_file or learn.learn_path()
         self.restarter, self.clock = restarter, clock
+        self.journal = journal                  # the crash reports of sessions recorded without one
+        self.crash_reports: dict[str, str] = {}
         self.state = learn.read_state(self.learn_file)
         self.settings = ManagerSettings(INFO, self)
         self.swap_setup = swap.read_setup(etc_root, var_root)
@@ -415,9 +422,28 @@ class MainWindow(QMainWindow):
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setWidget(self.advanced)
+        # The Log tab (owner, 27-11-2026: "a log tab where I can view the logs"): every session the recording kept,
+        # newest first, with what the crash report says. It keeps the window's height, as Advanced does.
+        self.log_only_wrong = QCheckBox("Only what went wrong")
+        self.log_only_wrong.toggled.connect(lambda _c: self.render_log())
+        self.log_table = QTableWidget(0, len(LOG_COLUMNS))
+        self.log_table.setHorizontalHeaderLabels(LOG_COLUMNS)
+        self.log_table.verticalHeader().setVisible(False)
+        log_header = self.log_table.horizontalHeader()
+        for c in range(len(LOG_COLUMNS) - 1):
+            log_header.setSectionResizeMode(c, QHeaderView.ResizeMode.ResizeToContents)
+        log_header.setSectionResizeMode(len(LOG_COLUMNS) - 1, QHeaderView.ResizeMode.Stretch)
+        self.log_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.log_hint = hint_label("")
+        self.log = QWidget()
+        lay_log = QVBoxLayout(self.log)
+        lay_log.addWidget(self.log_only_wrong)
+        lay_log.addWidget(self.log_table, 1)
+        lay_log.addWidget(self.log_hint)
         self.tabs = QTabWidget()
         self.tabs.addTab(self.learning, "Learning")
         self.tabs.addTab(scroll, "Advanced")
+        self.tabs.addTab(self.log, "Log")
         self.tabs.currentChanged.connect(lambda _i: self.fit())
         self.body = QWidget()
         lay = QVBoxLayout(self.body)
@@ -836,6 +862,45 @@ class MainWindow(QMainWindow):
             return
         self.sessions_seen = changed
         self.render_steps()
+        self.render_log()
+
+    def crash_text(self, session: watch.Session) -> str:
+        """What crashed: kept with the session, else read once from the journal (a session recorded before the
+        recorder kept it)."""
+        if session.ended != watch.CRASHED or session.crash:
+            return session.crash
+        if session.unit not in self.crash_reports:
+            self.crash_reports[session.unit] = watch.crash_report(session, self.journal)
+        return self.crash_reports[session.unit]
+
+    def render_log(self) -> None:
+        """The Log tab: the recorded sessions, newest first; only the ones that went wrong when checked."""
+        kept = watch.read_sessions(self.sessions_file)[::-1]
+        sessions = [s for s in kept if s.ended not in FINE] if self.log_only_wrong.isChecked() else kept
+        self.log_table.setRowCount(len(sessions))
+        for row, s in enumerate(sessions):
+            crash = self.crash_text(s)
+            process = watch.crash_process(crash)
+            if process and process.casefold() != s.program.casefold() and not watch.is_game(s.unit):
+                crash += f". {s.program} started it."
+            cells = (time.strftime("%d-%m %H:%M", time.localtime(s.end or s.start)), s.program, s.ended,
+                     f"RAM {system.mib_text(s.ram_mib)} · swap {system.mib_text(s.swap_mib)} · waited "
+                     f"{s.pressure:.0f}%", crash)
+            for column, value in enumerate(cells):
+                item = QTableWidgetItem(value)
+                if column == 2 and s.ended not in FINE:
+                    item.setForeground(QColor(RED))
+                elif column == 2 and s.ended == watch.SESSION_ENDED:
+                    item.setForeground(QColor(ORANGE))
+                self.log_table.setItem(row, column, item)
+        if not kept:
+            hint = "Nothing recorded yet. Recording keeps the programs while it is on."
+        elif not sessions:
+            hint = "Nothing went wrong in the sessions kept."
+        else:
+            hint = (f"Each program the recording kept, newest first, the last {watch.KEEP}. A crash names the "
+                    "process that crashed.")
+        self.log_hint.setText(hint)
 
     def show_programs(self) -> None:
         """The Programs window, from the records beside the sessions file."""

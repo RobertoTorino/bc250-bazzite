@@ -674,3 +674,48 @@ def test_a_round_that_asks_for_nothing_ends_on_the_start_point(qapp, sys_root, p
     assert "<b>The settings your board runs now</b>" in texts
     assert "No change stayed, so these are the start point's settings." in texts
     w.close()
+
+
+def test_the_log_tab_lists_the_sessions_with_the_crash_report(qapp, sys_root, proc_root):
+    """The owner's board, 27-11-2026: Steam, started from the suite, crashed in the suite's unit. The Log tab shows
+    each session, newest first; a crash recorded without its report gets it from the journal."""
+    sessions = sys_root.parent / "sessions.jsonl"
+    suite = "app-bc250\\x2dbazzite\\x2dsuite@eefe.service"
+    for session in (watch.Session("app-code-1.scope", "Visual Studio Code", 1000.0, "b", ram_mib=6716, swap_mib=1482,
+                                  pressure=4.79, end=1100.0, ended=watch.CLOSED),
+                    watch.Session(suite, "BC250 Bazzite Suite", 1200.0, "b", ram_mib=4247, swap_mib=944, end=1300.0,
+                                  ended=watch.CRASHED),
+                    watch.Session("app-steam@1.service", "Steam", 1400.0, "b", end=1500.0, ended=watch.CRASHED,
+                                  crash="steam, SIGSEGV")):
+        watch.write_session(session, sessions)
+    asked = []
+
+    def journal(args):
+        asked.append(args)
+        if "--output-fields=COREDUMP_SIGNAL_NAME" in args:
+            return "SIGSEGV\n"
+        return "Process 194263 (steam) of user 1000 dumped core.\n" if f"COREDUMP_USER_UNIT={suite}" in args else ""
+
+    w = MainWindow(sys_root, proc_root, runner=Board(), commands=FakeOstree(), swapper=Swapper(sys_root.parent),
+                   config_dir=sys_root.parent / "config", sessions_file=sessions, python="/venv/bin/python",
+                   app_root=sys_root.parent / "app", journal=journal)
+    assert w.tabs.tabText(2) == "Log"
+    table = w.log_table
+    rows = [[table.item(r, c).text() for c in range(table.columnCount())] for r in range(table.rowCount())]
+    assert [r[1] for r in rows] == ["Steam", "BC250 Bazzite Suite", "Visual Studio Code"]
+    assert rows[0][4] == "steam, SIGSEGV"
+    assert rows[1][2:] == ["Crashed", "RAM 4.1 GiB · swap 944 MiB · waited 0%",
+                           "steam, SIGSEGV. BC250 Bazzite Suite started it."]
+    assert rows[2][4] == ""
+    calls = len(asked)
+    w.log_only_wrong.setChecked(True)
+    assert table.rowCount() == 2 and len(asked) == calls        # the journal is read once a session
+    assert w.log_hint.text().startswith("Each program the recording kept")
+    w.close()
+
+
+def test_the_log_tab_says_when_nothing_is_recorded(qapp, sys_root, proc_root):
+    w = make(qapp, sys_root, proc_root, Board())
+    assert w.log_table.rowCount() == 0
+    assert w.log_hint.text() == "Nothing recorded yet. Recording keeps the programs while it is on."
+    w.close()

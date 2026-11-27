@@ -68,6 +68,7 @@ there and installs them.
 | `vkmark` | 41 CPU + GPU Stress, as the GPU load when memtest_vulkan and vkpeak are missing | RPM packages |
 | `nvme-cli` (`nvme`) | 10 NVMe Devices (SMART health) | RPM packages |
 | `fio` | 43 Disk Speed (random 4K read) | RPM packages |
+| `umr` | 21 Compute Unit (CU) Count Test (live CU masks). [BC-250 CU Unlock](compute.md#requirements) needs it | RPM packages |
 | `memtest_vulkan` | 41 CPU + GPU Stress, as the GPU load and a VRAM error check | Binaries in `~/.local/bin` |
 | `vkpeak` | 42 Performance Benchmark (GPU score), and 41 CPU + GPU Stress as the GPU load when memtest_vulkan is missing | Binaries in `~/.local/bin` |
 | Ookla `speedtest` | 44 Internet Speed (`speedtest-cli` works too) | Speed test in `~/.local/bin` |

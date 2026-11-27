@@ -1,3 +1,21 @@
+Changelog: 27-11-2026 04:55:23
+
+Fixed. The wiki chapter says that the VRAM split survives a fresh install of Bazzite, and how to set it back
+afterward (owner, 27-11-2026). Seen on the owner's second board: 4 GB of VRAM after a fresh install, while the
+kernel argument for the GTT limit was gone. The text is in the Changes the board box, in The split, GTT and RAM
+and in Undoing a change.
+
+Changelog: 27-11-2026 00:58:36
+
+Added. A Log tab lists each session the recording kept, the newest first (owner, 27-11-2026). Each row has when the
+program ended, how it ended and the memory at that moment. A crash shows the process that crashed and its signal,
+from systemd-coredump's crash report. Only what went wrong hides the programs that closed as usual.
+
+Fixed. A crash notification named the wrong program and spoke of a game for any program. On the owner's board, Steam
+crashed with SIGSEGV after the suite started it. The notification said BC250 Bazzite Suite crashed and that the game
+closes. It now names the process and its signal, and the program it ran under. Only a game's crash says the game
+closes. A session keeps what crashed in sessions.jsonl.
+
 Changelog: 27-11-2026 00:34:05
 
 Release 5.1.1.

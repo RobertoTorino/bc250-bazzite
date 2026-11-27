@@ -457,7 +457,7 @@ systemctl reboot
 ```
 
 Or use the optional script, which installs everything below in one go. It layers the RPM packages `stress-ng`,
-`lm_sensors`, `vkmark`, `nvme-cli` and `fio`. It downloads `vkpeak`, `memtest_vulkan` and the Ookla `speedtest` CLI
+`lm_sensors`, `vkmark`, `nvme-cli`, `fio` and `umr`. It downloads `vkpeak`, `memtest_vulkan` and the Ookla `speedtest` CLI
 into `~/.local/bin`. It is interactive and asks for each group separately.
 
 ```bash

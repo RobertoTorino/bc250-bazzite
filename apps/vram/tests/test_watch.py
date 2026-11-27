@@ -32,8 +32,9 @@ def board(proc_root: Path, swap_free_kb: int, pressure: float = 0.0) -> None:
 
 
 class Journal:
-    def __init__(self, oomd: str = "", kernel: str = "", coredump: str = ""):
-        self.oomd, self.kernel, self.coredump, self.calls = oomd, kernel, coredump, []
+    def __init__(self, oomd: str = "", kernel: str = "", coredump: str = "", signal: str = "", unit: str = UNIT):
+        self.oomd, self.kernel, self.coredump, self.signal, self.calls = oomd, kernel, coredump, signal, []
+        self.unit = unit                    # the unit the crash dump names
         self.crash = ""                     # systemd-coredump's first line, at the crash
 
     def __call__(self, args):
@@ -41,7 +42,9 @@ class Journal:
         if "systemd-coredump" in args:
             return self.crash
         if any(a.startswith("COREDUMP_USER_UNIT=") for a in args):
-            return self.coredump if f"COREDUMP_USER_UNIT={UNIT}" in args else ""
+            if f"COREDUMP_USER_UNIT={self.unit}" not in args:
+                return ""
+            return self.signal if "--output-fields=COREDUMP_SIGNAL_NAME" in args else self.coredump
         return self.oomd if "systemd-oomd.service" in args else self.kernel if "-k" in args else ""
 
 
@@ -296,7 +299,10 @@ def test_a_crash_is_told_at_once_with_the_memory_figures(tmp_path, sys_root, pro
     w.tick()
     w.tick()                                                 # told once
     assert len(told) == 1 and told[0][0] == "Steam game 3880967987 crashed" and not told[0][2]
+    assert told[0][1].startswith("shadPS4:Main ended on SIGTRAP. The crash report takes a moment, then the game "
+                                 "closes.")
     assert "Memory was not short, so no memory setting points to a change." in told[0][1]
+    assert w.open[UNIT].crash == "shadPS4:Main, SIGTRAP"
     assert ["-b", "--since", "@998", "-t", "systemd-coredump"] in journal.calls
 
 
@@ -336,3 +342,31 @@ def test_no_stall_without_a_game(tmp_path, sys_root, proc_root):
         w.tick()
         clock.now += 2
     assert killed == []
+
+
+def test_a_crash_names_the_process_and_where_it_ran(tmp_path, sys_root, proc_root):
+    """The owner's board, 27-11-2026: Steam, started from the suite, crashed in the suite's unit. The notification
+    said "BC250 Bazzite Suite crashed ... then the game closes"; it names the process and the program it ran under."""
+    suite = "app-bc250\\x2dbazzite\\x2dsuite@eefe894827b648518dec67d3a5ca20b4.service"
+    journal = Journal(coredump="Process 194263 (steam) of user 1000 dumped core.\n\nModule …", signal="SIGSEGV\n",
+                      unit=suite)
+    folder, w = make(tmp_path, sys_root, proc_root, journal)
+    told = []
+    w.notifier = lambda summary, body, open_app=False: told.append((summary, body))
+    program(folder, suite, 3579)
+    w.tick()
+    end(folder, suite)
+    w.tick()
+    session = watch.read_sessions(tmp_path / "sessions.jsonl")[-1]
+    assert (session.ended, session.crash) == (watch.CRASHED, "steam, SIGSEGV")
+    assert told[0][0] == "steam crashed"
+    assert told[0][1].startswith(f"steam ended on SIGSEGV. It ran under {session.program}, which started it. The "
+                                 "board waited")
+    assert "game" not in told[0][1]
+
+
+def test_a_crash_report_without_an_entry_is_empty():
+    session = watch.Session(UNIT, "LUMINES", 1000.0, "boot")
+    assert watch.crash_report(session, Journal(unit="app-other.scope")) == ""
+    assert watch.crash_report(session, Journal(coredump="Process 1 (shadPS4:Main) of user 1000 dumped core.")) == \
+        "shadPS4:Main"

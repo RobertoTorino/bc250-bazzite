@@ -238,7 +238,8 @@ board_change = """
 The app writes the VRAM split into the board's CMOS. It writes only the firmware's own memory block of 28 bytes in
 bank 2, with its checksum, and never a byte outside it. The firmware reads the split at the next boot. The board's
 battery keeps the CMOS. So the split stays across reboots and power offs until it is written again, or until the
-CMOS is cleared. Clearing the CMOS with the jumper or the battery brings the firmware's 512 MB back. The GTT limit
+CMOS is cleared. A fresh install of Bazzite does not reset it. Clearing the CMOS with the jumper or the battery
+brings the firmware's 512 MB back. The GTT limit
 is a kernel argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself, the
 firmware or the real-time clock. The app refuses to write when the block's signature or checksum does not match. It
 also refuses when the kernel is locked down. Undo writes the previous split back. The Default profile writes 512 MB

@@ -48,6 +48,11 @@ game's unit SIGKILL (systemctl --user kill), which frees its memory at once. The
 stall", a lack of memory, so the learning steps point to a change at once. A notification says so, with a button
 that opens the window. The values are starting values to test on the board.
 
+When a program crashes, the session keeps what crashed: the process and its signal, from the crash report
+(crash_report()). A program another one started runs in that one's unit, so the process can differ from the
+program: Steam started from the suite crashed in the suite's unit (owner's board, 27-11-2026). A crash notification
+names the process then, and says where it ran.
+
 When a game crashes, systemd-coredump logs "Process <pid> (<name>) of user <uid> terminated abnormally" at once,
 then writes the crash dump, which took 36 s for shadPS4 on the owner's board (26-11-2026); the game's window stays
 frozen meanwhile. The watcher looks for that line while a game runs, finds the game by the process's cgroup, and
@@ -81,7 +86,8 @@ POINT_S = 60                    # one point of the history a minute
 HISTORY_S = 24 * 3600           # the history kept
 STALL_PERCENT = 40.0            # a game is ended when the memory pressure stays at this or more ...
 STALL_S = 10                    # ... for this long (starting values, owner 26-11-2026)
-CRASH = re.compile(r"Process (\d+) \((.*)\) of user \d+ terminated abnormally")
+CRASH = re.compile(r"Process (\d+) \((.*)\) of user \d+ terminated abnormally(?: with signal \d+/(\w+))?")
+DUMPED = re.compile(r"Process \d+ \((.*)\) of user \d+ dumped core")
 
 CLOSED = "Closed"
 GUARD_SWAP = "Guard: swap full"
@@ -145,6 +151,7 @@ class Session:
     ended: str = ""
     vram_mib: int = 0               # the board's peak VRAM in use
     cpu: float = 0.0                # the board's peak CPU load, percent of all cores
+    crash: str = ""                 # what crashed, from the crash report: "steam, SIGSEGV"
 
 
 @dataclass
@@ -353,6 +360,22 @@ def ending(session: Session, journal: Callable[[list[str]], str] = _journal) -> 
     if session.ram_total_mib and session.gtt_mib >= session.ram_total_mib * GPU_SHARE:
         return KILLED_GPU
     return KILLED_RAM
+
+
+def crash_report(session: Session, journal: Callable[[list[str]], str] = _journal) -> str:
+    """What crashed in the session's unit, from systemd-coredump's entry: the process and its signal, as
+    "steam, SIGSEGV". A program another one started runs in that one's unit (owner's board, 27-11-2026: Steam started
+    from the suite crashed in the suite's unit). "" when the journal has no entry."""
+    since = ["--since", f"@{int(session.start)}", f"COREDUMP_USER_UNIT={session.unit}"]
+    match = DUMPED.search(journal(since))
+    if not match:
+        return ""
+    signals = [v for v in journal([*since, "--output-fields=COREDUMP_SIGNAL_NAME"]).split() if v.startswith("SIG")]
+    return ", ".join([match.group(1), *signals[:1]])
+
+
+def crash_process(crash: str) -> str:
+    return crash.split(",")[0].strip()
 
 
 # --- The record ------------------------------------------------------------------------------------------------
@@ -566,6 +589,8 @@ class Watcher:
                 session.ended = CLOSED_FOR_GAME
             if unit in self.ended:
                 session.ended = STALLED
+            if session.ended == CRASHED and not session.crash:
+                session.crash = crash_report(session, self.journal)
             if session.ended == CRASHED and unit not in self.crashed:
                 self.tell_crash(session)            # missed while it ran
             self.closed.discard(unit)
@@ -605,9 +630,10 @@ class Watcher:
         text = self.journal(["-b", "--since", f"@{int(self.crash_seen)}", "-t", "systemd-coredump"])
         self.crash_seen = now - SAMPLE_S                  # a line logged during this look is read again next time
         for match in CRASH.finditer(text):
-            pid = match.group(1)
+            pid, name, sig = match.groups()
             for unit in games:
                 if unit not in self.crashed and self.holds(unit, pid):
+                    self.open[unit].crash = ", ".join([name, *([f"SIG{sig}"] if sig else [])])
                     self.tell_crash(self.open[unit])
 
     def holds(self, unit: str, pid: str) -> bool:
@@ -624,10 +650,18 @@ class Watcher:
             session.swap_total_mib and session.swap_mib >= session.swap_total_mib * SWAP_FULL)
         figures = (f"The board waited for memory {session.pressure:.0f}% of the time at most, and the swap held "
                    f"{system.mib_text(session.swap_mib)} of {system.mib_text(session.swap_total_mib)}.")
-        self.notifier(f"{session.program} crashed",
-                      "The crash report takes a moment, then the game closes. " + figures
-                      + (" Memory was short, so watch the learning steps." if short else
-                         " Memory was not short, so no memory setting points to a change."))
+        game = is_game(session.unit)
+        process = crash_process(session.crash)
+        other = bool(process) and not game and process.casefold() != session.program.casefold()
+        said = f"{process} ended on {session.crash.split(', ')[1]}." if ", " in session.crash else ""
+        self.notifier(f"{process if other else session.program} crashed",
+                      " ".join(filter(None, [
+                          said,
+                          f"It ran under {session.program}, which started it." if other else "",
+                          "The crash report takes a moment, then the game closes." if game else "",
+                          figures,
+                          "Memory was short, so watch the learning steps." if short else
+                          "Memory was not short, so no memory setting points to a change."])))
 
     def watch_stall(self, games: list[str], board: Board, now: float) -> None:
         """The board stalls for memory while a game runs: after STALL_S seconds, the game is ended and told."""
