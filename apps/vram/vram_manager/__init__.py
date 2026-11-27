@@ -7,7 +7,7 @@ reboot."""
 
 APP_NAME = "BC-250 Memory Manager"
 APP_ID = "bc250-memory-manager"
-__version__ = "5.2.0"
+__version__ = "5.2.1"
 
 from pathlib import Path
 

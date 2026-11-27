@@ -1,3 +1,7 @@
+Changelog: 27-11-2026 19:44:37
+
+Release 4.11.3.
+
 Changelog: 27-11-2026 18:59:41
 
 Fixed. The monitor reads the GPU load of the governor's gpu_metrics in hundredths of a percent, as core's sensors

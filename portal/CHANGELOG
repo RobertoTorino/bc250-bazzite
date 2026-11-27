@@ -1,3 +1,7 @@
+Changelog: 27-11-2026 19:44:37
+
+Release 29.3.0. Pins bc250-check-v4.11.3, bc250-quickfix-v1.11.1, bc250-upscaler-v5.9.3, bc250-compute-v2.1.0, bc250-cores-v2.0.2, bc250-overlay-v4.9.2, bc250-bios-v4.9.2, bc250-ace-v4.9.2, bc250-mesh-v4.10.2, bc250-vram-v5.2.1, bc250-fan-v4.9.2, bc250-cec-v4.9.2, bc250-sftp-v4.9.2, bc250-turing-v2.9.2, bc250-webcam-v2.9.2, bc250-controller-v2.9.2, bc250-rpcs3-v7.10.2, bc250-consoles-v5.9.2, bc250-clb-v4.9.2, bc250-shadps4-v7.9.2, bc250-datstation-v6.9.2, bc250-ppsspp-v5.10.2, bc250-pcsx2-v7.10.2, bc250-vita3k-v5.11.2, bc250-xenia-v5.11.2, bc250-ssd-v3.9.2, bc250-btpair-v2.9.2, bc250-password-v1.9.2.
+
 Changelog: 27-11-2026 05:24:10
 
 Release 29.2.0. Pins bc250-check-v4.11.2, bc250-quickfix-v1.11.0, bc250-compute-v2.0.3, bc250-vram-v5.2.0.

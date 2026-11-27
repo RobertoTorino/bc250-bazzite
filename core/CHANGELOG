@@ -1,3 +1,7 @@
+Changelog: 27-11-2026 19:44:37
+
+Version 6.9.2.
+
 Changelog: 27-11-2026 17:47:08
 
 Fixed. The Wi-Fi reader no longer knows the AIC8800D80 stick. Its storage mode, its out-of-tree driver and its WPA2

@@ -1,3 +1,7 @@
+Changelog: 27-11-2026 19:44:37
+
+Release 4.9.2.
+
 Changelog: 27-11-2026 18:49:04
 
 Fixed. The GPU row shows the average load of the last second. Before, it showed one snapshot per second, and the
