@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3649 test functions (4213 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
+3650 test functions (4214 cases counting the parametrized ones) in 43 test folders, and 44 installer tests.
 
 ## Summary
 
@@ -44,7 +44,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
 | [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
-| [dev/garbage](#devgarbage) | 1 | 8 |  |
+| [dev/garbage](#devgarbage) | 1 | 9 |  |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
 | [dev/marketing](#devmarketing) | 2 | 29 |  |
 | [dev/nrt](#devnrt) | 4 | 135 | 24.8 s |
@@ -53,7 +53,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 253 | 11.1 s |
-| **All** | | **3649** | **182 s** |
+| **All** | | **3650** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -3199,12 +3199,13 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/garbage
 
-8 tests in 1 files.
+9 tests in 1 files.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
 | `test_garbage.py` | `test_it_finds_the_full_places_largest_first` |  |  | It finds the full places largest first. |
 | `test_garbage.py` | `test_the_trash_shows_with_any_file_in_it` |  |  | The Trash shows whatever it holds, a file of a few KB too (owner, 24-11-2026); an empty one does not. |
+| `test_garbage.py` | `test_emptying_the_trash_leaves_nothing_to_show` |  |  | The desktop keeps directorysizes beside files and info, its list of the trashed folders' sizes. |
 | `test_garbage.py` | `test_the_crash_dumps_take_root` |  |  | The crash dumps take root. |
 | `test_garbage.py` | `test_homebrew_only_where_it_is_installed` |  |  | Homebrew only where it is installed. |
 | `test_garbage.py` | `test_homebrews_own_cache_is_not_garbage` |  |  | Homebrews own cache is not garbage. |

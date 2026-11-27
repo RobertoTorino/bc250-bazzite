@@ -552,7 +552,7 @@ a file, however small:
 |---|---|---|
 | **Crash dumps** | `/var/lib/systemd/coredump` | `sudo find /var/lib/systemd/coredump -mindepth 1 -delete` |
 | **Steam's crash reports** | `config/htmlcache/BrowserMetrics` in Steam's folder | `find <that folder> -mindepth 1 -delete` |
-| **Trash** | `~/.local/share/Trash` | `find ~/.local/share/Trash -mindepth 2 -delete` |
+| **Trash** | `~/.local/share/Trash` | `find ~/.local/share/Trash -mindepth 1 -not -path ~/.local/share/Trash/files -not -path ~/.local/share/Trash/info -delete` |
 | **Picture previews** | `~/.cache/thumbnails` | `find ~/.cache/thumbnails -mindepth 1 -delete` |
 | **pip's download cache** | `~/.cache/pip` | `find ~/.cache/pip -mindepth 1 -delete` |
 | **Homebrew's downloads** | `~/.cache/Homebrew` | `brew cleanup --prune=all` |
