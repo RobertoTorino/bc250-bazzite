@@ -281,6 +281,32 @@ def cache_hit(folder: Path, key: str) -> bool:
     return stamp.is_file() and stamp.read_text(encoding="utf-8").strip() == key
 
 
+def keep_in_cache(step: dict, job: Job, base: str, root: Path) -> None:
+    """The folders in the checkout that an actions/cache step keeps (apps/consoles/native/target), linked to a
+    folder of their own in CACHE/kept: the copy is made new for every run, and without them cargo built every crate
+    again each time (owner, 28-11-2026: the native job took 50 s alone after the other jobs). A folder kept under
+    another key starts empty, as GitHub restores nothing when the key changes, so each job keeps one folder per path.
+    A path in the home folder (~) is kept as it is."""
+    given = step.get("with") or {}
+    key = expand(given.get("key", ""), job, base)
+    for line in expand(given.get("path", ""), job, base).splitlines():
+        path = line.strip()
+        if not path or path.startswith(("~", "/")):
+            continue
+        kept = CACHE / "kept" / job.name.replace("/", "_") / path
+        if not cache_hit(kept, key):
+            shutil.rmtree(kept, ignore_errors=True)
+            kept.mkdir(parents=True)
+            (kept / CACHE_KEY).write_text(key + "\n", encoding="utf-8")
+        target = root / path
+        if target.is_symlink() or target.is_file():
+            target.unlink()
+        elif target.exists():
+            shutil.rmtree(target)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.symlink_to(kept, target_is_directory=True)
+
+
 def run_job(job: Job, base: str, root: Path | None = None) -> Result:
     """The job's steps, run in *root*: the copy WORK when not given."""
     started = time.monotonic()
@@ -303,6 +329,7 @@ def run_job(job: Job, base: str, root: Path | None = None) -> Result:
             label = step.get("name") or step.get("uses") or str(step.get("run", "")).splitlines()[0]
             if "uses" in step:
                 if "cache" in step["uses"]:
+                    keep_in_cache(step, job, base, root)
                     result.notes.append(f"{label}: kept in ~/.cache/bc250-ci-local")
                 continue                            # checkout: the copy; setup-python: the image's 3.12
             condition = str(step.get("if", ""))

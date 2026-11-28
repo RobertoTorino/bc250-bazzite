@@ -4,6 +4,7 @@ fills in, which jobs a name selects, and the requirement files that key a job's 
 
 from __future__ import annotations
 
+import shutil
 import sys
 from pathlib import Path
 
@@ -210,3 +211,29 @@ def test_a_cache_is_a_hit_only_under_its_key(tmp_path, monkeypatch):
     (work / "build.sh").write_text("three", encoding="utf-8")
     assert not ci_local.run_job(ci_local.Job("native", spec), "").ok
     assert not ci_local.cache_hit(*ci_local.cache_of("kept", spec["steps"], ci_local.Job("native", spec), ""))
+
+
+def test_a_cached_folder_in_the_checkout_is_kept_between_runs(tmp_path, monkeypatch):
+    """A folder in the checkout that an actions/cache step names (native/target) outlives the copy, which every run
+    makes new, while the key stays the same; another key starts it empty, as on GitHub (owner, 28-11-2026: cargo
+    built every crate again in every run)."""
+    work, cache = tmp_path / "work", tmp_path / "cache"
+    work.mkdir()
+    (work / "Cargo.lock").write_text("one", encoding="utf-8")
+    monkeypatch.setattr(ci_local, "WORK", work)
+    monkeypatch.setattr(ci_local, "CACHE", cache)
+    spec = {"runs-on": "ubuntu-latest", "steps": [
+        {"uses": "actions/cache@v6",
+         "with": {"path": "~/.cargo/registry\nnative/target\n", "key": "cargo-${{ hashFiles('Cargo.lock') }}"}},
+        {"run": "mkdir -p native/target && echo built >> native/target/builds"}]}
+
+    def builds() -> int:
+        shutil.rmtree(work / "native", ignore_errors=True)        # a new copy, as prepare_copy makes it
+        assert ci_local.run_job(ci_local.Job("native", spec), "").ok
+        return len((work / "native" / "target" / "builds").read_text(encoding="utf-8").split())
+
+    assert builds() == 1
+    assert builds() == 2                                           # the same key: what was built is there
+    (work / "Cargo.lock").write_text("two", encoding="utf-8")
+    assert builds() == 1                                           # another key: an empty folder
+    assert not (cache / "kept" / "native" / "~").exists()          # the home folder's paths stay where they are
