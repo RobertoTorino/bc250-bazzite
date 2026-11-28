@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3798 test functions (4362 cases counting the parametrized ones) in 46 test folders, and 47 installer tests.
+3799 test functions (4363 cases counting the parametrized ones) in 46 test folders, and 47 installer tests.
 
 ## Summary
 
@@ -41,7 +41,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/vram](#appsvram) | 12 | 106 | 0.6 s |
 | [apps/webcam](#appswebcam) | 12 | 113 | 2.6 s |
 | [apps/xenia](#appsxenia) | 8 | 80 | 4.5 s |
-| [core](#core) | 33 | 248 | 4.6 s |
+| [core](#core) | 33 | 249 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
 | [dev/deps](#devdeps) | 6 | 103 | 7.4 s |
@@ -56,7 +56,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/textcheck](#devtextcheck) | 2 | 19 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
 | [tools](#tools) | 43 | 258 | 11.1 s |
-| **All** | | **3798** | **182 s** |
+| **All** | | **3799** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -2854,7 +2854,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## core
 
-248 tests in 33 files, 4.6 s in a local run.
+249 tests in 33 files, 4.6 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2972,6 +2972,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_platform.py` | `test_expand_and_xdg` |  |  | Expand and xdg. |
 | `test_platform.py` | `test_show_in_folder` |  |  | A saved screenshot shows itself (owner, 06-11-2026): the file manager over D-Bus, else the folder with xdg-open. |
 | `test_platform.py` | `test_private_writes_the_home_folder_as_a_tilde` |  |  | The privacy rule (owner, 29-10-2026: a folder on the screen showed the user's name): the home folder as ~, wherever it is in the text. |
+| `test_platform.py` | `test_notify_sends_through_notify_send_or_says_it_cannot` |  |  | A desktop notification is notify-send's, with the app's name and an icon; without notify-send, False. |
 | `test_processes.py` | `test_find_leaves_out_zombies_and_other_programs` |  |  | Find leaves out zombies and other programs. |
 | `test_processes.py` | `test_find_reads_a_name_with_spaces_and_brackets` |  |  | Find reads a name with spaces and brackets. |
 | `test_processes.py` | `test_end_kills_the_program_and_everything_under_it_children_first` |  |  | An AppImage's own process stays while the program it unpacked runs under it: both end. |
