@@ -92,7 +92,7 @@ fi
 GAMELOG="${XDG_DATA_HOME:-$HOME/.local/share}/bc250-pcsx2-manager/app/bc250_core/gamelog.sh"
 [ -f "$GAMELOG" ] || GAMELOG="$(dirname "$(readlink -f "$0")")/../../core/bc250_core/gamelog.sh"
 [ -f "$GAMELOG" ] || exec "$APPIMAGE" "$@"
-# shellcheck source=../../core/bc250_core/gamelog.sh
+# shellcheck source=core/bc250_core/gamelog.sh
 . "$GAMELOG"
 GAMELOG_NAME="PCSX2"
 GAMELOG_BUILD=${APPIMAGE%/*}

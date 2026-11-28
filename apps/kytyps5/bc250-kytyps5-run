@@ -112,7 +112,7 @@ fi
 GAMELOG="${XDG_DATA_HOME:-$HOME/.local/share}/bc250-kytyps5/app/bc250_core/gamelog.sh"
 [ -f "$GAMELOG" ] || GAMELOG="$(dirname "$(readlink -f "$0")")/../../core/bc250_core/gamelog.sh"
 [ -f "$GAMELOG" ] || exec "$PROGRAM" "$@"
-# shellcheck source=../../core/bc250_core/gamelog.sh
+# shellcheck source=core/bc250_core/gamelog.sh
 . "$GAMELOG"
 GAMELOG_NAME="KytyPS5-Native"
 GAMELOG_BUILD=$BUILD
