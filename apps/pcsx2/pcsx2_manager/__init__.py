@@ -4,7 +4,7 @@ games in the chosen folders and adds them to Steam, where a game is started."""
 
 APP_NAME = "BC-250 PCSX2 Manager"
 APP_ID = "bc250-pcsx2-manager"
-__version__ = "7.10.2"
+__version__ = "7.10.3"
 
 from pathlib import Path
 
