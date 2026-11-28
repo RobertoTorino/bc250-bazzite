@@ -131,6 +131,10 @@ cache is keyed on that file.
 It works on a copy of the checkout with every change staged, as the commit will have it. The copy has the name of
 the checkout, as GitHub's copy has the name of the repository.
 
+The installers job gets a copy of its own, made before any job starts. The other jobs write in their copy while they
+run, such as pytest's cache in an app's folder. An installer copies an app's folder with tar, which stops when the
+folder changes during the copy. On GitHub each job has its own checkout as well.
+
 One run goes at a time on a computer, because two runs would share the venvs and the logs. A second run says that
 another run is going, and waits until it ends. That holds for a run from a terminal and for Nexus Release Tool's
 Push.
