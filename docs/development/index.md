@@ -129,6 +129,8 @@ GitHub's runner has. The first run also builds PS Remote Play's FFmpeg. Both are
 with the venvs and the logs. FFmpeg is built again when `apps/consoles/native/ffmpeg/build.sh` changes, as GitHub's
 cache is keyed on that file.
 
+The build folder of the native job's cargo is kept in the cache folder too. So cargo builds only what changed since the last run. The folder starts empty again when `Cargo.lock` changes, as GitHub's cache is keyed on that file.
+
 It works on a copy of the checkout with every change staged, as the commit will have it. The copy has the name of
 the checkout, as GitHub's copy has the name of the repository.
 
