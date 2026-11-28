@@ -3,7 +3,7 @@
 
 APP_NAME = "BC-250 SSD Check"
 APP_ID = "bc250-ssd-check"
-__version__ = "3.10.0"
+__version__ = "3.11.0"
 
 from pathlib import Path
 
