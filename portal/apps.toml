@@ -89,8 +89,8 @@ launch = [["Open", "~/.local/bin/bc250-upscaler"]]
 [apps.compute]
 name = "BC-250 CU Unlock"
 summary = "Tell bad CUs apart from an unstable CU unlock, and apply a tested unlock."
-tag = "bc250-compute-v2.2.0"
-sha256 = "6b31b5bb306d7877868beff617d4776a7583dd4095817a4a83efb2a64b40d2e5"
+tag = "bc250-compute-v2.2.1"
+sha256 = ""
 required = false
 changes_board = true
 board_change = """

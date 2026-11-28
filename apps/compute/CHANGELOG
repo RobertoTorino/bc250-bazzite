@@ -1,3 +1,7 @@
+Changelog: 28-11-2026 10:49:04
+
+Release 2.2.1.
+
 Changelog: 27-11-2026 23:15:51
 
 Fixed. After a failed combined test, a level the healthy WGPs never reached says "Not healthy" again. It said
