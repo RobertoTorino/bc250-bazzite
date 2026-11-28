@@ -1,3 +1,7 @@
+Changelog: 28-11-2026 15:53:09
+
+Fixed. gamelog.sh names bash as its shell for shellcheck, so the shell check in CI passes.
+
 Changelog: 28-11-2026 15:48:05
 
 Added. platform.notify sends a desktop notification through notify-send, as the run wrappers do (owner, 28-11-2026).

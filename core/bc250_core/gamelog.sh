@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+# shellcheck shell=bash
 # The emulator log of a game manager's run wrapper (owner, 28-11-2026: everything needed for debugging, in one
 # place). A wrapper sources this file and ends with gamelog_run. What the emulator prints goes to the app's
 # emulator log, which the View logs tab shows beside the app's own, between lines of the wrapper's own: what the
