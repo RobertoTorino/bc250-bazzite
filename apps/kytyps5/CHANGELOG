@@ -1,3 +1,7 @@
+Changelog: 28-11-2026 15:48:05
+
+Added. When the window opens without a controller, a desktop notification says so and asks to switch it on or press its PS button (owner, 28-11-2026). The app's log notes it as a warning.
+
 Changelog: 28-11-2026 15:36:57
 
 Added. The emulator log is now written by core's gamelog.sh, as in the other game managers, and names the board by its host name (owner, 28-11-2026).
