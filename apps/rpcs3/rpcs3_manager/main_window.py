@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The main window, built as PCSX2 Manager's (owner, 24-10-2026: the manager that works is the pattern for the others):
+"""The main window, built as BC-250 PCSX2 Manager's (owner, 24-10-2026: the manager that works is the pattern for the others):
 the header with the Refresh pill and the state boxes, a row of action pills (Install and Uninstall for RPCS3, Install
 for the firmware, Install and Add folder for the games, Account for RPCN) in place of the three numbered steps with buttons, the state of
 each (RPCS3, the firmware, the disc games, the PKG games) in a line, then the tabs: the games found, each with a box
@@ -18,7 +18,7 @@ RPCS3's window and its Success! box came up when the firmware was dropped in its
 RPCS3's log. The window also reads the volume Bazzite remembers for RPCS3 and says when it is muted (found on the
 board). What the window says it also writes to the app's log (core's applog), shown in the View logs tab.
 
-The owner's order of 20-11-2026, shadPS4 Manager's, replaces the one above: the header's pills are RPCS3's (its
+The owner's order of 20-11-2026, BC-250 shadPS4 Manager's, replaces the one above: the header's pills are RPCS3's (its
 version, Install, Uninstall) and Refresh; the row under them the games' pills and Available in Steam, with Play
 time where the emulator counts it; then two columns, the state lines and the installed version beside them; then the
 tabs, Memory cards before Settings and the log's as View logs."""
@@ -290,7 +290,7 @@ class MainWindow(QMainWindow):
         self.remove_game_pill.clicked.connect(self.on_remove_game)
         # Play time (owner, 18-11-2026): all games together, as RPCS3 counts it
         self.time_box = MetricBox("Play time", style.BLUE)
-        # The owner's order (20-11-2026), as shadPS4 Manager's. The header: RPCS3's version, Install and
+        # The owner's order (20-11-2026), as BC-250 shadPS4 Manager's. The header: RPCS3's version, Install and
         # Uninstall, then Refresh. The row under it: the games' Install and Uninstall, Available in Steam, RPCN's Account and Play time
         # (the Your games box went: the table lists them). Each row's pills share the width in equal parts.
         self.header_pills = [self.emulator_box, self.install_pill, self.remove_pill, self.refresh_pill]
@@ -461,7 +461,7 @@ class MainWindow(QMainWindow):
     def _state_label() -> QLabel:
         label = WrappedLabel()                  # its lines count in the window's minimum height
         # Its links take a click too: without the second flag a click on one did nothing (owner, 24-10-2026, in
-        # shadPS4 Manager's window, built the same way).
+        # BC-250 shadPS4 Manager's window, built the same way).
         label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse
                                       | Qt.TextInteractionFlag.LinksAccessibleByMouse)
         return label
@@ -654,7 +654,7 @@ class MainWindow(QMainWindow):
         self.emulator_state.setOpenExternalLinks(True)
 
         page = style.link(self, userdata.FIRMWARE_PAGE, "PlayStation's firmware page")
-        # The version alone (owner, 18-11-2026), as PCSX2 Manager's BIOS line is the dump's name alone
+        # The version alone (owner, 18-11-2026), as BC-250 PCSX2 Manager's BIOS line is the dump's name alone
         self.firmware_state.setText(f"<b>{escape(self.firmware)}</b>" if self.firmware else "Uninstalled.")
         self.firmware_info.set_text(f"Download PS3UPDAT.PUP from {page} and put it in "
                                     f"<b>{escape(private(library.firmware_home(self.user_home)))}</b>. The app "
@@ -756,7 +756,7 @@ class MainWindow(QMainWindow):
 
     def _screen_box(self, game: Game) -> QComboBox:
         """How the game fills the screen: the PS3's picture for a wide screen, for a 4:3 one, or stretched to fill
-        the window; kept in the game's own settings in RPCS3 (owner, 24-10-2026: as PCSX2 Manager's)."""
+        the window; kept in the game's own settings in RPCS3 (owner, 24-10-2026: as BC-250 PCSX2 Manager's)."""
         box = QComboBox()
         for key, text in userdata.SCREENS.items():
             box.addItem(text, key)
@@ -879,7 +879,7 @@ class MainWindow(QMainWindow):
 
     def sync_firmware(self) -> None:
         """The PS3's firmware put in Games/PS3/Firmware given to RPCS3 by itself (owner, 03-11-2026, from the
-        Windows Portable Suite's RPCS3 Manager: firmware taken in automatically), once RPCS3 is installed and while
+        Windows Portable Suite's BC-250 RPCS3 Manager: firmware taken in automatically), once RPCS3 is installed and while
         it does not run: a file whose version (read from the PUP) is installed already is left alone, and so is the
         file given last as it is (its name, size and time in the settings), so a file RPCS3 refused is not given
         again until it changes. The file stays."""
@@ -995,7 +995,7 @@ class MainWindow(QMainWindow):
         return [str(run), *args]
 
     def _show_rpcn(self) -> None:
-        """The name that signs in alone, as shadPS4 Manager's shadNet line; the rest in the tooltip."""
+        """The name that signs in alone, as BC-250 shadPS4 Manager's shadNet line; the rest in the tooltip."""
         self.rpcn_account = rpcn.read_account(self.rpcs3_home)
         account = self.rpcn_account
         if account.signs_in:
@@ -1129,7 +1129,7 @@ class MainWindow(QMainWindow):
         """The Start game tab (owner, 12-11-2026): the chosen game started through Steam, as its shortcut there
         starts it (steam://rungameid/ with the shortcut's number). Off the window's thread, with core's play(): a
         Steam that does not run is started and waited for before the game's address is given, and the line says
-        the game runs only once RPCS3 does (owner, 20-11-2026, first in shadPS4 Manager: Steam, started with
+        the game runs only once RPCS3 does (owner, 20-11-2026, first in BC-250 shadPS4 Manager: Steam, started with
         the address, came up and never started the game)."""
         game = self.chosen()
         if game is None:

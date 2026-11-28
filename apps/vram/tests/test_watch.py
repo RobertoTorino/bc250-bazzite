@@ -370,3 +370,41 @@ def test_a_crash_report_without_an_entry_is_empty():
     assert watch.crash_report(session, Journal(unit="app-other.scope")) == ""
     assert watch.crash_report(session, Journal(coredump="Process 1 (shadPS4:Main) of user 1000 dumped core.")) == \
         "shadPS4:Main"
+
+
+def test_a_game_that_wants_a_profile_the_board_lacks_is_told_once(tmp_path, sys_root, proc_root, monkeypatch):
+    """The owner's choice, 28-11-2026: a notification with a button to the window, once a boot for each profile;
+    nothing for a game that wants none, or a profile the board has."""
+    from vram_manager import kargs, profiles, swap, system
+    board(proc_root, swap_free_kb=4000000)
+    monkeypatch.setattr(watch, "steam_name", lambda number, _dir: "[PS5] ASTRO BOT" if number == 3880967987 else "")
+    monkeypatch.setattr(profiles, "_shortcuts", lambda steam_dir: [
+        {"appid": 3880967987, "AppName": "[PS5] ASTRO BOT", "Exe": '"/home/u/.local/bin/bc250-kytyps5-run"'}])
+    monkeypatch.setattr(profiles, "_field", lambda item, name, default="": item.get(name, default))
+    folder, w = make(tmp_path, sys_root, proc_root)
+    w.steam_dir = tmp_path / "steam"
+    lacking = profiles.Board(system.read_memory(sys_root, proc_root), 6144, kargs.NextBoot(profiles.SUITE_PAGES),
+                             swap.Setup(), "bazzite")
+    w.board_reader = lambda: lacking
+    told = []
+    w.notifier = lambda summary, body, open_app=False, profile="": told.append((summary, body, profile))
+    profiles.set_choice(w.choices, "managers", "kytyps5", "defaults")
+    w.tick()
+    program(folder, "app-steam-app3880967987-1.scope", 3000)
+    w.tick()
+    assert told == [("[PS5] ASTRO BOT wants the Default profile",
+                     "Memory Manager can write the 512 MB split to CMOS and the kernel default GTT limit (half the RAM) "
+                     "to the next boot's kernel arguments. A restart then puts it to use.", "defaults")]
+    end(folder, "app-steam-app3880967987-1.scope")
+    w.tick()
+    program(folder, "app-steam-app3880967987-2.scope", 3000)
+    w.tick()
+    assert len(told) == 1                                   # once a boot
+    profiles.set_choice(w.choices, "managers", "kytyps5", "games")
+    program(folder, "app-steam-app3880967987-3.scope", 3000)
+    w.tick()
+    assert len(told) == 1                                   # the board has the Games profile
+    profiles.set_choice(w.choices, "managers", "kytyps5", "")
+    program(folder, "app-steam-app5-1.scope", 3000)
+    w.tick()
+    assert len(told) == 1                                   # nothing picked for Steam's games

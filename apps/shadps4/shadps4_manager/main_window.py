@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The main window, built as PCSX2 Manager's and RPCS3 Manager's (owner, 24-10-2026: the manager that works is the pattern
+"""The main window, built as BC-250 PCSX2 Manager's and BC-250 RPCS3 Manager's (owner, 24-10-2026: the manager that works is the pattern
 for the others). The owner's order of 20-11-2026: the header's pills are shadPS4's (its version, Install, Uninstall)
 and Refresh; the row under them the games' (Install, which is Extract PKG, and Uninstall), Available in Steam,
 shadNet's Account and Play time; then two columns, the state of each (shadPS4, the system modules, the game folders,
@@ -16,7 +16,7 @@ shadPS4 settings under the games) stays for what the Settings tab does not set. 
 Bazzite remembers for shadPS4 and says when it is muted (seen on the board). What the window says it also writes to the
 app's log (core's applog), shown in the View logs tab.
 
-Packages (owner, 05-11-2026, as the Windows Portable Suite's shadPS4 Manager since 30-10-2026): a .pkg put in a game
+Packages (owner, 05-11-2026, as the Windows Portable Suite's BC-250 shadPS4 Manager since 30-10-2026): a .pkg put in a game
 folder is a row of its own in Your games, "PKG" or "PKG update", until it is unpacked (extract.py). Unpack takes the
 chosen one, Unpack all every one, the games first; each update goes beside its game and replaces an older one there.
 The packages unpacked whole are remembered (path, size and time), so they are no longer rows, and offered for deletion

@@ -4,13 +4,13 @@
 [![CI](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
 
-# PPSSPP Manager
+# BC-250 PPSSPP Manager
 
-PPSSPP Manager lets you play PSP games on the **AMD BC-250** with **Bazzite**. It uses
+BC-250 PPSSPP Manager lets you play PSP games on the **AMD BC-250** with **Bazzite**. It uses
 [PPSSPP](https://www.ppsspp.org). It installs the PPSSPP release it was tested with. It finds your games and adds them
 to Steam for Game Mode.
 
-How to install and use it: [PPSSPP Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/ppsspp/).
+How to install and use it: [BC-250 PPSSPP Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/ppsspp/).
 
 ## Disclaimer
 

@@ -15,8 +15,8 @@ from nexus_deps import CATALOG, LOGO_PATH
 from nexus_deps.dependencies import (
     App, DependencyCatalogError, DependencyCheckError, DependencyStatus, EnvironmentVersion, ToolStatus,
     Vulnerability, check_dependencies, check_tools, environment_versions, find_executable, installed_environments,
-    known_vulnerabilities, latest_pypi_version, launcher_python, load_apps, load_catalog, load_tools, satisfies, too_old,
-    tool_need,
+    installed_owners, known_vulnerabilities, latest_pypi_version, launcher_python, load_apps, load_catalog, load_tools,
+    satisfies, too_old, tool_need,
 )
 
 SUITE = Path(__file__).resolve().parents[3]                     # the suite of the catalog: the repository
@@ -74,7 +74,7 @@ def test_catalog_lists_python_and_external_dependencies():
         "aiortc"}
     pyqt = next(dependency for dependency in dependencies if dependency.name == "PyQt6")
     assert {source.owner for source in pyqt.sources} >= {"portal", "core", "check"}
-    assert "package" not in {source.owner for source in pyqt.sources}   # Nexus Deps runs in the checkout's venv
+    assert "package" not in {source.owner for source in pyqt.sources}   # Nexus Dependencies runs in the checkout's venv
     assert {tool.name for tool in tools} >= {"flashrom", "pkexec", "umr", "podman"}
     assert next(tool for tool in tools if tool.name == "flashrom").probe == "flashrom-internal"
     assert all(item.description for item in [*dependencies, *tools])
@@ -125,7 +125,8 @@ def test_catalog_apps_match_the_portal_manifest():
 def test_every_tool_names_its_need_and_root():
     tools = {tool.name: tool for tool in load_tools(CATALOG)}
     assert {name for name, tool in tools.items() if tool.root} == {
-        "flashrom", "umr", "smartctl", "fio", "setpci", "ras-mc-ctl", "grub2-mkconfig"}
+        "flashrom", "umr", "smartctl", "fio", "setpci", "ras-mc-ctl", "grub2-mkconfig", "modprobe", "insmod",
+        "semanage"}
     assert tool_need(tools["stress-ng"], {"cores"}) == "required"
     assert tool_need(tools["stress-ng"], {"check"}) == "optional"
     assert tool_need(tools["stress-ng"], {"gpu"}) == ""
@@ -148,10 +149,12 @@ def test_external_tool_catalog_covers_app_specific_tools():
 
 
 def test_catalog_tools_are_used_by_the_apps_that_list_them():
+    """Each tool is named in the code of each owner: an app's folder, or core's or the portal's at the root."""
     for tool in load_tools(CATALOG):
         for source in tool.sources:
             words = tool.executables or (tool.name,)
-            folder = SUITE / "apps" / source.owner
+            folder = SUITE / source.owner if source.owner in ("core", "portal") else SUITE / "apps" / source.owner
+            assert folder.is_dir(), f"{tool.name} names {source.owner}, which has no folder"
             texts = (p.read_text(encoding="utf-8", errors="replace") for p in folder.rglob("*")
                      if p.is_file() and p.suffix in ("", ".py", ".sh") and "tests" not in p.parts)
             assert any(re.search(rf"\b{re.escape(word)}\b", text) for text in texts for word in words), \
@@ -175,7 +178,7 @@ def test_launcher_python_reads_the_exec_line(tmp_path):
     helixsr = tmp_path / "helixsr"
     helixsr.write_text('cd "/x" && exec "/home/u/.local/share/h/venv/bin/python" -m h "$@"\n')
     assert launcher_python(helixsr) == Path("/home/u/.local/share/h/venv/bin/python")
-    caller_folder = tmp_path / "shadps4"                      # runs in the caller's folder (the shadPS4 Manager)
+    caller_folder = tmp_path / "shadps4"                      # runs in the caller's folder (the BC-250 shadPS4 Manager)
     caller_folder.write_text("exec \"/home/u/.local/share/p/venv/bin/python\" -c 'import runpy, sys; "
                              "sys.path[0] = sys.argv.pop(1); runpy.run_module(sys.argv.pop(1), run_name=\"__main__\", "
                              "alter_sys=True)' \"/home/u/.local/share/p/app\" p \"$@\"\n")
@@ -207,6 +210,13 @@ def test_installed_environments_follow_each_launcher(tmp_path):
         "compute": (tmp_path / "bisect" / "venv", tmp_path / "unlock" / "venv"),
     }
 
+
+def test_core_is_installed_with_any_app():
+    """core has no launcher: the tools it runs are needed while any app is installed, and not without one."""
+    apps = {"core": App("core", "Shared core"), "fan": App("fan", "Fan", ("~/.local/bin/fan",))}
+    assert installed_owners(apps, {}) == frozenset()
+    assert installed_owners(apps, {"fan": ()}) == {"fan", "core"}
+    assert installed_owners({"fan": apps["fan"]}, {"fan": ()}) == {"fan"}
 
 def test_environment_versions_read_site_packages(tmp_path):
     venv = _venv(tmp_path / "venv", {"PyQt6": "6.11.0", "paramiko": "5.1.0"})

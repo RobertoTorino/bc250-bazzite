@@ -56,14 +56,14 @@ never acts in it. The same apps as above leave the controller to what they do.
 |---|---|
 | ![](../assets/apps/consoles.webp){ .app-icon } [BC-250 PS Remote Play](consoles.md) | Find, wake and register PS4 and PS5 consoles on the network, and start a Remote Play session. |
 | ![](../assets/apps/clb.webp){ .app-icon } [BC-250 XB Remote Play](clb.md) | Stream your XBOX (Remote Play) or games from XBOX Cloud Gaming to the board, signed in with your Microsoft account. |
-| ![](../assets/apps/shadps4.webp){ .app-icon } [shadPS4 Manager](shadps4.md) | PS4 games with the shadPS4 emulator: a tested shadPS4 release, your games found (or unpacked from .pkg files) and added to Steam. |
-| ![](../assets/apps/rpcs3.webp){ .app-icon } [RPCS3 Manager](rpcs3.md) | PS3 games with the RPCS3 emulator: a tested RPCS3 build, the firmware, your games found and added to Steam. |
-| ![](../assets/apps/ppsspp.webp){ .app-icon } [PPSSPP Manager](ppsspp.md) | PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Steam. |
-| ![](../assets/apps/pcsx2.webp){ .app-icon } [PCSX2 Manager](pcsx2.md) | PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Steam. |
-| ![](../assets/apps/vita3k.webp){ .app-icon } [Vita3K Manager](vita3k.md) | PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Steam. |
-| ![](../assets/apps/xenia.webp){ .app-icon } [Xenia Manager](xenia.md) | XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Steam. |
+| ![](../assets/apps/shadps4.webp){ .app-icon } [BC-250 shadPS4 Manager](shadps4.md) | PS4 games with the shadPS4 emulator: a tested shadPS4 release, your games found (or unpacked from .pkg files) and added to Steam. |
+| ![](../assets/apps/rpcs3.webp){ .app-icon } [BC-250 RPCS3 Manager](rpcs3.md) | PS3 games with the RPCS3 emulator: a tested RPCS3 build, the firmware, your games found and added to Steam. |
+| ![](../assets/apps/ppsspp.webp){ .app-icon } [BC-250 PPSSPP Manager](ppsspp.md) | PSP games with the PPSSPP emulator: a tested PPSSPP release, your games found and added to Steam. |
+| ![](../assets/apps/pcsx2.webp){ .app-icon } [BC-250 PCSX2 Manager](pcsx2.md) | PS2 games with the PCSX2 emulator: a tested PCSX2 release, your PS2 BIOS, your games found and added to Steam. |
+| ![](../assets/apps/vita3k.webp){ .app-icon } [BC-250 Vita3K Manager](vita3k.md) | PS Vita games with the Vita3K emulator: a tested Vita3K build, the firmware and your games installed through it, added to Steam. |
+| ![](../assets/apps/xenia.webp){ .app-icon } [BC-250 Xenia Manager](xenia.md) | XBOX 360 games with the Xenia emulator (experimental on Linux): a tested Xenia build, your games found and added to Steam. |
 | ![](../assets/apps/datstation.webp){ .app-icon } [Bazzite DatStation](datstation.md) | PlayStation quiz, console history, system versions, region codes, user guides and news, with your scores. |
-| ![](../assets/apps/kytyps5.webp){ .app-icon } [KytyPS5 Manager](kytyps5.md) | PS5 games with the KytyPS5-Native emulator. It sets up a tested KytyPS5-Native release, checks what the emulator needs from the board, finds your games and adds them to Steam. |
+| ![](../assets/apps/kytyps5.webp){ .app-icon } [BC-250 KytyPS5 Manager](kytyps5.md) | PS5 games with the KytyPS5-Native emulator. It sets up a tested KytyPS5-Native release, checks what the emulator needs from the board, finds your games and adds them to Steam. |
 
 **Utilities**: handy tools around the board.
 
@@ -82,7 +82,7 @@ never acts in it. The same apps as above leave the controller to what they do.
 | ![](../assets/apps/password.webp){ .app-icon } [BC-250 Password Generator](password.md) | Makes a random password of 8 or 15 characters with a capital letter, a small letter, a number and a special character, and keeps it nowhere. |
 
 The tools for working on the suite run from a checkout of the repository and are not in the portal:
-[Nexus Dashboard for BC-250](../development/dashboard.md) opens them all (Nexus Release Tool, Nexus Deps,
+[Nexus Dashboard for BC-250](../development/dashboard.md) opens them all (Nexus Release Tool, Nexus Dependencies for BC-250,
 Nexus Garbage Remover, Nexus Installer Tests, Nexus Demo Recorder, Nexus Sound Lab, Nexus TTS, Nexus Remix Studio, the video tours and the icons).
 
 Apps that **change the board** (unlocks, the GPU governor, GPU overclocking, the ACPI override, the VRAM split,

@@ -143,15 +143,15 @@ class Run:
 
 def test_the_notification_waits_for_a_button():
     run = Run("fix\n")
-    assert notify("Nexus Deps", "text", "/icon.webp", {"fix": "Fix…", "open": "Open"}, run, which_all) == "fix"
-    assert run.calls == [["/usr/bin/notify-send", "--app-name", "Nexus Deps", "--icon", "/icon.webp", "--wait",
-                          "--action=fix=Fix…", "--action=open=Open", "Nexus Deps", "text"]]
-    assert notify("Nexus Deps", "text", "/i", {"open": "Open"}, Run(""), which_all) == ""        # closed
+    assert notify("Nexus Dependencies", "text", "/icon.webp", {"fix": "Fix…", "open": "Open"}, run, which_all) == "fix"
+    assert run.calls == [["/usr/bin/notify-send", "--app-name", "Nexus Dependencies", "--icon", "/icon.webp", "--wait",
+                          "--action=fix=Fix…", "--action=open=Open", "Nexus Dependencies", "text"]]
+    assert notify("Nexus Dependencies", "text", "/i", {"open": "Open"}, Run(""), which_all) == ""        # closed
     old = Run(code=1)                                     # a notify-send without --action: the text alone
-    assert notify("Nexus Deps", "text", "/i", {"open": "Open"}, old, which_all) == ""
-    assert old.calls[1] == ["/usr/bin/notify-send", "--app-name", "Nexus Deps", "--icon", "/i", "Nexus Deps", "text"]
-    assert notify("Nexus Deps", "", "/i", None, Run(), which_all) is None                       # nothing to say
-    assert notify("Nexus Deps", "text", "/i", None, Run(), lambda name: None) is None           # no notify-send
+    assert notify("Nexus Dependencies", "text", "/i", {"open": "Open"}, old, which_all) == ""
+    assert old.calls[1] == ["/usr/bin/notify-send", "--app-name", "Nexus Dependencies", "--icon", "/i", "Nexus Dependencies", "text"]
+    assert notify("Nexus Dependencies", "", "/i", None, Run(), which_all) is None                       # nothing to say
+    assert notify("Nexus Dependencies", "text", "/i", None, Run(), lambda name: None) is None           # no notify-send
 
 
 def test_remind_opens_the_app_on_a_click(monkeypatch):
@@ -180,7 +180,7 @@ def test_an_empty_plan_is_false():
 
 
 def test_the_machines_updates_alone_make_a_notification_with_fix():
-    """The hourly timer's sources are Nexus Deps' since 09-11-2026: Homebrew's updates alone are worth a word."""
+    """The hourly timer's sources are Nexus Dependencies' since 09-11-2026: Homebrew's updates alone are worth a word."""
     quiet = BazziteState(Deployment("44.1", 1, True, False), None, "", datetime.datetime.now().astimezone())
     brew = Source("brew", "Homebrew", (Update("node", "26.13.0_1", "26.13.0_2"), Update("lz4", "1.10.0", "1.11.0")),
                   step=Step("brew", "2 Homebrew update(s)", ("brew", "upgrade")))

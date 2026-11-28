@@ -2,7 +2,7 @@
 """PS Vita games on the BC-250 with Vita3K: installs a pinned Vita3K build, installs the PS Vita firmware and the
 games through it, finds the games Vita3K has installed and adds them to Steam for Game Mode."""
 
-APP_NAME = "Vita3K Manager"
+APP_NAME = "BC-250 Vita3K Manager"
 APP_ID = "bc250-vita3k-manager"
 __version__ = "5.11.2"
 

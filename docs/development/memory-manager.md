@@ -236,6 +236,19 @@ after the watcher's first look, the watcher runs `systemctl --user --no-block st
 systemd sends SIGTERM to the unit's processes. Each stop goes to `close-for-games.log`, and the session ends as
 "Closed for a game".
 
+The same new unit makes the watcher ask which profile the game wants. `vram_manager/profiles.py` holds the profiles
+and the choices in `profiles.json`. A choice for the game's name comes first. Next comes the choice for its manager,
+found from the shortcut's `Exe`, the manager's run script `bc250-<key>-run`. Steam's own games take the choice for
+`steam`. The watcher then reads what the next boot will have, all without a password:
+
+- the split waiting in CMOS, `pending_mb` in the window's settings file, read as text, else this boot's split
+- the GTT limit, with `rpm-ostree kargs --deploy-index=0`
+- the swap layout and the guard, from their files in /etc
+
+`profiles.lacks()` names what the profile would write, and the window's profile buttons use the same function. When
+something is missing, a notification comes once a boot for that profile. Its button starts the app with `--profile
+<key>`, which asks the profile's question and then offers the restart.
+
 While a game runs, the watcher reads `journalctl -b -t systemd-coredump` since its last look. This line comes at
 the crash, before the dump:
 
@@ -328,3 +341,10 @@ amdgpu then makes a GTT of `min(limit, RAM)`. The memory map's preview shows tha
 set by hand with `rpm-ostree kargs` shows the same way. The settings keep only what the app itself wrote. That is
 `pending_ttm`, with the boot ID. The app uses it for the message after the restart. The message says that the
 command line got the limit, or that the board started another deployment.
+
+The PS5 emulator profile also puts three GPU driver options in the next boot's arguments (`kargs.DRIVER`):
+`amdgpu.sched_policy=2`, `amdgpu.vm_update_mode=0` and `amdgpu.cwsr_enable=0`. A file in `/etc/modprobe.d` does not
+work on Bazzite. The GPU driver loads from the early boot image, before `/etc` is there. The limit and the options
+go in one `rpm-ostree kargs` call, so one deployment and one password. A missing word is added with
+`--append-if-missing`, and a key written with another value with `--replace`. The other profiles remove only these
+three words with `--delete`. After the call, the app reads the next boot's arguments again and checks both.

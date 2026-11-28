@@ -4,7 +4,7 @@ import json
 import pytest
 from PyQt6.QtWidgets import QMessageBox
 
-from vram_manager import cmos, guard, learn, main_window, privileged, resume, service, swap, watch
+from vram_manager import cmos, guard, kargs, learn, main_window, privileged, resume, service, swap, watch
 from vram_manager.main_window import MainWindow
 from conftest import FakeOstree
 from dumps import BOARD_1, FakePort, bank
@@ -718,4 +718,51 @@ def test_the_log_tab_says_when_nothing_is_recorded(qapp, sys_root, proc_root):
     w = make(qapp, sys_root, proc_root, Board())
     assert w.log_table.rowCount() == 0
     assert w.log_hint.text() == "Nothing recorded yet. Recording keeps the programs while it is on."
+    w.close()
+
+
+def test_a_profile_for_each_kind_of_game_and_the_notifications_question(qapp, sys_root, proc_root, answer,
+                                                                        monkeypatch):
+    """The window picks a profile for Steam's games and each manager's; --profile asks the profile's question, and
+    after the write offers the restart (owner, 28-11-2026)."""
+    from vram_manager import profiles
+    monkeypatch.setattr(MainWindow, "game_managers", lambda self: {"kytyps5": "KytyPS5 Manager"})
+    restarts = []
+    board, ostree = Board(), FakeOstree()
+    w = make(qapp, sys_root, proc_root, board, ostree)
+    w.restarter = lambda: restarts.append(1) or True
+    assert list(w.choice_combos) == [profiles.STEAM, "kytyps5"]
+    combo = w.choice_combos["kytyps5"]
+    assert combo.currentText() == profiles.NONE_LABEL
+    combo.setCurrentIndex(combo.findData("defaults"))
+    assert profiles.read_choices(w.choices_file).managers == {"kytyps5": "defaults"}
+    w.offer_profile("games")                                # the board has it
+    assert answer["infos"][-1].startswith("Nothing to write.") and restarts == []
+    w.offer_profile("defaults")
+    assert answer["questions"][-2].startswith("Write the 512 MB split to CMOS and the kernel default GTT limit")
+    assert answer["questions"][-1].startswith("Done. The app wrote the 512 MB split") and restarts == [1]
+    w.close()
+
+
+def test_the_ps5_emulator_profile_and_back_to_games(qapp, sys_root, proc_root, answer):
+    """ACTION-LIST row 6: the 512 MB split, the 14 GiB limit and the GPU driver options, the limit and the options in
+    one rpm-ostree call, with the screen's advice in the question; the Games profile then takes the options out."""
+    board, ostree = Board(), FakeOstree()
+    w = make(qapp, sys_root, proc_root, board, ostree)
+    assert "PS5 emulator's GPU driver options" in w.profile_buttons["ps5"].toolTip()
+    w.apply_profile("ps5")
+    question = answer["questions"][-1]
+    assert question.startswith("Write the 512 MB split to CMOS and the 14.0 GiB GTT limit and the PS5 emulator's "
+                               "GPU driver options to the next boot's kernel arguments?")
+    assert "Before a big PS5 game, set the screen to 1920x1080." in question
+    assert board.uma == 512
+    writes = [c for c in ostree.calls if c[2] != "--deploy-index=0"]
+    assert len(writes) == 1 and "--replace=ttm.pages_limit=3670016" in writes[0]
+    assert all(word in ostree.arguments.split() for word in kargs.DRIVER)
+    assert not w.profile_buttons["ps5"].isEnabled()
+    w.apply_profile("games")
+    assert answer["questions"][-1].startswith("Write the 6 GB  (recommended for games) split to CMOS and the 11.5 GiB "
+                                              "GTT limit to the next boot's kernel arguments, without the PS5 "
+                                              "emulator's GPU driver options?")
+    assert board.uma == 6144 and not any(word in ostree.arguments.split() for word in kargs.DRIVER)
     w.close()

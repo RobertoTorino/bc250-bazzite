@@ -4,9 +4,9 @@
 [![CI](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
 
-# PCSX2 Manager
+# BC-250 PCSX2 Manager
 
-PCSX2 Manager plays PS2 games on the **AMD BC-250** on **Bazzite** with [PCSX2](https://pcsx2.net). It installs the
+BC-250 PCSX2 Manager plays PS2 games on the **AMD BC-250** on **Bazzite** with [PCSX2](https://pcsx2.net). It installs the
 PCSX2 release it was tried with and sets it up. It takes your PS2 BIOS, finds your games and adds them to Steam. A
 game then starts straight away, on the desktop or from Steam's Big Picture Mode. You do everything about PCSX2 in the
 app, without PCSX2's own window:
@@ -17,7 +17,7 @@ app, without PCSX2's own window:
 
 A log keeps what the app did.
 
-How to install and use it: [PCSX2 Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/pcsx2/).
+How to install and use it: [BC-250 PCSX2 Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/pcsx2/).
 
 ## Disclaimer
 

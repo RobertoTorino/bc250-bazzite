@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![Vita3K Manager](../assets/vita3k/bc250-vita3k-manager.webp){ .app-logo }
+![BC-250 Vita3K Manager](../assets/vita3k/bc250-vita3k-manager.webp){ .app-logo }
 
-# Vita3K Manager
+# BC-250 Vita3K Manager
 
-Vita3K Manager lets you play **PS Vita games** on the **AMD BC-250**. It uses [Vita3K](https://vita3k.org), an
+BC-250 Vita3K Manager lets you play **PS Vita games** on the **AMD BC-250**. It uses [Vita3K](https://vita3k.org), an
 open-source PS Vita emulator. The app installs the Vita3K build it was tried with. It installs the PS Vita's
 firmware and your games through Vita3K. It adds the games to Steam. They then start from **Game Mode** like any
 other game.
@@ -292,7 +292,7 @@ The app keeps the three older files. **Clear logs**, the tab beside View logs, e
 tab. It also removes the three older files. The log holds what the app did. It holds neither your SteamGridDB key
 nor anything personal.
 
-Two buttons sit above the log. **Vita3K Manager** shows the app's own log. **Vita3K** shows what Vita3K
+Two buttons sit above the log. **BC-250 Vita3K Manager** shows the app's own log. **Vita3K** shows what Vita3K
 printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-vita3k-manager/emulator.log`. Each
 game's part opens with a line that says how the wrapper started Vita3K. It ends with a line that gives Vita3K's exit
 code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps

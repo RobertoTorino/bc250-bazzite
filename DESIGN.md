@@ -715,7 +715,7 @@ Every app has the icon of its category. `icons/categories.toml` assigns them, an
 
 | Icon | Category | Apps |
 | --- | --- | --- |
-| <img src="icons/gaming/gaming-128.png" width="64" alt=""> | Gaming | BC-250 PS Remote Play (`consoles`)<br>BC-250 XB Remote Play (`clb`)<br>Bazzite DatStation (`datstation`)<br>KytyPS5 Manager (`kytyps5`)<br>PCSX2 Manager (`pcsx2`)<br>PPSSPP Manager (`ppsspp`)<br>RPCS3 Manager (`rpcs3`)<br>Vita3K Manager (`vita3k`)<br>Xenia Manager (`xenia`)<br>shadPS4 Manager (`shadps4`) |
+| <img src="icons/gaming/gaming-128.png" width="64" alt=""> | Gaming | BC-250 KytyPS5 Manager (`kytyps5`)<br>BC-250 PCSX2 Manager (`pcsx2`)<br>BC-250 PPSSPP Manager (`ppsspp`)<br>BC-250 PS Remote Play (`consoles`)<br>BC-250 RPCS3 Manager (`rpcs3`)<br>BC-250 Vita3K Manager (`vita3k`)<br>BC-250 XB Remote Play (`clb`)<br>BC-250 Xenia Manager (`xenia`)<br>BC-250 shadPS4 Manager (`shadps4`)<br>Bazzite DatStation (`datstation`) |
 | <img src="icons/graphics/graphics-128.png" width="64" alt=""> | Graphics | BC-250 ACE Queues (`ace`)<br>BC-250 Mesh Shaders (`mesh`)<br>BC-250 Upscaler Manager (`upscaler`) |
 | <img src="icons/sustainable/sustainable-128.png" width="64" alt=""> | Sustainable | BC-250 Board Test (`check`)<br>BC-250 CU Unlock (`compute`)<br>BC-250 Core Unlock (`cores`)<br>BC-250 Fan Control (`fan`)<br>BC-250 GPU Manager (`gpu`)<br>BC-250 Memory Manager (`vram`)<br>BC-250 Persistent ACPI (`acpi`) |
 | <img src="icons/utilities/utilities-128.png" width="64" alt=""> | Utilities | BC-250 BIOS Reader (`bios`)<br>BC-250 Bluetooth Pairing (`btpair`)<br>BC-250 CEC Manager (`cec`)<br>BC-250 Controller (`controller`)<br>BC-250 Password Generator (`password`)<br>BC-250 Quickfix (`quickfix`)<br>BC-250 SFTP Tools (`sftp`)<br>BC-250 SSD Check (`ssd`)<br>BC-250 System Overlay (`overlay`)<br>BC-250 Turing Screen (`turing`)<br>BC-250 Webcam (`webcam`) |
@@ -753,10 +753,10 @@ Icons the apps take from the desktop's style or icon theme, so they look differe
 
 | Name | Used by |
 | --- | --- |
-| `SP_BrowserReload` | Nexus Deps |
-| `SP_MessageBoxInformation` | BC-250 Board Test, Nexus Deps |
+| `SP_BrowserReload` | Nexus Dependencies for BC-250 |
+| `SP_MessageBoxInformation` | BC-250 Board Test, Nexus Dependencies for BC-250 |
 | `SP_MessageBoxWarning` | BC-250 Board Test |
-| `view-refresh` | Nexus Deps |
+| `view-refresh` | Nexus Dependencies for BC-250 |
 
 ### Material Design icons in the wiki
 
@@ -814,6 +814,6 @@ Characters of the font that the apps use as icons in labels and buttons.
 | BC-250 Webcam | ✓ ● |
 | Bazzite DatStation | ← △ ○ □ ◇ ◆ ★ |
 | Every app on core | ✓ ● ↻ |
-| Nexus Deps | ✓ ✗ |
+| Nexus Dependencies for BC-250 | ✓ ✗ |
 | Nexus Installer Tests | ✓ ✗ |
 | Nexus Release Tool | ✓ ▶ ● ↓ ↑ |

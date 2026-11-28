@@ -64,7 +64,7 @@ A DualSense or DualSense Edge reports its battery through its own driver, not th
 icon shows no battery for it. For a keyboard or a mouse the icon does show one. **Show controller batteries in the
 Bluetooth icon** installs a second small service. That service hands each controller's battery to Bluetooth every 30
 seconds. It uses Bazzite's own D-Bus and GLib for Python (`python3-dbus`, `python3-gobject`).
-[Nexus Deps](../development/dashboard.md#deps) checks them.
+[Nexus Dependencies](../development/dashboard.md#deps) checks them.
 
 ## Bluetooth at login
 

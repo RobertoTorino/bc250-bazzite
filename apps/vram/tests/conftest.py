@@ -47,6 +47,13 @@ def no_notifications_or_kills(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def no_real_managers(monkeypatch):
+    """The window lists no emulator manager of the machine that runs the tests: its Steam and ~/.local/bin stay out."""
+    from vram_manager import main_window
+    monkeypatch.setattr(main_window.MainWindow, "game_managers", lambda self: {})
+
+
+@pytest.fixture(autouse=True)
 def roomy_disk(monkeypatch):
     """The swap file's disk has 100 GiB free, whatever the temp folder's file system has."""
     from vram_manager import swap
@@ -109,20 +116,23 @@ class FakeOstree:
         assert cmd[:2] == ["rpm-ostree", "kargs"]
         if cmd[2] == "--deploy-index=0":
             return 0, self.arguments + "\n", ""
-        option, _, value = cmd[2].partition("=")
-        key, _, given = value.partition("=")
         words = self.arguments.split()
-        if option == "--delete-if-present":           # libostree: the whole argument must match, key and value
-            kept = [w for w in words if w != value]
-        elif option == "--delete":                    # the key alone matches one argument; a value must match
-            kept = [w for w in words if not (w.startswith(key + "=") and (not given or w == value))]
-            if len(kept) == len(words):
-                return 1, "", f"error: No key '{key}' found"
-        else:
-            kept = [w for w in words if not w.startswith(key + "=")]
-            if option == "--replace" and len(kept) == len(words):
-                return 1, "", f"error: No key '{key}' found"
-            kept.append(value)
+        kept = list(words)
+        for flag in [f for f in cmd[2:] if f != "--unchanged-exit-77"]:      # rpm-ostree takes several at once
+            option, _, value = flag.partition("=")
+            key, _, given = value.partition("=")
+            before = list(kept)
+            if option == "--delete-if-present":       # libostree: the whole argument must match, key and value
+                kept = [w for w in kept if w != value]
+            elif option == "--delete":                # the key alone matches one argument; a value must match
+                kept = [w for w in kept if not (w.startswith(key + "=") and (not given or w == value))]
+                if len(kept) == len(before):
+                    return 1, "", f"error: No key '{key}' found"
+            else:
+                kept = [w for w in kept if not w.startswith(key + "=")]
+                if option == "--replace" and len(kept) == len(before):
+                    return 1, "", f"error: No key '{key}' found"
+                kept.append(value)
         changed = kept != words
         self.arguments = " ".join(kept)
         return 0 if changed else 77, "", ""

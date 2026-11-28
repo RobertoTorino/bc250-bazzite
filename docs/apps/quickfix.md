@@ -58,7 +58,7 @@ as missing.
 The group **Prime95** is `mprime`, which no test uses. [BC-250 Core Unlock](cores.md#longer-burn-in-mprime--rasdaemon)
 runs its torture test for a longer burn-in. The pill installs the release that mersenne.org's download page lists at
 that moment. It compares the download with the SHA-256 listed there. It installs `mprime` into `~/mprime`, with a link
-in `~/.local/bin`. A newer release later shows in Nexus Deps as **Prime95 (mprime)**. Its **Update** installs it over
+in `~/.local/bin`. A newer release later shows in Nexus Dependencies as **Prime95 (mprime)**. Its **Update** installs it over
 the old one.
 
 ## MangoHud Config

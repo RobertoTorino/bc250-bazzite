@@ -49,7 +49,7 @@ in a window of its own, which keeps running when the dashboard closes.
 |---|---|
 | **Nexus Release Tool** | The release front end for a release's versions, CHANGELOG entries, pins and portal bump, and the board checks ([Releases](releases.md)). |
 | **Nexus Demo Recorder** | A portal installation recorded with OBS ([below](#demo-recorder)). |
-| **Nexus Deps** | The suite's Python packages and tools on this machine, what is missing or outdated, and Fix for it ([below](#deps)). |
+| **Nexus Dependencies for BC-250** | The suite's Python packages and tools on this machine, what is missing or outdated, and Fix for it ([below](#deps)). |
 | **Nexus Flight Recorder** | What the board does, one line per second, kept for after a fault ([below](#flight-recorder)). |
 | **Nexus Garbage Remover** | The garbage on this machine, with its size, and Delete for it ([below](#garbage-remover)). |
 | **Nexus Installer Tests** | The suite's installer tests, one at a time ([below](#installer-tests)). |
@@ -57,6 +57,7 @@ in a window of its own, which keeps running when the dashboard closes.
 | **Nexus Remix Studio** | Mixes a voice with a synthesized background and saves the result ([below](#remix-studio)). |
 | **Nexus Sound Lab** | Short sound effects for the suite's windows, made from sliders ([below](#sound-lab)). |
 | **Nexus TTS** | Speaks an English text in a natural voice and saves it as a sound file ([below](#nexus-tts)). |
+| **Nexus Text Check for BC-250** | The suite's text check, with the files worst first and each file's problems ([below](#text-check)). |
 
 The other tiles work on the suite:
 
@@ -347,9 +348,9 @@ The app remembers the voice file, the silence level, the background, the mix, th
 
 `dev/studio/run.sh` starts the app without the dashboard, and `dev/studio/install.sh` gives it a menu entry.
 
-## Deps
+## Dependencies {#deps}
 
-**Nexus Deps** (`dev/deps/`) shows what the suite's apps need on this machine, and what is missing or outdated. It
+**Nexus Dependencies for BC-250** (`dev/deps/`) shows what the suite's apps need on this machine, and what is missing or outdated. It
 lists the Python packages and external tools of the suite's apps installed here. For each one, it shows which apps
 and features use it, and whether it is missing or must be updated. **Fix** installs what is needed.
 
@@ -363,19 +364,20 @@ On top, it shows whether a Bazzite update waits for you. It also shows every upd
 - Prime95's mprime, when it is in `~/mprime`
 
 It runs from the checkout, like every development app. Its catalog of the suite is
-`dev/deps/nexus_deps/catalogs/bc250-bazzite.toml`.
+`dev/deps/nexus_deps/catalogs/bc250-bazzite.toml`. The catalog lists the programs that the portal, the apps and
+core run. Every app carries core, so core's programs count while any app is installed.
 
 ```bash
 dev/deps/run.sh                             # open it
 dev/deps/run.sh --fix                       # open it and offer Fix as soon as the check is done
 dev/deps/run.sh --remind                    # no window: the hourly check once, from a terminal
-dev/deps/run.sh --sync-upstreams            # the list of firmware in line with the portal's apps.toml again
+dev/deps/run.sh --sync-upstreams            # the list of firmware and emulators in line with the apps again
 dev/deps/install.sh                         # app menu entry, Desktop icon and the hourly reminder
 dev/deps/install.sh --no-desktop-shortcut   # the same without the Desktop icon
 dev/deps/install.sh --uninstall             # remove them and the reminder; --purge also the settings
 ```
 
-Nexus Deps takes the place of two older tools. Installing it removes an installed Dependency Checker of the suite.
+Nexus Dependencies takes the place of two older tools. Installing it removes an installed Dependency Checker of the suite.
 That means its copy, launcher, menu entry, Desktop icon and its weekly timer, `bc250-bazzite-update-reminder.timer`.
 It also removes the development machine's hourly `nexus-dev-updates.timer`.
 
@@ -415,7 +417,7 @@ those. The card also lists the packages missing from the venv. The venv's `pytho
 so.
 
 Bazzite's updater still installs the image, the Flatpaks and Homebrew's packages every night by itself. Update only
-does it sooner. **Updates** in the header counts the updates, with the firmware's below.
+does it sooner. **Updates** in the header counts the updates, with the firmware's and the emulators' below.
 
 The **i** beside each card's name says what its Update does. It also says how to handle what goes wrong, such as
 going back to the version before, or keeping one package where it is. What needs care is said on the card itself,
@@ -432,7 +434,7 @@ the steps instead:
 - read its release notes
 - run `ujust update` in a terminal
 - restart
-- open Nexus Deps again for what the new Python left without packages
+- open Nexus Dependencies again for what the new Python left without packages
 - how to roll back
 
 **Firmware** follows. This is the firmware the suite's apps work with. Each is on a card with the latest version
@@ -442,18 +444,33 @@ and an i that says how to handle it. None of it is installed from here.
 |---|---|---|
 | DualSense firmware (and the Edge's) | Sony's firmware list | A new version since the last look. Connect the controller with a USB cable and update it in BC-250 Controller. |
 | PS4 system software | Sony's PS4 update list | A new version since the last look. Update it on the console. |
-| PS5 system software, PlayStation Portal | nothing a program can read | **On the device**: the i says where the device shows its updates. |
+| PS5 system software | Sony's PS5 system software page | A new version since the last look. Update it on the console. |
+| PlayStation Portal | Sony's PlayStation Portal system software page | A new version since the last look. The Portal updates itself when it is online. |
 
 Sony's versions are news once. The first look learns them, and a later one shows what changed.
 
-Nexus Deps lists no emulators. Each emulator manager fetches the versions from GitHub and installs the one you
-choose.
+Each card's i links to Sony's pages for it. For the controllers, these are Sony's steps to update them on a PC.
+
+**Emulators** follow. Each emulator manager installs the build it was tested with on a board. Its card shows
+that build and the latest release on GitHub.
+
+| Card | Asked | What an update means |
+|---|---|---|
+| PCSX2, PPSSPP, RPCS3, shadPS4 | the latest stable release on GitHub | A newer release. It comes with a release of the manager, after a test on a board. |
+| KytyPS5, Vita3K, Xenia | the latest build on GitHub | These publish builds only, with no stable releases. A newer build comes with a release of the manager, after a test on a board. |
+
+Nothing is installed from here. The card shows a newer build until the manager's release has it. The hourly
+reminder names it once. Each card's i links to the release on GitHub.
+
+GitHub answers 60 requests an hour without a sign-in. Signed in with `gh auth login`, it answers 5,000. Nexus
+Dependencies sends the token of that sign-in to GitHub's API only and stores none of it.
 
 The list is `dev/deps/nexus_deps/catalogs/upstreams.json`. It is written by hand. The names and launchers of the apps
-in it are read from the portal's `apps.toml`. After an app is renamed, `dev/deps/run.sh --sync-upstreams` brings
+in it are read from the portal's `apps.toml`. An emulator's repository and tested build are read from its
+manager's `emulator.py`. After an app is renamed or a pin changes, `dev/deps/run.sh --sync-upstreams` brings
 the list in line. CI fails until it is.
 
-**Python packages** are checked where each app runs. Nexus Deps finds every installed app by its launcher. It reads
+**Python packages** are checked where each app runs. Nexus Dependencies finds every installed app by its launcher. It reads
 the package versions in that app's Python environment, the suite's shared one or the app's own. A card shows the
 version in each environment, and whether it meets the app's requirement. It also shows the latest version on PyPI.
 A package that no installed app uses is shown as **Not needed**.
@@ -470,7 +487,7 @@ advisories:
 also look. Each app says whether it needs the tool (required) or uses it when it is there (optional). The links
 open the app's chapter in the wiki. Tools that do their work only as root are marked **Needs root.**, and the apps
 run them through sudo or pkexec. Where a tool has two forms, one is enough, such as Ookla's `speedtest` or
-`speedtest-cli`. PS Remote Play's FFmpeg sits inside its native core. Nexus Deps asks it for its version through the
+`speedtest-cli`. PS Remote Play's FFmpeg sits inside its native core. Nexus Dependencies asks it for its version through the
 app's own Python.
 
 ### Fix
@@ -485,7 +502,7 @@ other, in a window that shows their output. It stops at the first that fails. Th
 - A missing tool an installed app **needs** is installed with Homebrew when Homebrew has it, with no restart.
   Otherwise, it is layered into the Bazzite image with `rpm-ostree install`, which may ask for your password. A
   layered package is there after a restart. The window says so and gives the command (`systemctl reboot`). Nexus
-  Deps never restarts by itself. On a flattened image, the same package is installed with
+  Dependencies never restarts by itself. On a flattened image, the same package is installed with
   `pkexec dnf install -y`, and it is there at once.
 - The machine's updates come after the packages and the tools. Fix runs each card's **Update** command, described
   above.
@@ -499,7 +516,7 @@ The catalog says how each tool is installed, with `brew` (the Homebrew formula) 
 
 ### The hourly reminder
 
-The hourly reminder tells you when something needs you, even with the window closed. Every hour, Nexus Deps runs its
+The hourly reminder tells you when something needs you, even with the window closed. Every hour, Nexus Dependencies runs its
 check without a window. When the machine was off at that hour, it runs at the next login. When something needs you,
 a desktop notification says so. It names any of these:
 
@@ -508,10 +525,11 @@ a desktop notification says so. It names any of these:
 - the machine's updates, per source, with how many
 - a venv left on an older Python
 - the firmware with news, each piece of news once
+- a newer emulator build on GitHub, once
 - Python packages missing or to update
 - tools an installed app needs
 
-**Fix…** opens the window and asks to fix it, with the same question as the button. **Open Nexus Deps** opens the
+**Fix…** opens the window and asks to fix it, with the same question as the button. **Open Nexus Dependencies** opens the
 window. When all is well, the reminder says nothing. It is a systemd user timer, `nexus-deps-reminder.timer`.
 `install.sh` adds it, and `--uninstall` removes it. `systemctl --user disable --now nexus-deps-reminder.timer`
 switches it off.
@@ -659,3 +677,54 @@ The pills:
 The globe beside the round **i** opens the website in the browser. Its address comes from the website's folder. A
 `CNAME` file there gives a domain of your own. Without one, the address is GitHub Pages' address of the repository,
 such as `https://robertotorino.github.io/bc250-suite/`. The globe is off until Publish knows the folder.
+
+## Text Check
+
+**Nexus Text Check for BC-250** (`dev/textcheck/`) shows what the suite's text check finds. The text check is
+`tools/text_check.py`. It reads the text a person reads, such as the wiki, the READMEs and the text in the apps'
+windows. Three checks read it:
+
+- **rules**, the rules of `.claude/writing.md`
+- **LanguageTool**, for spelling, grammar and American English
+- **Vale**, for style and readability
+
+The app runs the tool as a program of its own and shows its results. It checks nothing itself. It reads the
+results from the tool's `--json` file and the order of the files from the table the tool prints.
+
+The pills:
+
+- **Check all** checks the whole suite.
+- **Check…** opens a menu. **A file…** and **A folder…** check one file or folder of this checkout.
+- **Start** keeps one LanguageTool server running for many checks. It runs the tool with `--server start`.
+- **Stop** ends that server with `--server stop`.
+
+**Start** is off while the server runs. **Stop** is off while the server is off. Only one run goes at a time, so
+the pills are off during a check. The round symbol at the right of the title looks at the server again.
+
+**LanguageTool server** shows the server's state:
+
+| State | What it means |
+|---|---|
+| **Running** | The shared server runs. Every check uses it. |
+| **Off** | Each check starts LanguageTool for itself and stops it afterward. |
+| **Not downloaded** | LanguageTool is not on this machine yet. The first check or **Start** downloads it, about 250 MB, once. Then the tool builds its image. |
+| **No podman** | The text check needs podman, so every pill is off. Install podman, then click the round symbol. |
+
+The upper table lists the files with problems. The worst file comes first. It has the most problems to fix per
+1000 words, as the tool orders them. The columns:
+
+- **To fix**, the problems to fix
+- **Per 1000 words**, the problems to fix per 1000 words of the file
+- **Advice**, Vale's style hints, such as passive voice
+- **Rules**, **LanguageTool** and **Vale**, the problems each check found
+
+Take Vale's advice where the sentence reads better for it. Select a file to see its problems in the lower table.
+Each row has the line, the check, the kind, the problem, the text and a suggestion. Hold the pointer over a cell
+to read a long text in full.
+
+The line at the bottom says what runs. During a check, it shows the tool's last line, such as how many files it
+reads. After the check, it shows the tool's summary. When the tool stops with an error, the line shows the end of
+its output in red. Without Vale, for example, it says `This tool needs Vale: brew install vale`.
+
+A long check never holds up the window. When you close the window during a check, the app ends the tool. The tool
+then stops the LanguageTool it started for that check.

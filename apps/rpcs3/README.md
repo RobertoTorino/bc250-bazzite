@@ -4,14 +4,14 @@
 [![CI](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
 
-# RPCS3 Manager
+# BC-250 RPCS3 Manager
 
-RPCS3 Manager plays PS3 games on the **AMD BC-250** on **Bazzite** with [RPCS3](https://rpcs3.net). It installs the
+BC-250 RPCS3 Manager plays PS3 games on the **AMD BC-250** on **Bazzite** with [RPCS3](https://rpcs3.net). It installs the
 RPCS3 build it was tried with. It installs your PS3 firmware through RPCS3. It finds your games and adds them to
 Steam. A game then starts straight away, on the desktop or from Steam's Big Picture Mode. A log keeps what the app
 did.
 
-How to install and use it: [RPCS3 Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/rpcs3/).
+How to install and use it: [BC-250 RPCS3 Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/rpcs3/).
 
 ## Disclaimer
 

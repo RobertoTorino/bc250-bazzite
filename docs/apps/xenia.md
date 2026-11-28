@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![Xenia Manager](../assets/xenia/bc250-xenia-manager.webp){ .app-logo }
+![BC-250 Xenia Manager](../assets/xenia/bc250-xenia-manager.webp){ .app-logo }
 
-# Xenia Manager
+# BC-250 Xenia Manager
 
-Xenia Manager lets you play **XBOX 360 games** on the **AMD BC-250**. It uses [Xenia](https://xenia.jp), an XBOX
+BC-250 Xenia Manager lets you play **XBOX 360 games** on the **AMD BC-250**. It uses [Xenia](https://xenia.jp), an XBOX
 360 emulator, in its [Xenia Canary](https://github.com/xenia-canary/xenia-canary) builds. The app installs a tested
 build. It finds your games and adds them to Steam. They then start from **Game Mode** like any other game.
 
@@ -277,7 +277,7 @@ The app keeps the three older files. **Clear logs**, the tab beside View logs, e
 tab. It also removes the three older files. The log holds what the app did. It holds neither your SteamGridDB key
 nor anything personal.
 
-Two buttons sit above the log. **Xenia Manager** shows the app's own log. **Xenia** shows what Xenia
+Two buttons sit above the log. **BC-250 Xenia Manager** shows the app's own log. **Xenia** shows what Xenia
 printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-xenia-manager/emulator.log`. Each
 game's part opens with a line that says how the wrapper started Xenia. It ends with a line that gives Xenia's exit
 code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps

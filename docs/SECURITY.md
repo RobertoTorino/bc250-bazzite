@@ -24,18 +24,18 @@ Board Test also checks its test engine before every run. It refuses to run tests
 The suite answers for its own code and for the Python packages its apps install. Bazzite updates and patches its own
 packages. These include the system tools some apps run, such as `systemctl`, `sudo` or `cec-ctl`.
 
-[Nexus Deps](development/dashboard.md#deps) shows where the suite's dependencies stand on a board. It is a
+[Nexus Dependencies](development/dashboard.md#deps) shows where the suite's dependencies stand on a board. It is a
 development app that you run from a checkout of the repository. It shows these:
 
-- **Python packages.** Nexus Deps reads them from the environment each installed app runs in. That is the suite's
+- **Python packages.** Nexus Dependencies reads them from the environment each installed app runs in. That is the suite's
   shared environment or the app's own. A card shows the version in each environment and the latest version on PyPI.
   It also shows whether the version meets what the app needs.
-- **Known vulnerabilities.** Nexus Deps looks up each installed version in [OSV.dev](https://osv.dev). OSV.dev is
+- **Known vulnerabilities.** Nexus Dependencies looks up each installed version in [OSV.dev](https://osv.dev). OSV.dev is
   the open database that collects the GitHub, PyPA and NVD advisories. A green **✓ CVE** means no known
   vulnerability. A red **✗ CVE** lists each one by its CVE ID, with the release that fixes it. Each ID links to
   [Snyk's vulnerability database](https://security.snyk.io/). The card says which version to update to and for
   which apps. **CVE ?** means the check could not run, for example without a network. It never counts as clean.
-- **External tools.** Nexus Deps checks only whether they are available. For each tool it shows these:
+- **External tools.** Nexus Dependencies checks only whether they are available. For each tool it shows these:
     - whether it is installed
     - which apps need it
     - whether it needs root
@@ -60,7 +60,7 @@ app through an app release that requires that version. If no release does yet, r
 - The installers put apps whose scripts run as root under `/opt`, owned by root. That way a normal user cannot
   change code that sudo runs. Board Test never runs a tool as root from a folder you can write to, such as
   `~/.local/bin`.
-- [Nexus Deps](development/dashboard.md#deps) marks the tools that only work as root with **Needs root.**
+- [Nexus Dependencies](development/dashboard.md#deps) marks the tools that only work as root with **Needs root.**
 - The portal asks before it installs or opens an app that changes how the board runs. Each of these apps is
   software-only, and you can undo what it does. Such an app changes one or more of these:
     - unlocks

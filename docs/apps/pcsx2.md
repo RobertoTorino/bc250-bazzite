@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![PCSX2 Manager](../assets/pcsx2/bc250-pcsx2-manager.webp){ .app-logo }
+![BC-250 PCSX2 Manager](../assets/pcsx2/bc250-pcsx2-manager.webp){ .app-logo }
 
-# PCSX2 Manager
+# BC-250 PCSX2 Manager
 
-PCSX2 Manager plays **PS2 games** on the **AMD BC-250** with [PCSX2](https://pcsx2.net), an open-source PS2 emulator.
+BC-250 PCSX2 Manager plays **PS2 games** on the **AMD BC-250** with [PCSX2](https://pcsx2.net), an open-source PS2 emulator.
 The app does these things for you:
 
 - It installs the PCSX2 release it was tried with, and sets it up.
@@ -391,7 +391,7 @@ the app keeps the three older files. **Clear logs**, the tab beside View logs, e
 It also removes the three older files. The log holds what the app did. It does not hold your SteamGridDB key or
 anything personal.
 
-Two buttons sit above the log. **PCSX2 Manager** shows the app's own log. **PCSX2** shows what PCSX2
+Two buttons sit above the log. **BC-250 PCSX2 Manager** shows the app's own log. **PCSX2** shows what PCSX2
 printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-pcsx2-manager/emulator.log`. Each
 game's part opens with a line that says how the wrapper started PCSX2. It ends with a line that gives PCSX2's exit
 code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps

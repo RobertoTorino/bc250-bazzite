@@ -3,7 +3,7 @@
 games in the chosen folders and adds them to Steam, so a game starts from Steam on the desktop or in Big Picture
 Mode."""
 
-APP_NAME = "shadPS4 Manager"
+APP_NAME = "BC-250 shadPS4 Manager"
 APP_ID = "bc250-shadps4-manager"
 __version__ = "7.9.2"
 

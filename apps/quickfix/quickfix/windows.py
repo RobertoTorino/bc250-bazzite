@@ -58,7 +58,7 @@ TOOLS_INFO = ("<b>Quickfix</b> shows the optional tools BC-250 Board Test's test
                "every group but the development extras.<br><br>"
                "<b>Prime95</b> is mprime, which no test uses. BC-250 Core Unlock runs its torture test for a longer "
                "burn-in. The pill downloads the latest release from mersenne.org and checks it against the SHA-256 "
-               "listed there. Nexus Deps shows a newer release when there is one, and its Update installs it.<br><br>"
+               "listed there. Nexus Dependencies shows a newer release when there is one, and its Update installs it.<br><br>"
                "Layered RPM packages are active after a restart (<code>systemctl reboot</code>). glmark2, "
                "vulkan-tools and smartmontools come with Bazzite.")
 

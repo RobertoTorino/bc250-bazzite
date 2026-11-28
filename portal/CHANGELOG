@@ -1,3 +1,19 @@
+Changelog: 28-11-2026 13:45:15
+
+Release 29.5.1.
+
+Changelog: 28-11-2026 12:45:13
+
+Fixed. BC-250 Memory Manager's Changes the board text names the PS5 emulator profile's three GPU driver options, which the other profiles remove.
+
+Changelog: 28-11-2026 12:38:25
+
+Fixed. The emulator managers are called BC-250 RPCS3 Manager, BC-250 shadPS4 Manager, BC-250 PPSSPP Manager, BC-250 PCSX2 Manager, BC-250 Vita3K Manager and BC-250 Xenia Manager (owner, 28-11-2026). Their tiles keep their short names.
+
+Changelog: 28-11-2026 12:01:34
+
+Fixed. The tile of KytyPS5 Manager is called BC-250 KytyPS5 Manager (owner, 28-11-2026).
+
 Changelog: 28-11-2026 10:49:04
 
 Release 29.5.0. Pins bc250-compute-v2.2.1.

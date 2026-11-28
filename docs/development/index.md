@@ -10,7 +10,7 @@ it. It also says how the wiki's pictures and tours are made, and how the version
 You find the rest here:
 
 - [Architecture and consistency](architecture.md) says how every app is built, and how to add one.
-- [Dashboard](dashboard.md) describes the development apps, from Nexus Dashboard for BC-250 to Nexus Deps.
+- [Dashboard](dashboard.md) describes the development apps, from Nexus Dashboard for BC-250 to Nexus Dependencies for BC-250.
 - [Releases](releases.md) says how a release is made and published. [Portal](../portal.md#appstoml-and-releases)
   gives the steps.
 - The [GitHub settings](github-settings.md) page covers the repository's settings on GitHub and Dependabot's pull requests.
@@ -32,8 +32,9 @@ tools/                        release and CI (build_release, stage_app, check_ve
 dev/<name>/                   the development apps, run from the checkout and never released: dev/dash/ is Nexus
                               Dashboard (the door to the others), dev/nrt/ Nexus Release Tool, dev/demo/ Nexus
                               Demo Recorder, dev/itests/ Nexus Installer Tests, dev/sounds/ Nexus Sound Lab,
-                              dev/deps/ Nexus Deps, dev/text/ Nexus TTS, dev/studio/ Nexus Remix Studio,
-                              dev/garbage/ Nexus Garbage Remover, dev/flight/ Nexus Flight Recorder
+                              dev/deps/ Nexus Dependencies for BC-250, dev/text/ Nexus TTS, dev/studio/ Nexus Remix Studio,
+                              dev/garbage/ Nexus Garbage Remover, dev/flight/ Nexus Flight Recorder,
+                              dev/textcheck/ Nexus Text Check for BC-250
 docs/ mkdocs.yml              this wiki (MkDocs Material)
 icons/                        the category icons
 DESIGN.md design/colors/      every color of the suite and its samples (tools/make_design.py writes them)
@@ -234,7 +235,7 @@ Each one serves one tool or one kind of work. Without it, that tool does not run
 | Nexus TTS's speech engine | the voice of the Portal Tour, `tools/record-tour.sh` | **Set up the speech engine** in [Nexus TTS](dashboard.md#nexus-tts). It needs uv (`brew install uv`) or a Python from 3.10 to 3.13 |
 | Rust, maturin, nasm and the libva headers | BC-250 PS Remote Play's native core, for `cargo test` or `maturin build` on the machine itself | rustup from [rustup.rs](https://rustup.rs), `brew install nasm`, and maturin with pip in the venv |
 | OBS Studio, with its WebSocket server on | Nexus Demo Recorder (`dev/demo/`) | the Flatpak `com.obsproject.Studio` |
-| notify-send | the hourly notifications of Nexus Deps and Nexus Garbage Remover | comes with Bazzite |
+| notify-send | the hourly notifications of Nexus Dependencies and Nexus Garbage Remover | comes with Bazzite |
 | setools (`sesearch`, `seinfo`) | reading the SELinux policy on the board, such as which label a file needs | in a distrobox, see below |
 
 The container of `tools/ci-local.sh` has Rust, maturin, nasm and the libva headers, so a CI run needs none of
@@ -264,13 +265,13 @@ machine was off. It updates the image, the Flatpaks and Homebrew's packages. `uj
 image takes effect after a restart. The venv is pip's and the Rust toolchain is rustup's, so nothing updates those
 for you.
 
-[Nexus Deps](dashboard.md#deps) shows every source with a newer version at once: Bazzite's image, the Flatpaks,
+[Nexus Dependencies](dashboard.md#deps) shows every source with a newer version at once: Bazzite's image, the Flatpaks,
 Homebrew's packages, the Rust toolchain, the packages of `.venv-linux` and Prime95's mprime in `~/mprime`.
 **Update** on a card installs that source's updates after it shows the command and asks. Its hourly notification
 says when something is newer.
 
-Nexus Deps upgrades the venv's packages within what `requirements-dev.txt` allows. The venv's `python` links to Bazzite's
-`/usr/bin/python3`, so a Bazzite image with a newer Python leaves the venv without its packages. Nexus Deps says so,
+Nexus Dependencies upgrades the venv's packages within what `requirements-dev.txt` allows. The venv's `python` links to Bazzite's
+`/usr/bin/python3`, so a Bazzite image with a newer Python leaves the venv without its packages. Nexus Dependencies says so,
 and **Update** installs `requirements-dev.txt` for the new Python.
 
 ### Starting the previous Bazzite version once
@@ -496,7 +497,7 @@ it back in use. In the manager's version manager (core's `builds`), you can down
 publishes on GitHub. That can be a stable release or a nightly build. The app checks it against the SHA-256 GitHub
 publishes. So the pin says which build was tried on the board, not which builds users may run.
 
-The shadPS4 Manager was tried with one shadPS4 release. It is pinned in `apps/shadps4/shadps4_manager/emulator.py`
+The BC-250 shadPS4 Manager was tried with one shadPS4 release. It is pinned in `apps/shadps4/shadps4_manager/emulator.py`
 as `VERSION`, `TAG`, `ASSET` and `SHA256`. The tool checks these:
 
 - a newer stable release, with the Linux zip and the SHA-256 GitHub publishes for it, which a new pin needs
@@ -505,7 +506,7 @@ as `VERSION`, `TAG`, `ASSET` and `SHA256`. The tool checks these:
 A new shadPS4 can change what the app relies on, such as its `config.json` or the shadNet protocol. So a new pin
 also needs a look at what changed.
 
-KytyPS5 Manager was tried with one KytyPS5-Native release. It is pinned in
+BC-250 KytyPS5 Manager was tried with one KytyPS5-Native release. It is pinned in
 `apps/kytyps5/kytyps5_manager/emulator.py` as `VERSION`, `PUBLISHED`, `SIZE_MB` and `SHA256`. KytyPS5-Native names
 a release after its date and commit, so the tool compares the dates. It checks these:
 
@@ -543,7 +544,7 @@ The same tool reports these:
 Users get a newer stable release at once. So what changed in its setup, its zip and `helixsr.ini` needs a look and a
 try on the board. Then `KNOWN_VERSION` moves. Users do not get a newer major version until the app is moved to it.
 
-The Vita3K Manager was tried with one Vita3K build. It is pinned in `apps/vita3k/vita3k_manager/emulator.py` as
+The BC-250 Vita3K Manager was tried with one Vita3K build. It is pinned in `apps/vita3k/vita3k_manager/emulator.py` as
 `BUILD`, `SEMVER`, `COMMIT`, `SHA256` and `SIZE`. Vita3K has no stable releases. Every change is a build, kept as a
 release of `Vita3K/Vita3K-builds` tagged with its number. Each release has `Vita3K-x86_64.AppImage` and the SHA-256
 GitHub publishes for it. Builds come almost daily. The tool reports the newest build when it is past the pin, with
@@ -568,7 +569,7 @@ the app relies on in Vita3K's source at the new build:
 The tests hold the `config.yml` the pinned build writes on its first start (`tests/fixtures/config-4377.yml`). A new
 pin replaces it with the new build's file, renamed for it.
 
-The Xenia Manager was tried with one Xenia Canary build. It is pinned in `apps/xenia/xenia_manager/emulator.py` as
+The BC-250 Xenia Manager was tried with one Xenia Canary build. It is pinned in `apps/xenia/xenia_manager/emulator.py` as
 `BUILD`, `COMMIT`, `PUBLISHED`, `SHA256` and `SIZE`. Xenia has no stable releases either. Every change is a release
 of `xenia-canary/xenia-canary`, tagged with its commit. Each release has `xenia_canary_linux.AppImage` and the
 SHA-256 GitHub publishes for it. A tag is no number. So the app and the tool take a release published after
@@ -611,7 +612,7 @@ BC-250 Board Test runs whichever speedtest CLI is installed. Its development too
 (`SPEEDTEST_VERSION` in `apps/check/development/tools/install-requirements.sh`). Ookla publishes no API. So the tool
 reads the version from Ookla's Homebrew formula. The same script installs Prime95's mprime. It takes the release
 that mersenne.org's download page lists, with the SHA-256 listed there. `MPRIME_URL` and `MPRIME_SHA256` in the
-script are one known release. The script uses them only when the page cannot be read. Nexus Deps compares
+script are one known release. The script uses them only when the page cannot be read. Nexus Dependencies compares
 `~/mprime/.release` with the page.
 
 BC-250 Quickfix's VRM Sensors brings the source of the `bc250_vrm` kernel module in `apps/quickfix/quickfix/vrm`.

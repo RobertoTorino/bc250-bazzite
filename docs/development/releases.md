@@ -417,7 +417,7 @@ pin their own local builds instead of the published ones.
 
 Each release's title names the suite and the app. It comes from the portal's name and `apps.toml`, and
 `tools/build_release.py` writes it. Examples are *BC250 Bazzite Suite: Portal 12.0.0* and *BC250 Bazzite Suite:
-Xenia Manager 0.11.0*. The tags start with the suite's prefix, `bc250-` (`TAG_PREFIX`). They are
+BC-250 Xenia Manager 0.11.0*. The tags start with the suite's prefix, `bc250-` (`TAG_PREFIX`). They are
 `bc250-<app>-v<x.y.z>` and `bc250-portal-v<x.y.z>`.
 
 The release workflow (**Release**, `release.yml`) builds and publishes a release. It starts in one of these ways:

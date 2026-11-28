@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Programs window (owner, 26-11-2026): the memory over time, and every program the watcher has seen, the
-largest first, with the mark that closes it when a game starts.
+largest first, with the mark that closes it when a game starts, and for a game the profile it wants (owner,
+28-11-2026: a game's own choice comes before its manager's, profiles.py).
 
 The graph draws the watcher's history (one point a minute, the minute's peaks) for the range picked: RAM in use, the
 RAM the GPU borrows and the swap in use, against the RAM, with a red line where a lack of memory ended a program
@@ -21,7 +22,7 @@ from bc250_core import window_title
 from bc250_core.theme import BLUE, ORANGE, RED
 from bc250_core.widgets import InfoButton, hint_label
 
-from . import system, watch
+from . import profiles, system, watch
 
 RAM_LINE = "#d8d8d8"
 RANGES = (("The last hour", 3600), ("The last 4 hours", 4 * 3600), ("The last 24 hours", 24 * 3600))
@@ -102,13 +103,15 @@ class Graph(QWidget):
 class ProgramsDialog(QDialog):
     def __init__(self, parent: QWidget | None, ram_mib: int, history: Path | None = None,
                  programs: Path | None = None, sessions: Path | None = None, closes: Path | None = None,
-                 clock=time.time, manual_url: str = ""):
+                 clock=time.time, manual_url: str = "", choices: Path | None = None):
         super().__init__(parent)
         self.setWindowTitle(window_title("Programs"))
         self.resize(900, 720)
         self.ram_mib, self.clock = ram_mib, clock
         self.history_file, self.programs_file = history, programs
         self.sessions_file, self.closes_file = sessions, closes
+        self.choices_file = choices or watch.choices_path()
+        self.profile_combos: dict[str, QComboBox] = {}
 
         self.range_combo = QComboBox()
         for label, seconds in RANGES:
@@ -126,11 +129,13 @@ class ProgramsDialog(QDialog):
         legend.addWidget(QLabel(f"<span style='color:{RED}'>■</span> A program ended by a lack of memory"))
         legend.addStretch(1)
 
-        self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["Program", "Runs", "Peak", "Average", "Killed", "Close for games"])
+        self.table = QTableWidget(0, 7)
+        self.table.setHorizontalHeaderLabels(["Program", "Runs", "Peak", "Average", "Killed", "Close for games",
+                                              "Profile"])
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table.setColumnWidth(5, 140)
+        self.table.setColumnWidth(6, 170)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.table.itemChanged.connect(self.on_mark)
@@ -142,7 +147,9 @@ class ProgramsDialog(QDialog):
             "times a lack of memory ended it. When a Steam game or a game of the suite's emulators starts, each "
             "checked program that runs gets systemd's stop signal, SIGTERM. Most programs save and quit on it. Some "
             "do not ask about unsaved files the way their close button does. Steam and the games cannot be checked. "
-            f"Each close goes to the log. <a href='{manual_url}#programs'>Wiki</a>", "About closing for games"))
+            "Each close goes to the log. <b>Profile</b> picks the memory profile a game wants. It comes before the "
+            "profile picked for its manager in the window. "
+            f"<a href='{manual_url}#programs'>Wiki</a>", "About closing for games"))
 
         lay = QVBoxLayout(self)
         lay.addLayout(top)
@@ -164,6 +171,8 @@ class ProgramsDialog(QDialog):
     def refresh_table(self) -> None:
         stats = sorted(watch.read_stats(self.programs_file).values(), key=lambda s: -s.peak_mib)
         marked = watch.read_closes(self.closes_file)
+        chosen = profiles.read_choices(self.choices_file).games
+        self.profile_combos = {}
         table = self.table
         table.blockSignals(True)
         table.setRowCount(len(stats))
@@ -186,6 +195,19 @@ class ProgramsDialog(QDialog):
                 mark.setCheckState(Qt.CheckState.Checked if on else Qt.CheckState.Unchecked)
             mark.setData(Qt.ItemDataRole.UserRole, s.program)
             table.setItem(row, 5, mark)
+            if s.game and s.program.lower() != "steam":
+                combo = QComboBox()
+                combo.addItem("Its manager's", "")
+                for key, (name, _mb, _pages) in profiles.PROFILES.items():
+                    combo.addItem(name, key)
+                combo.setCurrentIndex(max(combo.findData(chosen.get(s.program, "")), 0))
+                combo.currentIndexChanged.connect(lambda _i, n=s.program, c=combo: profiles.set_choice(
+                    self.choices_file, "games", n, c.currentData()))
+                table.setCellWidget(row, 6, combo)
+                self.profile_combos[s.program] = combo
+            else:
+                table.removeCellWidget(row, 6)
+                table.setItem(row, 6, QTableWidgetItem("—"))
         table.blockSignals(False)
 
     def on_mark(self, item: QTableWidgetItem) -> None:

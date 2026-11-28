@@ -29,7 +29,7 @@ from typing import Callable
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QFrame, QGroupBox, QHBoxLayout, QHeaderView,
+from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QFrame, QGroupBox, QGridLayout, QHBoxLayout, QHeaderView,
                              QLabel, QMainWindow, QMessageBox, QPushButton, QScrollArea, QSpinBox, QTableWidget,
                              QTabWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
@@ -42,21 +42,17 @@ from bc250_core.widgets import (ActionPill, AppHeader, InfoButton, MetricBox, Re
                                 accent_button, hint_label, same_width)
 
 from . import APP_ID, APP_NAME, INFO, LOGO_PATH, ROOT, __version__
-from . import cmos, guard, kargs, learn, privileged, resume, service, swap, system, watch
+from . import cmos, guard, kargs, learn, privileged, profiles, resume, service, swap, system, watch
 from .memory_map import MemoryMap, gtt_ceiling
+from .profiles import (FIRMWARE_MB, PROFILES, RECOMMENDED_MB, SMOOTH, SMOOTH_PAGES, SMOOTH_SWAP,  # noqa: F401
+                       SUITE_PAGES, split_label, ttm_label)
 from .steps import STEPS, StepRow
 
 MANUAL_URL = f"{SUITE_MANUAL_URL}apps/vram/"
 REFRESH_MS = 2000                       # the memory map's live figures
-RECOMMENDED_MB = 6144                   # board-test's recommendation (test 37): fixes framebuffer pin failures
 SPLITS = (512, 1024, 2048, 4096, RECOMMENDED_MB, 8192, 10240)
-FIRMWARE_MB = 512                       # the split the firmware starts with after a CMOS clear
-SUITE_PAGES = 3014656                   # the suite's GTT limit, 11.5 GiB (Board Test, test 37)
 PICK = object()                         # apply_ttm(): the limit the combo shows
 
-SMOOTH = "smooth"
-SMOOTH_PAGES = object()                 # PROFILES: the Smooth profile's limit, the RAM less watch.SPARE_MIB
-SMOOTH_SWAP = swap.Setup(swap.ZRAM, "ram", "zstd", swappiness=swap.SWAPPINESS[swap.ZRAM])
 TASKBAR = 80                            # the room kept free under the window, for a taskbar (as Core Unlock's)
 RESTART_SECS = 15                       # the countdown before the window restarts the board, as Core Unlock's
 LOG_COLUMNS = ["When", "Program", "How it ended", "Memory then", "What the crash report says"]
@@ -68,15 +64,6 @@ ABOUT = ("The learning steps find the memory settings that suit the games you pl
          "it measured. The board restarts.<br>5. You play the same games again. The app compares the two rounds, and "
          "you keep the change or undo it.<br><br>Then step 4 again, until nothing measured asks for a change. "
          f"<a href='{MANUAL_URL}#learning-the-settings'>Wiki</a>")
-
-# The profiles (owner, 01-11-2026): both values at once, each written only where it differs. The Smooth profile
-# (owner, 26-11-2026) also writes the swap layout and the suite's memory guard.
-PROFILES = {
-    "defaults": ("Default profile", FIRMWARE_MB, None),
-    "games": ("Games profile", RECOMMENDED_MB, SUITE_PAGES),
-    SMOOTH: ("Smooth profile", RECOMMENDED_MB, SMOOTH_PAGES),
-}
-
 
 def tried_text(tried: int, kept: int, undone: int) -> str:
     if tried == 1:
@@ -94,16 +81,6 @@ class ManagerSettings(SettingsStore):
 
 def backups_dir() -> Path:
     return data_home() / APP_ID / "backups"
-
-
-def split_label(mb: int) -> str:
-    text = f"{mb // 1024} GB" if mb >= 1024 else f"{mb} MB"
-    return text + ("  (recommended for games)" if mb == RECOMMENDED_MB else "")
-
-
-def ttm_label(pages: int | None) -> str:
-    """A GTT limit in words: its size, or the kernel's default."""
-    return f"{system.mib_text(kargs.mib(pages))} GTT limit" if pages else "kernel default GTT limit (half the RAM)"
 
 
 def ttm_setting(pages: int | None) -> str:
@@ -278,14 +255,15 @@ class MainWindow(QMainWindow):
         lay_limit.addWidget(self.ttm_note)
         lay_limit.addWidget(self.ttm_reason)
 
-        profiles = QGroupBox("Profiles: the split, the GTT limit, the swap and the guard at once")
+        profiles_box = QGroupBox("Profiles: the split, the GTT limit, the swap and the guard at once")
         self.profile_buttons: dict[str, QPushButton] = {}
         row_profiles = QHBoxLayout()
         for key in PROFILES:
             name, mb, pages, setup, _guard = self.profile_values(key)
             button = QPushButton(f"{name}…")
             button.setToolTip(f"{split_label(mb)} split, {ttm_label(pages)}"
-                              + (", zram the size of the RAM, the suite's memory guard" if setup else ""))
+                              + (", zram the size of the RAM, the suite's memory guard" if setup else "")
+                              + (f", {profiles.DRIVER_TEXT}" if profiles.driver(key) else ""))
             button.clicked.connect(lambda _c, k=key: self.apply_profile(k))
             self.profile_buttons[key] = button
             row_profiles.addWidget(button)
@@ -296,12 +274,15 @@ class MainWindow(QMainWindow):
             f"{split_label(RECOMMENDED_MB)} split and the 11.5 GiB limit. The split prevents the framebuffer pin "
             "failures (Board Test, test 37). The limit is all the RAM with that split. The suite's boards run this "
             "profile. The <b>Smooth profile</b> has the 6 GB split and a GTT limit of the RAM less 2 GiB. It also "
-            "sets zram the size of the RAM and the suite's memory guard. The Default and Games profiles leave the swap "
+            "sets zram the size of the RAM and the suite's memory guard. The <b>PS5 emulator profile</b> has the "
+            f"{split_label(FIRMWARE_MB)} split, the 14 GiB limit and three GPU driver options for KytyPS5-Native. "
+            "The other profiles remove those options. The Default and Games profiles leave the swap "
             "and the guard as they are. A profile writes only what differs from the board. Each part asks for your "
             "password. The split, the limit and the swap take effect after you restart the board. The guard takes "
             f"effect at once. <a href='{MANUAL_URL}#profiles'>Wiki</a>", "About the profiles"))
-        lay_profiles = QVBoxLayout(profiles)
+        lay_profiles = QVBoxLayout(profiles_box)
         lay_profiles.addLayout(row_profiles)
+        lay_profiles.addLayout(self.build_choices())
 
         layout_box = QGroupBox("Swap layout")
         self.layout_combo = QComboBox()
@@ -387,7 +368,7 @@ class MainWindow(QMainWindow):
         self.advanced = QWidget()
         lay_advanced = QVBoxLayout(self.advanced)
         lay_advanced.setContentsMargins(0, 0, 0, 0)
-        for box in (mapped, split, limit, profiles, layout_box, guard_box, record_group):
+        for box in (mapped, split, limit, profiles_box, layout_box, guard_box, record_group):
             lay_advanced.addWidget(box)
         lay_advanced.addStretch(1)
 
@@ -522,38 +503,73 @@ class MainWindow(QMainWindow):
         for key, button in self.profile_buttons.items():
             button.setEnabled(bool(self.profile_steps(key)))
 
+    def build_choices(self) -> QVBoxLayout:
+        """The profile each kind of game wants (owner, 28-11-2026): Steam's games and each emulator manager's games.
+        A choice is written at once, and the watcher reads it when a game starts (profiles.py)."""
+        self.choices_file = self.sessions_file.parent / watch.choices_path().name
+        self.choice_combos: dict[str, QComboBox] = {}
+        chosen = profiles.read_choices(self.choices_file).managers
+        grid = QGridLayout()
+        entries = {profiles.STEAM: "Steam games", **self.game_managers()}
+        for index, (key, label) in enumerate(entries.items()):
+            combo = QComboBox()
+            combo.addItem(profiles.NONE_LABEL, "")
+            for profile, (name, _mb, _pages) in PROFILES.items():
+                combo.addItem(name, profile)
+            combo.setCurrentIndex(max(combo.findData(chosen.get(key, "")), 0))
+            combo.currentIndexChanged.connect(lambda _i, k=key, c=combo: profiles.set_choice(
+                self.choices_file, "managers", k, c.currentData()))
+            self.choice_combos[key] = combo
+            grid.addWidget(QLabel(label), index // 3, (index % 3) * 2)
+            grid.addWidget(combo, index // 3, (index % 3) * 2 + 1)
+        head = QHBoxLayout()
+        head.addWidget(hint_label("When a game starts, the watcher checks the profile picked for it. Recording must "
+                                  "be on."), 1)
+        head.addWidget(InfoButton(
+            "Pick a profile for Steam's games and for the games of each emulator manager. The Programs window can pick "
+            "one for a single game too. When a game starts and the board lacks its profile, a notification says so, "
+            "once a boot. Its button opens this window on the profile's question. After writing it, the window offers "
+            "to restart the board. Nothing is written without your click and your password. "
+            f"<a href='{MANUAL_URL}#a-profile-for-each-game'>Wiki</a>", "About a profile for each game"))
+        lay = QVBoxLayout()
+        lay.addLayout(head)
+        lay.addLayout(grid)
+        return lay
+
+    def game_managers(self) -> dict[str, str]:
+        """The emulator managers on this machine, by key with their names (profiles.managers)."""
+        from bc250_core import steam
+        try:
+            steam_dir = steam.find_steam()
+        except Exception:  # noqa: BLE001  (no Steam: the run scripts alone)
+            steam_dir = None
+        return profiles.managers(steam_dir, Path.home() / ".local" / "bin")
+
+    def offer_profile(self, key: str) -> None:
+        """The watcher's notification (--profile): the profile a game wants, with its question, then the offer to
+        restart."""
+        if key not in PROFILES:
+            return
+        if not self.profile_steps(key):
+            QMessageBox.information(self, window_title(PROFILES[key][0]),
+                                    "Nothing to write. The board has this profile, or this machine cannot write it.")
+            return
+        self.apply_profile(key, offer_restart=True)
+
     def written_split(self) -> int | None:
         """The split in CMOS: the one waiting for a reboot, else the one this boot got."""
         return self.settings.get("pending_mb") or self.memory.vram_mib
 
     def profile_values(self, key: str) -> tuple[str, int, int | None, swap.Setup | None, str | None]:
-        """A profile's name, split and limit, and the swap layout and guard it also writes (None: left as they
-        are). The Smooth profile's limit is the RAM the split leaves, less watch.SPARE_MIB."""
-        name, mb, pages = PROFILES[key]
-        if pages is not SMOOTH_PAGES:
-            return name, mb, pages, None, None
-        m = self.memory
-        ram = (m.vram_mib + m.ram_mib - mb) if m.vram_mib and m.ram_mib else (m.ram_mib or 0)
-        names = self.zram_compressors()
-        setup = SMOOTH_SWAP if SMOOTH_SWAP.compressor in names else swap.Setup(
-            swap.ZRAM, SMOOTH_SWAP.zram_size, names[0], swappiness=SMOOTH_SWAP.swappiness)
-        return name, mb, watch.gtt_pages(ram) if ram else None, setup, guard.SUITE
+        """A profile's name, split and limit, and the swap layout and guard it also writes (profiles.values)."""
+        return profiles.values(key, self.memory, self.zram_compressors())
 
     def profile_steps(self, key: str) -> list[str]:
-        """What a profile would write, in words: the split (when CMOS can be written and it differs), the limit
-        (when rpm-ostree works and it differs), and for the Smooth profile the swap layout and the guard where they
-        differ. Empty when the board has the profile, or nothing can be written."""
-        _name, mb, pages, setup, wanted = self.profile_values(key)
-        steps = []
-        if not self.block_problem and mb != self.written_split():
-            steps.append(f"the {split_label(mb)} split to CMOS")
-        if not self.next_boot.error and pages != self.next_boot.pages:
-            steps.append(f"the {ttm_label(pages)} to the next boot's kernel arguments")
-        if setup is not None and setup != self.swap_setup:
-            steps.append(f"zram the size of the RAM with vm.swappiness {setup.swappiness} for the next boot")
-        if wanted is not None and wanted != guard.read_guard(self.etc_root):
-            steps.append("the suite's memory guard")
-        return steps
+        """What a profile would write, in words (profiles.lacks); empty when the board has it, or nothing can be
+        written."""
+        return profiles.lacks(key, profiles.Board(self.memory, self.written_split(), self.next_boot, self.swap_setup,
+                                                  guard.read_guard(self.etc_root), self.block_problem,
+                                                  self.zram_compressors()))
 
     def refresh_usage(self) -> None:
         self.map.set_usage(system.read_usage(self.sys_root, self.proc_root))
@@ -652,14 +668,7 @@ class MainWindow(QMainWindow):
 
     def zram_compressors(self) -> list[str]:
         """What the board's zram device offers; the usual three when no device is there to ask."""
-        for path in sorted((self.sys_root / "block").glob("zram*/comp_algorithm")):
-            try:
-                names = path.read_text().replace("[", "").replace("]", "").split()
-            except OSError:
-                continue
-            if names:
-                return names
-        return list(swap.ZRAM_COMPRESSORS)
+        return profiles.zram_compressors(self.sys_root)
 
     def fill_swap_options(self) -> None:
         """The second row for the layout picked: its sizes, compressors and swappiness, with the written layout's
@@ -908,7 +917,7 @@ class MainWindow(QMainWindow):
         folder = self.sessions_file.parent
         ProgramsDialog(self, self.memory.ram_mib or 0, folder / watch.history_path().name,
                        folder / watch.programs_path().name, self.sessions_file, folder / watch.closes_path().name,
-                       manual_url=MANUAL_URL).exec()
+                       manual_url=MANUAL_URL, choices=self.choices_file).exec()
 
     def fit(self) -> None:
         """The window as high as the header and the Learning tab, at its width, but never higher than the screen
@@ -1440,9 +1449,10 @@ class MainWindow(QMainWindow):
             return f"\nThe GTT stays at {system.mib_text(m.gtt_mib)}."
         return f"\nThe GTT then is about {system.mib_text(then)} instead of {system.mib_text(m.gtt_mib)} now."
 
-    def apply_ttm(self, pages=PICK, ask: bool = True) -> bool:
+    def apply_ttm(self, pages=PICK, ask: bool = True, driver: bool | None = None) -> bool:
         """Puts the limit (the combo's, or *pages*) in the next boot's kernel arguments, after the question and
-        with the Done message unless *ask* is off (a profile does both). True when it is written."""
+        with the Done message unless *ask* is off (a profile does both). *driver* puts the PS5 emulator's GPU driver
+        options in or out in the same write (a profile); None leaves them. True when it is written."""
         if pages is PICK:
             pages = self.ttm_combo.currentData()
         if ask:
@@ -1474,7 +1484,7 @@ class MainWindow(QMainWindow):
         self.tick_writing()
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
-            error = kargs.apply(self.commands, pages, self.next_boot.pages)
+            error = kargs.apply(self.commands, pages, self.next_boot.pages, driver, self.next_boot.driver)
         finally:
             self.writing_timer.stop()
             QApplication.restoreOverrideCursor()
@@ -1505,9 +1515,10 @@ class MainWindow(QMainWindow):
         self.ttm_note.setText(f"<b>rpm-ostree is writing the next boot's kernel arguments, {seconds} s so far. This "
                               "takes a minute or two. The window answers again when rpm-ostree is done.</b>")
 
-    def apply_profile(self, key: str) -> None:
+    def apply_profile(self, key: str, offer_restart: bool = False) -> None:
         """Writes a profile's split and limit where they differ from the board, after one question; one password
-        prompt for each (CMOS through pkexec, the kernel arguments through rpm-ostree)."""
+        prompt for each (CMOS through pkexec, the kernel arguments through rpm-ostree). With *offer_restart* (the
+        watcher's notification), the end asks to restart the board when a part waits for it."""
         name, mb, pages, setup, wanted = self.profile_values(key)
         steps = self.profile_steps(key)
         if not steps:
@@ -1521,18 +1532,29 @@ class MainWindow(QMainWindow):
         if guard_step:
             effect += "The guard takes effect at once.\n"
         many = len(steps) > 1
+        screen = f"{profiles.SCREEN_NOTE}\n\n" if profiles.driver(key) else ""
         answer = QMessageBox.question(
             self, window_title(name),
-            f"Write {listed}?\n\n{effect}\nYou will be asked for your password" + (" once for each." if many else "."))
+            f"Write {listed}?\n\n{effect}\n{screen}You will be asked for your password"
+            + (" once for each." if many else "."))
         if answer != QMessageBox.StandardButton.Yes:
             return
         if not self.block_problem and mb != self.written_split() and not self.write_split(mb, name, ask=False):
             return
-        if not self.next_boot.error and pages != self.next_boot.pages and not self.apply_ttm(pages, ask=False):
+        wants = profiles.driver(key)
+        if not self.next_boot.error and (pages != self.next_boot.pages or kargs.driver_change(
+                wants, self.next_boot.driver)) and not self.apply_ttm(pages, ask=False, driver=wants):
             return
         if setup is not None and setup != self.swap_setup and not self.write_swap(setup, name):
             return
         if guard_step and not self.apply_guard(wanted, ask=False):
+            return
+        if offer_restart and later:
+            answer = QMessageBox.question(self, window_title(name), f"Done. The app wrote {listed}.\n\nRestart the "
+                                          "board now?\nSave your work in other apps first.")
+            if answer == QMessageBox.StandardButton.Yes and not self.restarter():
+                QMessageBox.warning(self, window_title(name), "The window could not restart the board. Restart it "
+                                    "by hand.")
             return
         done = ("Restart the board to use it. The app does not restart the board by itself. Use the menu, or run "
                 "systemctl reboot in a terminal." if later else "It is active now.")

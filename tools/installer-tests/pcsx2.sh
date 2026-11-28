@@ -70,7 +70,7 @@ check "unknown option refused" "[ $rc -ne 0 ] && grep -q 'Unknown option: --bogu
 echo "== 5. uninstall while another suite app uses the venv: PCSX2's own folder, the settings and the log kept"
 touch "$D/bc250-bazzite-suite/venv-users/bc250-board-test"
 mkdir -p "$XDG_CONFIG_HOME/PCSX2/bios" "$XDG_CONFIG_HOME/$APP" && touch "$XDG_CONFIG_HOME/PCSX2/bios/SCPH-70012.bin" "$XDG_CONFIG_HOME/$APP/$APP.ini"
-echo "24-10-2026 04:00:00 INFO PCSX2 Manager started" > "$D/$APP/$APP.log"
+echo "24-10-2026 04:00:00 INFO BC-250 PCSX2 Manager started" > "$D/$APP/$APP.log"
 bash "$T/stage/install.sh" --uninstall > "$T/log5" 2>&1; rc=$?
 check "exit 0" "[ $rc -eq 0 ]"
 check "app and installed PCSX2 gone" "[ ! -e $A ] && [ ! -e $D/$APP/emulator ]"

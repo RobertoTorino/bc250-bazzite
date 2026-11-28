@@ -60,3 +60,22 @@ def test_apply_checks_the_next_boot_afterwards():
     assert error.startswith("rpm-ostree reported no change, but the next boot's kernel arguments still have "
                             "ttm.pages_limit=3014656. Nothing is changed. Try again, or run this in a terminal: "
                             "rpm-ostree kargs --delete=ttm.pages_limit=3014656")
+
+
+def test_the_ps5_emulators_driver_options_go_in_and_out_in_one_call():
+    """In: each missing word appended, a key with another value replaced. Out: only the profile's own words."""
+    assert kargs.driver_in("rw amdgpu.sched_policy=2 amdgpu.cwsr_enable=1 amdgpu.ppfeaturemask=1") == (
+        "amdgpu.sched_policy=2", "amdgpu.cwsr_enable=1")
+    assert kargs.has_driver(kargs.DRIVER) and not kargs.has_driver(("amdgpu.sched_policy=2",))
+    assert kargs.command(3670016, 3014656, True, ("amdgpu.cwsr_enable=1",)) == [
+        "rpm-ostree", "kargs", "--replace=ttm.pages_limit=3670016", "--append-if-missing=amdgpu.sched_policy=2",
+        "--append-if-missing=amdgpu.vm_update_mode=0", "--replace=amdgpu.cwsr_enable=0", "--unchanged-exit-77"]
+    assert kargs.command(3014656, 3014656, False, ("amdgpu.sched_policy=2", "amdgpu.cwsr_enable=1")) == [
+        "rpm-ostree", "kargs", "--delete=amdgpu.sched_policy=2", "--unchanged-exit-77"]    # cwsr_enable=1 is not ours
+    ostree = FakeOstree("rw ttm.pages_limit=3014656 amdgpu.cwsr_enable=1")
+    assert kargs.apply(ostree, 3670016, 3014656, True, ("amdgpu.cwsr_enable=1",)) == ""
+    assert len([c for c in ostree.calls if c[2] != "--deploy-index=0"]) == 1                  # one deployment
+    after = kargs.read_next_boot(ostree)
+    assert after.pages == 3670016 and kargs.has_driver(after.driver) and "amdgpu.cwsr_enable=1" not in after.driver
+    assert kargs.apply(ostree, 3014656, 3670016, False, after.driver) == ""
+    assert kargs.read_next_boot(ostree).driver == () and kargs.apply(ostree, 3014656, 3014656, False, ()) == ""

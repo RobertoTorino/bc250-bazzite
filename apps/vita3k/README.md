@@ -4,13 +4,13 @@
 [![CI](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
 
-# Vita3K Manager
+# BC-250 Vita3K Manager
 
-Vita3K Manager lets you play PS Vita games on the **AMD BC-250** with **Bazzite**. It uses
+BC-250 Vita3K Manager lets you play PS Vita games on the **AMD BC-250** with **Bazzite**. It uses
 [Vita3K](https://vita3k.org). It installs the Vita3K build it was tried with. It installs your PS Vita firmware and
 your games through Vita3K. It adds the games to Steam for Game Mode.
 
-How to install and use it: [Vita3K Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/vita3k/).
+How to install and use it: [BC-250 Vita3K Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/vita3k/).
 
 ## Disclaimer
 

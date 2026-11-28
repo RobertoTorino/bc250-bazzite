@@ -186,7 +186,7 @@ The tools for working on the suite are not in the portal. They are in `dev/` of 
 checkout and have no release. [Nexus Dashboard for BC-250](development/dashboard.md) opens them all:
 
 - Nexus Release Tool
-- Nexus Deps, for the suite's packages and tools on this machine
+- Nexus Dependencies for BC-250, for the suite's packages and tools on this machine
 - Nexus Garbage Remover, for crash dumps, the Trash and caches
 - Nexus Installer Tests, which runs the installer tests one at a time
 - Nexus Demo Recorder

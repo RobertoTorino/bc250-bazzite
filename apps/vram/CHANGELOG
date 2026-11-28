@@ -1,3 +1,20 @@
+Changelog: 28-11-2026 12:45:13
+
+Added. A PS5 emulator profile (owner, 27-11-2026 and 28-11-2026). It writes the 512 MB split, the 14 GiB GTT limit and three GPU driver options for KytyPS5-Native: amdgpu.sched_policy=2, amdgpu.vm_update_mode=0 and amdgpu.cwsr_enable=0.
+The limit and the options go in one rpm-ostree kargs call, so one deployment and one password, and the app checks both afterward.
+The Default, Games and Smooth profiles now also remove exactly these three options. An option written with another value stays.
+The profile's question says to set the screen to 1920x1080 before a big PS5 game.
+The driver options are not tested on a board yet. The profile for each game and the notification's --profile offer it too.
+
+Changelog: 28-11-2026 12:10:09
+
+Added. A profile for each game (owner, 28-11-2026). Under the profile buttons, a choice for Steam games and one for each emulator manager on the board picks the profile their games want. They start at No profile.
+The Programs window has a Profile column, where a single game can get a profile of its own. That choice comes before its manager's.
+When a game starts and the board lacks its profile, the recording service says so in a notification, once a boot for each profile.
+Its Write the profile button opens the window on the profile's question, and after the write the window offers to restart the board.
+The service writes nothing by itself. It knows a manager's game by the run script its Steam shortcut starts, bc250-<key>-run.
+The profiles and what a profile lacks moved to vram_manager/profiles.py, which the window and the service share. The window's profile buttons behave as before.
+
 Changelog: 27-11-2026 19:44:37
 
 Release 5.2.1.

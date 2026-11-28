@@ -84,7 +84,7 @@ def doubles(folder: Path) -> dict[str, int]:
 
 def old_tags(folder: Path) -> set[str]:
     """The eboot.bin paths whose shortcut has other tags than TAGS, as one made while the app was called BC-250
-    shadPS4 Manager has: bringing it up to date gives it the tags of now."""
+    BC-250 shadPS4 Manager has: bringing it up to date gives it the tags of now."""
     return {_eboot(item) for item in steam.shortcuts(folder)
             if ours(item) and list(dict(item.get("tags") or {}).values()) != list(TAGS)}
 

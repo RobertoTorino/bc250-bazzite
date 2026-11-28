@@ -60,14 +60,14 @@ This list follows the portal's categories.
 
 - <img src="portal/images/apps/consoles.webp" width="20" height="20" alt=""/> **[BC-250 PS Remote Play](apps/consoles)**: Find, wake and register PS4 and PS5 consoles on the network, and start a Remote Play session.
 - <img src="portal/images/apps/clb.webp" width="20" height="20" alt=""/> **[BC-250 XB Remote Play](apps/clb)**: Stream your XBOX (Remote Play) or games from XBOX Cloud Gaming to the board, signed in with your Microsoft account.
-- <img src="portal/images/apps/shadps4.webp" width="20" height="20" alt=""/> **[shadPS4 Manager](apps/shadps4)**: PS4 games with the shadPS4 emulator. It gets a tested shadPS4 release. It finds your games, or unpacks them from .pkg files, and adds them to Steam.
-- <img src="portal/images/apps/rpcs3.webp" width="20" height="20" alt=""/> **[RPCS3 Manager](apps/rpcs3)**: PS3 games with the RPCS3 emulator. It gets a tested RPCS3 build and the firmware. It finds your games and adds them to Steam.
+- <img src="portal/images/apps/shadps4.webp" width="20" height="20" alt=""/> **[BC-250 shadPS4 Manager](apps/shadps4)**: PS4 games with the shadPS4 emulator. It gets a tested shadPS4 release. It finds your games, or unpacks them from .pkg files, and adds them to Steam.
+- <img src="portal/images/apps/rpcs3.webp" width="20" height="20" alt=""/> **[BC-250 RPCS3 Manager](apps/rpcs3)**: PS3 games with the RPCS3 emulator. It gets a tested RPCS3 build and the firmware. It finds your games and adds them to Steam.
 - <img src="portal/images/apps/datstation.webp" width="20" height="20" alt=""/> **[Bazzite DatStation](apps/datstation)**: PlayStation quiz, console history, system versions, region codes, user guides and news, with your scores.
-- <img src="portal/images/apps/ppsspp.webp" width="20" height="20" alt=""/> **[PPSSPP Manager](apps/ppsspp)**: PSP games with the PPSSPP emulator. It gets a tested PPSSPP release. It finds your games and adds them to Steam.
-- <img src="portal/images/apps/pcsx2.webp" width="20" height="20" alt=""/> **[PCSX2 Manager](apps/pcsx2)**: PS2 games with the PCSX2 emulator. It gets a tested PCSX2 release and your PS2 BIOS. It finds your games and adds them to Steam.
-- <img src="portal/images/apps/vita3k.webp" width="20" height="20" alt=""/> **[Vita3K Manager](apps/vita3k)**: PS Vita games with the Vita3K emulator. It gets a tested Vita3K build. You install the firmware and your games through it, and it adds the games to Steam.
-- <img src="portal/images/apps/xenia.webp" width="20" height="20" alt=""/> **[Xenia Manager](apps/xenia)**: XBOX 360 games with the Xenia emulator, which is experimental on Linux. It gets a tested Xenia build. It finds your games and adds them to Steam.
-- <img src="portal/images/apps/kytyps5.webp" width="20" height="20" alt=""/> **[KytyPS5 Manager](apps/kytyps5)**: PS5 games with the KytyPS5-Native emulator. It sets up a tested KytyPS5-Native release, checks what the emulator needs from the board, finds your games and adds them to Steam.
+- <img src="portal/images/apps/ppsspp.webp" width="20" height="20" alt=""/> **[BC-250 PPSSPP Manager](apps/ppsspp)**: PSP games with the PPSSPP emulator. It gets a tested PPSSPP release. It finds your games and adds them to Steam.
+- <img src="portal/images/apps/pcsx2.webp" width="20" height="20" alt=""/> **[BC-250 PCSX2 Manager](apps/pcsx2)**: PS2 games with the PCSX2 emulator. It gets a tested PCSX2 release and your PS2 BIOS. It finds your games and adds them to Steam.
+- <img src="portal/images/apps/vita3k.webp" width="20" height="20" alt=""/> **[BC-250 Vita3K Manager](apps/vita3k)**: PS Vita games with the Vita3K emulator. It gets a tested Vita3K build. You install the firmware and your games through it, and it adds the games to Steam.
+- <img src="portal/images/apps/xenia.webp" width="20" height="20" alt=""/> **[BC-250 Xenia Manager](apps/xenia)**: XBOX 360 games with the Xenia emulator, which is experimental on Linux. It gets a tested Xenia build. It finds your games and adds them to Steam.
+- <img src="portal/images/apps/kytyps5.webp" width="20" height="20" alt=""/> **[BC-250 KytyPS5 Manager](apps/kytyps5)**: PS5 games with the KytyPS5-Native emulator. It sets up a tested KytyPS5-Native release, checks what the emulator needs from the board, finds your games and adds them to Steam.
 
 **Utilities**: handy tools around the board.
 
@@ -96,13 +96,14 @@ The tools for working on the suite are not in the portal. They run from a checko
 **[Nexus Dashboard for BC-250](dev/dash)** opens them all:
 
 - Nexus Release Tool
-- Nexus Deps
+- Nexus Dependencies for BC-250
 - Nexus Garbage Remover
 - Nexus Installer Tests
 - Nexus Marketing for BC-250
 - Nexus Demo Recorder
 - Nexus Sound Lab
 - Nexus TTS
+- Nexus Text Check for BC-250
 - Nexus Remix Studio
 - the video tours
 - the icons

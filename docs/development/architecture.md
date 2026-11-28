@@ -135,7 +135,7 @@ port. Such an app hands those arguments to the open window instead of losing the
 
 - `instance.already_running(INFO.app_id, args)` sends them along.
 - `instance.serve(INFO.app_id, window, on_args=...)` gives them to the running window.
-- The window opens them as it would at start-up. The shadPS4 Manager, for example, opens the package in Extract
+- The window opens them as it would at start-up. The BC-250 shadPS4 Manager, for example, opens the package in Extract
   PKG.
 
 `--version` prints the app's version and the core it runs on.
@@ -366,13 +366,13 @@ Where the pictures come from depends on what the app has:
 | App | What the Steam card shows |
 |---|---|
 | BC-250 PS Remote Play | Drawn from the app's icon (`steam_art`), with the console's name and model |
-| PCSX2 Manager | Drawn from the app's icon (`steam_art`), with the game's title, because a PS2 disc has no pictures |
+| BC-250 PCSX2 Manager | Drawn from the app's icon (`steam_art`), with the game's title, because a PS2 disc has no pictures |
 | Bazzite DatStation | Drawn from the app's icon (`steam_art`), with the app's name |
-| shadPS4 Manager | The game's own pictures (`icon0.png`, `pic1.png`), with its icon as the logo |
-| RPCS3 Manager | The game's own pictures (`ICON0.PNG`, `PIC1.PNG`), with its icon as the logo |
-| Xenia Manager | Drawn from the app's icon (`steam_art`), with the game's title |
-| PPSSPP Manager | The game's own pictures (`ICON0.PNG`, `PIC1.PNG`), with its icon as the logo |
-| Vita3K Manager | The game's own pictures (`icon0.png`, `pic0.png`), with its icon as the logo |
+| BC-250 shadPS4 Manager | The game's own pictures (`icon0.png`, `pic1.png`), with its icon as the logo |
+| BC-250 RPCS3 Manager | The game's own pictures (`ICON0.PNG`, `PIC1.PNG`), with its icon as the logo |
+| BC-250 Xenia Manager | Drawn from the app's icon (`steam_art`), with the game's title |
+| BC-250 PPSSPP Manager | The game's own pictures (`ICON0.PNG`, `PIC1.PNG`), with its icon as the logo |
+| BC-250 Vita3K Manager | The game's own pictures (`icon0.png`, `pic0.png`), with its icon as the logo |
 
 The emulator managers start a game through Steam too. The tab beside **Your games** is **Start game**. It is core's
 `ActionTab`, a tab that acts on a click. It leaves the open page open. It looks up the chosen game's shortcut in
@@ -465,10 +465,10 @@ It installs:
   includes a security fix within that range.
 - **A launcher** `~/.local/bin/<app-id>` that changes into the app folder and runs
   `exec "<venv>/bin/python" -m <package>`. Some apps take file or folder paths on their command line, such as the
-  shadPS4 Manager. Such a launcher stays in the folder it is started from, so a relative path means what it says.
+  BC-250 shadPS4 Manager. Such a launcher stays in the folder it is started from, so a relative path means what it says.
   It runs `exec "<venv>/bin/python" -c '$RUN_MODULE' "<app folder>" <package> "$@"`. That line puts the app folder
   first on `sys.path` instead (see its `install.sh`). The app's `__main__.py` makes the path absolute before it uses
-  the path or hands it on. Keep the `exec "<venv>/bin/python"` start of that line. Nexus Deps reads it to find the
+  the path or hands it on. Keep the `exec "<venv>/bin/python"` start of that line. Nexus Dependencies reads it to find the
   app's Python environment.
 - **A menu entry and a Desktop icon.** Both point at the launcher by its full path.
 
@@ -548,7 +548,7 @@ It adds the app to these places:
 - the suite README
 - the bug report's App dropdown
 - the root `requirements-dev.txt`
-- Nexus Deps' catalog of the suite
+- Nexus Dependencies' catalog of the suite
 
 When nothing of the app is there, its `install.sh --uninstall` says the app is not installed and removes nothing.
 CI needs no edit, because its pytest matrix, its installer tests and its shellcheck come from the folders.
@@ -586,7 +586,7 @@ Some apps do not fit the template. Building one by hand is the owner's decision.
     - a window in its `windows.py`
     - an entry in its `catalog.py`
     - a table in `apps.toml`
-7. Add the app to Nexus Deps' catalog of the suite (`dev/deps/nexus_deps/catalogs/bc250-bazzite.toml`). Give it
+7. Add the app to Nexus Dependencies' catalog of the suite (`dev/deps/nexus_deps/catalogs/bc250-bazzite.toml`). Give it
    these entries:
     - `[app.<name>]` with its launchers
     - its Python packages
@@ -627,6 +627,6 @@ After the generator, what is left is the app itself:
 | Version copies equal `VERSION` | `tools/check_versions.py` |
 | Every app and portal entry has an installer test, and CI runs it | `tools/tests/test_installer_tests.py` |
 | Copies of `instance.py` equal core's | `tools/tests/test_instance_copies.py` |
-| Nexus Deps' catalog matches the requirements files, the portal's apps, and the tools the apps use | `dev/deps/tests/test_dependencies.py` |
+| Nexus Dependencies' catalog matches the requirements files, the portal's apps, and the tools the apps, core and the portal use | `dev/deps/tests/test_dependencies.py` |
 | `portal/apps.toml` rules and version bumps | `tools/check_manifest.py` |
 | The wiki builds with no broken link | `mkdocs build --strict` |

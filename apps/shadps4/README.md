@@ -4,15 +4,15 @@
 [![CI](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
 
-# shadPS4 Manager
+# BC-250 shadPS4 Manager
 
-shadPS4 Manager plays PS4 games on the **AMD BC-250** on **Bazzite** with
+BC-250 shadPS4 Manager plays PS4 games on the **AMD BC-250** on **Bazzite** with
 [shadPS4](https://github.com/shadps4-emu/shadPS4). It installs the shadPS4 release it was tried with. It finds your
 games and adds them to Steam. A game then starts straight away, on the desktop or from Steam's Big Picture Mode. The
 app also signs you in to shadNet, shadPS4's online service. Extract PKG unpacks package files (.pkg) into a game
 folder. A log keeps what the app did.
 
-How to install and use it: [shadPS4 Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/shadps4/).
+How to install and use it: [BC-250 shadPS4 Manager in the wiki](https://robertotorino.github.io/bc250-bazzite/apps/shadps4/).
 
 ## Disclaimer
 

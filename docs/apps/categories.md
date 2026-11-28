@@ -52,14 +52,14 @@ Every app with its icon and its category.
 | ![](../assets/apps/mesh.webp){ .app-icon } [BC-250 Mesh Shaders](mesh.md) | Graphics |
 | ![](../assets/apps/consoles.webp){ .app-icon } [BC-250 PS Remote Play](consoles.md) | Gaming |
 | ![](../assets/apps/clb.webp){ .app-icon } [BC-250 XB Remote Play](clb.md) | Gaming |
-| ![](../assets/apps/shadps4.webp){ .app-icon } [shadPS4 Manager](shadps4.md) | Gaming |
-| ![](../assets/apps/rpcs3.webp){ .app-icon } [RPCS3 Manager](rpcs3.md) | Gaming |
-| ![](../assets/apps/ppsspp.webp){ .app-icon } [PPSSPP Manager](ppsspp.md) | Gaming |
-| ![](../assets/apps/pcsx2.webp){ .app-icon } [PCSX2 Manager](pcsx2.md) | Gaming |
-| ![](../assets/apps/vita3k.webp){ .app-icon } [Vita3K Manager](vita3k.md) | Gaming |
-| ![](../assets/apps/xenia.webp){ .app-icon } [Xenia Manager](xenia.md) | Gaming |
+| ![](../assets/apps/shadps4.webp){ .app-icon } [BC-250 shadPS4 Manager](shadps4.md) | Gaming |
+| ![](../assets/apps/rpcs3.webp){ .app-icon } [BC-250 RPCS3 Manager](rpcs3.md) | Gaming |
+| ![](../assets/apps/ppsspp.webp){ .app-icon } [BC-250 PPSSPP Manager](ppsspp.md) | Gaming |
+| ![](../assets/apps/pcsx2.webp){ .app-icon } [BC-250 PCSX2 Manager](pcsx2.md) | Gaming |
+| ![](../assets/apps/vita3k.webp){ .app-icon } [BC-250 Vita3K Manager](vita3k.md) | Gaming |
+| ![](../assets/apps/xenia.webp){ .app-icon } [BC-250 Xenia Manager](xenia.md) | Gaming |
 | ![](../assets/apps/datstation.webp){ .app-icon } [Bazzite DatStation](datstation.md) | Gaming |
-| ![](../assets/apps/kytyps5.webp){ .app-icon } [KytyPS5 Manager](kytyps5.md) | Gaming |
+| ![](../assets/apps/kytyps5.webp){ .app-icon } [BC-250 KytyPS5 Manager](kytyps5.md) | Gaming |
 | ![](../assets/apps/overlay.webp){ .app-icon } [BC-250 System Overlay](overlay.md) | Utilities |
 | ![](../assets/apps/turing.webp){ .app-icon } [BC-250 Turing Screen](turing.md) | Utilities |
 | ![](../assets/apps/webcam.webp){ .app-icon } [BC-250 Webcam](webcam.md) | Utilities |

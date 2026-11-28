@@ -4,9 +4,9 @@
 [![CI](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertoTorino/bc250-bazzite/actions/workflows/ci.yml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
 
-# Nexus Deps
+# Nexus Dependencies for BC-250
 
-Nexus Deps shows the Python packages and external tools of the suite's apps installed on this machine. It shows
+Nexus Dependencies shows the Python packages and external tools of the suite's apps installed on this machine. It shows
 which apps use them, and what is missing or must be updated. It names the known vulnerabilities from OSV.dev. It also
 shows Bazzite's update state and every update of the machine:
 
@@ -18,7 +18,7 @@ shows Bazzite's update state and every update of the machine:
 - Prime95's mprime
 
 **Fix** installs what is missing, outdated or newer. It shows every command first and asks. An hourly notification
-tells you when something needs you. Nexus Deps is a development app. It runs from the checkout it lives in and has no
+tells you when something needs you. Nexus Dependencies is a development app. It runs from the checkout it lives in and has no
 releases of its own. Start it from [Nexus Dashboard for BC-250](../dash), or:
 
 | | Linux |

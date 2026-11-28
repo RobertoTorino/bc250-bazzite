@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![shadPS4 Manager](../assets/shadps4/bc250-shadps4-manager.webp){ .app-logo }
+![BC-250 shadPS4 Manager](../assets/shadps4/bc250-shadps4-manager.webp){ .app-logo }
 
-# shadPS4 Manager
+# BC-250 shadPS4 Manager
 
-shadPS4 Manager plays **PS4 games** on the **AMD BC-250** with [shadPS4](https://github.com/shadps4-emu/shadPS4),
+BC-250 shadPS4 Manager plays **PS4 games** on the **AMD BC-250** with [shadPS4](https://github.com/shadps4-emu/shadPS4),
 an open-source PS4 emulator. The app does these things for you:
 
 - It installs the shadPS4 release it was tried with.
@@ -351,7 +351,7 @@ The file turns over at 1 MB, and the app keeps the three older files. **Clear lo
 empties the file and the View logs tab. It also removes the three older files. The log holds what the app did. It
 never holds your SteamGridDB key, your shadNet password or anything else personal.
 
-Two buttons sit above the log. **shadPS4 Manager** shows the app's own log. **shadPS4** shows what shadPS4
+Two buttons sit above the log. **BC-250 shadPS4 Manager** shows the app's own log. **shadPS4** shows what shadPS4
 printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-shadps4-manager/emulator.log`. Each
 game's part opens with a line that says how the wrapper started shadPS4. It ends with a line that gives shadPS4's exit
 code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps

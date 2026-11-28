@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![RPCS3 Manager](../assets/rpcs3/bc250-rpcs3-manager.webp){ .app-logo }
+![BC-250 RPCS3 Manager](../assets/rpcs3/bc250-rpcs3-manager.webp){ .app-logo }
 
-# RPCS3 Manager
+# BC-250 RPCS3 Manager
 
-RPCS3 Manager plays **PS3 games** on the **AMD BC-250** with [RPCS3](https://rpcs3.net), an open-source PS3
+BC-250 RPCS3 Manager plays **PS3 games** on the **AMD BC-250** with [RPCS3](https://rpcs3.net), an open-source PS3
 emulator. The app does these things for you:
 
 - It installs the RPCS3 build it was tried with.
@@ -382,7 +382,7 @@ and the app keeps the three older files. **Clear logs**, the tab beside View log
 tab. It also removes the three older files. The log holds what the app did. It does not hold your SteamGridDB key or
 anything personal.
 
-Two buttons sit above the log. **RPCS3 Manager** shows the app's own log. **RPCS3** shows what RPCS3
+Two buttons sit above the log. **BC-250 RPCS3 Manager** shows the app's own log. **RPCS3** shows what RPCS3
 printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-rpcs3-manager/emulator.log`. Each
 game's part opens with a line that says how the wrapper started RPCS3. It ends with a line that gives RPCS3's exit
 code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps

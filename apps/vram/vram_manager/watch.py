@@ -48,6 +48,10 @@ game's unit SIGKILL (systemctl --user kill), which frees its memory at once. The
 stall", a lack of memory, so the learning steps point to a change at once. A notification says so, with a button
 that opens the window. The values are starting values to test on the board.
 
+When a game starts, the watcher also asks which profile it wants (profiles.py: per manager, with a per-game override,
+owner 28-11-2026). When the board lacks that profile, a notification says so once a boot, with a button that opens
+the window on the profile's question. The watcher writes nothing: the profiles need a restart or the password.
+
 When a program crashes, the session keeps what crashed: the process and its signal, from the crash report
 (crash_report()). A program another one started runs in that one's unit, so the process can differ from the
 program: Steam started from the suite crashed in the suite's unit (owner's board, 27-11-2026). A crash notification
@@ -127,6 +131,10 @@ def programs_path() -> Path:
 
 def closes_path() -> Path:
     return data_dir() / "close-for-games.json"
+
+
+def choices_path() -> Path:
+    return data_dir() / "profiles.json"
 
 
 def closes_log_path() -> Path:
@@ -476,16 +484,19 @@ def _kill(unit: str) -> int:
         return 1
 
 
-def _notify(summary: str, body: str, open_app: bool = False) -> None:
+def _notify(summary: str, body: str, open_app: bool = False, profile: str = "") -> None:
     """A desktop notification through notify-send that stays until clicked; with *open_app*, a button that opens the
-    window. notify-send waits for the button, so it runs on its own, in a shell that starts the app."""
+    window; with *profile*, a button that opens it on that profile's question. notify-send waits for the button, so
+    it runs on its own, in a shell that starts the app."""
     from . import APP_NAME, ROOT
     args = ["notify-send", "--app-name", APP_NAME, "--icon", str(ROOT / "images" / f"{APP_ID}-128.png"),
             "--urgency", "critical", "--expire-time", "0", summary, body]
-    if open_app:
-        args += ["--action", "open=Open Memory Manager"]
-        command = (f'[ "$({shlex.join(args)})" = open ] && cd {shlex.quote(str(ROOT))} && '
-                   f"exec {shlex.quote(sys.executable)} -m vram_manager")
+    if open_app or profile:
+        action, extra = ("write=Write the profile…", ["--profile", profile]) if profile else (
+            "open=Open Memory Manager", [])
+        args += ["--action", action]
+        command = (f'[ "$({shlex.join(args)})" = {action.split("=")[0]} ] && cd {shlex.quote(str(ROOT))} && '
+                   f"exec {shlex.quote(sys.executable)} -m vram_manager {shlex.join(extra)}".rstrip())
         args = ["sh", "-c", command]
     try:
         subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
@@ -517,6 +528,8 @@ class Watcher:
     stopper: Callable[[str], int] = _stop
     killer: Callable[[str], int] | None = None      # _kill, looked up at the start (tests replace it)
     notifier: Callable[..., None] | None = None     # _notify, the same
+    choices: Path | None = None                     # the profiles the games want (profiles.py)
+    board_reader: Callable[[], object] | None = None    # _board: the board's next boot, as a profile goes
 
     def __post_init__(self) -> None:
         self.record = self.record or sessions_path()
@@ -527,6 +540,9 @@ class Watcher:
         self.closes_log = self.closes_log or closes_log_path()
         self.killer = self.killer or _kill
         self.notifier = self.notifier or _notify
+        self.choices = self.choices or choices_path()
+        self.board_reader = self.board_reader or _board
+        self.offered: set[str] = set()          # the profiles a notification named this boot
         self.stats = read_stats(self.programs)
         self.point: Point | None = None
         self.first = True                       # the first look: a game that runs already closes nothing
@@ -559,7 +575,7 @@ class Watcher:
         board.cpu = cpu_load(cpu, self.cpu)
         programs = read_programs(self.folder)
         now = self.clock()
-        started_game = ""
+        started_game = started_unit = ""
         for unit, (mib, kills) in programs.items():
             session = self.open.get(unit)
             if session is None:
@@ -567,7 +583,7 @@ class Watcher:
                 stats = self.stats.setdefault(session.program, Stats(session.program, never_closed(unit)))
                 stats.runs += 1
                 if is_game(unit) and not self.first:
-                    started_game = session.program
+                    started_game, started_unit = session.program, unit
             stats = self.stats.setdefault(session.program, Stats(session.program, never_closed(unit)))
             stats.mib_seconds += mib * max(now - session.end, 0) if session.end else 0
             stats.seconds += max(now - session.end, 0) if session.end else 0
@@ -602,6 +618,7 @@ class Watcher:
                 write_session(session, self.record)
         if started_game:
             self.close_for(started_game)
+            self.offer_profile(started_unit, started_game)
         games = [u for u in self.open if is_game(u)]
         if games:
             self.watch_crashes(games, now)
@@ -623,6 +640,25 @@ class Watcher:
                 self.closes_log.parent.mkdir(parents=True, exist_ok=True)
                 with self.closes_log.open("a", encoding="utf-8") as log:
                     log.write(f"{stamp} {said} {session.program} for {game}.\n")
+
+    def offer_profile(self, unit: str, game: str) -> None:
+        """A game that wants a profile the board lacks: a notification, once a boot for that profile, with a button
+        that opens the window on its question (profiles.py). Nothing is written here."""
+        from . import profiles
+        number = re.fullmatch(r"steam-app(\d+)", desktop_id(unit))
+        key = profiles.wanted(game, int(number.group(1)) if number else None, self.steam_dir,
+                              profiles.read_choices(self.choices))
+        if not key or key in self.offered:
+            return
+        missing = profiles.lacks(key, self.board_reader())
+        if not missing:
+            return
+        self.offered.add(key)
+        name = profiles.PROFILES[key][0]
+        listed = missing[0] if len(missing) == 1 else f"{', '.join(missing[:-1])} and {missing[-1]}"
+        later = any(step != "the suite's memory guard" for step in missing)
+        self.notifier(f"{game} wants the {name}", f"Memory Manager can write {listed}."
+                      + (" A restart then puts it to use." if later else ""), profile=key)
 
     def watch_crashes(self, games: list[str], now: float) -> None:
         """A crash of a running game, told at once: systemd-coredump's first line names the process, the game's
@@ -731,6 +767,25 @@ def bigger_zram(setup: swap.Setup) -> str:
 
 
 # --- The service -----------------------------------------------------------------------------------------------
+
+def _pending_mb() -> int:
+    """The split the window wrote to CMOS for the next boot, from its settings file; 0 for none. Read as text: the
+    watcher needs no Qt."""
+    import configparser
+    from bc250_core.platform import config_home
+    from . import INFO
+    parser = configparser.ConfigParser(interpolation=None)
+    try:
+        parser.read(config_home() / INFO.org / f"{INFO.settings_name}.ini", encoding="utf-8")
+        return parser.getint("General", "pending_mb", fallback=0)
+    except (configparser.Error, ValueError, OSError):
+        return 0
+
+
+def _board():
+    from . import profiles
+    return profiles.read_board(_pending_mb())
+
 
 def main() -> int:
     from bc250_core import steam

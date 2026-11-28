@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Nexus Deps: a suite's Python packages and external tools on this machine, what is missing or outdated, and a
-fix for it; and Bazzite's update state. A Nexus app (dev/), run from the checkout and never released (owner,
-07-11-2026: it was the BC250 Bazzite Suite's Dependency Checker, apps/package, until then)."""
+"""Nexus Dependencies for BC-250: a suite's Python packages and external tools on this machine, what is missing or
+outdated, and a fix for it; and Bazzite's update state. A Nexus app (dev/), run from the checkout and never released
+(owner, 07-11-2026: it was the BC250 Bazzite Suite's Dependency Checker, apps/package, until then)."""
 
 from pathlib import Path
 
 from bc250_core import AppInfo
 from bc250_core.nexus import checkout_commit
 
-APP_NAME = "Nexus Deps"
+APP_NAME = "Nexus Dependencies for BC-250"
 APP_ID = "nexus-deps"
 
 PACKAGE = Path(__file__).resolve().parent

@@ -80,7 +80,7 @@ a line says otherwise.
 - **The text behind the info symbol** may hold a list where it lists three or more things.
 - **"Remove"** replaces "uninstall" in an app's own messages, also where the portal's action is named otherwise. The
   installers' shared messages still stay as they are.
-- **"Restart"** replaces "reboot" in window text and labels, such as Nexus Deps' **Restart to update**. A command keeps
+- **"Restart"** replaces "reboot" in window text and labels, such as Nexus Dependencies' **Restart to update**. A command keeps
   its words (`systemctl reboot`).
 - **"Check" and "uncheck"** replace "tick" and "untick" in the wiki. A page takes it in its own unit, such as the
   Dashboard chapter.

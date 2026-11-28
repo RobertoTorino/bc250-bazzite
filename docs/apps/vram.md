@@ -13,7 +13,10 @@
     is a kernel argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself, the
     firmware or the real-time clock. The app refuses to write when the block's signature or checksum does not match. It
     also refuses when the kernel is locked down. Undo writes the previous split back. The Default profile writes 512 MB
-    and removes the kernel argument. Both take effect after a restart. The swap layout is a few files of the app's own
+    and removes the kernel argument. Both take effect after a restart.
+    The PS5 emulator profile also writes three GPU driver options as kernel arguments, with rpm-ostree kargs. They
+    change the GPU driver for every program. The other profiles remove exactly these three. They take effect after a
+    restart. The swap layout is a few files of the app's own
     in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit. The zswap
     layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started or
     stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap file.
@@ -183,7 +186,7 @@ round **i** at the end of each row explains the split or the limit, with a link 
 
 ## Profiles
 
-Under **Profiles: the split, the GTT limit, the swap and the guard at once**, three buttons set several settings:
+Under **Profiles: the split, the GTT limit, the swap and the guard at once**, four buttons set several settings:
 
 - **Default profile…:** The firmware's 512 MB split and the kernel's GTT limit, half the RAM. A board runs this
   without any change, as after a CMOS clear on a kernel command line without `ttm.pages_limit`.
@@ -191,17 +194,48 @@ Under **Profiles: the split, the GTT limit, the swap and the guard at once**, th
   11.5 GiB limit. The limit is all the RAM with that split. The suite's boards run this profile.
 - **Smooth profile…:** The 6 GB split, and a GTT limit of the RAM less 2 GiB. With 9.4 GiB of RAM, that is 7.4 GiB.
   It also sets zram the size of the RAM with zstd and `vm.swappiness` 180, and the suite's memory guard.
+- **PS5 emulator profile…:** The 512 MB split, the 14 GiB limit (`ttm.pages_limit=3670016`) and three GPU driver
+  options for KytyPS5-Native: `amdgpu.sched_policy=2`, `amdgpu.vm_update_mode=0` and `amdgpu.cwsr_enable=0`.
 
 The Default and Games profiles leave the swap layout and the guard as they are.
+
+The PS5 emulator profile is for big PS5 games in KytyPS5-Native. On the owner's board, ASTRO BOT ran 20 minutes with
+its split and limit. With the 6 GB split, the kernel ended the emulator three times for lack of memory. The three
+driver options are not tested on a board yet. They change the GPU driver for every program, not only the emulator.
+The other three profiles remove exactly these options. An option you set yourself with another value stays.
+
+The question of the PS5 emulator profile also says to set the screen to 1920x1080 before a big PS5 game. On the
+owner's board, the first start with the desktop at 3840x2160 hung the GPU.
 
 The GTT limit of the Smooth profile keeps 2 GiB of RAM for the system. When a program's GPU work fills the rest, that
 program gets an error, and the board keeps running. Without the room, the GPU can take all the RAM. Swap cannot hold
 what the GPU borrows, so the board then stalls.
 
-A profile writes only what differs from the board. The split goes to CMOS. The limit goes to the next boot's kernel
-arguments. The swap layout and the guard go to files in /etc. The profile asks once and names what it will write.
+A profile writes only what differs from the board. The split goes to CMOS. The limit and the driver options go to the
+next boot's kernel arguments, in one write. The swap layout and the guard go to files in /etc. The profile asks once and names what it will write.
 Each part it writes then asks for your password. A profile the board already has is off. The split, the limit and the
 swap take effect after you restart the board, which stays yours to do. The guard takes effect at once.
+
+### A profile for each game
+
+Under the profile buttons, pick the profile that each kind of game wants:
+
+- **Steam games:** the games of Steam itself
+- each emulator manager on the board, such as **BC-250 PCSX2 Manager**, for the games its shortcuts start
+
+A row starts at **No profile**. Such a game runs with what the board has. In [Programs](#programs), a single game can
+get a profile of its own. That choice comes before its manager's.
+
+The recording service checks the profile when a game starts, so recording must be on. When the board lacks the
+profile, a notification names the game and the profile, and what the profile would write. It comes once a boot for
+each profile. **Write the profile…** opens this window on the profile's question. After writing it, the window asks to
+restart the board.
+
+The service writes nothing by itself. The split, the limit and the swap take effect after a restart, and each part
+asks for your password.
+
+The app knows an emulator manager's game by the program its Steam shortcut starts, the manager's run script in
+`~/.local/bin`, such as `bc250-pcsx2-run`. Every other shortcut wants no profile.
 
 ## The swap layout
 
@@ -356,6 +390,8 @@ The table lists the programs, the largest first:
 - **Peak** and **Average:** the program's own memory, swap included
 - **Killed:** how often a lack of memory ended it
 - **Close for games:** your mark
+- **Profile:** the profile a game wants, for games only. **Its manager's** takes the one picked for its emulator
+  manager or for Steam games. See [A profile for each game](#a-profile-for-each-game).
 
 ### Closing programs for games
 
@@ -454,6 +490,8 @@ The learning steps:
 - `~/.local/share/bc250-memory-manager/programs.json`: each program's runs, peak, average and kills.
 - `~/.local/share/bc250-memory-manager/close-for-games.json`: the programs checked to close for games.
 - `~/.local/share/bc250-memory-manager/close-for-games.log`: each program closed for a game.
+- `~/.local/share/bc250-memory-manager/profiles.json`: the profile picked for each emulator manager, for Steam games
+  and for single games.
 - `~/.local/share/bc250-memory-manager/learn.json`: the learning steps' rounds, their settings and verdicts.
 - `~/.config/autostart/bc250-memory-manager-resume.desktop`: opens the window after the next login while a learning
   step waits for a restart.

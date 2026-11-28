@@ -32,7 +32,7 @@ website you open does.
 update server for the controllers' latest firmware when its window opens. It asks at most once a day, and you can
 turn this off. It downloads the firmware when you update a controller.
 
-**PyPI and OSV.dev**: [Nexus Deps](development/dashboard.md#deps) is a development app that you run from a checkout
+**PyPI and OSV.dev**: [Nexus Dependencies](development/dashboard.md#deps) is a development app that you run from a checkout
 of the repository. It sends the names and versions of the Python packages in the apps' environments. It learns from
 them whether newer versions or known vulnerabilities exist. The rest of its cards work like this:
 
@@ -42,7 +42,7 @@ them whether newer versions or known vulnerabilities exist. The rest of its card
 - Those tools talk to their own servers, as they do when you run them yourself.
 - Its mprime card reads mersenne.org's download page.
 - Its cards of the emulators and the PlayStation firmware ask GitHub for each emulator's latest release. They ask
-  Sony for its firmware lists. They send nothing about the board.
+  Sony for its firmware lists and read its system software pages (`www.playstation.com`). They send nothing about the board.
 
 Installing an app downloads its Python packages from PyPI.
 
@@ -54,7 +54,7 @@ Installing an app downloads its Python packages from PyPI.
 - [BC-250 XB Remote Play](apps/clb.md#privacy) talks to Microsoft's XBOX services when you sign in, refresh, wake a
   console or stream. The sign-in happens in your browser. Its log masks the account's tokens, your gamertag, the
   consoles' IDs and network addresses.
-- [shadPS4 Manager](apps/shadps4.md#shadnet) lets shadPS4 sign in to the shadNet server you set, with the account
+- [BC-250 shadPS4 Manager](apps/shadps4.md#shadnet) lets shadPS4 sign in to the shadNet server you set, with the account
   you set. shadPS4 keeps the password unchanged, and shadNet sends it unencrypted. Use a password you use nowhere
   else.
 - [BC-250 SFTP Tools](apps/sftp.md) connects only to the host you enter.

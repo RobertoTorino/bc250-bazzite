@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""What has a newer version on this machine besides the suite's apps (owner, 09-11-2026: Nexus Deps picks up every
-update system wide; it took over from tools/dev-updates.sh and its hourly timer): Bazzite's image, the Flatpaks,
-Homebrew's formulae and casks, the Rust toolchain, the checkout's development venv (.venv-linux) and Prime95's
-mprime when Quickfix installed it (owner, 20-11-2026: its update check and install belong here).
+"""What has a newer version on this machine besides the suite's apps (owner, 09-11-2026: Nexus Dependencies picks up
+every update system wide; it took over from tools/dev-updates.sh and its hourly timer): Bazzite's image, the Flatpaks,
+Homebrew's formulae and casks, the Rust toolchain, the checkout's development venv (.venv-linux) and Prime95's mprime
+when Quickfix installed it (owner, 20-11-2026: its update check and install belong here).
 
 Each source is asked with its own tool, without root; a source whose tool is not on the machine is left out.
 `brew update` fetches Homebrew's formulae first, else `brew outdated` only knows what the last fetch knew. A source
@@ -159,18 +159,18 @@ def check_image(run: Run) -> Source:
         old, new = _major(current), _major(version)
         return Source("image", name, (update,), note=(
             f"Bazzite {version} moves from Fedora {old} to Fedora {new}. This is a system-wide change. It changes "
-            "the kernel, Mesa, the system's Python and the system's libraries. Nexus Deps does not install it. "
+            "the kernel, Mesa, the system's Python and the system's libraries. Nexus Dependencies does not install it. "
             "The steps are under the i."), about=(
             IMAGE_ABOUT + f"<p><b>Fedora {old} → {new}</b> changes the whole system. Install it by hand:</p><ol>"
             f"<li>Read its release notes: <a href='{RELEASES}'>Bazzite's releases</a> (what breaks, what to do "
             "first).</li>"
             "<li>In a terminal: <code>ujust update</code> (the image, the Flatpaks, Homebrew and distroboxes).</li>"
             f"<li>Restart: <code>{RESTART}</code>.</li>"
-            "<li>Open Nexus Deps again: a venv made with the old Python has lost its packages (its card says so and "
-            "installs them), and the suite's apps say what they miss.</li></ol>"
+            "<li>Open Nexus Dependencies again: a venv made with the old Python has lost its packages (its card says "
+            "so and installs them), and the suite's apps say what they miss.</li></ol>"
             f"<p>{ROLLBACK}</p>"))
     return Source("image", name, (update,), note=(
-        f"Used after a restart ({RESTART}), which Nexus Deps never does by itself."), about=(
+        f"Used after a restart ({RESTART}), which Nexus Dependencies never does by itself."), about=(
         IMAGE_ABOUT + "<p><b>Update</b> stages it with <code>rpm-ostree upgrade</code> (it may ask for your "
         f"password); the machine starts it at the next boot. {ROLLBACK}</p>"),
         step=Step("rpm-ostree", f"Bazzite {version} into the Bazzite image", ("rpm-ostree", "upgrade"),
@@ -227,7 +227,7 @@ def check_dnf(run: Run) -> Source:
     current = installed_versions(run, list(names))
     updates = tuple(Update(package, current.get(package, ""), version) for package, version in offered)
     kernels = [package for package in names if package.startswith(KERNELS)]
-    note = (f"A new kernel ({', '.join(kernels)}) takes effect after a restart ({RESTART}). Nexus Deps never "
+    note = (f"A new kernel ({', '.join(kernels)}) takes effect after a restart ({RESTART}). Nexus Dependencies never "
             "restarts the machine by itself. Uncheck it in Update's question to keep the one you have."
             ) if kernels else ""
     return Source("dnf", name, updates, step=dnf_step(f"{len(names)} system package(s) with dnf", "upgrade", names),

@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![KytyPS5 Manager](../assets/kytyps5/bc250-kytyps5.webp){ .app-logo }
+![BC-250 KytyPS5 Manager](../assets/kytyps5/bc250-kytyps5.webp){ .app-logo }
 
-# KytyPS5 Manager
+# BC-250 KytyPS5 Manager
 
-KytyPS5 Manager plays **PS5 games** on the **AMD BC-250** with
+BC-250 KytyPS5 Manager plays **PS5 games** on the **AMD BC-250** with
 [KytyPS5-Native](https://github.com/superkeka/KytyPS5-Native), an open-source PS5 emulator. The app does these
 things for you:
 

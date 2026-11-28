@@ -36,3 +36,22 @@ def test_the_programs_and_their_marks(qapp, tmp_path):
     d.show()
     assert not d.grab().isNull()
     d.close()
+
+
+def test_a_game_picks_its_own_profile(qapp, tmp_path):
+    """A game's row has a Profile choice, written at once; Steam's own row and the programs have none."""
+    from vram_manager import profiles
+    stats = {"game": watch.Stats("[PS5] ASTRO BOT", True, 1, 9000, 0.0, 0.0, 1, 1),
+             "steam": watch.Stats("Steam", True, 1, 3500, 0.0, 0.0, 0, 1),
+             "code": watch.Stats("Visual Studio Code", False, 1, 2000, 0.0, 0.0, 0, 1)}
+    watch.write_stats(stats, tmp_path / "programs.json")
+    d = ProgramsDialog(None, 9650, tmp_path / "history.jsonl", tmp_path / "programs.json", tmp_path / "sessions.jsonl",
+                       tmp_path / "closes.json", clock=lambda: 100600.0, choices=tmp_path / "profiles.json")
+    assert list(d.profile_combos) == ["[PS5] ASTRO BOT"]
+    combo = d.profile_combos["[PS5] ASTRO BOT"]
+    assert combo.currentText() == "Its manager's"
+    combo.setCurrentIndex(combo.findData("defaults"))
+    assert profiles.read_choices(tmp_path / "profiles.json").games == {"[PS5] ASTRO BOT": "defaults"}
+    combo.setCurrentIndex(0)
+    assert profiles.read_choices(tmp_path / "profiles.json").games == {}
+    d.close()

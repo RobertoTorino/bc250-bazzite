@@ -399,6 +399,21 @@ def test_the_firmware_has_a_section_of_its_own(qapp):
         window.close()
 
 
+def test_the_emulators_have_a_section_of_their_own(qapp):
+    from nexus_deps.system import Source, Update
+    xenia = Source("upstream-xenia", "Xenia", (Update("Xenia on GitHub", "54386cb", "b85977e"),), group="emulators",
+                   note="A newer build is out.", detail="Tested build: 54386cb.", about="<p>GitHub</p>")
+    pcsx2 = Source("upstream-pcsx2", "PCSX2", group="emulators", detail="Latest stable on GitHub: v2.8.2.")
+    window = _window(CheckResult([], [], frozenset()), system=(Source("flatpak", "Flatpak"), xenia, pcsx2))
+    try:
+        assert not window.emulators_heading.isHidden() and window.apps_heading.isHidden()
+        assert window.emulators_layout.indexOf(window.system_cards["upstream-xenia"]) == 0
+        assert window.system_cards["upstream-xenia"].status.text() == "By hand"
+        assert window.system_cards["upstream-pcsx2"].status.text() == "Up to date"
+        assert not window.fix_button.isEnabled()                    # nothing here is installed by a click
+    finally:
+        window.close()
+
 def _dnf_plan():
     from nexus_deps.fixes import dnf_step
     return Plan((Step("pip", "a into v", ("v/bin/python", "-m", "pip", "install", "a")),

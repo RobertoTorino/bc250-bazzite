@@ -14,10 +14,11 @@ the checkout. Each app opens in a window of its own:
 - [Nexus Marketing for BC-250](../marketing)
 - [Nexus Demo Recorder](../demo)
 - [Nexus Sound Lab](../sounds)
-- [Nexus Deps](../deps)
+- [Nexus Dependencies for BC-250](../deps)
 - [Nexus Flight Recorder](../flight)
 - [Nexus Garbage Remover](../garbage)
 - [Nexus TTS](../text)
+- [Nexus Text Check for BC-250](../textcheck)
 - [Nexus Remix Studio](../studio)
 
 Other tiles open the suite's tools:

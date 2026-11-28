@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-![PPSSPP Manager](../assets/ppsspp/bc250-ppsspp-manager.webp){ .app-logo }
+![BC-250 PPSSPP Manager](../assets/ppsspp/bc250-ppsspp-manager.webp){ .app-logo }
 
-# PPSSPP Manager
+# BC-250 PPSSPP Manager
 
-PPSSPP Manager lets you play **PSP games** on the **AMD BC-250**. It uses [PPSSPP](https://www.ppsspp.org), an
+BC-250 PPSSPP Manager lets you play **PSP games** on the **AMD BC-250**. It uses [PPSSPP](https://www.ppsspp.org), an
 open-source PSP emulator. The app installs the PPSSPP release it was tested with. It finds your games and adds them
 to Steam. They then start from **Game Mode** like any other game.
 
@@ -266,7 +266,7 @@ The app keeps the three older files. **Clear logs**, the tab beside View logs, e
 tab. It also removes the three older files. The log holds what the app did. It holds neither your SteamGridDB key
 nor anything personal.
 
-Two buttons sit above the log. **PPSSPP Manager** shows the app's own log. **PPSSPP** shows what PPSSPP
+Two buttons sit above the log. **BC-250 PPSSPP Manager** shows the app's own log. **PPSSPP** shows what PPSSPP
 printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-ppsspp-manager/emulator.log`. Each
 game's part opens with a line that says how the wrapper started PPSSPP. It ends with a line that gives PPSSPP's exit
 code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps
@@ -287,7 +287,7 @@ The app never renames a memory stick game, because its file must stay `EBOOT.PBP
 ISO or CSO image found, **Games Rename** is off. A renamed game that is in Steam needs **Update Steam** afterward,
 because its shortcut names the file.
 
-This window was once the standalone app **Bazzite UMD File Renamer**. PPSSPP Manager now holds it. Installing PPSSPP
+This window was once the standalone app **Bazzite UMD File Renamer**. BC-250 PPSSPP Manager now holds it. Installing PPSSPP
 Manager removes the standalone app and adopts its saved naming template. Your images stay where they are.
 
 ## From a terminal

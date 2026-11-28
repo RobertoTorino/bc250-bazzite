@@ -55,11 +55,11 @@ They work beside the system Mesa.
 <div class="home-card" markdown>
 #### :material-gamepad-variant: Gaming
 
-[shadPS4 Manager](apps/shadps4.md) plays PS4 games with the shadPS4 emulator.
-[KytyPS5 Manager](apps/kytyps5.md) plays PS5 games with the KytyPS5-Native emulator.
-[RPCS3 Manager](apps/rpcs3.md) plays PS3 games with the RPCS3 emulator.
-[PPSSPP Manager](apps/ppsspp.md), [PCSX2 Manager](apps/pcsx2.md), [Vita3K Manager](apps/vita3k.md) and
-[Xenia Manager](apps/xenia.md) bring the PSP, PS2, PS Vita and Xbox 360 emulators.
+[BC-250 shadPS4 Manager](apps/shadps4.md) plays PS4 games with the shadPS4 emulator.
+[BC-250 KytyPS5 Manager](apps/kytyps5.md) plays PS5 games with the KytyPS5-Native emulator.
+[BC-250 RPCS3 Manager](apps/rpcs3.md) plays PS3 games with the RPCS3 emulator.
+[BC-250 PPSSPP Manager](apps/ppsspp.md), [BC-250 PCSX2 Manager](apps/pcsx2.md), [BC-250 Vita3K Manager](apps/vita3k.md) and
+[BC-250 Xenia Manager](apps/xenia.md) bring the PSP, PS2, PS Vita and Xbox 360 emulators.
 [BC-250 PS Remote Play](apps/consoles.md) finds, wakes and registers PS4 and PS5 consoles for Remote Play.
 [BC-250 XB Remote Play](apps/clb.md) streams from an Xbox.
 [Bazzite DatStation](apps/datstation.md) is a PlayStation reference.

@@ -243,7 +243,10 @@ brings the firmware's 512 MB back. The GTT limit
 is a kernel argument, set with rpm-ostree kargs in the next deployment. Nothing is written to the BIOS itself, the
 firmware or the real-time clock. The app refuses to write when the block's signature or checksum does not match. It
 also refuses when the kernel is locked down. Undo writes the previous split back. The Default profile writes 512 MB
-and removes the kernel argument. Both take effect after a restart. The swap layout is a few files of the app's own
+and removes the kernel argument. Both take effect after a restart.
+The PS5 emulator profile also writes three GPU driver options as kernel arguments, with rpm-ostree kargs. They
+change the GPU driver for every program. The other profiles remove exactly these three. They take effect after a
+restart. The swap layout is a few files of the app's own
 in /etc. They are a zram-generator drop-in, a sysctl file, a tmpfiles line for zswap and a swap unit. The zswap
 layout also makes the swap file /var/swap/swapfile. They stay across reboots and power offs. Nothing is started or
 stopped before the next boot. Bazzite's own layout removes the files, and Delete swap file removes the swap file.
@@ -350,7 +353,7 @@ detect = ["~/.local/bin/bc250-controller"]
 launch = [["Open", "~/.local/bin/bc250-controller"]]
 
 [apps.rpcs3]
-name = "RPCS3 Manager"
+name = "BC-250 RPCS3 Manager"
 summary = "PS3 games with the RPCS3 emulator. It sets up a tested RPCS3 build and the firmware, finds your games and adds them to Steam."
 tag = "bc250-rpcs3-v7.10.2"
 sha256 = "5982b00fee7cc63758f19199a4aa1e4be8f840b452305a7e76e1bccb09550347"
@@ -391,7 +394,7 @@ detect = ["~/.local/bin/bc250-console-linkb"]
 launch = [["Open", "~/.local/bin/bc250-console-linkb"]]
 
 [apps.shadps4]
-name = "shadPS4 Manager"
+name = "BC-250 shadPS4 Manager"
 summary = "PS4 games with the shadPS4 emulator. It sets up a tested shadPS4 release, finds your games or unpacks them from .pkg files, and adds them to Steam."
 tag = "bc250-shadps4-v7.9.2"
 sha256 = "206ae10e95e51377536d5b3f29a7e16b20fb98243148006b345d2f593a0995b2"
@@ -418,7 +421,7 @@ detect = ["~/.local/bin/bazzite-datstation"]
 launch = [["Open", "~/.local/bin/bazzite-datstation"]]
 
 [apps.ppsspp]
-name = "PPSSPP Manager"
+name = "BC-250 PPSSPP Manager"
 summary = "PSP games with the PPSSPP emulator. It sets up a tested PPSSPP release, finds your games and adds them to Steam."
 tag = "bc250-ppsspp-v5.10.2"
 sha256 = "6e080650c71b1d168ff0d17c6215f42fd6d27742122f2a3ba2b37abab1559003"
@@ -431,7 +434,7 @@ detect = ["~/.local/bin/bc250-ppsspp-manager"]
 launch = [["Open", "~/.local/bin/bc250-ppsspp-manager"]]
 
 [apps.pcsx2]
-name = "PCSX2 Manager"
+name = "BC-250 PCSX2 Manager"
 summary = "PS2 games with the PCSX2 emulator. It sets up a tested PCSX2 release and your PS2 BIOS, finds your games and adds them to Steam."
 tag = "bc250-pcsx2-v7.10.2"
 sha256 = "d3011d9cefe4e557eba1345412e4cf3b869c49ab63d3081546b4c3431f9bc8bc"
@@ -444,7 +447,7 @@ detect = ["~/.local/bin/bc250-pcsx2-manager"]
 launch = [["Open", "~/.local/bin/bc250-pcsx2-manager"]]
 
 [apps.vita3k]
-name = "Vita3K Manager"
+name = "BC-250 Vita3K Manager"
 summary = "PS Vita games with the Vita3K emulator. It sets up a tested Vita3K build and the firmware, installs your games through it and adds them to Steam."
 tag = "bc250-vita3k-v5.11.2"
 sha256 = "0084168058d121e649c09bdb738def14f7a6ac4d6ccf57903cf5bbc3f420f884"
@@ -457,7 +460,7 @@ detect = ["~/.local/bin/bc250-vita3k-manager"]
 launch = [["Open", "~/.local/bin/bc250-vita3k-manager"]]
 
 [apps.xenia]
-name = "Xenia Manager"
+name = "BC-250 Xenia Manager"
 summary = "XBOX 360 games with the Xenia emulator, which is experimental on Linux. It sets up a tested Xenia build, finds your games and adds them to Steam."
 tag = "bc250-xenia-v5.11.2"
 sha256 = "bf83abb6ea2160a9785ffc4e1513523332f1cd94f170f92b053b1ddde01140db"
@@ -635,7 +638,7 @@ detect = ["~/.local/bin/bc250-password"]
 launch = [["Open", "~/.local/bin/bc250-password"]]
 
 [apps.kytyps5]
-name = "KytyPS5 Manager"
+name = "BC-250 KytyPS5 Manager"
 summary = "PS5 games with the KytyPS5-Native emulator. It sets up a tested KytyPS5-Native release, checks what the emulator needs from the board, finds your games and adds them to Steam."
 tag = "bc250-kytyps5-v0.1.0"
 sha256 = "ba0faf283f678416fcf79648023fa03d81a045b3ec1ec55aee2ed660d3decc02"
