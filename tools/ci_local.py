@@ -440,7 +440,10 @@ def main(argv: list[str]) -> int:
     light, heavy = [j for j in jobs if not j.compiles], [j for j in jobs if j.compiles]
     roots = {j.name: own_copy(j) for j in jobs if j.own_copy and j.runs_here}
     with concurrent.futures.ThreadPoolExecutor(workers) as pool:
-        for result in itertools.chain(pool.map(lambda j: run_job(j, base, roots.get(j.name)), light),
+        # Each job's line as it ends (owner, 28-11-2026): in the list's order a long job held back the lines of the
+        # jobs after it, and they came at once.
+        futures = [pool.submit(run_job, j, base, roots.get(j.name)) for j in light]
+        for result in itertools.chain((f.result() for f in concurrent.futures.as_completed(futures)),
                                       (run_job(j, base, roots.get(j.name)) for j in heavy)):
             results.append(result)
             mark = "skip" if result.skipped else "ok  " if result.ok else "FAIL"

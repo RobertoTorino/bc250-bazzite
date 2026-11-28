@@ -123,6 +123,7 @@ tools/ci-local.sh --list                     # the jobs
 
 It reads the jobs from the workflow itself. It runs the plan job as GitHub does, against what differs from
 `origin/main`. So it runs the same jobs the push will, and a new app needs no change.
+Each job's line shows when the job ends, with the seconds it ran.
 
 The first run builds the image from `tools/ci-local/Containerfile`. The image holds Python 3.12 and the packages
 GitHub's runner has. The first run also builds PS Remote Play's FFmpeg. Both are kept in `~/.cache/bc250-ci-local`,

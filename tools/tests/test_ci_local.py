@@ -237,3 +237,23 @@ def test_a_cached_folder_in_the_checkout_is_kept_between_runs(tmp_path, monkeypa
     (work / "Cargo.lock").write_text("two", encoding="utf-8")
     assert builds() == 1                                           # another key: an empty folder
     assert not (cache / "kept" / "native" / "~").exists()          # the home folder's paths stay where they are
+
+
+def test_each_job_is_named_as_it_ends(monkeypatch, capsys):
+    """A job's line comes when the job ends, not after the jobs before it in the list (owner, 28-11-2026: a long
+    job held back the lines of the jobs after it, and they came at once)."""
+    import time
+
+    lasts = {"slow": 0.6, "quick": 0.0, "middle": 0.3}
+    jobs = [ci_local.Job(name, {"runs-on": "ubuntu-latest", "steps": []}) for name in lasts]
+    monkeypatch.setattr(ci_local, "prepare_copy", lambda: "")
+    monkeypatch.setattr(ci_local, "all_jobs", lambda *args, **kwargs: jobs)
+
+    def run_job(job, base, root=None):
+        time.sleep(lasts[job.name])
+        return ci_local.Result(job.name, True, lasts[job.name])
+
+    monkeypatch.setattr(ci_local, "run_job", run_job)
+    assert ci_local.main(["--workers", "3", *lasts]) == 0
+    named = [line.split()[1] for line in capsys.readouterr().out.splitlines() if line.startswith("  ok")]
+    assert named == ["quick", "middle", "slow"]

@@ -1,3 +1,7 @@
+Changelog: 28-11-2026 16:17:39
+
+Fixed. tools/ci-local.sh names each job when it ends (owner, 28-11-2026). Before, the lines came in the list's order, so a long job held back the lines of the jobs after it.
+
 Changelog: 28-11-2026 16:06:09
 
 Fixed. tools/ci-local.sh keeps the native job's cargo build folder between runs, as GitHub's cargo cache does (owner, 28-11-2026). Every run built all crates again, about 30 seconds of each full run. The folder starts empty again when Cargo.lock changes.
