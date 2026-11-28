@@ -1,3 +1,15 @@
+Changelog: 28-11-2026 17:08:04
+
+Added. Install puts in KytyPS5-Native 2026-11-28-b4520f4 in place of 2026-11-27-8278d03 (owner, 28-11-2026: the latest
+version). The archive holds the same files and the same GPU helper. Its saves now go through a hidden .txn folder
+beside them while a game writes them. Not tried on a board yet.
+
+Changelog: 28-11-2026 17:08:04
+
+Fixed. The window's tooltip and desktop notification without a controller no longer name a PS button, since any
+controller can be connected (owner, 28-11-2026). They now say to switch the controller on, or wake it. The wiki
+chapter says the same. The run wrapper's notification says the same.
+
 Changelog: 28-11-2026 16:33:38
 
 Release 0.2.0.

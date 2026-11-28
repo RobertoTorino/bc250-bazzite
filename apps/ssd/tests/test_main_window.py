@@ -7,7 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QHBoxLayout, QLabel
 from fakes import ENCLOSED, FWUPD_DEVICES, SAMSUNG, SETUPS, FakeBus, sysfs, v
 
 from bc250_core.theme import GREEN, GREY, ORANGE, RED
@@ -20,8 +20,25 @@ def fake_sys(tmp_path):
     return sysfs(tmp_path / "sys")
 
 
-def window(bus, sys_=None) -> MainWindow:
-    w = MainWindow(run_=bus, threaded=False, sysfs=sys_ or Path("/nonexistent"), home=Path("/var/home/user"))
+class Stats:
+    """os.statvfs's answer for a fake file system: 4 KiB blocks."""
+    def __init__(self, free: int, total: int):
+        self.f_frsize, self.f_bavail, self.f_blocks = 4096, free // 4096, total // 4096
+
+
+FILE_SYSTEMS = {"/boot/efi": Stats(585_000_000, 629_000_000), "/sysroot": Stats(1_300_000_000_000, 1_990_000_000_000)}
+
+
+def fake_statvfs(point: str):
+    """The board's two file systems; any other mount point cannot be read."""
+    if point not in FILE_SYSTEMS:
+        raise OSError(2, "No such file or directory")
+    return FILE_SYSTEMS[point]
+
+
+def window(bus, sys_=None, statvfs=fake_statvfs) -> MainWindow:
+    w = MainWindow(run_=bus, threaded=False, sysfs=sys_ or Path("/nonexistent"), home=Path("/var/home/user"),
+                   statvfs=statvfs)
     w.show()
     return w
 
@@ -43,8 +60,8 @@ def test_the_boards_drive_in_the_header(qapp):
     w = window(FakeBus())
     assert w.windowTitle() == APP_NAME
     assert w.state.text() == "No problems reported" and w.state.kind == "ok"
-    assert [b.caption.text() for b in (w.health_box, w.serial_pill, w.measure_pill, w.refresh_pill)] == [
-        "Health", "Serial", "Measured R / W MB/s", "Click to refresh"]
+    assert [b.caption.text() for b in (w.health_box, w.free_box, w.serial_pill, w.measure_pill)] == [
+        "Health", "Free space", "Serial", "Measured R / W MB/s"]
     assert (w.health_box.value.text(), w.cycles_box.value.text(), w.hours_box.value.text(),
             w.days_box.value.text()) == ("100 %", "1,103", "4,025", "167")         # 4,025 h: 167 full days
     assert GREEN.lower() in edge(w.health_box).lower()
@@ -91,7 +108,7 @@ def test_partly_read_and_no_drive_and_no_udisks(qapp):
     w.run = FakeBus(down=True)
     w.refresh()
     assert w.state.text() == "udisks does not answer" and w.state.kind == "bad"
-    assert "not provided" in w.detail.text() and w.refresh_pill.isEnabled()
+    assert "not provided" in w.detail.text() and w.refresh_button.isEnabled()
     w.close()
 
 
@@ -237,3 +254,32 @@ def test_screenshot_names_never_overwrite(tmp_path):
     assert first.name == "BC-250 SSD Check 2026-11-05 18-04-09.png"
     first.write_bytes(b"")
     assert screenshot_path(tmp_path, now).name == "BC-250 SSD Check 2026-11-05 18-04-09 (2).png"
+
+
+def test_the_free_space_beside_the_health(qapp):
+    """Owner, 28-11-2026: the drive's free space in the top row. Each mounted file system counts once (the board's
+    btrfs is mounted at /sysroot, /var and /var/home), and the tooltip names no mount point."""
+    w = window(FakeBus())
+    assert w.free_box.value.text() == "1.3 TB"
+    assert w.free_box.toolTip() == "1.3 TB free of 2.0 TB, on 2 mounted file systems"
+    assert "/" not in w.free_box.toolTip()
+    w.close()
+    w = window(FakeBus(), statvfs=lambda point: (_ for _ in ()).throw(OSError(13, "Permission denied")))
+    assert w.free_box.value.text() == "—" and "None of the drive's file systems is mounted" in w.free_box.toolTip()
+    w.close()
+
+
+def test_refresh_and_the_i_at_the_right_of_the_top_row(qapp):
+    """Owner, 28-11-2026: no Refresh pill; the refresh symbol and then the i at the right end of the title row, and
+    the window as wide as the four pills and the margin after them."""
+    w = window(FakeBus())
+    title_row = next(layout for layout in w.findChildren(QHBoxLayout) if layout.indexOf(w.about) >= 0)
+    assert title_row.indexOf(w.refresh_button) == title_row.indexOf(w.about) - 1
+    assert title_row.indexOf(w.about) == title_row.count() - 1                    # the last, at the right
+    right = w.measure_pill.mapTo(w, w.measure_pill.rect().topRight()).x()         # the Test pill's right edge
+    assert w.width() == w.sizeHint().width() and 0 < w.width() - right <= 24      # the margin after it
+    calls = []
+    w.refresh = lambda: calls.append(1)
+    w.refresh_button.click()
+    assert calls == [1]
+    w.close()

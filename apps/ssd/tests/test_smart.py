@@ -4,6 +4,8 @@ and what happens when udisks, fwupd or a drive does not answer."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from fakes import CRUCIAL, ENCLOSED, FWUPD_DEVICES, OTHER, SAMSUNG, SETUPS, FakeBus, sysfs, v
 
@@ -196,3 +198,22 @@ def test_an_nvme_enclosure_linked_at_usb_2_in_a_usb_3_port(tmp_path):
 def test_a_usb_3_drive_in_a_faster_port_has_no_slow_link(tmp_path):
     stick = smart.read_drives(FakeBus(SETUPS), sysfs(tmp_path))[3]
     assert (stick.speed, stick.board_link, stick.slow_link) == ("5 Gb/s", "10 Gb/s", "")    # the stick's own limit
+
+
+def test_each_mounted_file_system_once_for_the_free_space():
+    """The board's btrfs is mounted at /sysroot, /var and /var/home: one file system, counted once (owner,
+    28-11-2026: the free space on the SSD)."""
+    drive = smart.read_drives(FakeBus(), Path("/nonexistent"))[0]
+    assert drive.file_systems == ["/boot/efi", "/sysroot"]
+    assert set(drive.mounts) == {"/boot/efi", "/sysroot", "/var", "/var/home"}
+
+    class Stats:
+        f_frsize, f_bavail, f_blocks = 4096, 1000, 4000
+    asked = []
+    assert smart.free_space(drive.file_systems, lambda point: asked.append(point) or Stats()) == (8_192_000,
+                                                                                                    32_768_000)
+    assert asked == ["/boot/efi", "/sysroot"]
+
+    def unreadable(point):
+        raise PermissionError(13, "Permission denied")
+    assert smart.free_space(["/run/media/x"], unreadable) is None and smart.free_space([]) is None

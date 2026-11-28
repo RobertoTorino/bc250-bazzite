@@ -7,6 +7,7 @@
 BC-250 SSD Check shows how an SSD is doing. You see these values:
 
 - its **health**
+- its **free space**
 - its **power cycles**
 - its **power-on hours**
 - the drive's specs
@@ -28,9 +29,12 @@ the app needs no root.
   | Pill | What it does |
   |---|---|
   | Health | the drive's health, see above |
-  | Serial | the drive's serial number, hidden. Click the pill to see it in a small window below it. There you can select it to copy. A click anywhere else closes it. It also closes when you choose another drive or Refresh. |
+  | Free space | the space left on the drive's mounted file systems. Each file system counts once, also when Bazzite mounts it in several folders. Hover it to see the total size and how many file systems it counts. A drive with nothing mounted shows a dash. |
+  | Serial | the drive's serial number, hidden. Click the pill to see it in a small window below it. There you can select it to copy. A click anywhere else closes it. It also closes when you choose another drive or refresh. |
   | Measured R / W MB/s | **Test**. Click it to measure the drive's read and write speed in this board, see below. |
-  | Refresh | reads the drives again |
+
+- **The refresh symbol**, at the right end of the title's line, reads the drives again. The **i** beside it says what
+  the values mean.
 
 - **Drive:** with more than one drive, choose it by its number (Drive 1, Drive 2) in the list under the top row.
   Under the list are the drive's model and size. A line below them gives its bus and when udisks last read it.
@@ -63,7 +67,7 @@ the app needs no root.
     | No problems reported | the drive flags nothing |
     | The drive reports a problem | the drive itself flags a problem. Hover the state to see which, from the list below this table. Back up what you want to keep. |
     | Health not reported | the drive gives its hours and cycles, but no health value SSD Check knows |
-    | Partly read | SSD Check could not read the drive's SMART attributes this time. The boxes show what udisks had. Refresh tries again. |
+    | Partly read | SSD Check could not read the drive's SMART attributes this time. The boxes show what udisks had. The refresh symbol tries again. |
     | No SMART over USB | the drive is on USB, and its adapter does not pass its SMART values on. The specs still show. |
     | No drive found | udisks knows no NVMe or SATA drive with SMART values, and no drive on USB |
     | udisks does not answer | the udisks service is not running. The line under the boxes says what it answered. |
@@ -85,7 +89,7 @@ the app needs no root.
 
 udisks is the service that mounts drives on the desktop. It reads each drive's SMART values now and then, and it
 answers any user over D-Bus. SSD Check asks it with `busctl`. The line under the boxes says when udisks last read
-the drive. Refresh shows what udisks read last. It does not make the drive read again.
+the drive. A refresh shows what udisks read last. It does not make the drive read again.
 
 An NVMe drive reports all three values in the same way on every make. A SATA SSD reports its health in an attribute
 its maker chose. SSD Check reads the first of these it finds, as the life left in percent:

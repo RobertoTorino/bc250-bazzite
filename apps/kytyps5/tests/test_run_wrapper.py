@@ -306,7 +306,7 @@ def test_the_log_says_what_a_game_ran_with_and_how_it_ended(tmp_path):
     system log's out-of-memory kills, without the host name. No serial number is read."""
     log, environ = _emulator(tmp_path, "echo playing\nexit 141\n")
     current = tmp_path / "data" / "bc250-kytyps5" / "emulator" / "current"
-    build = current.with_name("2026-11-27-8278d03")
+    build = current.with_name("2026-11-28-b4520f4")
     current.rename(build)
     current.symlink_to(build.name)
     (tmp_path / "home").mkdir()
@@ -318,7 +318,7 @@ def test_the_log_says_what_a_game_ran_with_and_how_it_ended(tmp_path):
     assert done.returncode == 141
     lines = _ours(log)
     assert lines[0] == "INFO KytyPS5-Native started: --fullscreen --game ~/game"
-    assert lines[1] == "INFO Build: 2026-11-27-8278d03."
+    assert lines[1] == "INFO Build: 2026-11-28-b4520f4."
     assert lines[2] == "INFO Board: board-a, ASRock AMD BC-250, BIOS P5.00 of 05/03/2022."
     assert re.fullmatch(r"INFO Processor: AMD BC-250, \d+ threads, kernel .+\.", lines[3])
     assert lines[4:13] == [

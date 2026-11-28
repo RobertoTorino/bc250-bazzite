@@ -59,7 +59,7 @@ class PortalUpdate:
 
     def details(self) -> str:
         """One line per app, for the tooltip."""
-        return "\n".join(f"{c.name}: not available any more ({c.withdrawn}); removed from the board" if c.withdrawn
+        return "\n".join(f"{c.name}: not available anymore ({c.withdrawn}); removed from the board" if c.withdrawn
                          else f"{c.name}: {c.old} → {c.new}" if c.old else f"{c.name}: new, {c.new}"
                          for c in self.changes or [])
 

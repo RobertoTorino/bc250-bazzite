@@ -82,7 +82,7 @@ def test_a_session_gone_or_cancelled_ends_the_wait():
     s.path = "v5/sessions/home/ABC"
     with pytest.raises(SessionError, match="ended the session"):
         s.wait_until_ready(lambda: "LPT")
-    with pytest.raises(SessionError, match="cancelled"):
+    with pytest.raises(SessionError, match="canceled"):
         s.wait_until_ready(lambda: "LPT", cancelled=lambda: True)
 
 

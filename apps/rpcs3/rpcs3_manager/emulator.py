@@ -31,14 +31,14 @@ from bc250_core.updates import Fetch, ReleaseInfo, github_fetch, latest_release,
 from . import APP_ID, __version__
 
 LANDMARK = "0.0.43"                     # the tagged version (v0.0.43) the build is of
-BUILD = 20395                           # RPCS3's build number, counted over its whole history (24-10-2026: the
-#                                         first pin after 19-10-2026, when RPCS3 began to re-attach a controller
-#                                         that reconnects with a new device path; owner)
+BUILD = 20664                           # RPCS3's build number, counted over its whole history (28-11-2026; every
+#                                         pin since 24-10-2026 is after 19-10-2026, when RPCS3 began to re-attach
+#                                         a controller that reconnects with a new device path; owner)
 VERSION = f"{LANDMARK}-{BUILD}"         # as RPCS3 names its builds; also the folder it is installed in
-COMMIT = "46b7fb670b280d08036c7670270b713daef912c2"
+COMMIT = "6ecaa5607ad51159291a82ba78d54fae2fcb8f35"
 ASSET = f"rpcs3-v{VERSION}-{COMMIT[:8]}_linux64.AppImage"
-SHA256 = "9df18bd0af25e94c5a03936b04b3e5a332a5c22e6fa61e6ab93376b027817a5c"
-SIZE = 83180532                         # bytes: how the app tells that RPCS3 replaced it with another build
+SHA256 = "0db97e2f6f9ce98fc24e3bd49415f0b66b5400936ec87f38da59ea829fbae6b3"
+SIZE = 83194108                         # bytes: how the app tells that RPCS3 replaced it with another build
 SIZE_MB = round(SIZE / (1 << 20))       # for the question before downloading
 MEMBER = "rpcs3.AppImage"               # the name it is installed under, the same for every version
 REPO = "RPCS3/rpcs3"
@@ -102,7 +102,7 @@ def sha256(path: Path) -> str:
 
 def tested() -> Build:
     """The build this version of the app was tried with."""
-    return Build(VERSION, VERSION, "2026-10-24", builds.RELEASE, URL, ASSET, SHA256, SIZE, RELEASE_PAGE)
+    return Build(VERSION, VERSION, "2026-11-28", builds.RELEASE, URL, ASSET, SHA256, SIZE, RELEASE_PAGE)
 
 
 def install(home: Path, fetch: Download = download, progress: Progress | None = None) -> str:

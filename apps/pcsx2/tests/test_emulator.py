@@ -34,11 +34,11 @@ def pinned(monkeypatch):
 
 
 def test_the_pin_points_at_the_release():
-    assert emulator.URL == ("https://github.com/PCSX2/pcsx2/releases/download/v2.8.2/"
-                            "pcsx2-v2.8.2-linux-appimage-x64-Qt.AppImage")
-    assert emulator.VERSION == "2.8.2" and len(emulator.SHA256) == 64
-    assert emulator.RELEASE_PAGE == "https://github.com/PCSX2/pcsx2/releases/tag/v2.8.2"
-    assert emulator.SIZE_MB == 57
+    assert emulator.URL == ("https://github.com/PCSX2/pcsx2/releases/download/v2.9.201/"
+                            "pcsx2-v2.9.201-linux-appimage-x64-Qt.AppImage")
+    assert emulator.VERSION == "2.9.201" and len(emulator.SHA256) == 64          # a nightly (owner, 28-11-2026)
+    assert emulator.RELEASE_PAGE == "https://github.com/PCSX2/pcsx2/releases/tag/v2.9.201"
+    assert emulator.SIZE_MB == 58 and emulator.tested().kind == "Pre-release"
 
 
 def test_install_and_remove(tmp_path, pinned):
@@ -51,7 +51,7 @@ def test_install_and_remove(tmp_path, pinned):
     assert image.read_bytes() == APPIMAGE and image.stat().st_mode & 0o777 == 0o755
     assert image.name == "pcsx2.AppImage"                                        # the same name for every version
     assert (home / "current").is_symlink() and emulator.installed_version(home) == emulator.VERSION
-    assert sorted(p.name for p in home.iterdir()) == ["2.8.2", "current"]        # no download left behind
+    assert sorted(p.name for p in home.iterdir()) == ["2.9.201", "current"]      # no download left behind
     emulator.remove(home)
     assert not home.exists() and emulator.installed_version(home) == ""
 
@@ -142,20 +142,25 @@ def test_download_errors_say_what_happened(tmp_path):
         emulator.install(tmp_path, offline)
 
 
-def _releases(tag: str):
-    """GitHub's answer for PCSX2's /releases/latest: the newest stable (the nightlies are pre-releases)."""
+def _releases(*tags: str):
+    """GitHub's release list for PCSX2, newest first: nightlies (pre-releases) and a stable among them."""
     def fetch(url: str):
-        assert url == "https://api.github.com/repos/PCSX2/pcsx2/releases/latest"
-        return {"tag_name": tag, "html_url": f"https://github.com/PCSX2/pcsx2/releases/tag/{tag}",
-                "published_at": "2026-11-30T22:00:00Z", "assets": []}
+        if url.endswith("/releases/latest"):
+            return {"tag_name": "v2.8.2", "name": "v2.8.2", "published_at": "2026-09-04T10:00:00Z",
+                    "prerelease": False, "assets": [_asset("v2.8.2")]}
+        assert url == "https://api.github.com/repos/PCSX2/pcsx2/releases?per_page=30"
+        return [{"tag_name": tag, "name": tag, "html_url": f"https://github.com/PCSX2/pcsx2/releases/tag/{tag}",
+                 "published_at": "2026-11-30T22:00:00Z", "prerelease": True, "assets": [_asset(tag)]}
+                for tag in tags]
     return fetch
 
 
-def test_a_newer_pcsx2_stable():
-    newer = emulator.newer_release(_releases("v2.9.0"))
-    assert (newer.version, newer.published) == ("2.9.0", "2026-11-30") and newer.url.endswith("/v2.9.0")
-    assert emulator.newer_release(_releases("v2.8.2")) is None                    # the one the app brings
-    assert emulator.newer_release(_releases("v2.8.1")) is None
+def test_a_newer_pcsx2_build():
+    """Any build newer than the pinned nightly, a nightly or a stable (owner, 28-11-2026: the nightly builds)."""
+    newer = emulator.newer_release(_releases("v2.9.230", "v2.9.229"))
+    assert (newer.version, newer.published) == ("2.9.230", "2026-11-30") and newer.url.endswith("/v2.9.230")
+    assert emulator.newer_release(_releases("v2.9.201")) is None                  # the one the app brings
+    assert emulator.newer_release(_releases("v2.9.200")) is None                  # older; the stable 2.8.2 too
 
     def offline(url: str):
         raise urllib.error.URLError("no network")

@@ -89,7 +89,7 @@ def load(save, f):
         raise ps2save.Corrupt("Not a Codebreaker save file.", f)
     (d04, hlen) = struct.unpack("<LL", read_fixed(f, 8))
     if hlen < 92 + 32:
-        raise ps2save.Corrupt("Header lengh too short.", f)
+        raise ps2save.Corrupt("Header length too short.", f)
     (dlen, flen, dirname, created, modified, d44, d48, dirmode,
      d50, d54, d58, title) = struct.unpack("<LL32s8s8sLLLLLL%ds" % (hlen - 92), read_fixed(f, hlen - 12))
     dirname = utils.zero_terminate(dirname)

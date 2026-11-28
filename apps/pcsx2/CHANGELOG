@@ -1,3 +1,31 @@
+Changelog: 28-11-2026 18:26:29
+
+Fixed. tests/test_games.py's failing card no longer breaks the removal of the test's temporary folder on Python 3.15
+(owner, 28-11-2026). Its stand-in for os.scandir replaces the real one for all of Python while the test runs. Python
+3.15's shutil.rmtree, which pytest uses with ./test.sh's tmp_path_retention_policy=failed, hands os.scandir a folder's
+descriptor, and the stand-in made a path of that number. It now passes a descriptor to the real os.scandir.
+test_a_failing_card_ends_no_scan ended with an error in ./test.sh, though the test itself passed.
+
+Changelog: 28-11-2026 18:12:28
+
+Fixed. The window text and messages got a spelling and language pass in American English (owner, 28-11-2026). The
+memory card import of a Codebreaker save that is too short now says "Header length too short." instead of
+"Header lengh too short.". No wrong fact was found.
+
+Changelog: 28-11-2026 17:23:00
+
+Added. Install puts in the PCSX2 nightly v2.9.201 (28-11-2026) in place of the stable 2.8.2 (owner, 28-11-2026: the
+nightly builds). PCSX2 keeps its nightlies on GitHub, so this one is pinned as before, with its SHA-256 and size. The
+app now says when any newer build is out, a nightly or a stable release. Before, it looked at stable releases only.
+pcsx2_defaults.ini is still the file PCSX2 2.8.2 wrote, since the nightly was not started here. Not tried on a board
+yet. The wiki chapter says the same.
+
+Changelog: 28-11-2026 17:08:04
+
+Fixed. The window's tooltip and desktop notification without a controller no longer name a PS button, since any
+controller can be connected (owner, 28-11-2026). They now say to switch the controller on, or wake it. The wiki
+chapter says the same. The run wrapper's notification says the same.
+
 Changelog: 28-11-2026 16:33:38
 
 Release 7.11.0.

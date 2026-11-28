@@ -1,3 +1,8 @@
+Changelog: 28-11-2026 18:12:28
+
+Fixed. The window text and messages got a spelling and language pass in American English (owner, 28-11-2026). A
+session wait that was stopped ends with "canceled" instead of "cancelled". No wrong fact was found.
+
 Changelog: 28-11-2026 16:33:38
 
 Release 4.10.0.

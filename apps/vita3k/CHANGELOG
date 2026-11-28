@@ -1,3 +1,26 @@
+Changelog: 28-11-2026 18:26:29
+
+Fixed. tests/test_games.py's failing card no longer breaks the removal of the test's temporary folder on Python 3.15
+(owner, 28-11-2026). Its stand-in for os.scandir replaces the real one for all of Python while the test runs. Python
+3.15's shutil.rmtree, which pytest uses with ./test.sh's tmp_path_retention_policy=failed, hands os.scandir a folder's
+descriptor, and the stand-in made a path of that number. It now passes a descriptor to the real os.scandir.
+test_a_failing_card_ends_no_scan ended with an error in ./test.sh, though the test itself passed.
+
+Changelog: 28-11-2026 17:08:04
+
+Added. Install puts in Vita3K build 4464 (586891c5, 28-11-2026) in place of 4377 (owner, 28-11-2026: the latest
+version). Vita3K replaced its FPS hack (fps-hack) with a vblank rate (vblank-rate). So the Settings tab's FPS hack
+switch is now Refresh rate, with 60 Hz (the PS Vita's own and Vita3K's default), 120 Hz and Follow the screen (owner's
+choice). The tests' config.yml is build 4464's, config-4464.yml: build 4377's with vblank-rate: 60 in place of
+fps-hack, the only key that changed in config.h. The new build was not started here, so the file was not written by
+it. Not tried on a board yet.
+
+Changelog: 28-11-2026 17:08:04
+
+Fixed. The window's tooltip and desktop notification without a controller no longer name a PS button, since any
+controller can be connected (owner, 28-11-2026). They now say to switch the controller on, or wake it. The wiki
+chapter says the same.
+
 Changelog: 28-11-2026 16:33:38
 
 Release 5.12.0.

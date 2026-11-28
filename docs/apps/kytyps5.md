@@ -43,10 +43,10 @@ not. Hold the pointer over a state to read it in full.
 - **Steam**: green while Steam runs and is signed in, red when it is not
 
 When the window opens without a controller, a desktop notification says so too. It asks you to switch the
-controller on or press its PS button.
+controller on or wake it.
 
 A game started from Steam reads the controller that is connected when it starts. So switch yours on before you
-start a game, or press its PS button to wake it. A game in Steam starts only while Steam is signed in.
+start a game, or wake it. A game in Steam starts only while Steam is signed in.
 
 Under the header are links to **KytyPS5-Native's release notes** and to this wiki. Below them is a second row of
 four pills:

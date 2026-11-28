@@ -1,3 +1,15 @@
+Changelog: 28-11-2026 18:19:45
+
+Fixed. The message for HelixSR's own DLL picked as the second upscaler writes "e.g.," with its comma, as the PS5
+suite's twin does (owner, 28-11-2026: the spelling pass).
+
+Changelog: 28-11-2026 18:12:28
+
+Fixed. The window text and messages got a spelling and language pass in American English (owner, 28-11-2026). The
+question before closing Steam says "afterward" instead of "afterwards". A deployment folder that is gone "does
+not exist anymore" instead of "any more". A canceled HelixSR setup shows "Canceling…" and "Canceled." instead of
+"Cancelling…" and "Cancelled.". No wrong fact was found.
+
 Changelog: 28-11-2026 16:33:38
 
 Release 5.10.0.

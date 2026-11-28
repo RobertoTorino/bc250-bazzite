@@ -267,7 +267,7 @@ class MainWindow(QMainWindow):
             "consoles and PSN only when you press a button. " + style.link(self, MANUAL_URL, "Wiki"))
 
         self.address_edit = PrivateLineEdit(self.settings.get("address"), privacy.mask_address)
-        self.address_edit.setPlaceholderText("Console address, e.g. 192.168.1.20 (optional)")
+        self.address_edit.setPlaceholderText("Console address, e.g., 192.168.1.20 (optional)")
         self.address_edit.setToolTip("Ask one address, for networks that do not pass broadcasts")
         self.search_button = QPushButton("Search network")
         self.search_button.setToolTip("Ask every PS4 and PS5 on the network to answer")

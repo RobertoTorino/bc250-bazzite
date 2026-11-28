@@ -1,3 +1,14 @@
+Changelog: 28-11-2026 18:19:45
+
+Fixed. The console address's placeholder writes "e.g.," with its comma, as the PS5 suite's twin does (owner,
+28-11-2026: the spelling pass).
+
+Changelog: 28-11-2026 18:12:28
+
+Fixed. The window text and messages got a spelling and language pass in American English (owner, 28-11-2026). The
+message when a console does not answer now says "(see the wiki)" instead of "(see the manual)", since the
+rest-mode settings are in the wiki. No wrong fact was found.
+
 Changelog: 28-11-2026 16:33:38
 
 Release 5.10.0.

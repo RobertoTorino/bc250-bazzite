@@ -33,9 +33,9 @@ def pinned(monkeypatch):
 
 
 def test_the_pin_points_at_the_build():
-    assert emulator.URL == "https://github.com/Vita3K/Vita3K-builds/releases/download/4377/Vita3K-x86_64.AppImage"
-    assert emulator.VERSION == "4377" and len(emulator.SHA256) == 64 and emulator.COMMIT.startswith("685b80a6")
-    assert emulator.RELEASE_PAGE == "https://github.com/Vita3K/Vita3K-builds/releases/tag/4377"
+    assert emulator.URL == "https://github.com/Vita3K/Vita3K-builds/releases/download/4464/Vita3K-x86_64.AppImage"
+    assert emulator.VERSION == "4464" and len(emulator.SHA256) == 64 and emulator.COMMIT.startswith("586891c5")
+    assert emulator.RELEASE_PAGE == "https://github.com/Vita3K/Vita3K-builds/releases/tag/4464"
     assert emulator.SIZE_MB == 86
 
 
@@ -43,13 +43,13 @@ def test_install_and_remove(tmp_path, pinned):
     home = tmp_path / "emulator"
     assert emulator.installed_version(home) == ""
     calls = []
-    assert emulator.install(home, _fetch(pinned, calls)) == "Vita3K build 4377 is installed."
+    assert emulator.install(home, _fetch(pinned, calls)) == "Vita3K build 4464 is installed."
     assert calls == [emulator.URL]
     image = emulator.appimage(home)
     assert image.read_bytes() == APPIMAGE and image.stat().st_mode & 0o777 == 0o755
     assert image.name == "vita3k.AppImage"                                       # the same name for every build
-    assert (home / "current").is_symlink() and emulator.installed_version(home) == "4377"
-    assert sorted(p.name for p in home.iterdir()) == ["4377", "current"]          # no download left behind
+    assert (home / "current").is_symlink() and emulator.installed_version(home) == "4464"
+    assert sorted(p.name for p in home.iterdir()) == ["4464", "current"]          # no download left behind
     emulator.remove(home)
     assert not home.exists() and emulator.installed_version(home) == ""
 
@@ -62,19 +62,19 @@ def test_an_older_build_stays_beside_it(tmp_path, pinned):
     (home / "current").symlink_to("4100")
     assert emulator.installed_version(home) == "4100"
     emulator.install(home, _fetch(pinned))
-    assert emulator.installed_version(home) == "4377" and (home / "4100" / emulator.MEMBER).read_text() == "old"
+    assert emulator.installed_version(home) == "4464" and (home / "4100" / emulator.MEMBER).read_text() == "old"
 
 
 def test_the_pinned_build_back_in_use_without_a_download(tmp_path, pinned):
     home = tmp_path / "emulator"
     emulator.install(home, _fetch(pinned))
-    (home / "4400").mkdir()
-    (home / "4400" / emulator.MEMBER).write_text("newer")
+    (home / "4500").mkdir()
+    (home / "4500" / emulator.MEMBER).write_text("newer")
     (home / "current").unlink()
-    (home / "current").symlink_to("4400")
+    (home / "current").symlink_to("4500")
     calls = []
-    assert emulator.install(home, _fetch(pinned, calls)) == "Vita3K build 4377 is in use."
-    assert calls == [] and emulator.installed_version(home) == "4377"
+    assert emulator.install(home, _fetch(pinned, calls)) == "Vita3K build 4464 is in use."
+    assert calls == [] and emulator.installed_version(home) == "4464"
 
 
 def _release(tag: str, digest: str = "sha256:" + "ab" * 32, name: str = "Vita3K-x86_64.AppImage") -> dict:
@@ -91,11 +91,11 @@ def test_the_builds_on_github():
     is left out."""
     def fetch(url: str):
         assert url == "https://api.github.com/repos/Vita3K/Vita3K-builds/releases?per_page=30"
-        return [_release("4400"), _release("4399", digest=""), _release("continuous"), _release("4377")]
+        return [_release("4500"), _release("4499", digest=""), _release("continuous"), _release("4464")]
     found = emulator.available(fetch)
-    assert [b.version for b in found] == ["4400", "4377"]
-    assert found[0].sha256 == "ab" * 32 and found[0].url.endswith("/download/4400/Vita3K-x86_64.AppImage")
-    assert (found[0].name, found[0].published, found[0].size) == ("Build: 4400", "2026-11-17", 89794395)
+    assert [b.version for b in found] == ["4500", "4464"]
+    assert found[0].sha256 == "ab" * 32 and found[0].url.endswith("/download/4500/Vita3K-x86_64.AppImage")
+    assert (found[0].name, found[0].published, found[0].size) == ("Build: 4500", "2026-11-17", 89794395)
 
 
 def test_another_build_beside_the_pinned_one(tmp_path, pinned):
@@ -104,12 +104,12 @@ def test_another_build_beside_the_pinned_one(tmp_path, pinned):
     from bc250_core import builds
     home = tmp_path / "emulator"
     emulator.install(home, _fetch(pinned))
-    newer = b"#!/bin/sh\necho Vita3K 4400, a longer file\n"
-    build = emulator.available(lambda url: [_release("4400", "sha256:" + hashlib.sha256(newer).hexdigest())])[0]
+    newer = b"#!/bin/sh\necho Vita3K 4500, a longer file\n"
+    build = emulator.available(lambda url: [_release("4500", "sha256:" + hashlib.sha256(newer).hexdigest())])[0]
     emulator.install_build(home, build, _fetch(newer))
-    assert emulator.installed_version(home) == "4377" and (home / "4400" / emulator.MEMBER).read_bytes() == newer
-    builds.use(home, "4400", emulator.MEMBER)
-    assert emulator.installed_version(home) == "4400" and not emulator.replaced(home)
+    assert emulator.installed_version(home) == "4464" and (home / "4500" / emulator.MEMBER).read_bytes() == newer
+    builds.use(home, "4500", emulator.MEMBER)
+    assert emulator.installed_version(home) == "4500" and not emulator.replaced(home)
     with pytest.raises(builds.BuildError, match="GitHub published"):
         emulator.install_build(home, emulator.available(lambda url: [_release("4401")])[0], _fetch(newer))
     assert not (home / "4401").exists()
@@ -122,7 +122,7 @@ def test_the_appimage_updated_itself(tmp_path, pinned):
     emulator.install(home, _fetch(pinned))
     assert not emulator.replaced(home)
     emulator.appimage(home).write_bytes(APPIMAGE + b"a newer build")
-    assert emulator.replaced(home) and emulator.installed_version(home) == "4377"
+    assert emulator.replaced(home) and emulator.installed_version(home) == "4464"
     emulator.install(home, _fetch(pinned))
     assert not emulator.replaced(home)
 
@@ -140,7 +140,7 @@ def test_a_failed_install_keeps_the_installed_one(tmp_path, pinned):
     emulator.appimage(home).write_bytes(b"updated itself")                     # so Install downloads it again
     with pytest.raises(emulator.EmulatorError):
         emulator.install(home, _fetch(b"broken"))
-    assert emulator.installed_version(home) == "4377" and emulator.appimage(home).read_bytes() == b"updated itself"
+    assert emulator.installed_version(home) == "4464" and emulator.appimage(home).read_bytes() == b"updated itself"
 
 
 def test_download_errors_say_what_happened(tmp_path):
@@ -165,9 +165,9 @@ def _builds(tag: str):
 
 
 def test_a_newer_vita3k_build():
-    newer = emulator.newer_release(_builds("4400"))
-    assert (newer.version, newer.published) == ("4400", "2026-11-30") and newer.url.endswith("/tag/4400")
-    assert emulator.newer_release(_builds("4377")) is None                         # the one the app brings
+    newer = emulator.newer_release(_builds("4500"))
+    assert (newer.version, newer.published) == ("4500", "2026-11-30") and newer.url.endswith("/tag/4500")
+    assert emulator.newer_release(_builds("4464")) is None                         # the one the app brings
     assert emulator.newer_release(_builds("4376")) is None
     assert emulator.newer_release(_builds("continuous")) is None                   # not a build number
 

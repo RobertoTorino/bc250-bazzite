@@ -1,3 +1,12 @@
+Changelog: 28-11-2026 17:45:20
+
+Added. A Free space box beside Health shows the space left on the drive's mounted file systems (owner, 28-11-2026).
+Each file system counts once, also when Bazzite mounts it in several folders. Its tooltip gives the total size and how
+many file systems it counts, with no folder names. The Refresh pill is gone: a refresh symbol and the i now sit at the
+right end of the title's line, and the window is as wide as the four pills and the margin after them (owner,
+28-11-2026, picture approved). smart.py reads one mount point per file system (file_system_points) and their free
+space (free_space). New tests cover both and the layout. The wiki chapter says the same.
+
 Changelog: 28-11-2026 16:33:38
 
 Release 3.10.0.

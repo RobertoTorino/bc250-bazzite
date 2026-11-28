@@ -500,14 +500,13 @@ it back in use. In the manager's version manager (core's `builds`), you can down
 publishes on GitHub. That can be a stable release or a nightly build. The app checks it against the SHA-256 GitHub
 publishes. So the pin says which build was tried on the board, not which builds users may run.
 
-The BC-250 shadPS4 Manager was tried with one shadPS4 release. It is pinned in `apps/shadps4/shadps4_manager/emulator.py`
-as `VERSION`, `TAG`, `ASSET` and `SHA256`. The tool checks these:
-
-- a newer stable release, with the Linux zip and the SHA-256 GitHub publishes for it, which a new pin needs
-- the SHA-256 of the pinned zip
-
-A new shadPS4 can change what the app relies on, such as its `config.json` or the shadNet protocol. So a new pin
-also needs a look at what changed.
+The BC-250 shadPS4 Manager pins no build. It installs shadPS4's newest nightly. shadPS4 keeps only one nightly on
+GitHub, a pre-release named after its date and commit, and deletes it when the next one comes. So **Install** asks
+GitHub for that nightly and checks it against the SHA-256 GitHub publishes. `VERSION`, `TAG`, `ASSET`, `SHA256` and
+`PUBLISHED` in `apps/shadps4/shadps4_manager/emulator.py` are the nightly that version of the app was made with. The
+window's texts and the version manager's **Tested** mark use them. The tool compares the newest nightly's date with
+`PUBLISHED`. A new shadPS4 can change what the app relies on, such as its `config.json` or the shadNet protocol. So
+a newer nightly also needs a look at what changed.
 
 BC-250 KytyPS5 Manager was tried with one KytyPS5-Native release. It is pinned in
 `apps/kytyps5/kytyps5_manager/emulator.py` as `VERSION`, `PUBLISHED`, `SIZE_MB` and `SHA256`. KytyPS5-Native names
@@ -519,15 +518,15 @@ a release after its date and commit, so the tool compares the dates. It checks t
 A new KytyPS5-Native can change its options, the files in its archive or its GPU helper. So a new pin also needs a
 look at what changed, and a try on the board.
 
-The PPSSPP, PCSX2 and RPCS3 Managers and Mesh Shaders each pin one release. For PCSX2, that is its stable channel.
-The pin is `VERSION` or `LANDMARK` in the app's `emulator.py`, and `DIRECTMESH` in `apps/mesh/bc250-mesh-shaders.sh`.
-RPCS3's `emulator.py` also holds the size of the pinned AppImage (`SIZE`). By that size, the app sees that RPCS3
-replaced itself with another build. So a new pin moves it too.
+The PPSSPP, PCSX2 and RPCS3 Managers and Mesh Shaders each pin one release. For PCSX2, that is a nightly. PCSX2 keeps
+its nightlies on GitHub. The pin is `VERSION` or `LANDMARK` in the app's `emulator.py`, and `DIRECTMESH` in
+`apps/mesh/bc250-mesh-shaders.sh`. RPCS3's `emulator.py` also holds the size of the pinned AppImage (`SIZE`). By that
+size, the app sees that RPCS3 replaced itself with another build. So a new pin moves it too.
 
-The same tool reports a newer stable release than the pin. For DirectMesh, that is the newest
-`directmesh-v<version>` tag. A tag with more after the version is a development candidate, and the tool skips it.
-The apps check the checksum of what they download themselves. The governor has no pin in the repository. Its version
-is the one COPR built. The GPU Manager compares the installed package with filippor's latest release.
+The same tool reports a newer stable release than the pin. For PCSX2, that is a newer nightly. For DirectMesh, that is
+the newest `directmesh-v<version>` tag. A tag with more after the version is a development candidate, and the tool
+skips it. The apps check the checksum of what they download themselves. The governor has no pin in the repository. Its
+version is the one COPR built. The GPU Manager compares the installed package with filippor's latest release.
 
 The BC-250 Upscaler Manager pins no HelixSR release. It gets the latest release of one major version
 (`SUPPORTED_MAJOR`), or the fallback that HelixSR's developer names. Its `apps/upscaler/upscaler/acquire.py` holds
@@ -569,7 +568,7 @@ the app relies on in Vita3K's source at the new build:
   newest continuous build unless `DISABLE_AUTO_UPDATES=1`, which the run wrapper sets. `vita3k --version` on the new
   AppImage confirms the build and commit.
 
-The tests hold the `config.yml` the pinned build writes on its first start (`tests/fixtures/config-4377.yml`). A new
+The tests hold the `config.yml` the pinned build writes on its first start (`tests/fixtures/config-4464.yml`). A new
 pin replaces it with the new build's file, renamed for it.
 
 The BC-250 Xenia Manager was tried with one Xenia Canary build. It is pinned in `apps/xenia/xenia_manager/emulator.py` as

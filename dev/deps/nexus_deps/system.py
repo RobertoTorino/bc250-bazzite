@@ -82,6 +82,7 @@ class Source:
     detail: str = ""                    # a line beside the updates (the latest versions known)
     checked: bool = True                # False: nothing a program can ask; the card says how (about)
     known: tuple[tuple[str, str], ...] = ()  # the versions just read, remembered for the next look (Sony's)
+    links: tuple[tuple[str, str], ...] = ()  # (text, URL) shown on the card, clickable (owner, 28-11-2026)
 
     @property
     def outdated(self) -> bool:

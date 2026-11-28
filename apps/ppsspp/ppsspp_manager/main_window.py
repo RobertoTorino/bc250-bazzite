@@ -449,12 +449,11 @@ class MainWindow(QMainWindow):
                                        "reads it.")
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected. Switch it on, or press its PS button to wake "
-                                       "it, before you start a game from Steam.")
+                                       "No controller is connected. Switch it on, or wake it, before you start a "
+                                       "game from Steam.")
             if first:           # said on the desktop too, as the run wrappers do (owner, 28-11-2026)
                 self.notify_desktop(APP_NAME, "No controller connected",
-                                    "Switch your controller on, or press its PS button to wake it, before you "
-                                    "start a game.")
+                                    "Switch your controller on, or wake it, before you start a game.")
                 self.log.warning("No controller was connected when the window opened.")
 
     def say(self, text: str, ok: bool = True) -> None:

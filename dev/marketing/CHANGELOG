@@ -1,3 +1,7 @@
+Changelog: 28-11-2026 17:45:22
+
+Fixed. The shadPS4 Manager line in copy.md says that the app sets up shadPS4's newest nightly build. It said a tested release. The PCSX2 Manager line says a tested nightly build instead of a tested release. Both now match the apps' wiki chapters. The next Publish puts them on the website.
+
 Changelog: 28-11-2026 00:04:34
 
 Added. The article has a line for KytyPS5 Manager.

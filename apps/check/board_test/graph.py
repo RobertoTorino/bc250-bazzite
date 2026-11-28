@@ -70,7 +70,7 @@ GAME_PANELS = [
     ("GPU voltage", "mV", [("vddgfx_mv", "VDDGFX")]),
 ]
 HISTORY_PANELS = [
-    ("Score vs stock baseline", "%", [("cpu_score", "CPU multi"), ("cpu1_score", "CPU single"),
+    ("Score vs. stock baseline", "%", [("cpu_score", "CPU multi"), ("cpu1_score", "CPU single"),
                                       ("gpu_score", "GPU")]),
     ("GPU FP32 compute", "GFLOPS", [("gpu_fp32", "GPU FP32")]),
     ("CPU multi-thread", "ops/s", [("cpu_multi", "Multi-thread")]),
@@ -81,7 +81,7 @@ HISTORY_PANELS = [
 
 SPEEDTEST_PANELS = [
     ("Download and upload", "Mbps", [("down_mbps", "Download"), ("up_mbps", "Upload")]),
-    ("Latency idle vs loaded", "ms", [("ping_ms", "Idle"), ("down_latency_ms", "While downloading"),
+    ("Latency idle vs. loaded", "ms", [("ping_ms", "Idle"), ("down_latency_ms", "While downloading"),
                                       ("up_latency_ms", "While uploading")]),
     ("Jitter", "ms", [("jitter_ms", "Jitter")]),
     ("Packet loss", "%", [("packet_loss_pct", "Packet loss")]),

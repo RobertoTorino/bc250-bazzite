@@ -6,11 +6,11 @@
                                     [directmesh] [vita3k] [xenia] [mesa] [ffmpeg] [webcam] [speedtest] [vrm]
                                     # all when none is named
 
-The BC-250 shadPS4 Manager pins one shadPS4 release (apps/shadps4/shadps4_manager/emulator.py: VERSION, TAG,
-ASSET, SHA256), read here without importing the app:
- * the latest stable release: newer than the pin means a new version of the app; the report gives the new release's
-   Linux zip and the SHA-256 GitHub publishes for it, for the pin;
- * the pinned release's zip: the SHA-256 GitHub publishes for it must still be the pinned one.
+The BC-250 shadPS4 Manager installs shadPS4's newest nightly (owner, 28-11-2026). shadPS4 keeps only one nightly on
+GitHub and deletes it when the next one comes, so nothing is pinned (apps/shadps4/shadps4_manager/emulator.py: REPO,
+and PUBLISHED, the day of the nightly that version of the app was made with), read here without importing the app:
+ * the newest nightly: it must have the Linux SDL zip with a SHA-256 GitHub publishes, or Install fails. A nightly
+   newer than PUBLISHED is no drift: Install takes it. The report names it, as a reminder to look at what changed.
 
 BC-250 KytyPS5 Manager pins one KytyPS5-Native release the same way (apps/kytyps5/kytyps5_manager/emulator.py: VERSION,
 PUBLISHED, SHA256; TAG and ASSET follow from VERSION). Its releases are named after their date and commit, so a
@@ -148,12 +148,10 @@ def fetch(url: str) -> bytes:
 
 @dataclass
 class Pin:
-    """shadPS4's pin: the constants of emulator.py, as plain strings."""
+    """shadPS4: the constants of emulator.py, as plain strings. No pin: what Install takes, the newest nightly."""
     REPO: str
-    VERSION: str
-    TAG: str
-    ASSET: str
-    SHA256: str
+    VERSION: str                        # the nightly that version of the app was made with
+    PUBLISHED: str
 
 
 def _string_constants(path: Path, kinds: type | tuple[type, ...] = str) -> dict[str, str]:
@@ -167,9 +165,12 @@ def _string_constants(path: Path, kinds: type | tuple[type, ...] = str) -> dict[
 
 
 def load_shadps4_pin(path: Path = EMULATOR) -> Pin:
-    """emulator.py's pin: its top-level string constants."""
+    """emulator.py's constants for the check."""
     values = _string_constants(path)
-    return Pin(**{name: values[name] for name in ("REPO", "VERSION", "TAG", "ASSET", "SHA256")})
+    return Pin(**{name: values[name] for name in ("REPO", "VERSION", "PUBLISHED")})
+
+
+SHAD_ASSET = re.compile(r"shadps4-linux-sdl-(.+)\.zip")
 
 
 KYTY_EMULATOR = SUITE / "apps" / "kytyps5" / "kytyps5_manager" / "emulator.py"
@@ -242,7 +243,7 @@ def check_kytyps5(pin: KytyPin, get: Fetch = fetch) -> Report:
     assets = {a.get("name"): a for a in pinned.get("assets", [])}
     digest = str(assets.get(pin.ASSET, {}).get("digest") or "")
     if pin.ASSET not in assets:
-        report.drift.append(f"{pin.TAG} has no {pin.ASSET} any more.")
+        report.drift.append(f"{pin.TAG} has no {pin.ASSET} anymore.")
     elif digest != f"sha256:{pin.SHA256}":
         report.drift.append(f"{pin.TAG}'s {pin.ASSET} is published with {digest or 'no SHA-256'}, not the pinned "
                             f"sha256:{pin.SHA256}: the asset was replaced.")
@@ -269,37 +270,26 @@ class Report:
 
 
 def check_shadps4(pin: Pin, get: Fetch = fetch) -> Report:
-    report = Report(pin.TAG, name="shadPS4", short="shadPS4")
-    api = API.format(repo=pin.REPO)
-
-    latest = json.loads(get(f"{api}/releases/latest"))
-    report.latest = str(latest.get("tag_name", ""))
-    if _version(report.latest) > _version(pin.TAG):
-        version = report.latest.lstrip("v.")
-        asset = pin.ASSET.replace(pin.VERSION, version)
-        found = {a.get("name"): a for a in latest.get("assets", [])}.get(asset)
-        if found is None:
-            zip_line = f"it has no {asset}: look at its assets before pinning it."
-        else:
-            digest = str(found.get("digest") or "")
-            zip_line = (f"for the pin: {asset}, {digest}" if digest.startswith("sha256:")
-                        else f"{asset} is published without a SHA-256: check it before pinning it.")
-        report.drift.append(f"{report.latest} is out ({str(latest.get('published_at', ''))[:10]}): a new version of "
-                            f"the BC-250 shadPS4 Manager pins it, after it is tried on the board; {zip_line} "
-                            f"{latest.get('html_url', '')}")
+    report = Report(pin.VERSION, name="shadPS4", short="shadPS4", held="made with", newest="newest nightly")
+    releases = json.loads(get(f"{API.format(repo=pin.REPO)}/releases?per_page=30"))
+    nightly = next((r for r in releases if isinstance(r, dict) and r.get("prerelease")), None)
+    if nightly is None:
+        report.drift.append("GitHub has no shadPS4 nightly: Install in the BC-250 shadPS4 Manager fails.")
+        return report
+    report.latest = str(nightly.get("tag_name", ""))
+    found = next((a for a in nightly.get("assets", []) if SHAD_ASSET.fullmatch(str(a.get("name", "")))), None)
+    digest = str((found or {}).get("digest") or "")
+    if found is None:
+        report.drift.append(f"{report.latest} has no Linux SDL zip: Install in the BC-250 shadPS4 Manager fails.")
+    elif not digest.startswith("sha256:"):
+        report.drift.append(f"{report.latest}'s {found.get('name')} is published without a SHA-256: Install in the "
+                            f"BC-250 shadPS4 Manager refuses it.")
     else:
-        report.fine.append(f"no stable release newer than {pin.TAG}")
-
-    pinned = json.loads(get(f"{api}/releases/tags/{pin.TAG}"))
-    assets = {a.get("name"): a for a in pinned.get("assets", [])}
-    digest = str(assets.get(pin.ASSET, {}).get("digest") or "")
-    if pin.ASSET not in assets:
-        report.drift.append(f"{pin.TAG} has no {pin.ASSET} any more.")
-    elif digest != f"sha256:{pin.SHA256}":
-        report.drift.append(f"{pin.TAG}'s {pin.ASSET} is published with {digest or 'no SHA-256'}, not the pinned "
-                            f"sha256:{pin.SHA256}: the asset was replaced.")
-    else:
-        report.fine.append(f"{pin.TAG}'s {pin.ASSET} is still the pinned file")
+        report.fine.append(f"{found.get('name')}, {digest}: what Install takes")
+    published = str(nightly.get("published_at", ""))[:10]
+    if published > pin.PUBLISHED:
+        report.fine.append(f"newer than the nightly the app was made with ({pin.VERSION}, {pin.PUBLISHED}): "
+                           f"look at what changed, {nightly.get('html_url', '')}")
     return report
 
 
@@ -343,7 +333,7 @@ def check_helixsr(pin: HelixPin, get: Fetch = fetch) -> Report:
         report.drift.append(f"the fallback v{pin.FALLBACK_VERSION} is gone from GitHub.")
     else:
         if not any(str(a.get("name", "")).endswith(".zip") for a in fallback.get("assets", [])):
-            report.drift.append(f"the fallback v{pin.FALLBACK_VERSION} has no zip any more.")
+            report.drift.append(f"the fallback v{pin.FALLBACK_VERSION} has no zip anymore.")
         else:
             report.fine.append(f"the fallback v{pin.FALLBACK_VERSION} still has its zip")
     return report
@@ -450,12 +440,12 @@ def check_build(pin: Build, get: Fetch = fetch) -> Report:
     except CheckError as error:
         if ": GitHub answered 404" not in str(error):
             raise
-        report.drift.append(f"build {pin.build} is gone from GitHub: {pin.app} cannot download it any more.")
+        report.drift.append(f"build {pin.build} is gone from GitHub: {pin.app} cannot download it anymore.")
         return report
     assets = {a.get("name"): a for a in pinned.get("assets", [])}
     digest = str(assets.get(pin.asset, {}).get("digest") or "")
     if pin.asset not in assets:
-        report.drift.append(f"build {pin.build} has no {pin.asset} any more: {pin.app} cannot download it.")
+        report.drift.append(f"build {pin.build} has no {pin.asset} anymore: {pin.app} cannot download it.")
     elif not digest:
         report.fine.append(f"build {pin.build}'s {pin.asset} is there, published without a SHA-256 (the app checks "
                            f"its own)")
@@ -600,7 +590,7 @@ def check_webcam(pins: list[Firmware], get: Fetch = fetch) -> Report:
             if ": GitHub answered 404" not in str(error):
                 raise
             report.drift.append(f"{pin.model}'s {pin.path} is gone from {pin.repo} at {pin.commit[:7]}: BC-250 Webcam "
-                                f"cannot download it any more.")
+                                f"cannot download it anymore.")
             continue
         if pinned != pin.sha256:
             report.drift.append(f"{pin.model}'s {pin.path} at {pin.commit[:7]} is not the pinned file (SHA-256 "

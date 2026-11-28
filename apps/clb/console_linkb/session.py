@@ -126,7 +126,7 @@ class Session:
         wait = None
         while True:
             if cancelled():
-                raise SessionError("cancelled")
+                raise SessionError("canceled")
             if clock() >= end:
                 raise SessionError("the session was not ready in time")
             try:

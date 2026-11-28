@@ -414,6 +414,26 @@ def test_the_emulators_have_a_section_of_their_own(qapp):
     finally:
         window.close()
 
+
+def test_a_cards_links_are_on_the_card_and_open_in_the_browser(qapp):
+    """Owner, 28-11-2026: every link clickable, Sony's pages and GitHub on the card itself."""
+    from nexus_deps.system import Source
+    ps5 = Source("upstream-ps5", "PS5 system software", group="apps", detail="Latest: PS5 26.08.",
+                 links=(("Sony's PS5 system software page",
+                         "https://www.playstation.com/en-us/support/hardware/ps5/system-software-info/"),))
+    plain = Source("upstream-pcsx2", "PCSX2", group="emulators", detail="Latest stable on GitHub: v2.8.2.")
+    window = _window(CheckResult([], [], frozenset()), system=(Source("flatpak", "Flatpak"), ps5, plain))
+    try:
+        card = window.system_cards["upstream-ps5"]
+        assert not card.links.isHidden() and card.links.openExternalLinks()
+        assert card.links.text() == ("<a href='https://www.playstation.com/en-us/support/hardware/ps5/"
+                                     "system-software-info/'>Sony&#x27;s PS5 system software page</a>")
+        assert card.links.textInteractionFlags() & Qt.TextInteractionFlag.LinksAccessibleByMouse
+        assert card.text.openExternalLinks()
+        assert window.system_cards["upstream-pcsx2"].links.isHidden()        # no links, no line
+    finally:
+        window.close()
+
 def _dnf_plan():
     from nexus_deps.fixes import dnf_step
     return Plan((Step("pip", "a into v", ("v/bin/python", "-m", "pip", "install", "a")),

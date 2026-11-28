@@ -3,7 +3,8 @@
 Vita3K's settings that matter for playing, each one top-level key of Vita3K's config.yml (userdata), which Vita3K
 reads when it starts: the picture, the speed, the sound and the PS Vita's system settings. The keys, values and
 defaults are build 4186's (config/config.h; the choices as its settings window offers them,
-gui-qt/settings_dialog.cpp). Vita3K's own window (Vita3K settings) stays for everything else.
+gui-qt/settings_dialog.cpp); the refresh rate (vblank-rate, which replaced fps-hack) is build 4464's.
+Vita3K's own window (Vita3K settings) stays for everything else.
 
 A setting is read from the file (Vita3K's default while the file, or the line, is not there) and written one line
 at a time, every other line kept (userdata.set_values); Vita3K writes the whole file itself when it starts. Never
@@ -60,6 +61,7 @@ FILTERS = (("Bilinear", "Bilinear"), ("Nearest", "Nearest"), ("Bicubic", "Bicubi
            ("FSR", "FidelityFX Super Resolution"))
 ANISOTROPY = (("1", "Off"), ("2", "2x"), ("4", "4x"), ("8", "8x"), ("16", "16x"))
 AUDIO = (("SDL", "SDL"), ("Cubeb", "Cubeb"))
+REFRESH = (("60", "60 Hz"), ("120", "120 Hz"), ("0", "Follow the screen"))     # vblank-rate; 0 is the screen's own
 ENTER = (("1", "Cross (X)"), ("0", "Circle (O)"))           # SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE is 0, CROSS 1
 LANGUAGES = (("1", "English (United States)"), ("18", "English (United Kingdom)"), ("0", "Japanese"),
              ("2", "French"), ("3", "Spanish"), ("4", "German"), ("5", "Italian"), ("6", "Dutch"),
@@ -90,8 +92,10 @@ SETTINGS: tuple[Setting, ...] = (
     Setting("pipelines", SPEED, "Compile shaders in the background", "async-pipeline-compilation", TRUE, SWITCH,
             tip="The game goes on while Vita3K compiles what it shows the first time, with less stutter. "
                 "Something may then show a moment late."),
-    Setting("fps", SPEED, "FPS hack", "fps-hack", FALSE, SWITCH,
-            tip="May double a 30 FPS game to 60, but makes some games run twice as fast."),
+    Setting("refresh", SPEED, "Refresh rate", "vblank-rate", "60", NUMBER, REFRESH,
+            "How often the game's screen refreshes. Most games keep their pace by it. 60 Hz is the PS Vita's own "
+            "speed. Raise it only for a game that runs at 60 FPS, such as one with a 60 FPS patch. A game that ties "
+            "its speed to the frame rate then runs too fast. Follow the screen uses the TV's own rate."),
     Setting("overlay", SPEED, "Performance overlay", "performance-overlay", FALSE, SWITCH,
             tip="The frames per second shown over the game."),
     Setting("shaders", SPEED, "Shader compilation message", "show-compile-shaders", TRUE, SWITCH,

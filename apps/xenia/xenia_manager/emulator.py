@@ -34,13 +34,13 @@ from bc250_core.updates import Fetch, ReleaseInfo, github_fetch
 
 from . import APP_ID, __version__
 
-BUILD = "54386cb"                       # the build's tag: the commit it was built from
-COMMIT = "54386cbbd36b1e5b9e3c8ea8616f4c7c8f0c56b6"
-PUBLISHED = "2026-11-19T20:05:38Z"      # when GitHub published it: a later release is a newer build
+BUILD = "078898c"                       # the build's tag: the commit it was built from
+COMMIT = "078898ce11194f646adcf4478e2ccaf3e4796754"
+PUBLISHED = "2026-11-28T15:55:34Z"      # when GitHub published it: a later release is a newer build
 VERSION = BUILD                         # how the app names it; also the folder it is installed in
 ASSET = "xenia_canary_linux.AppImage"   # the same name in every build's release
-SHA256 = "fbd24aa75b09b2d808526b70616c092e89d9c8655becbb2d3b561cf48835e4b6"
-SIZE = 16546296                         # bytes of the AppImage
+SHA256 = "7edf7a80aa250e1cedf31012b9ebeda6346a9bf4f0421270393bf97b4d942b67"
+SIZE = 16570872                         # bytes of the AppImage
 SIZE_MB = round(SIZE / (1 << 20))       # for the question before downloading
 MEMBER = "xenia.AppImage"               # the name it is installed under, the same for every build
 CONFIG = "xenia-canary.config.toml"     # Xenia's settings file, in xenia_home()

@@ -120,7 +120,7 @@ TH = f"<th align='left' style='color:{MUTED}; font-weight:600; padding-right:18p
 
 def render_run(run: RunSummary, results: dict[str, tuple[str, int]], metrics: dict[str, float]) -> str:
     score = health(run)
-    state = "cancelled" if run.cancelled else (
+    state = "canceled" if run.cancelled else (
         "imported from a full report" if run.source == "script" else
         f"finished {run.finished[11:16] if run.finished[:10] == run.started[:10] else run.finished[:16]}"
         if run.finished else "did not finish")

@@ -133,7 +133,7 @@ check-for-updates-mode: 1
 file-loading-delay: 0
 shader-cache: true
 spirv-shader: false
-fps-hack: false
+vblank-rate: 60
 current-ime-lang: 4
 psn-signed-in: 0
 http-enable: true

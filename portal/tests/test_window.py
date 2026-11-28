@@ -998,7 +998,7 @@ def test_the_portal_removes_a_withdrawn_app(qapp, home, settings_dir, tmp_path, 
     w = _withdrawn_window(home, tmp_path, installed=True)
     try:
         assert wait_for(lambda: launched)                   # at start, after telling why
-        assert told and "is not available any more" in told[0] and "Privacy: shows the account ID." in told[0]
+        assert told and "is not available anymore" in told[0] and "Privacy: shows the account ID." in told[0]
         line, exit_file = launched[0]
         assert line.endswith("&& bash install.sh --uninstall")
         state = w.states["upscaler"]

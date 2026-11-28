@@ -69,6 +69,16 @@ def built_pkg(tmp_path_factory):
 
 
 @pytest.fixture(autouse=True)
+def offline_newest(monkeypatch):
+    """Install asks GitHub for the newest nightly (emulator.newest): the tests answer with the made-with nightly,
+    read when asked (so a test's own SHA256 counts), and never reach GitHub. Returns the real one."""
+    from shadps4_manager import emulator
+    real = emulator.newest
+    monkeypatch.setattr(emulator, "newest", lambda fetch=None: emulator.tested())
+    return real
+
+
+@pytest.fixture(autouse=True)
 def settings_dir(tmp_path, monkeypatch):
     """The app keeps an .ini (AppInfo.settings_ini), so this also keeps the tests out of the Windows registry."""
     from PyQt6.QtCore import QSettings

@@ -558,7 +558,7 @@ class SetupWorker(QThread):
         try:
             release_dir, version = self._run()
         except Aborted:
-            self.finished_with.emit(SetupOutcome(False, None, "", "Cancelled.", time.monotonic() - started))
+            self.finished_with.emit(SetupOutcome(False, None, "", "Canceled.", time.monotonic() - started))
         except (HelixError, OSError) as exc:
             self.finished_with.emit(SetupOutcome(False, None, "", str(exc), time.monotonic() - started))
         else:

@@ -25,41 +25,44 @@ HELIX_API = check_upstream.API.format(repo=check_upstream.HELIXSR_REPO)
 
 # --- shadPS4 ----------------------------------------------------------------------------------------------------
 
-def shad_github(latest: str = PIN.TAG, digest: str = f"sha256:{PIN.SHA256}",
-                new_digest: str | None = "sha256:" + "ab" * 32):
-    version = latest.lstrip("v.")
-    new_assets = [{"name": PIN.ASSET.replace(PIN.VERSION, version), "digest": new_digest},
-                  {"name": f"shadps4-win64-sdl-{version}.zip", "digest": "sha256:" + "cd" * 32}]
-    answers = {
-        f"{SHAD_API}/releases/latest": {"tag_name": latest, "published_at": "2026-11-20T10:00:00Z",
-                                         "html_url": f"https://github.com/{PIN.REPO}/releases/tag/{latest}",
-                                         "assets": new_assets},
-        f"{SHAD_API}/releases/tags/{PIN.TAG}": {"assets": [{"name": PIN.ASSET, "digest": digest}]},
-    }
+def shad_github(nightly: str | None = PIN.VERSION, published: str = PIN.PUBLISHED,
+                digest: str | None = "sha256:" + "ab" * 32, asset: bool = True):
+    """GitHub's release list: the nightly (a pre-release) before a stable release, as shadPS4 has them."""
+    releases = [{"tag_name": "v.0.21.0", "prerelease": False, "published_at": "2026-10-30T13:38:45Z",
+                 "assets": [{"name": "shadps4-linux-sdl-0.21.0.zip", "digest": "sha256:" + "cd" * 32}]}]
+    if nightly is not None:
+        assets = [{"name": f"shadps4-win64-sdl-{nightly}.zip", "digest": "sha256:" + "cd" * 32}]
+        if asset:
+            assets.append({"name": f"shadps4-linux-sdl-{nightly}.zip", "digest": digest})
+        releases.insert(0, {"tag_name": f"Pre-release-shadPS4-{nightly}", "prerelease": True,
+                            "published_at": f"{published}T15:39:01Z", "assets": assets,
+                            "html_url": f"https://github.com/{PIN.REPO}/releases/tag/Pre-release-shadPS4-{nightly}"})
+    answers = {f"{SHAD_API}/releases?per_page=30": releases}
     return lambda url: json.dumps(answers[url]).encode()
 
 
-def test_the_shadps4_pin_is_read_from_emulator_py():
-    assert PIN.REPO == "shadps4-emu/shadPS4" and PIN.TAG == f"v.{PIN.VERSION}" and PIN.VERSION in PIN.ASSET
-    assert len(PIN.SHA256) == 64
+def test_the_shadps4_constants_are_read_from_emulator_py():
+    assert PIN.REPO == "shadps4-emu/shadPS4" and PIN.VERSION.startswith(PIN.PUBLISHED)
 
 
 def test_shadps4_in_step():
+    """The newest nightly has its Linux zip with a SHA-256: Install can take it (owner, 28-11-2026: nightlies)."""
     report = check_upstream.check_shadps4(PIN, shad_github())
-    assert report.drift == [] and len(report.fine) == 2
-    assert report.text().startswith(f"shadPS4: pinned {PIN.TAG}, latest stable {PIN.TAG}. In step.")
+    assert report.drift == [] and len(report.fine) == 1 and "what Install takes" in report.fine[0]
+    assert report.text().startswith(f"shadPS4: made with {PIN.VERSION}, newest nightly Pre-release-shadPS4-"
+                                    f"{PIN.VERSION}. In step.")
 
 
-@pytest.mark.parametrize("bump", [(0, 0, 1), (0, 1, 0), (1, 0, 0)])
-def test_a_newer_shadps4_gives_what_the_pin_needs(bump):
-    major, minor, patch = (int(p) for p in PIN.VERSION.split("."))
-    latest = f"v.{major + bump[0]}.{minor + bump[1]}.{patch + bump[2]}"
-    report = check_upstream.check_shadps4(PIN, shad_github(latest))
-    assert len(report.drift) == 1 and "shadPS4 moved:" in report.text()
-    assert report.drift[0].startswith(f"{latest} is out (2026-11-20)")
-    assert f"for the pin: {PIN.ASSET.replace(PIN.VERSION, latest[2:])}, sha256:{'ab' * 32}" in report.drift[0]
-    report = check_upstream.check_shadps4(PIN, shad_github(latest, new_digest=None))
-    assert "published without a SHA-256" in report.drift[0]
+def test_a_newer_nightly_is_no_drift():
+    report = check_upstream.check_shadps4(PIN, shad_github("2099-01-02-abcdef0", "2099-01-02"))
+    assert report.drift == [] and "look at what changed" in report.fine[1]
+
+
+def test_a_nightly_install_cannot_take_is_drift():
+    for answer, words in ((shad_github(None), "no shadPS4 nightly"), (shad_github(asset=False), "no Linux SDL zip"),
+                          (shad_github(digest=None), "without a SHA-256")):
+        report = check_upstream.check_shadps4(PIN, answer)
+        assert len(report.drift) == 1 and words in report.drift[0] and "shadPS4 moved:" in report.text()
 
 
 # --- KytyPS5-Native -----------------------------------------------------------------------------------------------
@@ -117,7 +120,7 @@ def test_exit_codes(monkeypatch, capsys, tmp_path):
     real = check_upstream.check_shadps4
     monkeypatch.setattr(check_upstream, "check_shadps4", lambda pin: real(pin, shad_github()))
     assert check_upstream.main(["shadps4"]) == 0 and "In step." in summary.read_text()
-    monkeypatch.setattr(check_upstream, "check_shadps4", lambda pin: real(pin, shad_github("v.99.0.0")))
+    monkeypatch.setattr(check_upstream, "check_shadps4", lambda pin: real(pin, shad_github(None)))
     assert check_upstream.main(["shadps4"]) == 1
 
     def offline(pin):
@@ -125,15 +128,6 @@ def test_exit_codes(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(check_upstream, "check_shadps4", offline)
     assert check_upstream.main(["shadps4"]) == 2 and "could not be checked" in capsys.readouterr().err
     assert check_upstream.main(["nothing"]) == 2 and "Unknown: nothing" in capsys.readouterr().err
-
-
-def test_an_older_shadps4_is_not_newer():
-    assert check_upstream.check_shadps4(PIN, shad_github("v.0.18.0")).drift == []
-
-
-def test_a_replaced_shadps4_zip():
-    report = check_upstream.check_shadps4(PIN, shad_github(digest="sha256:" + "0" * 64))
-    assert len(report.drift) == 1 and "the asset was replaced" in report.drift[0]
 
 
 # --- HelixSR ----------------------------------------------------------------------------------------------------
@@ -199,7 +193,7 @@ def test_the_fallback_the_notes_name(body, moved):
 
 
 def test_a_fallback_without_its_zip():
-    assert "has no zip any more" in check_upstream.check_helixsr(HELIX, helix_github(fallback_zip=False)).drift[0]
+    assert "has no zip anymore" in check_upstream.check_helixsr(HELIX, helix_github(fallback_zip=False)).drift[0]
     assert "is gone from GitHub" in check_upstream.check_helixsr(HELIX, helix_github(fallback_gone=True)).drift[0]
 
 
@@ -315,7 +309,7 @@ def test_the_pinned_appimage(name):
     assert "without a SHA-256" in check_upstream.check_build(pin, build_github(pin, *same, digest=None)).fine[-1]
     replaced = check_upstream.check_build(pin, build_github(pin, *same, digest="sha256:" + "0" * 64))
     assert "the asset was replaced" in replaced.drift[0]
-    assert "any more" in check_upstream.check_build(pin, build_github(pin, *same, digest="no asset")).drift[0]
+    assert "anymore" in check_upstream.check_build(pin, build_github(pin, *same, digest="no asset")).drift[0]
     assert "is gone from GitHub" in check_upstream.check_build(pin, build_github(pin, *same, gone=True)).drift[0]
 
 

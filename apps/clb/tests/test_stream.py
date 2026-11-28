@@ -174,7 +174,7 @@ class WaitingSession(FakeSession):
         self.calls.append("waiting")
         while not cancelled():
             time.sleep(0.01)
-        raise SessionError("cancelled")
+        raise SessionError("canceled")
 
 
 def test_stopping_while_the_session_starts_still_ends_it(qapp):

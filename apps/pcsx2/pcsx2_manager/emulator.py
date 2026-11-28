@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The PCSX2 this version of the app installs: the Linux AppImage of one stable release on GitHub, pinned, checked
-against the SHA-256 this version of the app was tried with. A newer stable comes with a new version of the app, so
-the launch line and the settings the app writes are tried with the release they are for; the app says when there is
-a newer one. Another build, a stable release or a nightly, is downloaded beside it in the version manager (owner,
-20-11-2026: as shadPS4's own launcher has one; core's builds), checked against the SHA-256 GitHub publishes for it;
-it was not tried on the board.
+"""The PCSX2 this version of the app installs: the Linux AppImage of one nightly on GitHub (owner, 28-11-2026: the
+nightly builds; PCSX2 keeps its nightlies as pre-releases), pinned, checked against the SHA-256 this version of the app
+was made with. A newer nightly comes with a new version of the app; the app says when there is one. Another build, a
+stable release or another nightly, is downloaded beside it in the version manager (owner, 20-11-2026: as shadPS4's
+own launcher has one; core's builds), checked against the SHA-256 GitHub publishes for it.
 
 Each build goes to ~/.local/share/bc250-pcsx2-manager/emulator/<version>/pcsx2.AppImage, with "current" pointing to
 the one in use and the build's size in its build.json (.size before it), so replaced() knows the expected size. The
@@ -27,15 +26,15 @@ from pathlib import Path
 from bc250_core import builds
 from bc250_core.builds import Build
 from bc250_core.platform import data_home
-from bc250_core.updates import Fetch, ReleaseInfo, github_fetch, latest_release, version_tuple
+from bc250_core.updates import Fetch, ReleaseInfo, github_fetch, version_tuple
 
 from . import APP_ID, __version__, catalogue
 
-VERSION = "2.8.2"
+VERSION = "2.9.201"                     # a nightly (owner, 28-11-2026: the nightly builds)
 TAG = f"v{VERSION}"
 ASSET = f"pcsx2-{TAG}-linux-appimage-x64-Qt.AppImage"
-SHA256 = "0c46bb6a88aa2782b10853a7b07cf3387ba99cbef2b966372cd2315b8571abea"
-SIZE = 60119544                         # bytes: how the app tells that PCSX2 replaced itself with another build
+SHA256 = "9e2c13e118ad1bdfd62f7bf15c2ce548827797ef1bd7253aa7a56c3f9970ce7c"
+SIZE = 60557816                         # bytes: how the app tells that PCSX2 replaced itself with another build
 SIZE_MB = round(SIZE / (1 << 20))       # for the question before downloading
 MEMBER = "pcsx2.AppImage"               # the name it is installed under, the same for every version
 REPO = "PCSX2/pcsx2"
@@ -62,7 +61,7 @@ def appimage(home: Path) -> Path:
 
 
 def installed_version(home: Path) -> str:
-    """The installed PCSX2 version ("2.8.2"), "" when none is."""
+    """The installed PCSX2 version ("2.9.201"), "" when none is."""
     current = home / "current"
     if not (current / MEMBER).is_file():
         return ""
@@ -113,7 +112,7 @@ def sha256(path: Path) -> str:
 
 def tested() -> Build:
     """The build this version of the app was tried with."""
-    return Build(VERSION, TAG, "2026-09-04", builds.RELEASE, URL, ASSET, SHA256, SIZE, RELEASE_PAGE)
+    return Build(VERSION, TAG, "2026-11-28", builds.PRERELEASE, URL, ASSET, SHA256, SIZE, RELEASE_PAGE)
 
 
 def install(home: Path, fetch: Download = download, progress: Progress | None = None) -> str:
@@ -164,10 +163,13 @@ def remove(home: Path) -> None:
 
 
 def newer_release(fetch: Fetch | None = None) -> ReleaseInfo | None:
-    """PCSX2's newest stable release when it is newer than the one this app brings; None when it is not, or when
-    GitHub cannot be asked (nothing to say then). GitHub's "latest" is the newest release not marked as a
-    pre-release, which leaves PCSX2's nightlies out."""
-    latest = latest_release(REPO, fetch=fetch, user_agent=f"{APP_ID}/{__version__}")
-    if latest.error or version_tuple(latest.version) <= version_tuple(VERSION):
+    """PCSX2's newest build, a nightly or a stable release, when it is newer than the one this app brings; None when
+    it is not, or when GitHub cannot be asked (nothing to say then)."""
+    try:
+        found = available(fetch)
+    except builds.BuildError:
         return None
-    return latest
+    best = max(found, key=lambda build: version_tuple(build.version), default=None)
+    if best is None or version_tuple(best.version) <= version_tuple(VERSION):
+        return None
+    return ReleaseInfo(best.version, f"v{best.version}", best.page, best.published, best.asset, best.url, best.size)

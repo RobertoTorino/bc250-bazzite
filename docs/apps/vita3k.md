@@ -52,7 +52,7 @@ and red when not. Hold the pointer over a state to read it in full.
 - **Steam**: green while Steam runs and is signed in, red when it is not
 
 When the window opens without a controller, a desktop notification says so too. It asks you to switch the
-controller on or press its PS button.
+controller on or wake it.
 
 A game started from Steam reads the controller that is connected when it starts. So switch your controller on
 first. A game in Steam starts only while Steam is signed in. So start Steam and sign in before you start a game.
@@ -244,7 +244,8 @@ Vita3K's own window, under **Vita3K settings** below the games. The tab scrolls 
 - **Speed** holds these settings:
     - **High accuracy**: Vita3K draws more exactly, for a game that shows errors. It is slower.
     - **Compile shaders in the background**: the game goes on while Vita3K compiles, with less stutter.
-    - **FPS hack**: it may double a 30 FPS game to 60. But it makes some games run twice as fast.
+    - **Refresh rate**: how often the game's screen refreshes: 60 Hz (the PS Vita's own), 120 Hz or Follow the
+      screen. Raise it only for a game that runs at 60 FPS. A game that ties its speed to the frame rate runs too fast.
     - **Performance overlay**: the frames per second over the game.
     - **Shader compilation message**
 - **Sound** holds these settings:
@@ -344,7 +345,7 @@ View logs tab shows it.
 ## New Vita3K builds
 
 Vita3K has no stable releases. It publishes a new build for almost every change. The builds are numbered over its
-whole history, such as 4377. Each version of the app was tried with one build, the one **Install** puts in.
+whole history, such as 4464. Each version of the app was tried with one build, the one **Install** puts in.
 
 When the window opens, the app asks GitHub for Vita3K's newest build. When that build is newer, the Vita3K line's
 tooltip and the log say so. They link to what is new. The app does not install it by itself, but the [version

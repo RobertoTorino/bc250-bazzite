@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
         """*home*: where the app installs PCSX2; *pcsx2_home*: PCSX2's own folder; *steam_dir*: Steam's folder
         (None: looked up); *run*: the run wrapper the shortcuts start; *fetch*: the download; *steam_closed* and
         *steam_running*: closing Steam for a change and asking whether it runs; *newer_release*: asks GitHub for a
-        newer stable; *pcsx2_running*: whether PCSX2 runs (its settings are not written then); *covers_home*,
+        newer build; *pcsx2_running*: whether PCSX2 runs (its settings are not written then); *covers_home*,
         *covers_get* and *covers_key*: where the SteamGridDB pictures are kept, how SteamGridDB is asked and the
         suite's key file (tests never touch the real ones); *log_path*: the app's log file, as the View logs tab shows
         it (__main__ set it up); *devices*: the kernel's list of input devices, for the controller state;
@@ -153,7 +153,7 @@ class MainWindow(QMainWindow):
         self.controllers: list[str] | None = None       # the controllers last seen; None before the first look
         self.log = applog.logger(APP_ID)
         self._newer_release = newer_release
-        self.newer: ReleaseInfo | None = None           # PCSX2's newest stable, when newer than the pinned one
+        self.newer: ReleaseInfo | None = None           # PCSX2's newest build, when newer than the pinned one
         self.release_check = UpdateChecker(self)        # apart from the worker: it runs while the window opens
         self.release_check.finished.connect(self._release_found)
         self.settings = Pcsx2Settings(INFO, self)
@@ -478,13 +478,12 @@ class MainWindow(QMainWindow):
                                        "reads it; Select + Start together quit the game.")
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected. Switch it on, or press its PS button to wake "
-                                       "it, before you start a game from Steam. Without one, PCSX2 plays with the "
+                                       "No controller is connected. Switch it on, or wake it, before you start a "
+                                       "game from Steam. Without one, PCSX2 plays with the "
                                        "keyboard only, and Select + Start cannot quit the game.")
             if first:           # said on the desktop too, as the run wrappers do (owner, 28-11-2026)
                 self.notify_desktop(APP_NAME, "No controller connected",
-                                    "Switch your controller on, or press its PS button to wake it, before you "
-                                    "start a game.")
+                                    "Switch your controller on, or wake it, before you start a game.")
                 self.log.warning("No controller was connected when the window opened.")
 
     def say(self, text: str, ok: bool = True) -> None:
@@ -592,8 +591,8 @@ class MainWindow(QMainWindow):
         self.emulator_state.setText(INSTALLED if self.version else NOT_INSTALLED)
         if not self.version:
             self.emulator_box.set_value("—")
-            tip = (f"Install downloads PCSX2 {pinned}, the stable release this version of the app was tried with, "
-                   "checks it and sets it up. The app says when a newer stable release is out.")
+            tip = (f"Install downloads PCSX2 {pinned}, the nightly this version of the app was made with, "
+                   "checks it and sets it up. The app says when a newer build is out.")
         elif self.version != pinned:
             self.emulator_box.set_value(self.version)
             tip = (f"PCSX2 {self.version} is in use. It was not tried on the board. This version of the app was "
@@ -607,7 +606,7 @@ class MainWindow(QMainWindow):
                    f"Install puts back {pinned}.")
         else:
             self.emulator_box.set_value(pinned)
-            tip = f"PCSX2 {pinned}, the stable release this version of the app was tried with"
+            tip = f"PCSX2 {pinned}, the nightly this version of the app was made with"
         if self.newer is not None:              # in the tip and the log, so the line stays the state (owner)
             tip += (f"\nPCSX2 {self.newer.version} is out ({self.newer.published}). A later version of this app "
                     f"brings it, once it has been tried on the board. What is new is at {self.newer.url}")

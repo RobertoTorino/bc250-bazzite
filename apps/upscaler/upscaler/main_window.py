@@ -624,7 +624,7 @@ class MainWindow(QMainWindow):
         if steam.steam_running() and QMessageBox.question(
                 self, "Steam launch options",
                 ("{0}\n\nSteam is running and writes its settings again when it closes, so it has to close for this. "
-                 "Close Steam now and start it again afterwards?").format(why)) != QMessageBox.StandardButton.Yes:
+                 "Close Steam now and start it again afterward?").format(why)) != QMessageBox.StandardButton.Yes:
             return "Steam stayed open."
 
         def change() -> None:
@@ -693,7 +693,7 @@ class MainWindow(QMainWindow):
     def _write_ini_to(self, dep: Deployment, text: str) -> None:
         target = dep.folder / backend.INI
         if not dep.folder.is_dir():
-            QMessageBox.warning(self, "Folder gone", "{0} does not exist any more.".format(dep.folder))
+            QMessageBox.warning(self, "Folder gone", "{0} does not exist anymore.".format(dep.folder))
             return
         try:
             target.write_text(text, encoding="utf-8")
@@ -790,7 +790,7 @@ class MainWindow(QMainWindow):
     def _cancel_setup(self) -> None:
         if self._setup_worker is not None:
             self._setup_worker.cancel()
-            self.setup_page.set_stage("Cancelling…")
+            self.setup_page.set_stage("Canceling…")
 
     def _setup_finished(self, outcome: SetupOutcome) -> None:
         worker, self._setup_worker = self._setup_worker, None
@@ -803,7 +803,7 @@ class MainWindow(QMainWindow):
         if not outcome.ok:
             self.statusBar().showMessage("HelixSR setup failed: {0}".format(outcome.message.splitlines()[0]),
                                          10000)
-            if outcome.message != "Cancelled.":
+            if outcome.message != "Canceled.":
                 QMessageBox.critical(self, "HelixSR setup failed", outcome.message)
             return
         self.statusBar().showMessage("{message} ({seconds:.0f} s)".format(

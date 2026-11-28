@@ -39,10 +39,10 @@ check "core imports from the app copy" "(cd $A && /usr/bin/python3 -c 'import im
 echo "== 2. the run wrapper"
 bash "$RUN" --no-gui /games/x/USRDIR/EBOOT.BIN > "$T/run.log" 2>&1; rc=$?
 check "without RPCS3 it says so" "[ $rc -eq 1 ] && grep -q 'RPCS3 is not installed' $T/run.log"
-mkdir -p "$D/$APP/emulator/0.0.43-20395"
-printf '#!/bin/sh\necho "args: $*"\n' > "$D/$APP/emulator/0.0.43-20395/rpcs3.AppImage"
-chmod +x "$D/$APP/emulator/0.0.43-20395/rpcs3.AppImage"
-ln -sfn 0.0.43-20395 "$D/$APP/emulator/current"
+mkdir -p "$D/$APP/emulator/0.0.43-20664"
+printf '#!/bin/sh\necho "args: $*"\n' > "$D/$APP/emulator/0.0.43-20664/rpcs3.AppImage"
+chmod +x "$D/$APP/emulator/0.0.43-20664/rpcs3.AppImage"
+ln -sfn 0.0.43-20664 "$D/$APP/emulator/current"
 mkdir -p "$T/games/My Game/PS3_GAME/USRDIR" && touch "$T/games/My Game/PS3_GAME/USRDIR/EBOOT.BIN"   # a game that is there
 bash "$RUN" --no-gui --fullscreen "$T/games/My Game/PS3_GAME/USRDIR/EBOOT.BIN" > "$T/run.log" 2>&1; rc=$?
 check "starts the current RPCS3 with the arguments as given" "[ $rc -eq 0 ] && cut -c21- $D/$APP/emulator.log | grep -qxF 'INFO args: --no-gui --fullscreen $T/games/My Game/PS3_GAME/USRDIR/EBOOT.BIN'"

@@ -552,13 +552,12 @@ class MainWindow(QMainWindow):
             self.prepare_pads()
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected. Switch it on, or press its PS button to wake "
-                                       "it, before you start a game from Steam. Without one, RPCS3 plays with the "
+                                       "No controller is connected. Switch it on, or wake it, before you start a "
+                                       "game from Steam. Without one, RPCS3 plays with the "
                                        "keyboard only.")
             if first:           # said on the desktop too, as the run wrappers do (owner, 28-11-2026)
                 self.notify_desktop(APP_NAME, "No controller connected",
-                                    "Switch your controller on, or press its PS button to wake it, before you "
-                                    "start a game.")
+                                    "Switch your controller on, or wake it, before you start a game.")
                 self.log.warning("No controller was connected when the window opened.")
 
     def prepare_rpcs3(self) -> bool:

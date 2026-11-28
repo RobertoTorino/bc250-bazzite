@@ -7,7 +7,7 @@
 BC-250 PCSX2 Manager plays **PS2 games** on the **AMD BC-250** with [PCSX2](https://pcsx2.net), an open-source PS2 emulator.
 The app does these things for you:
 
-- It installs the PCSX2 release it was tried with, and sets it up.
+- It installs the PCSX2 nightly build it was tried with, and sets it up.
 - It takes your PS2 BIOS.
 - It finds your games and adds them to Steam.
 
@@ -53,10 +53,10 @@ and red when not. Hold the pointer over a state to read it in full.
 - **Steam**: green while Steam runs and is signed in, red when it is not
 
 When the window opens without a controller, a desktop notification says so too. It asks you to switch the
-controller on or press its PS button.
+controller on or wake it.
 
 A game started from Steam reads the controller that is connected when it starts. So switch yours on before you
-start a game, or press its PS button to wake it. When Steam starts a game without a controller, the app also says
+start a game, or wake it. When Steam starts a game without a controller, the app also says
 so in a desktop notification. A game in Steam starts only while Steam is signed in. So start Steam and sign in
 before you start a game.
 
@@ -90,8 +90,8 @@ Then comes a row of six tabs:
     - The tooltip says which release is installed, or what Install takes.
     - When this version of the app brings another release, the tooltip and the log say so. **PCSX2 Install** then
       puts that release back in use.
-    - **PCSX2 Install** downloads PCSX2 from its GitHub release, about 57 MB. It is the stable release this version of
-      the app was tried with. The app checks it against its checksum before it installs it.
+    - **PCSX2 Install** downloads PCSX2 from its GitHub release, about 58 MB. It is the nightly this version of the
+      app was tried with. The app checks it against its checksum before it installs it.
     - The app then sets PCSX2 up. See [PCSX2's settings](#pcsx2s-settings).
     - **PCSX2 Uninstall** takes PCSX2 out again. PCSX2's own folder stays, with the BIOS, your memory cards and
       settings.
@@ -440,17 +440,17 @@ View logs tab shows it.
 
 ## New PCSX2 releases
 
-PCSX2 publishes a nightly build for almost every change. Now and then, it publishes a stable release (2.8.2). Each
-version of the app was tried with one stable release, the one **PCSX2 Install** puts in.
+PCSX2 publishes a nightly build for almost every change. Now and then, it publishes a stable release. PCSX2 keeps
+its nightlies on GitHub. Each version of the app was tried with one nightly, the one **PCSX2 Install** puts in.
 
-When the window opens, the app asks GitHub for PCSX2's newest stable release. When that one is newer, the PCSX2
-line's tooltip and the log say so, with a link to what is new. The app does not install it by itself, but the
-[version manager](#versions) can. A newer PCSX2 comes with a newer version of the app, once it has been tried. You
-get it from the [portal](../portal.md). After you update the app, the tooltip says so, and **PCSX2 Install** brings
-it.
+When the window opens, the app asks GitHub for PCSX2's newest build, a nightly or a stable release. When that one is
+newer, the PCSX2 line's tooltip and the log say so, with a link to what is new. The app does not install it by
+itself, but the [version manager](#versions) can. A newer PCSX2 comes with a newer version of the app, once it has
+been tried. You get it from the [portal](../portal.md). After you update the app, the tooltip says so, and
+**PCSX2 Install** brings it.
 
 The app turns PCSX2's own update check off. PCSX2 may still be updated in its own window. The PCSX2 line's tooltip
-then says that PCSX2 updated itself. **PCSX2 Install** puts the tried release back.
+then says that PCSX2 updated itself. **PCSX2 Install** puts the tried nightly back.
 
 ## How it works
 
@@ -481,7 +481,7 @@ The app sets PCSX2 up so that a game started from Steam goes straight into the g
 not running, the app keeps these settings in PCSX2's own settings file (`~/.config/PCSX2/inis/PCSX2.ini`):
 
 - PCSX2's setup wizard is marked done, so it does not open at the first start.
-- PCSX2 does not look for updates itself. An update would replace the release the app installed.
+- PCSX2 does not look for updates itself. An update would replace the build the app installed.
 - The mouse pointer is hidden over a full-screen game.
 - PCSX2 uses the BIOS chosen in the app.
 - Player 1 is mapped to the first controller. See [Controllers](#controllers).

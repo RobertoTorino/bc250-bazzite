@@ -394,7 +394,7 @@ class TuningPage(ConfigPage):
             'than the sample interval.')}")
         timing_form.addRow("Sample every:", self.sample_us)
         timing_form.addRow("Adjust every:", self.adjust_us)
-        self.ramp_normal = _rate_spin(f"ramp-rates.normal — {('how fast the clock moves towards its target '
+        self.ramp_normal = _rate_spin(f"ramp-rates.normal — {('how fast the clock moves toward its target '
                                                               '(default 1 MHz/ms).')}")
         self.ramp_burst = _rate_spin(
             f"ramp-rates.burst — {('ramp rate while in burst mode; must be above '

@@ -30,13 +30,13 @@ from bc250_core.updates import Fetch, ReleaseInfo, github_fetch
 
 from . import APP_ID, __version__
 
-BUILD = 4377                            # Vita3K's build number, counted over its whole history
+BUILD = 4464                            # Vita3K's build number, counted over its whole history
 VERSION = str(BUILD)                    # how the app names it; also the folder it is installed in
-SEMVER = "0.2.1"                        # what it calls itself (Vita3K --version: v0.2.1 4377-685b80a6)
-COMMIT = "685b80a6acc93b9014b702c753d3698ec5287b24"
+SEMVER = "0.2.1"                        # what it calls itself (Vita3K --version: v0.2.1 4464-586891c5)
+COMMIT = "586891c571c211f3266d906159090cd40b576813"
 ASSET = "Vita3K-x86_64.AppImage"        # the same name in every build's release
-SHA256 = "de1ddd4b5ae61a0f4f92f153dc4fa9752239a7a48c7ffcee663c84e932a09db2"
-SIZE = 89794395                         # bytes: how the app tells that the AppImage was replaced by another build
+SHA256 = "de9b4e0b0bb3c4654688bc3a62b17068047a4d10098e85070e68c0d53100f509"
+SIZE = 90361726                         # bytes: how the app tells that the AppImage was replaced by another build
 SIZE_MB = round(SIZE / (1 << 20))       # for the question before downloading
 MEMBER = "vita3k.AppImage"              # the name it is installed under, the same for every build
 REPO = "Vita3K/Vita3K"
@@ -99,7 +99,7 @@ def sha256(path: Path) -> str:
 
 def tested() -> Build:
     """The build this version of the app was tried with."""
-    return Build(VERSION, f"Build: {VERSION}", "2026-11-17", builds.RELEASE, URL, ASSET, SHA256, SIZE, RELEASE_PAGE)
+    return Build(VERSION, f"Build: {VERSION}", "2026-11-28", builds.RELEASE, URL, ASSET, SHA256, SIZE, RELEASE_PAGE)
 
 
 def install(home: Path, fetch: Download = download, progress: Progress | None = None) -> str:

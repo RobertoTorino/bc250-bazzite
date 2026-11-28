@@ -1,3 +1,9 @@
+Changelog: 28-11-2026 18:12:28
+
+Fixed. The window text and messages got a spelling and language pass in American English (owner, 28-11-2026). A
+canceled run shows "canceled" instead of "cancelled" in the status bar and in History. The History graphs are
+titled "Score vs. stock baseline" and "Latency idle vs. loaded", with a period after "vs". No wrong fact was found.
+
 Changelog: 28-11-2026 16:33:38
 
 Release 4.12.0.

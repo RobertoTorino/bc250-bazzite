@@ -123,7 +123,9 @@ def failing_card(monkeypatch, card: Path, root: Path | None = None) -> None:
             raise OSError(errno.EIO, "Input/output error", str(self))
         return real_dir(self, *args, **kwargs)
 
-    def scandir(path):
+    def scandir(path="."):
+        if isinstance(path, int):                       # a folder's descriptor: shutil.rmtree's, when pytest
+            return real_scandir(path)                   # removes tmp_path (Python 3.15) while this is in place
         entries = list(real_scandir(path))
         if broken(path):                                # the card lists its entries, none can be asked about
             return [Unreadable(Path(entry.path)) for entry in entries]

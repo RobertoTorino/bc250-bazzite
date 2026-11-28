@@ -143,8 +143,8 @@ def test_installed_with_bios_and_games(qapp, folders, tmp_path):
     assert str(bios_dir(folders["pcsx2_home"])) in window.bios_state.toolTip()
     assert window.emulator_box.value.text() == emulator.VERSION
     assert window.emulator_state.text() == "Installed. Uninstall with the Uninstall button."
-    assert window.emulator_state.toolTip() == (f"PCSX2 {emulator.VERSION}, the stable release this version of the "
-                                               "app was tried with")
+    assert window.emulator_state.toolTip() == (f"PCSX2 {emulator.VERSION}, the nightly this version of the app "
+                                               "was made with")
     assert window.table.rowCount() == 1 and window.steam_box.value.text() == "0"
     assert not window.install_pill.isEnabled() and window.remove_pill.isEnabled()
     assert window.bios_remove_pill.isEnabled()
@@ -166,7 +166,7 @@ def test_the_controller_state(qapp, folders, tmp_path):
     devices.write_text(STEAM_ONLY)
     window = _window(folders, devices=devices)
     assert window.controller.text() == "No controller" and window.controller.kind == "warn"
-    assert "PS button" in window.controller.toolTip() and window.controller_timer.isActive()
+    assert "wake it" in window.controller.toolTip() and window.controller_timer.isActive()
     assert window.controller_timer.interval() == window.CONTROLLER_POLL
     devices.write_text(DS4_AND_STEAM)
     window.show_controller()                                                    # as the timer does
@@ -1139,5 +1139,5 @@ def test_a_window_without_a_controller_says_so_on_the_desktop_once(qapp, folders
     window = _window(folders, devices=devices)
     window.show_controller()
     assert [args[1] for args in notifications] == ["No controller connected"]
-    assert "PS button" in notifications[0][2]
+    assert "wake it" in notifications[0][2] and "PS button" not in notifications[0][2]
     window.close()

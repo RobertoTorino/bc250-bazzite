@@ -72,6 +72,7 @@ def _click_link(qapp, label: QLabel) -> None:
 def _window(folders, **kwargs) -> MainWindow:
     closed = kwargs.pop("closed", [])
     kwargs.setdefault("newer_release", lambda: None)                         # never GitHub in a test
+    kwargs.setdefault("newest", emulator.tested)                              # Install's build: the made-with one
     kwargs.setdefault("shad_running", lambda: False)
     kwargs.setdefault("devices", folders["home"].parent / "no-devices")       # no controller, no file
     kwargs.setdefault("open_url", lambda url: True)
@@ -88,7 +89,7 @@ def test_before_installing(qapp, folders):
     assert window.pill.text() == "Not installed"
     # The state alone, in the words every manager uses (owner, 07-11-2026); what Install does in the tip.
     assert window.emulator_state.text() == "Not installed. Install it with the Install button."
-    assert f"Install downloads shadPS4 {emulator.VERSION}" in window.emulator_state.toolTip()
+    assert "Install downloads shadPS4's newest nightly" in window.emulator_state.toolTip()   # owner, 28-11-2026
     assert window.install_pill.isEnabled() and not window.remove_pill.isEnabled()
     assert not window.shad_button.isEnabled()
     assert window.refresh_pill.isEnabled() and window.package_pill.isEnabled()
@@ -145,10 +146,9 @@ def test_installed_with_games(qapp, folders):
     _install(folders["home"])
     window = _window(folders)
     assert window.pill.text() == "Modules missing"
-    assert window.emulator_box.value.text() == emulator.VERSION
+    assert window.emulator_box.value.text() == "nightly"                       # too long for the box
     assert window.emulator_state.text() == "Installed. Uninstall with the Uninstall button."           # the state alone (owner)
-    assert window.emulator_state.toolTip() == (f"shadPS4 {emulator.VERSION}, the release this version of the app "
-                                               "was tried with")
+    assert window.emulator_state.toolTip() == f"shadPS4 {emulator.VERSION} is in use."
     # Ok in green or Missing sys modules in red (owner, 24-10-2026), the count and the folder in the tooltip.
     assert window.modules_state.text() == f"<b style='color:{RED};'>Missing sys modules</b>"
     assert str(folders["shad_home"] / "sys_modules") in window.modules_state.toolTip()
@@ -213,26 +213,22 @@ def test_install_runs_off_the_window(qapp, folders, monkeypatch):
     window.on_install()
     assert not window.install_pill.isEnabled() and not window.refresh_pill.isEnabled()        # busy
     _wait(window, qapp)
-    assert window.running.text() == f"shadPS4 {emulator.VERSION} is installed."
+    assert window.running.text() == f"shadPS4 {emulator.VERSION}, the newest nightly, is installed."
     assert window.version == emulator.VERSION and window.pill.text() == "Modules missing"
     assert window.refresh_pill.isEnabled()
     window.close()
 
 
 def test_another_version_installed_than_the_app_brings(qapp, folders):
-    """The line shows the state alone (owner, 07-11-2026), the box the version, the advice in the tooltip and the
-    log once (as BC-250 RPCS3 Manager's); a nightly build from before the channel went is too long for the box."""
+    """The line shows the state alone (owner, 07-11-2026), the box the version, the tooltip the build in use. Install
+    is on when GitHub's newest nightly is another build (owner, 28-11-2026: the nightly builds)."""
     (folders["home"] / "2026-10-15-b2d7ec7").mkdir(parents=True)
     (folders["home"] / "2026-10-15-b2d7ec7" / emulator.MEMBER).write_text("")
     (folders["home"] / "current").symlink_to("2026-10-15-b2d7ec7")
     window = _window(folders)
     assert window.emulator_state.text() == "Installed. Uninstall with the Uninstall button." and window.emulator_box.value.text() == "nightly"
-    assert window.emulator_state.toolTip() == (f"shadPS4 2026-10-15-b2d7ec7 is in use; it was not tried on the board. "
-                                               f"This version of the app was tried with {emulator.VERSION}: Install "
-                                               "puts it back in use.")
-    assert window.install_pill.isEnabled()
-    window.refresh()
-    assert window.output.toPlainText().count("Install puts it back in use") == 1                # once
+    assert window.emulator_state.toolTip() == "shadPS4 2026-10-15-b2d7ec7 is in use."
+    assert not window.install_pill.isEnabled()                                  # GitHub not asked: nothing known
     window.close()
 
 
@@ -464,7 +460,7 @@ def test_the_controller_state(qapp, folders, tmp_path):
     devices.write_text(STEAM_ONLY)
     window = _window(folders, devices=devices)
     assert window.controller.text() == "No controller" and window.controller.kind == "warn"
-    assert "PS button" in window.controller.toolTip() and window.controller_timer.isActive()
+    assert "wake it" in window.controller.toolTip() and window.controller_timer.isActive()
     devices.write_text(DS4_AND_STEAM)
     window.show_controller()                                                    # as the timer does
     assert window.controller.text() == "Controller connected" and window.controller.kind == "ok"
@@ -622,10 +618,11 @@ def test_the_settings_tab_is_not_squeezed(qapp, folders):
 
 
 def test_a_newer_shadps4_is_mentioned(qapp, folders):
+    """GitHub's newest nightly, when it is not the build in use: in the tip and the log, and Install puts it in."""
     from bc250_core.updates import ReleaseInfo
     _install(folders["home"])
-    release = ReleaseInfo("0.21.0", "v.0.21.0", "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.21.0",
-                          "2026-11-20")
+    release = ReleaseInfo("2026-11-29-abcdef0", "Pre-release-shadPS4-2026-11-29-abcdef0",
+                          "https://github.com/shadps4-emu/shadPS4/releases/tag/abcdef0", "2026-11-29")
     window = _window(folders, newer_release=lambda: release)
     deadline = time.monotonic() + 10
     while window.newer is None and time.monotonic() < deadline:
@@ -633,10 +630,17 @@ def test_a_newer_shadps4_is_mentioned(qapp, folders):
         time.sleep(0.01)
     tip = window.emulator_state.toolTip()                   # the line stays the state; the tip and the log say
     assert window.emulator_state.text() == "Installed. Uninstall with the Uninstall button."
-    assert "shadPS4 0.21.0 is out (2026-11-20)" in tip and "releases/tag/v.0.21.0" in tip
-    assert "shadPS4 0.21.0 is out (2026-11-20)" in window.output.toPlainText()
-    assert window.install_pill.isEnabled() is False                                # it never installs that one
+    assert "shadPS4's newest nightly is 2026-11-29-abcdef0 (2026-11-29). Install puts it in" in tip
+    assert "releases/tag/abcdef0" in tip and "newest nightly is 2026-11-29-abcdef0" in window.output.toPlainText()
+    assert window.install_pill.isEnabled()
     window.close()
+    same = _window(folders, newer_release=lambda: ReleaseInfo(emulator.VERSION, "", "", "2026-11-28"))
+    deadline = time.monotonic() + 10
+    while same.newer is None and time.monotonic() < deadline:
+        qapp.processEvents()
+        time.sleep(0.01)
+    assert not same.install_pill.isEnabled() and "newest nightly is" not in same.emulator_state.toolTip()
+    same.close()
 
 
 def test_shadnet_set_up_from_the_window(qapp, folders, monkeypatch):
@@ -1000,7 +1004,7 @@ def test_start_game_starts_the_chosen_game_through_steam(qapp, folders, monkeypa
     window.table.selectRow(0)
     title = window.chosen().title
     tabs.tabBarClicked.emit(start)                                           # chosen, but not in Steam yet
-    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet: tick it and press Update Steam "
+    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet: check it and press Update Steam "
                                                       "first.")
     window.table.item(0, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
@@ -1078,7 +1082,7 @@ def test_the_version_pill(qapp, folders, monkeypatch):
     window.versions_menu.hide()
     next(a for a in actions if a.text() == "other").trigger()
     assert window.version == "other" and window.running.text().endswith("is in use. It was not tried on the board.")
-    assert window.install_pill.isEnabled()                                      # puts the tested build back
+    assert not window.install_pill.isEnabled()                                  # no newer nightly known
     opened = []
     monkeypatch.setattr(builds_dialog.BuildsDialog, "exec",
                         lambda dialog: opened.append((dialog.home, dialog.tested.version, dialog.member)) or 0)
@@ -1191,5 +1195,5 @@ def test_a_window_without_a_controller_says_so_on_the_desktop_once(qapp, folders
     window = _window(folders, devices=devices)
     window.show_controller()
     assert [args[1] for args in notifications] == ["No controller connected"]
-    assert "PS button" in notifications[0][2]
+    assert "wake it" in notifications[0][2] and "PS button" not in notifications[0][2]
     window.close()

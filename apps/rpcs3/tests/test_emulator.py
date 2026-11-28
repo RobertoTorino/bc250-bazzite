@@ -33,9 +33,9 @@ def pinned(monkeypatch):
 
 def test_the_pin_points_at_the_build():
     assert emulator.URL == ("https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/"
-                            "build-46b7fb670b280d08036c7670270b713daef912c2/"
-                            "rpcs3-v0.0.43-20395-46b7fb67_linux64.AppImage")
-    assert emulator.VERSION == "0.0.43-20395" and len(emulator.SHA256) == 64
+                            "build-6ecaa5607ad51159291a82ba78d54fae2fcb8f35/"
+                            "rpcs3-v0.0.43-20664-6ecaa560_linux64.AppImage")
+    assert emulator.VERSION == "0.0.43-20664" and len(emulator.SHA256) == 64
     assert emulator.RELEASE_PAGE == "https://github.com/RPCS3/rpcs3/releases/tag/v0.0.43"
     assert emulator.SIZE_MB == 79
 
@@ -50,7 +50,7 @@ def test_install_and_remove(tmp_path, pinned):
     assert image.read_bytes() == APPIMAGE and image.stat().st_mode & 0o777 == 0o755
     assert image.name == "rpcs3.AppImage"                                        # the same name for every version
     assert (home / "current").is_symlink() and emulator.installed_version(home) == emulator.VERSION
-    assert sorted(p.name for p in home.iterdir()) == ["0.0.43-20395", "current"]   # no download left behind
+    assert sorted(p.name for p in home.iterdir()) == ["0.0.43-20664", "current"]   # no download left behind
     emulator.remove(home)
     assert not home.exists() and emulator.installed_version(home) == ""
 

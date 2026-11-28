@@ -38,11 +38,11 @@ check "core imports from the app copy" "(cd $A && /usr/bin/python3 -c 'import im
 echo "== 2. the run wrapper"
 bash "$RUN" --game /games/x > "$T/run.log" 2>&1; rc=$?
 check "without KytyPS5-Native it says so" "[ $rc -eq 1 ] && grep -q 'KytyPS5-Native is not installed' $T/run.log"
-mkdir -p "$D/$APP/emulator/2026-11-27-8278d03"
-printf '#!/bin/sh\necho "args: $*"\necho "from: $(pwd)"\n' > "$D/$APP/emulator/2026-11-27-8278d03/kyty_emulator"
-printf '#!/bin/sh\necho "launcher: $*"\n' > "$D/$APP/emulator/2026-11-27-8278d03/kyty_launcher"
-chmod +x "$D/$APP/emulator/2026-11-27-8278d03/kyty_emulator" "$D/$APP/emulator/2026-11-27-8278d03/kyty_launcher"
-ln -sfn 2026-11-27-8278d03 "$D/$APP/emulator/current"
+mkdir -p "$D/$APP/emulator/2026-11-28-b4520f4"
+printf '#!/bin/sh\necho "args: $*"\necho "from: $(pwd)"\n' > "$D/$APP/emulator/2026-11-28-b4520f4/kyty_emulator"
+printf '#!/bin/sh\necho "launcher: $*"\n' > "$D/$APP/emulator/2026-11-28-b4520f4/kyty_launcher"
+chmod +x "$D/$APP/emulator/2026-11-28-b4520f4/kyty_emulator" "$D/$APP/emulator/2026-11-28-b4520f4/kyty_launcher"
+ln -sfn 2026-11-28-b4520f4 "$D/$APP/emulator/current"
 mkdir -p "$T/games/My Game"                                                # a game that is there (the wrapper's gone check)
 bash "$RUN" --fullscreen --game "$T/games/My Game" > "$T/run.log" 2>&1; rc=$?
 check "starts the current KytyPS5-Native with the arguments as given" "[ $rc -eq 0 ] && grep -qF ' INFO args: --fullscreen --game $T/games/My Game' $D/$APP/emulator.log"

@@ -9,10 +9,10 @@
     python3 tools/text_check.py --gone PATH        # what a rewrite lost: commands, paths, numbers, links, headings
 
 The text is everything a person reads: the wiki and the READMEs, the text in the apps' windows (hints, tooltips,
-dialogs, messages, and the labels of buttons, boxes, tabs and columns), the portal's texts in portal/apps.toml
-(each app's name, summary and Changes the board text), the messages the apps' scripts print (install.sh,
-test-board.sh, the launchers) and the menu entries' names and comments. The CHANGELOGs are history and stay out. Code, commands,
-paths and link addresses are not text.
+dialogs, messages, and the labels of buttons, boxes, tabs and columns), the portal's texts in portal/apps.toml (each
+app's name, summary and Changes the board text), the messages the apps' scripts print (install.sh, test-board.sh, the
+launchers) and the menu entries' names and comments. The CHANGELOGs are history and stay out, and so do ALL-TESTS.md
+and DESIGN.md, which tools write from the code. Code, commands, paths and link addresses are not text.
 
 Three checks read it:
     rules           .claude/writing.md: a sentence over 30 words, a semicolon or colon that chains facts, a
@@ -61,7 +61,8 @@ LONG_WORDS = 30
 ASIDE_WORDS = 4
 LEAD_WORDS = 4                          # a colon after fewer words ends a name: "Turn on…: ..."
 STRING_WORDS = 4                        # a shorter string in the code is text only when a window shows it as a label
-SKIP_NAMES = {"CHANGELOG", "MIGRATION.md", "LICENSE", "CLAUDE.md"}
+SKIP_NAMES = {"CHANGELOG", "MIGRATION.md", "LICENSE", "CLAUDE.md",
+              "ALL-TESTS.md", "DESIGN.md"}      # written from the code, a fix there is lost (owner, 28-11-2026)
 SKIP_PARTS = {"tests", "node_modules", "site", "__pycache__", "styles"}
 WORDS = {
     "colour": "color", "colours": "colors", "coloured": "colored", "grey": "gray", "centre": "center",

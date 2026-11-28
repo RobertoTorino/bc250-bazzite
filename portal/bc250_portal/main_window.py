@@ -1958,7 +1958,7 @@ class MainWindow(QMainWindow):
             if entry.withdrawn and is_installed(entry) and entry.key not in self._withdrawal_tried:
                 self._withdrawal_tried.add(entry.key)
                 QMessageBox.information(
-                    self, APP_NAME, f"{entry.name} is not available any more: its release was withdrawn.\n\n"
+                    self, APP_NAME, f"{entry.name} is not available anymore: its release was withdrawn.\n\n"
                     f"{entry.withdrawn}\n\nThe portal removes it now; its uninstaller runs in a terminal.")
                 self._start(entry, "uninstall")
                 return

@@ -1,5 +1,5 @@
 {
-  "about": "The firmware and the emulators the suite's apps work with, and where Nexus Dependencies learns of their updates (nexus_deps/upstreams.py). Hand-written: id, name, what, kind, url, targets, label, how, pages, compare, stable, and per app its app, module and constants. Synced from the portal's apps.toml and each app's emulator.py by `dev/deps/run.sh --sync-upstreams` (tests/test_upstreams.py fails while it is stale): name and launcher, and an emulator's repo, pin and version.",
+  "about": "The firmware and the emulators the suite's apps work with, and where Nexus Dependencies learns of their updates (nexus_deps/upstreams.py). Hand-written: id, name, what, kind, url, targets, label, how, pages, compare, stable, nightly (the app installs nightlies), newest (its Install takes the newest one), project (an emulator's GitHub project when its builds are elsewhere), and per app its app, module and constants. Synced from the portal's apps.toml and each app's emulator.py by `dev/deps/run.sh --sync-upstreams` (tests/test_upstreams.py fails while it is stale): name and launcher, and an emulator's repo, pin and version.",
   "github": [
     {
       "id": "kytyps5",
@@ -17,8 +17,8 @@
             "version": "VERSION"
           },
           "repo": "superkeka/KytyPS5-Native",
-          "pin": "2026-11-27",
-          "version": "2026-11-27-8278d03",
+          "pin": "2026-11-28",
+          "version": "2026-11-28-b4520f4",
           "name": "BC-250 KytyPS5 Manager",
           "launcher": "~/.local/bin/bc250-kytyps5"
         }
@@ -29,7 +29,7 @@
       "name": "PCSX2",
       "what": "the PlayStation 2 emulator",
       "compare": "version",
-      "stable": true,
+      "stable": false,
       "apps": [
         {
           "app": "pcsx2",
@@ -40,12 +40,13 @@
             "version": "VERSION"
           },
           "repo": "PCSX2/pcsx2",
-          "pin": "2.8.2",
-          "version": "2.8.2",
+          "pin": "2.9.201",
+          "version": "2.9.201",
           "name": "BC-250 PCSX2 Manager",
           "launcher": "~/.local/bin/bc250-pcsx2-manager"
         }
-      ]
+      ],
+      "nightly": true
     },
     {
       "id": "ppsspp",
@@ -87,7 +88,7 @@
           },
           "repo": "RPCS3/rpcs3",
           "pin": "0.0.43",
-          "version": "0.0.43-20395",
+          "version": "0.0.43-20664",
           "name": "BC-250 RPCS3 Manager",
           "launcher": "~/.local/bin/bc250-rpcs3-manager"
         }
@@ -97,24 +98,26 @@
       "id": "shadps4",
       "name": "shadPS4",
       "what": "the PlayStation 4 emulator",
-      "compare": "version",
-      "stable": true,
+      "compare": "published",
+      "stable": false,
       "apps": [
         {
           "app": "shadps4",
           "module": "shadps4_manager/emulator.py",
           "constants": {
             "repo": "REPO",
-            "pin": "VERSION",
+            "pin": "PUBLISHED",
             "version": "VERSION"
           },
           "repo": "shadps4-emu/shadPS4",
-          "pin": "0.21.0",
-          "version": "0.21.0",
+          "pin": "2026-11-28",
+          "version": "2026-11-28-86aad15",
           "name": "BC-250 shadPS4 Manager",
           "launcher": "~/.local/bin/bc250-shadps4-manager"
         }
-      ]
+      ],
+      "nightly": true,
+      "newest": true
     },
     {
       "id": "vita3k",
@@ -132,12 +135,13 @@
             "version": "VERSION"
           },
           "repo": "Vita3K/Vita3K-builds",
-          "pin": "4377",
-          "version": "4377",
+          "pin": "4464",
+          "version": "4464",
           "name": "BC-250 Vita3K Manager",
           "launcher": "~/.local/bin/bc250-vita3k-manager"
         }
-      ]
+      ],
+      "project": "Vita3K/Vita3K"
     },
     {
       "id": "xenia",
@@ -155,8 +159,8 @@
             "version": "VERSION"
           },
           "repo": "xenia-canary/xenia-canary",
-          "pin": "2026-11-19T20:05:38Z",
-          "version": "54386cb",
+          "pin": "2026-11-28T15:55:34Z",
+          "version": "078898c",
           "name": "BC-250 Xenia Manager",
           "launcher": "~/.local/bin/bc250-xenia-manager"
         }
@@ -250,7 +254,7 @@
       "pages": [
         {
           "text": "Sony's PlayStation Portal system software page",
-          "url": "https://www.playstation.com/en-us/support/hardware/psportal/system-software-info/"
+          "url": "https://www.playstation.com/en-sg/support/hardware/psportal/system-software-info/"
         }
       ]
     }

@@ -7,7 +7,7 @@
 BC-250 shadPS4 Manager plays **PS4 games** on the **AMD BC-250** with [shadPS4](https://github.com/shadps4-emu/shadPS4),
 an open-source PS4 emulator. The app does these things for you:
 
-- It installs the shadPS4 release it was tried with.
+- It installs shadPS4's newest nightly build.
 - It finds the games in your game folders.
 - It adds them to Steam.
 
@@ -47,10 +47,10 @@ and red when not. Hold the pointer over a state to read it in full.
 - **Steam**: green while Steam runs and is signed in, red when it is not
 
 When the window opens without a controller, a desktop notification says so too. It asks you to switch the
-controller on or press its PS button.
+controller on or wake it.
 
 A game started from Steam reads the controller that is connected when it starts. So switch yours on before you
-start a game, or press its PS button to wake it. When Steam starts a game without a controller, the app also says
+start a game, or wake it. When Steam starts a game without a controller, the app also says
 so in a desktop notification. A game in Steam starts only while Steam is signed in. So start Steam and sign in
 before you start a game.
 
@@ -85,11 +85,12 @@ Then comes a row of six tabs:
 The four lines say this:
 
 - **shadPS4** says **Not installed.** or **Installed.**, with the button to use under it. The version pill in the
-  header shows the version installed. When this version of the app brings another shadPS4, the tooltip and the log
-  say so. **Install** then puts it back in use. **Install** downloads shadPS4 from its GitHub release (about 32
-  MB). Before it unpacks shadPS4, it checks the download against the checksum this version of the app was tried
-  with. **Uninstall** takes shadPS4 out again. shadPS4's own folder stays, with your saves, settings and system
-  modules.
+  header shows the version installed. It shows **nightly** for a nightly build. **Install** asks GitHub for
+  shadPS4's newest nightly and downloads it (about 32 MB). Before it unpacks shadPS4, it checks the download against
+  the SHA-256 GitHub publishes for it. No nightly was tried on the board. **Install** is on when shadPS4 is not
+  installed, or when GitHub's newest nightly is not the build in use. When a newer nightly is out, the tooltip and
+  the log say so. **Install** then puts it in. **Uninstall** takes shadPS4 out again. shadPS4's own folder stays, with
+  your saves, settings and system modules.
 - **Sys modules** says **Ok** in green when every module that shadPS4 cannot do without is in its module folder. It
   says **Missing sys modules** in red when one is not. The tooltip shows how many there are, which are missing and
   the folder's path. Many games run without them. Put the modules (`.sprx` files) from your own PS4's firmware in
@@ -111,15 +112,17 @@ the one in use. Pick another to put it in use. The games in Steam start whicheve
 shadPS4's own folder, with its saves, settings and system modules. **Manage versions…** under the list opens the
 version manager:
 
-- **Installed** lists every build in the app's folder. The one in use has a check mark. The one this version of the
-  app was tried with is marked **Tested**. **Use** puts the chosen build in use. **Delete** removes it, but not the
-  one in use. **Add** (**Custom build**) takes an AppImage of your own, which is not checked.
+- **Installed** lists every build in the app's folder. The one in use has a check mark. The nightly this version of
+  the app was made with is marked **Tested**. GitHub deletes it once the next nightly is out. **Use** puts the chosen
+  build in use. **Delete** removes it, but not the one in use. **Add** (**Custom build**) takes an AppImage of your
+  own, which is not checked.
 - **Download**: **Refresh** asks GitHub which builds there are. These are its stable releases and the pre-release, a
   nightly named after its date and commit. **Download** fetches the chosen one and checks it against the SHA-256
   GitHub publishes for it. It then puts the build beside the others. **Use** then puts it in use.
 
-Only the build marked **Tested** was tried on the board. To go back to it, pick it in the version pill's list. You can
-also press **shadPS4 Install**, which puts it back in use without a download when it is still there.
+No build was tried on the board. When you pick a build in the version pill's list, the app says so. To go back to
+an earlier build, pick it there. **shadPS4 Install** puts the newest nightly in. It takes no download when that
+build is still in the app's folder.
 
 ### Where your games go
 
@@ -540,7 +543,7 @@ give the same files, and the same messages when a package is bad.
 ## From a terminal
 
 `bc250-shadps4-run` starts the installed shadPS4 with the options you give it. The Steam shortcuts use it. So they
-keep working when a newer version of the app brings a newer shadPS4.
+keep working when another shadPS4 build is put in use.
 
 ```bash
 bc250-shadps4-run -f true -g "/path/to/game/eboot.bin"   # a game, full screen
@@ -581,12 +584,11 @@ python -m shadps4_manager.pkgxtractor.compare_delta <before.json> <after.json> [
 
 ## New shadPS4 releases
 
-Each version of the app was tried with one shadPS4 release, the one **Install** puts in. When the window opens, the
-app asks GitHub for shadPS4's newest stable release. It does not look at the daily development builds. When that
-release is newer, the shadPS4 line's tooltip and the log say so, with a link to what is new. The app does not install
-it by itself, but the [version manager](#versions) can. Once a newer shadPS4 has been tried, it comes with a newer
-version of the app, from the [portal](../portal.md). After you update the app, the tooltip says so, and **Install**
-brings the newer shadPS4.
+shadPS4 keeps only one nightly build on GitHub. It deletes it when the next one comes. So the app cannot pin a
+nightly. **Install** puts in the newest nightly there is. When the window opens, the app asks GitHub for shadPS4's
+newest nightly. When it is not the build in use, the shadPS4 line's tooltip and the log say so, with a link to what
+is new. The app does not install it by itself. **Install** puts it in. The [version manager](#versions) also has
+shadPS4's stable releases.
 
 ## How it works
 

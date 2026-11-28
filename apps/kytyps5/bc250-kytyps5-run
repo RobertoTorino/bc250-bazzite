@@ -85,7 +85,7 @@ if [ -n "$game" ]; then
         # starting, so the window is not where the eyes are.
         if [ -n "${SteamGameId:-}" ] && command -v notify-send >/dev/null 2>&1; then
             notify-send -a "BC-250 KytyPS5 Manager" -i input-gaming "No controller connected" \
-                "Switch your controller on, or press its PS button to wake it. KytyPS5-Native plays with the keyboard only until then." \
+                "Switch your controller on, or wake it. KytyPS5-Native plays with the keyboard only until then." \
                 2>/dev/null || true
         fi
     fi

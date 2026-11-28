@@ -71,7 +71,7 @@ def test_before_installing(qapp, folders):
     assert window.pill.text() == "Not installed"
     # The state alone, in the words every manager uses (owner, 07-11-2026); what Install does in the tip.
     assert window.emulator_state.text() == "Not installed. Install it with the Install button."
-    assert "Install downloads Xenia 54386cb" in window.emulator_state.toolTip()
+    assert "Install downloads Xenia 078898c" in window.emulator_state.toolTip()
     assert window.install_pill.isEnabled() and not window.remove_pill.isEnabled()
     assert not window.xenia_button.isEnabled() and not hasattr(window, "play_button")
     for name in ("folder_button", "forget_button"):
@@ -105,7 +105,7 @@ def test_an_older_build_is_offered_the_pinned_one(qapp, folders):
     window = _window(folders)
     assert window.emulator_state.text() == "Installed. Uninstall with the Uninstall button."
     assert "Xenia f42147a is in use. It was not tried on the board" in window.emulator_state.toolTip()
-    assert "tried with 54386cb. Install puts that build back in use" in window.emulator_state.toolTip()
+    assert "tried with 078898c. Install puts that build back in use" in window.emulator_state.toolTip()
     assert window.install_pill.isEnabled()
     window.refresh()
     assert window.output.toPlainText().count("Xenia f42147a is in use") == 1           # logged once
@@ -493,7 +493,7 @@ def test_start_game_starts_the_chosen_game_through_steam(qapp, folders, monkeypa
     window.table.selectRow(1)
     title = window.chosen().title
     tabs.tabBarClicked.emit(start)                                           # chosen, but not in Steam yet
-    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet: tick it and press Update Steam "
+    assert opened == [] and window.running.text() == (f"{title} is not in Steam yet: check it and press Update Steam "
                                                       "first.")
     window.table.item(1, 0).setCheckState(Qt.CheckState.Checked)
     window.on_update_steam()
@@ -745,5 +745,5 @@ def test_a_window_without_a_controller_says_so_on_the_desktop_once(qapp, folders
     window = _window(folders, devices=devices)
     window.show_controller()
     assert [args[1] for args in notifications] == ["No controller connected"]
-    assert "PS button" in notifications[0][2]
+    assert "wake it" in notifications[0][2] and "PS button" not in notifications[0][2]
     window.close()

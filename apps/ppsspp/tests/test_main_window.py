@@ -814,5 +814,5 @@ def test_a_window_without_a_controller_says_so_on_the_desktop_once(qapp, folders
     window = _window(folders, devices=devices)
     window.show_controller()
     assert [args[1] for args in notifications] == ["No controller connected"]
-    assert "PS button" in notifications[0][2]
+    assert "wake it" in notifications[0][2] and "PS button" not in notifications[0][2]
     window.close()

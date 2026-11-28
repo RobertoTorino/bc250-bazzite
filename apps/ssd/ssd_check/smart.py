@@ -25,6 +25,7 @@ serial only when asked (owner, 05-11-2026)."""
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 from collections.abc import Callable
@@ -120,6 +121,7 @@ class Drive:
     rated_read: int | None = None           # the maker's rated speeds, MB/s (rated.py); None: not in the list
     rated_write: int | None = None
     mounts: list[str] = field(default_factory=list, repr=False)  # where its file systems are mounted
+    file_systems: list[str] = field(default_factory=list, repr=False)   # one mount point per mounted file system
     data_read: int | None = None            # bytes the host read and wrote in all
     data_written: int | None = None
     update: str = UNKNOWN                   # a newer firmware: AVAILABLE, UP_TO_DATE, UNKNOWN, NOT_SUPPORTED
@@ -295,6 +297,39 @@ def devices(objects: dict) -> dict[str, str]:
     return found
 
 
+def file_system_points(objects: dict) -> dict[str, list[str]]:
+    """Drive path -> one mount point per mounted file system: a file system mounted in several places (Bazzite's
+    btrfs at /var, /var/home, /sysroot and more) counts once for the free space."""
+    found: dict[str, list[str]] = {}
+    for interfaces in objects.values():
+        block, filesystem = interfaces.get(BLOCK), interfaces.get(FILESYSTEM)
+        if not block or not filesystem:
+            continue
+        drive = value(block.get("Drive"))
+        points = [bytes(b for b in raw if b).decode(errors="replace")
+                  for raw in value(filesystem.get("MountPoints")) or []]
+        points = [point for point in points if point]
+        if drive and drive != "/" and points:
+            found.setdefault(drive, []).append(points[0])
+    return found
+
+
+def free_space(points: list[str], statvfs=os.statvfs) -> tuple[int, int] | None:
+    """The space free for files and the size of the file systems mounted at *points*, in bytes, as df counts them
+    (the blocks an ordinary user may still fill); None when none can be read."""
+    free = total = 0
+    read = False
+    for point in points:
+        try:
+            stats = statvfs(point)
+        except OSError:
+            continue
+        free += stats.f_bavail * stats.f_frsize
+        total += stats.f_blocks * stats.f_frsize
+        read = True
+    return (free, total) if read else None
+
+
 def mount_points(objects: dict) -> dict[str, list[str]]:
     """Drive path -> where its file systems are mounted (udisks' Filesystem.MountPoints)."""
     found: dict[str, list[str]] = {}
@@ -363,7 +398,7 @@ def read_drives(run_: Run = run, sysfs: Path = SYSFS) -> list[Drive]:
     objects = call(run_, ROOT_PATH, "org.freedesktop.DBus.ObjectManager", "GetManagedObjects") or {}
     if not isinstance(objects, dict):
         raise SmartError(f"{NO_UDISKS}: an unexpected reply")
-    names, mounted = devices(objects), mount_points(objects)
+    names, mounted, systems = devices(objects), mount_points(objects), file_system_points(objects)
     drives = []
     for path, interfaces in sorted(objects.items(), key=lambda item: str(value(
             item[1].get(DRIVE, {}).get("SortKey")) or item[0])):
@@ -373,7 +408,8 @@ def read_drives(run_: Run = run, sysfs: Path = SYSFS) -> list[Drive]:
         drive = Drive(path=path, model=" ".join(str(value(props.get(k)) or "") for k in ("Vendor", "Model")).strip(),
                       device=names.get(path, ""), size=int(value(props.get("Size")) or 0),
                       firmware=str(value(props.get("Revision")) or "").strip(),
-                      serial=str(value(props.get("Serial")) or "").strip(), mounts=mounted.get(path, []))
+                      serial=str(value(props.get("Serial")) or "").strip(), mounts=mounted.get(path, []),
+                      file_systems=systems.get(path, []))
         drive.rated_read, drive.rated_write = rated.speeds(drive.model) or (None, None)
         usb = value(props.get("ConnectionBus")) == "usb"
         try:

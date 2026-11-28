@@ -90,12 +90,12 @@ asks before it installs or opens them. Every change is software-only, and you ca
 | mesh | Mesh shaders for your games, with RADV and DirectMesh beside the system Mesa. |
 | consoles | Play your PS4 and PS5 from the board. Find, wake and register them, then start Remote Play. |
 | clb | Stream your XBOX or XBOX Cloud Gaming to the board, signed in with your Microsoft account. |
-| shadps4 | PS4 games in Steam. It sets up a tested shadPS4 release, finds your games and unpacks .pkg files. |
+| shadps4 | PS4 games in Steam. It sets up shadPS4's newest nightly build, finds your games and unpacks .pkg files. |
 | kytyps5 | PS5 games in Steam. It sets up a tested KytyPS5-Native release, checks the board's memory settings and finds your games. |
 | rpcs3 | PS3 classics in Steam. It sets up a tested RPCS3 build and the firmware, then finds your games. |
 | datstation | Test your PlayStation knowledge. A quiz, console history, region codes, user guides and news. |
 | ppsspp | PSP games in Steam. It sets up a tested PPSSPP release and finds your games. |
-| pcsx2 | PS2 favorites in Steam. It sets up a tested PCSX2 release and your PS2 BIOS, then finds your games. |
+| pcsx2 | PS2 favorites in Steam. It sets up a tested PCSX2 nightly build and your PS2 BIOS, then finds your games. |
 | vita3k | PS Vita games in Steam. It sets up a tested Vita3K build, then installs the firmware and your games. |
 | xenia | XBOX 360 games in Steam. It sets up a tested Xenia build. Xenia is experimental on Linux. |
 | overlay | Your vitals, always in sight. CPU, GPU, refresh rate, fan and temperatures in a window on top. |

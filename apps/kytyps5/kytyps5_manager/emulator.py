@@ -29,13 +29,13 @@ from bc250_core.updates import Fetch, ReleaseInfo, latest_release
 
 from . import APP_ID, __version__
 
-VERSION = "2026-11-27-8278d03"          # KytyPS5-Native names a release after its date and commit
+VERSION = "2026-11-28-b4520f4"          # KytyPS5-Native names a release after its date and commit
 TAG = f"KytyPS5-Native-{VERSION}"
 ASSET = f"{TAG}-Linux-x86_64.tar.gz"
-SHA256 = "3398587acb4641aecb30a8f704181736e7149f145a2d5a864f21f5333558ecd5"
+SHA256 = "b678615e2aadf55a55e2a62fc919cb6199112b9ad468c402db1a794fc52ac1a0"
 SIZE_MB = 41                            # the archive, for the question before downloading
 NAME = TAG                              # the release's name on GitHub
-PUBLISHED = "2026-11-27"
+PUBLISHED = "2026-11-28"
 MEMBER = "kyty_emulator"                # the emulator in a build's folder
 LAUNCHER = "kyty_launcher"              # its own window, beside it
 HELPER_INSTALL = "install-helper.sh"    # installs the GPU helper kyty-lodhw as a system service (root)
@@ -64,7 +64,7 @@ def kyty_data() -> Path:
 
 
 def installed_version(home: Path) -> str:
-    """The installed KytyPS5-Native version ("2026-11-27-8278d03"), "" when none is."""
+    """The installed KytyPS5-Native version ("2026-11-28-b4520f4"), "" when none is."""
     return builds.current(home, MEMBER)
 
 

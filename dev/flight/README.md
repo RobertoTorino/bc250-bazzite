@@ -7,7 +7,7 @@
 # Nexus Flight Recorder
 
 Nexus Flight Recorder writes down what the board does, one line per second, so the minutes before a fault are there
-afterwards. A system service does the recording. The window starts and stops it, and shows the minutes around a time
+afterward. A system service does the recording. The window starts and stops it, and shows the minutes around a time
 you type. Each line holds:
 
 - the load and the temperatures of the CPU and the GPU

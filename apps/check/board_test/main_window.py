@@ -793,7 +793,7 @@ class MainWindow(QMainWindow):
             return
         ran = (req.test_ids or list(TESTS)) if req else []
         errors = sum(1 for tid in ran if self._test_status.get(tid) == ERROR)
-        state = "cancelled" if cancelled else f"finished (exit {code})"
+        state = "canceled" if cancelled else f"finished (exit {code})"
         where = f" — log: {self._log.path}" if self._log else ""
         self.statusBar().showMessage(f"Run {state}, {errors} test(s) with errors{where}")
         self._log = None

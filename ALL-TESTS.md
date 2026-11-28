@@ -4,7 +4,7 @@
 
 Every test of the suite, by test folder: the test file, the test, how many cases a parametrized test runs, the time it took when that was 0.1 s or more, and what it checks (its docstring's first sentence, else its name). `tools/all_tests.py` writes this page from the tests, and CI fails when it is not the list of the tests as they are. The cases and the times are of one local pytest run of each folder (`tools/all_tests.py --run`), without the container and package setup each CI job has first; a test added since has none yet.
 
-3801 test functions (4365 cases counting the parametrized ones) in 46 test folders, and 47 installer tests.
+3806 test functions (4368 cases counting the parametrized ones) in 46 test folders, and 47 installer tests.
 
 ## Summary
 
@@ -33,8 +33,8 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [apps/quickfix](#appsquickfix) | 6 | 47 |  |
 | [apps/rpcs3](#appsrpcs3) | 12 | 127 | 6.4 s |
 | [apps/sftp](#appssftp) | 11 | 84 | 0.9 s |
-| [apps/shadps4](#appsshadps4) | 17 | 159 | 8.0 s |
-| [apps/ssd](#appsssd) | 4 | 49 | 0.9 s |
+| [apps/shadps4](#appsshadps4) | 17 | 160 | 8.0 s |
+| [apps/ssd](#appsssd) | 4 | 52 | 0.9 s |
 | [apps/turing](#appsturing) | 9 | 77 | 1.4 s |
 | [apps/upscaler](#appsupscaler) | 12 | 120 | 1.6 s |
 | [apps/vita3k](#appsvita3k) | 9 | 86 | 5.3 s |
@@ -44,7 +44,7 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [core](#core) | 33 | 249 | 4.6 s |
 | [dev/dash](#devdash) | 6 | 50 | 3.3 s |
 | [dev/demo](#devdemo) | 3 | 32 | 0.4 s |
-| [dev/deps](#devdeps) | 6 | 103 | 7.4 s |
+| [dev/deps](#devdeps) | 6 | 105 | 7.4 s |
 | [dev/flight](#devflight) | 3 | 21 |  |
 | [dev/garbage](#devgarbage) | 1 | 9 |  |
 | [dev/itests](#devitests) | 1 | 15 | 0.4 s |
@@ -55,8 +55,8 @@ Every test of the suite, by test folder: the test file, the test, how many cases
 | [dev/text](#devtext) | 5 | 44 |  |
 | [dev/textcheck](#devtextcheck) | 2 | 19 |  |
 | [portal](#portal) | 17 | 227 | 29.0 s |
-| [tools](#tools) | 43 | 260 | 11.1 s |
-| **All** | | **3801** | **182 s** |
+| [tools](#tools) | 43 | 259 | 11.1 s |
+| **All** | | **3806** | **182 s** |
 
 The pytest runs together take the time above. The rest of a local CI run is the setup of each job (a container, Python 3.12 and the job's own packages, once per test folder) and the jobs that are not pytest: the installer tests, the shell checks (shellcheck), the native build (FFmpeg) and the wiki. A push runs the jobs of what it changed, not all of them.
 
@@ -1474,7 +1474,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_emulator.py` | `test_a_failed_install_keeps_the_installed_one` |  |  | A failed install keeps the installed one. |
 | `test_emulator.py` | `test_an_install_from_before_build_json` |  |  | An earlier version of the app wrote the build's size in .size: replaced() still reads it. |
 | `test_emulator.py` | `test_download_errors_say_what_happened` |  |  | Download errors say what happened. |
-| `test_emulator.py` | `test_a_newer_pcsx2_stable` |  |  | A newer pcsx2 stable. |
+| `test_emulator.py` | `test_a_newer_pcsx2_build` |  |  | Any build newer than the pinned nightly, a nightly or a stable (owner, 28-11-2026: the nightly builds). |
 | `test_emulator.py` | `test_the_builds_on_github` |  |  | The version manager's list: the nightlies on the first page and the newest stable, which they push off it. |
 | `test_emulator.py` | `test_a_nightly_beside_the_stable` |  |  | A build from the version manager gets its own catalog, beside it. |
 | `test_games.py` | `test_system_cnf_is_read` |  |  | System cnf is read. |
@@ -2008,7 +2008,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/shadps4
 
-159 tests in 17 files, 8.0 s in a local run.
+160 tests in 17 files, 8.0 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2037,7 +2037,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_emulator.py` | `test_a_different_file_is_refused` |  |  | A different file is refused. |
 | `test_emulator.py` | `test_a_zip_without_the_appimage_or_damaged` |  |  | A zip without the appimage or damaged. |
 | `test_emulator.py` | `test_download_errors_say_what_happened` |  |  | Download errors say what happened. |
-| `test_emulator.py` | `test_a_newer_shadps4_release` |  |  | A newer shadps4 release. |
+| `test_emulator.py` | `test_the_newest_nightly` |  |  | Install's build and the window's news: GitHub's nightly, not a stable release beside it. |
+| `test_emulator.py` | `test_install_takes_what_github_names` |  |  | The newest nightly GitHub names is downloaded and put in use; already there, it is put in use alone. |
 | `test_extract.py` | `test_a_package_says_what_it_is` |  |  | A package says what it is. |
 | `test_extract.py` | `test_a_game_is_unpacked_into_its_ids_folder` |  |  | A game is unpacked into its ids folder. |
 | `test_extract.py` | `test_an_update_goes_beside_its_game_and_is_replaced_only_when_asked` |  | 0.1 s | An update goes beside its game and is replaced only when asked. |
@@ -2079,7 +2080,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_installed_with_games` |  |  | Installed with games. |
 | `test_main_window.py` | `test_system_modules_are_taken_from_the_apps_folder` |  |  | The .sprx files put in Games/PS4/Modules are copied into shadPS4's module folder when the window opens and on Refresh, only what is new or changed (owner, 03-11-2026); the state follows at once. |
 | `test_main_window.py` | `test_install_runs_off_the_window` |  | 0.1 s | Install runs off the window. |
-| `test_main_window.py` | `test_another_version_installed_than_the_app_brings` |  |  | The line shows the state alone (owner, 07-11-2026), the box the version, the advice in the tooltip and the log once (as BC-250 RPCS3 Manager's); a nightly build from before the channel went is too long for the box. |
+| `test_main_window.py` | `test_another_version_installed_than_the_app_brings` |  |  | The line shows the state alone (owner, 07-11-2026), the box the version, the tooltip the build in use. |
 | `test_main_window.py` | `test_steam_added_and_taken_out` |  | 0.4 s | Steam added and taken out. |
 | `test_main_window.py` | `test_a_shortcut_without_its_logo_is_brought_up_to_date` |  | 0.3 s | A shortcut made before the app set a logo: Update Steam is on for it until the logo is there. |
 | `test_main_window.py` | `test_a_shortcut_with_the_tags_of_the_old_name_is_brought_up_to_date` |  | 0.3 s | A shortcut made while the app was called BC-250 shadPS4 Manager: Update Steam is on for it until it has the tags of now. |
@@ -2099,7 +2100,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_the_blueprint_layout` |  |  | The managers' design (owner, 18-11-2026, BC-250 PPSSPP Manager's): the window 900 wide when it opens, which is also its narrowest, and what is in it asks for no more; Play time the last pill of the second row; the six tabs share the whole width, the last one up to the margin, with no line over them; under the header's pills the two links alone, in the type of a pill's caption, each still a link. |
 | `test_main_window.py` | `test_the_blue_look` |  | 0.1 s | The blue look. |
 | `test_main_window.py` | `test_the_settings_tab_is_not_squeezed` |  |  | The introduction and the state lines may wrap; their minimum heights count, so the tabs below get their minimum and the Settings tab's rows keep their height (as BC-250 RPCS3 Manager's). |
-| `test_main_window.py` | `test_a_newer_shadps4_is_mentioned` |  | 0.1 s | A newer shadps4 is mentioned. |
+| `test_main_window.py` | `test_a_newer_shadps4_is_mentioned` |  | 0.1 s | GitHub's newest nightly, when it is not the build in use: in the tip and the log, and Install puts it in. |
 | `test_main_window.py` | `test_shadnet_set_up_from_the_window` |  | 0.1 s | Shadnet set up from the window. |
 | `test_main_window.py` | `test_shadnet_not_saved_while_shadps4_runs` |  |  | Shadnet not saved while shadps4 runs. |
 | `test_main_window.py` | `test_shadnet_pill_off_online_offline` |  | 0.1 s | Shadnet pill off online offline. |
@@ -2174,7 +2175,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## apps/ssd
 
-49 tests in 4 files, 0.9 s in a local run.
+52 tests in 4 files, 0.9 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -2196,6 +2197,8 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_main_window.py` | `test_screenshot_saves_the_window_as_a_png_beside_the_drive_list` |  | 0.1 s | Screenshot saves the window as a png beside the drive list. |
 | `test_main_window.py` | `test_a_screenshot_that_cannot_be_written_says_so` |  |  | A screenshot that cannot be written says so. |
 | `test_main_window.py` | `test_screenshot_names_never_overwrite` |  |  | Screenshot names never overwrite. |
+| `test_main_window.py` | `test_the_free_space_beside_the_health` |  |  | Owner, 28-11-2026: the drive's free space in the top row. |
+| `test_main_window.py` | `test_refresh_and_the_i_at_the_right_of_the_top_row` |  |  | Owner, 28-11-2026: no Refresh pill; the refresh symbol and then the i at the right end of the title row, and the window as wide as the four pills and the margin after them. |
 | `test_rated.py` | `test_rated_speeds` | 33 |  | Rated speeds. |
 | `test_rated.py` | `test_every_entry_is_a_pattern_with_sane_speeds` |  |  | Every entry is a pattern with sane speeds. |
 | `test_smart.py` | `test_the_boards_nvme_drive_gives_all_three_values` |  |  | The boards nvme drive gives all three values. |
@@ -2222,6 +2225,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_smart.py` | `test_what_a_pcie_link_carries` | 4 |  | What a pcie link carries. |
 | `test_smart.py` | `test_an_nvme_enclosure_linked_at_usb_2_in_a_usb_3_port` |  |  | The owner's enclosure: its port does 5 Gb/s (its peer on the USB 3 bus), the drive linked at 480 Mb/s. |
 | `test_smart.py` | `test_a_usb_3_drive_in_a_faster_port_has_no_slow_link` |  |  | A usb 3 drive in a faster port has no slow link. |
+| `test_smart.py` | `test_each_mounted_file_system_once_for_the_free_space` |  |  | The board's btrfs is mounted at /sysroot, /var and /var/home: one file system, counted once (owner, 28-11-2026: the free space on the SSD). |
 | `test_speedtest.py` | `test_the_home_folder_when_it_is_on_the_drive` |  |  | The home folder when it is on the drive. |
 | `test_speedtest.py` | `test_else_a_writable_mount_point_and_none_unmounted` |  |  | Else a writable mount point and none unmounted. |
 | `test_speedtest.py` | `test_it_measures_and_leaves_nothing_behind` |  |  | It measures and leaves nothing behind. |
@@ -2520,14 +2524,14 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_shortcuts.py` | `test_artwork_sizes_with_and_without_the_games_pictures` |  | 0.7 s | Artwork sizes with and without the games pictures. |
 | `test_shortcuts.py` | `test_pictures_from_steamgriddb_in_place_of_the_drawn_ones` |  | 0.6 s | Pictures from steamgriddb in place of the drawn ones. |
 | `test_userdata.py` | `test_vita3ks_folders_follow_xdg` |  |  | Vita3ks folders follow xdg. |
-| `test_userdata.py` | `test_the_config_yml_of_build_4377` |  |  | The config yml of build 4377. |
+| `test_userdata.py` | `test_the_config_yml_of_build_4464` |  |  | The config yml of build 4464. |
 | `test_userdata.py` | `test_the_storage_where_vita3k_keeps_it` |  |  | The storage where vita3k keeps it. |
 | `test_userdata.py` | `test_the_firmware_parts` |  |  | The firmware parts. |
 | `test_userdata.py` | `test_what_one_install_wrote` |  |  | What one install wrote. |
-| `test_userdata.py` | `test_the_lines_the_app_owns_are_set_in_place` |  |  | The welcome window and the update check off (owner, 03-11-2026): the lines set where build 4377 wrote them, every other line kept; a second run changes nothing; a missing key goes before the end, a missing file is made. |
+| `test_userdata.py` | `test_the_lines_the_app_owns_are_set_in_place` |  |  | The welcome window and the update check off (owner, 03-11-2026): the lines set where build 4464 wrote them, every other line kept; a second run changes nothing; a missing key goes before the end, a missing file is made. |
 | `test_userdata.py` | `test_vita3k_running_sees_the_appimages_process` |  |  | Vita3k running sees the appimages process. |
 | `test_vita3k_settings.py` | `test_the_defaults_without_a_file` |  |  | The defaults without a file. |
-| `test_vita3k_settings.py` | `test_every_default_is_what_build_4377_writes` |  |  | config-4377.yml is the file Vita3K wrote on its first start: each setting's default is the value there. |
+| `test_vita3k_settings.py` | `test_every_default_is_what_build_4464_writes` |  |  | config-4464.yml is the file Vita3K wrote on its first start: each setting's default is the value there. |
 | `test_vita3k_settings.py` | `test_a_line_written_and_the_rest_kept` |  |  | A line written and the rest kept. |
 | `test_vita3k_settings.py` | `test_every_setting_is_one_of_vita3ks` |  |  | A CHOICE's default is one of its choices; the keys are unique; the boxes in order. |
 | `test_vita3k_settings.py` | `test_the_forms_of_a_value` |  |  | The forms of a value. |
@@ -3206,7 +3210,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## dev/deps
 
-103 tests in 6 files, 7.4 s in a local run.
+105 tests in 6 files, 7.4 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -3290,6 +3294,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_upstreams.py` | `test_the_ps4_list_is_read_by_its_one_attribute` |  |  | The ps4 list is read by its one attribute. |
 | `test_upstreams.py` | `test_the_system_software_pages_give_their_newest_version` |  |  | The PS5's and the Portal's pages: the first version a person reads, not the site's own numbers. |
 | `test_upstreams.py` | `test_every_card_links_to_sonys_pages` |  |  | Every card links to sonys pages. |
+| `test_upstreams.py` | `test_every_emulator_card_links_to_its_project_on_github` |  |  | Owner, 28-11-2026: the GitHub link on each emulator's card, also when GitHub could not be asked. |
 | `test_window.py` | `test_window_displays_package_and_tool_results` |  | 0.3 s | Window displays package and tool results. |
 | `test_window.py` | `test_missing_package_in_an_app_environment_is_reported` |  | 0.4 s | Missing package in an app environment is reported. |
 | `test_window.py` | `test_tools_that_need_root_say_so` |  | 0.4 s | Tools that need root say so. |
@@ -3310,6 +3315,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_window.py` | `test_an_image_of_a_new_fedora_release_is_by_hand` |  | 0.3 s | A system-wide change has no Update: the card says why, and its i gives the steps. |
 | `test_window.py` | `test_the_firmware_has_a_section_of_its_own` |  |  | The firmware has a section of its own. |
 | `test_window.py` | `test_the_emulators_have_a_section_of_their_own` |  |  | The emulators have a section of their own. |
+| `test_window.py` | `test_a_cards_links_are_on_the_card_and_open_in_the_browser` |  |  | Owner, 28-11-2026: every link clickable, Sony's pages and GitHub on the card itself. |
 | `test_window.py` | `test_the_question_has_a_checkbox_per_package` |  |  | Only what stays checked is updated (owner, 19-11-2026: "no checkmark, no update/install"). |
 | `test_window.py` | `test_the_question_for_dnf_names_pkexec_and_the_kernels_restart` |  |  | The question for dnf names pkexec and the kernels restart. |
 | `test_window.py` | `test_a_dnf_card_updates_the_checked_packages_alone` |  |  | A dnf card updates the checked packages alone. |
@@ -3972,7 +3978,7 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 
 ## tools
 
-260 tests in 43 files, 11.1 s in a local run.
+259 tests in 43 files, 11.1 s in a local run.
 
 | File | Test | Cases | Time | What it checks |
 |---|---|---|---|---|
@@ -4016,16 +4022,15 @@ The pytest runs together take the time above. The rest of a local CI run is the 
 | `test_check_manifest.py` | `test_no_checkout_tables` |  |  | The portal lists only released apps (owner, 27-10-2026): the tools that run from the checkout are started there, not from a Development tab. |
 | `test_check_manifest.py` | `test_checkout_table_change_needs_a_patch_bump` |  |  | Checkout table change needs a patch bump. |
 | `test_check_release.py` | `test_draft_uses_homebrews_gh` |  |  | Draft uses homebrews gh. |
-| `test_check_upstream.py` | `test_the_shadps4_pin_is_read_from_emulator_py` |  |  | The shadps4 pin is read from emulator py. |
-| `test_check_upstream.py` | `test_shadps4_in_step` |  |  | Shadps4 in step. |
-| `test_check_upstream.py` | `test_a_newer_shadps4_gives_what_the_pin_needs` | 3 |  | A newer shadps4 gives what the pin needs. |
+| `test_check_upstream.py` | `test_the_shadps4_constants_are_read_from_emulator_py` |  |  | The shadps4 constants are read from emulator py. |
+| `test_check_upstream.py` | `test_shadps4_in_step` |  |  | The newest nightly has its Linux zip with a SHA-256: Install can take it (owner, 28-11-2026: nightlies). |
+| `test_check_upstream.py` | `test_a_newer_nightly_is_no_drift` |  |  | A newer nightly is no drift. |
+| `test_check_upstream.py` | `test_a_nightly_install_cannot_take_is_drift` |  |  | A nightly install cannot take is drift. |
 | `test_check_upstream.py` | `test_the_kytyps5_pin_is_read_from_emulator_py_and_matches_it` |  |  | The kytyps5 pin is read from emulator py and matches it. |
 | `test_check_upstream.py` | `test_kytyps5_in_step` |  |  | Kytyps5 in step. |
 | `test_check_upstream.py` | `test_a_newer_kytyps5_gives_what_the_pin_needs` |  |  | A newer kytyps5 gives what the pin needs. |
 | `test_check_upstream.py` | `test_the_pinned_kytyps5_archive_replaced` |  |  | The pinned kytyps5 archive replaced. |
 | `test_check_upstream.py` | `test_exit_codes` |  |  | Exit codes. |
-| `test_check_upstream.py` | `test_an_older_shadps4_is_not_newer` |  |  | An older shadps4 is not newer. |
-| `test_check_upstream.py` | `test_a_replaced_shadps4_zip` |  |  | A replaced shadps4 zip. |
 | `test_check_upstream.py` | `test_the_helixsr_constants_are_read_from_acquire_py` |  |  | The helixsr constants are read from acquire py. |
 | `test_check_upstream.py` | `test_helixsr_in_step` |  |  | Helixsr in step. |
 | `test_check_upstream.py` | `test_a_newer_helixsr` |  |  | A newer helixsr. |

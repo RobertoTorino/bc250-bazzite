@@ -1,3 +1,8 @@
+Changelog: 28-11-2026 18:12:28
+
+Fixed. The launcher says "No checkout in ... anymore" instead of "any more" (owner, 28-11-2026). No wrong fact
+was found.
+
 Changelog: 24-11-2026 15:46:27
 
 Fixed. The texts name the dashboard Nexus Dashboard for BC-250, its new name.

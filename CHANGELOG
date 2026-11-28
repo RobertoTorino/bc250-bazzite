@@ -1,3 +1,38 @@
+Changelog: 28-11-2026 18:26:29
+
+Fixed. The upstream check's reports (tools/check_upstream.py), which become the weekly GitHub issue, say "anymore"
+instead of "any more", in American English (owner, 28-11-2026). Its tests follow.
+
+Changelog: 28-11-2026 18:12:28
+
+Fixed. The text check's spelling and language findings in the apps' window text, the scripts' messages and the menu
+entries were read and corrected to American English (owner, 28-11-2026). The fixes are in the CHANGELOGs of BC-250
+PCSX2 Manager, BC-250 shadPS4 Manager, BC-250 Xenia Manager, BC-250 PS Remote Play, BC-250 Upscaler Manager, BC-250
+Board Test, BC-250 XB Remote Play, the portal and Nexus TTS. The rest were false alarms, such as program names, kernel
+and driver names, regexes the code matches, file types and nouns like "the unlock". The 33 names and terms among them
+went into tools/text_check/words.txt. No wrong fact was found.
+
+Changelog: 28-11-2026 18:04:56
+
+Fixed. The text check (tools/text_check.py) skips ALL-TESTS.md and DESIGN.md (owner, 28-11-2026). Tools write both
+from the code, so a correction there was written over at the next run. Nexus Text Check lists them no more.
+
+Changelog: 28-11-2026 17:45:40
+
+Fixed. The text check's spelling and language findings in the wiki, the READMEs and the portal's texts were read and
+corrected to American English (owner, 28-11-2026). Of the 168 findings, one was a real error: Nexus Flight Recorder's
+README said "afterwards" and now says "afterward". The other 167 were false alarms, such as program names, people's
+names, paths, labels and nouns like "the unlock". The 43 names and terms among them went into
+tools/text_check/words.txt. No wrong fact was found. Code, comments in code, generated files (ALL-TESTS.md,
+DESIGN.md), the CHANGELOGs, DatStation and SSD Check stay out of this check.
+
+Changelog: 28-11-2026 17:30:51
+
+Fixed. The upstream check (tools/check_upstream.py) no longer checks a shadPS4 pin, since shadPS4 Manager now installs
+the newest nightly (owner, 28-11-2026). It reports drift only when GitHub's newest nightly has no Linux SDL zip with a
+SHA-256, which Install needs. A nightly newer than the one the app was made with is an ok line, with its link to look
+at what changed. Its tests follow.
+
 Changelog: 28-11-2026 16:17:39
 
 Fixed. tools/ci-local.sh names each job when it ends (owner, 28-11-2026). Before, the lines came in the list's order, so a long job held back the lines of the jobs after it.

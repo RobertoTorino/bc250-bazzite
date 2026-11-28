@@ -619,7 +619,7 @@ def deploy_folder(folder: Path, payload_dir: Path, ini_text: str | None = None,
         if not second_upscaler.is_file():
             raise HelixError("{0} does not exist.".format(second_upscaler))
         if same_file(second_upscaler, payload_dir / HELIXSR_DLL):
-            raise HelixError("{0} is HelixSR itself; pick another FidelityFX upscaler DLL, e.g. AMD's with FSR 4."
+            raise HelixError("{0} is HelixSR itself; pick another FidelityFX upscaler DLL, e.g., AMD's with FSR 4."
                 .format(second_upscaler))
         settings = parse_ini(ini_text if ini_text is not None else ini_template(payload_dir))
         settings.upscaler_dll = SECOND_UPSCALER_DLL

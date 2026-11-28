@@ -14,7 +14,8 @@ are read from each app's emulator.py by sync(), without importing the app.
 * Sony's system software pages give the newest version of the PS5 and the PlayStation Portal (owner, 28-11-2026),
   read from the page's text and news once in the same way.
 
-Each card's "i" links to Sony's pages for it: the system software pages and the steps to update a controller.
+Each card links to Sony's pages for it, on the card and in its "i": the system software pages and the steps to
+update a controller. An emulator's card links to its project and its latest release on GitHub (owner, 28-11-2026).
 
 Every card is "by hand": its about (the card's "i") says what the update does and how to handle it."""
 
@@ -229,21 +230,38 @@ def newer(compare: str, latest: dict, pin: str) -> bool:
 def check_github(entry: dict, fetch: Fetch = _fetch) -> Source:
     """An emulator's card: the build its app was tested with, and GitHub's latest release."""
     name, key, app = entry["name"], f"upstream-{entry['id']}", entry["apps"][0]
-    kind = "Latest stable on GitHub" if entry["stable"] else "Latest build on GitHub (no stable releases)"
+    kind = ("Latest nightly on GitHub" if entry.get("nightly") else "Latest stable on GitHub" if entry["stable"]
+            else "Latest build on GitHub (no stable releases)")
     try:
-        latest = fetch(f"https://api.github.com/repos/{app['repo']}/releases/latest")
+        if entry.get("nightly"):            # the app installs nightlies (owner, 28-11-2026): the newest release of all
+            found = fetch(f"https://api.github.com/repos/{app['repo']}/releases?per_page=1")
+            latest = found[0] if isinstance(found, list) and found else {}
+        else:
+            latest = fetch(f"https://api.github.com/repos/{app['repo']}/releases/latest")
         if not isinstance(latest, dict) or not latest.get("tag_name"):
             raise ValueError("not a release")
     except (OSError, ValueError) as exc:
         return Source(key, name, error=f"GitHub could not be asked: {exc}", group="emulators",
-                      about=_github_about(entry, {}))
+                      about=_github_about(entry, {}), links=_github_links(entry, {}))
     tag = str(latest["tag_name"])
     updates, note = (), ""
     if newer(entry["compare"], latest, app["pin"]):
         updates = (Update(f"{name} on GitHub", app["version"], tag),)
-        note = f"A newer build is out. It comes with a release of {app['name']}, after a test on a board."
+        note = (f"A newer nightly is out. Install in {app['name']} puts it in." if entry.get("newest") else
+                f"A newer build is out. It comes with a release of {app['name']}, after a test on a board.")
     return Source(key, name, updates, note=note, group="emulators", about=_github_about(entry, latest),
-                  detail=f"Tested build in {app['name']}: {app['version']}. {kind}: {tag}.")
+                  links=_github_links(entry, latest), detail=f"Tested build in {app['name']}: {app['version']}. {kind}: {tag}.")
+
+
+def _github_links(entry: dict, latest: dict) -> tuple[tuple[str, str], ...]:
+    """The emulator's project on GitHub ("project" where its builds are in another repository, as Vita3K's), and
+    the latest release when GitHub named it."""
+    app = entry["apps"][0]
+    project = entry.get("project") or app["repo"]
+    links = ((f"{entry['name']} on GitHub", f"https://github.com/{project}"),)
+    if latest.get("html_url"):
+        links += (("The latest release", str(latest["html_url"])),)
+    return links
 
 
 def _github_about(entry: dict, latest: dict) -> str:
@@ -297,6 +315,11 @@ def _pages(entry: dict) -> str:
                    for page in entry.get("pages", []))
 
 
+def _page_links(entry: dict) -> tuple[tuple[str, str], ...]:
+    """The entry's pages at Sony, for the links on its card."""
+    return tuple((page["text"], page["url"]) for page in entry.get("pages", []))
+
+
 def check_sony(entry: dict, seen: dict[str, str] | None, get: Get = _get) -> Source:
     """Sony's latest versions, compared with *seen* (what was known at the last look): a version that changed is an
     update, once. No *seen* yet: this look is the first, nothing is new."""
@@ -309,7 +332,8 @@ def check_sony(entry: dict, seen: dict[str, str] | None, get: Get = _get) -> Sou
         found = (parse_controllers(body, entry["targets"]) if entry["kind"] == "controllers" else
                  parse_page(body, entry["label"]) if entry["kind"] == "page" else parse_ps4(body))
     except (OSError, ValueError) as exc:
-        return Source(key, name, error=f"Sony's list could not be read: {exc}", group="apps", about=about)
+        return Source(key, name, error=f"Sony's list could not be read: {exc}", group="apps", about=about,
+                      links=_page_links(entry))
     seen = seen or {}
     updates = tuple(Update(label, seen[label], version) for label, version in found.items()
                     if label in seen and seen[label] != version)
@@ -317,7 +341,7 @@ def check_sony(entry: dict, seen: dict[str, str] | None, get: Get = _get) -> Sou
             + entry["how"].format(apps=users)) if updates else ""
     detail = "Latest: " + ", ".join(f"{label} {version}" for label, version in found.items()) + "."
     return Source(key, name, updates, note=note, group="apps", detail=detail, about=about,
-                  known=tuple(found.items()))
+                  known=tuple(found.items()), links=_page_links(entry))
 
 
 # --- Every upstream, and what was seen ------------------------------------------------------------------------
@@ -374,7 +398,7 @@ def _named_once(source: Source, named: dict) -> Source:
     fresh = tuple(update for update in source.updates if update.latest not in before)
     named[source.key] = sorted(before | {update.latest for update in source.updates})
     return Source(source.key, source.name, fresh, note=source.note if fresh else "", group=source.group,
-                  detail=source.detail, about=source.about)
+                  detail=source.detail, about=source.about, links=source.links)
 
 
 def main(argv: list[str] | None = None) -> int:

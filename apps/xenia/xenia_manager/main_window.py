@@ -428,12 +428,11 @@ class MainWindow(QMainWindow):
                                        "reads it.")
         else:
             self.controller.set_status("No controller", "warn",
-                                       "No controller is connected. Switch it on, or press its PS button to wake "
-                                       "it, before you start a game from Steam.")
+                                       "No controller is connected. Switch it on, or wake it, before you start a "
+                                       "game from Steam.")
             if first:           # said on the desktop too, as the run wrappers do (owner, 28-11-2026)
                 self.notify_desktop(APP_NAME, "No controller connected",
-                                    "Switch your controller on, or press its PS button to wake it, before you "
-                                    "start a game.")
+                                    "Switch your controller on, or wake it, before you start a game.")
                 self.log.warning("No controller was connected when the window opened.")
 
     def say(self, text: str, ok: bool = True) -> None:
@@ -725,7 +724,7 @@ class MainWindow(QMainWindow):
         number = (steam.shortcut_number(self.steam_dir, shortcuts.for_game(game))
                   if self.steam_dir is not None and str(game.file) in self.in_steam else None)
         if number is None:
-            self.say(f"{game.title} is not in Steam yet: tick it and press Update Steam first.", ok=False)
+            self.say(f"{game.title} is not in Steam yet: check it and press Update Steam first.", ok=False)
             return
         if self.xenia_running():
             self.say(RUNNING_START, ok=False)

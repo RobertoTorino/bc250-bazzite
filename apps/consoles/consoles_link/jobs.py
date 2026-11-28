@@ -97,7 +97,7 @@ def wake_and_wait(console: RegisteredConsole, progress: Callable[[str], None] = 
         answers = [c for c in search() if c.host_id == console.host_id]
     if not answers:
         return Outcome(False, f"{name} does not answer. Is it on, or in rest mode with its rest-mode settings for "
-                              "Remote Play (see the manual)?")
+                              "Remote Play (see the wiki)?")
     console = replace(console, address=answers[0].address)
     if answers[0].state == "ready":
         return Outcome(True, f"{name} is on.", console)

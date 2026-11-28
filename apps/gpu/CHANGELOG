@@ -1,3 +1,8 @@
+Changelog: 28-11-2026 18:19:45
+
+Fixed. The ramp-rates.normal tooltip says "toward" instead of "towards", in American English (owner, 28-11-2026: the
+spelling pass of the window text).
+
 Changelog: 26-11-2026 20:47:21
 
 Release 0.8.1.

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The window: the suite's header (the icon at 96 px, the name with the version, the drive's state beside it) with
-the health, the serial (a popup shows it), the speed test and Refresh on the second row (owner, 05-11-2026); below
+"""The window: the suite's header (the icon at 96 px, the name with the version, the drive's state beside it, the
+refresh symbol and the i at the right) with the health, the free space, the serial (a popup shows it) and the speed
+test on the second row (owner, 05-11-2026 and 28-11-2026), the window as wide as that row; below
 it the drive chosen by its number, its model and where its values come from, and its specs as pills: the power
 cycles, the power-on hours and days, the device, the data the host read and wrote, the firmware and whether a newer
 one exists, then a row on speed: the interface, the link now, the most the board's port carries and the maker's
@@ -12,6 +13,7 @@ Pictures folder; the serial stays hidden in it, as on the screen."""
 from __future__ import annotations
 
 import datetime
+import os
 import threading
 from pathlib import Path
 
@@ -22,8 +24,8 @@ from PyQt6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout, QLabel, QMainW
 
 from bc250_core.platform import private, show_in_folder
 from bc250_core.theme import GREEN, GREY, ORANGE, RED
-from bc250_core.widgets import (AppHeader, InfoButton, MetricBox, Pill, RoundedToolTip, StatusText, accent,
-                                hint_label, same_width)
+from bc250_core.widgets import (AppHeader, InfoButton, MetricBox, Pill, RefreshButton, RoundedToolTip, StatusText,
+                                accent, hint_label, same_width)
 
 from . import APP_NAME, LOGO_PATH, __version__, smart, speedtest
 
@@ -31,7 +33,7 @@ ABOUT = ("<b>Health</b> is how much of its rated life the drive has left, by the
          "reports how much it has used, and health is 100 minus that. A SATA SSD reports it in an attribute its "
          "maker chose. A drive without a known attribute shows “Not reported”.<br><b>Power cycles</b> is how "
          "often the drive was turned on. <b>Power-on hours</b> is how long it has run in all.<br>udisks reads the "
-         "values from the drive now and then. Refresh shows what it read last. A drive on USB often hides them "
+         "values from the drive now and then. A refresh shows what it read last. A drive on USB often hides them "
          "behind its adapter. Then only its specs show.<br><b>Update</b> says whether fwupd knows a newer "
          "firmware for the drive. <b>Serial</b> is hidden until you click it.<br><b>Board link</b> is the most "
          "the board's port carries. It turns orange when that is less than the drive can do. <b>Rated</b> is the "
@@ -109,11 +111,12 @@ def screenshot_path(folder: Path, now: datetime.datetime | None = None) -> Path:
 
 class MainWindow(QMainWindow):
     def __init__(self, run_: smart.Run = smart.run, threaded: bool = True, sysfs: Path = smart.SYSFS,
-                 home: Path | None = None, pictures_: Path | None = None) -> None:
+                 home: Path | None = None, pictures_: Path | None = None, statvfs=os.statvfs) -> None:
         super().__init__()
         self.setWindowTitle(APP_NAME)
         self.resize(820, 420)
         self.run, self.threaded, self.sysfs = run_, threaded, sysfs
+        self.statvfs = statvfs                                  # reads a file system's free space; tests set it
         self.home = home                                        # where the speed test prefers to write; tests set it
         self.pictures = pictures_                               # where Screenshot saves (default pictures()); tests set it
         self.measured: dict[str, tuple[float, float]] = {}     # drive path: its measured (read, write)
@@ -123,21 +126,24 @@ class MainWindow(QMainWindow):
         header = AppHeader(LOGO_PATH, APP_NAME, __version__)
         self.state = StatusText()
         header.add_state(self.state)
-        # The top row (owner, 05-11-2026): the health, the serial, the speed test and Refresh, as Wi-Fi Driver's and
-        # the portal's. The serial shows in a popup, so the pill keeps its width.
+        # Refresh as a symbol, then the i, at the right end of the top row (owner, 28-11-2026: no Refresh pill)
+        self.refresh_button = RefreshButton("Read the drives again")
+        self.refresh_button.clicked.connect(lambda: self.refresh())
+        header.add_action(self.refresh_button)
+        self.about = InfoButton(ABOUT, "About these values")
+        header.add_action(self.about)
+        # The top row (owner, 05-11-2026): the health, the free space, the serial and the speed test, as Wi-Fi
+        # Driver's and the portal's. The serial shows in a popup, so the pill keeps its width.
         self.health_box = MetricBox("Health")
+        self.free_box = MetricBox("Free space")  # owner, 28-11-2026: the drive's free space beside its health
         self.serial_pill = Pill(HIDDEN, "Serial", "Click to show the serial number")
         self.serial_pill.clicked.connect(self.show_serial_popup)
         self.serial_popup: QWidget | None = None
         self.measure_pill = Pill("Test", "Measured R / W MB/s")
         self.measure_pill.clicked.connect(self.measure)
-        self.refresh_pill = Pill("Refresh", "Click to refresh", "Read the drives again")
-        self.refresh_pill.clicked.connect(self.refresh)
-        same_width([self.health_box, self.serial_pill, self.measure_pill])
-        for box in (self.health_box, self.serial_pill, self.measure_pill, self.refresh_pill):
+        same_width([self.health_box, self.free_box, self.serial_pill, self.measure_pill])
+        for box in (self.health_box, self.free_box, self.serial_pill, self.measure_pill):
             header.add_second(box)
-        self.about = InfoButton(ABOUT, "About these values")
-        header.add_second(self.about)
         header.second_row.addStretch(1)
         contents = QWidget()
         layout = QVBoxLayout(contents)
@@ -198,11 +204,13 @@ class MainWindow(QMainWindow):
         layout.addLayout(grid)
         layout.addStretch(1)
         self.setCentralWidget(contents)
+        # As wide as the four pills and the margin after them (owner, 28-11-2026)
+        self.resize(self.sizeHint().width(), self.height())
         self.refresh()
 
     def refresh(self) -> None:
         """Reads the drives again; the window follows when udisks has answered."""
-        self.refresh_pill.setEnabled(False)
+        self.refresh_button.setEnabled(False)
         self.state.set_status("Reading…", "info")
         reader = _Reader(self.run, self.sysfs)
         reader.done.connect(self._read)
@@ -214,7 +222,7 @@ class MainWindow(QMainWindow):
 
     def _read(self, result) -> None:
         self.readers = [r for r in self.readers if r is not self.sender()]
-        self.refresh_pill.setEnabled(True)
+        self.refresh_button.setEnabled(True)
         chosen = self.current().path if self.current() else ""
         self.drives = result if isinstance(result, list) else []
         self.close_serial_popup()
@@ -244,7 +252,7 @@ class MainWindow(QMainWindow):
 
     def clear_boxes(self) -> None:
         self.model.setText("")
-        for box in (self.health_box, self.serial_pill, self.measure_pill, *self.specs):
+        for box in (self.health_box, self.free_box, self.serial_pill, self.measure_pill, *self.specs):
             box.set_value(NONE)
             box.set_colour(GREY)
         self.serial_pill.setEnabled(False)
@@ -253,6 +261,18 @@ class MainWindow(QMainWindow):
     def drive_chosen(self) -> None:
         self.close_serial_popup()               # another drive: the serial of the last one goes
         self.show_drive()
+
+    def show_free_space(self, drive: smart.Drive) -> None:
+        """The free space of the drive's mounted file systems, each counted once; the tooltip names no mount point
+        (a removable drive's holds the user name)."""
+        space = smart.free_space(drive.file_systems, self.statvfs)
+        if space is None:
+            self.free_box.set_value(NONE, "None of the drive's file systems is mounted")
+            return
+        free, total = space
+        count = len(drive.file_systems)
+        self.free_box.set_value(smart.size_text(free), f"{smart.size_text(free)} free of {smart.size_text(total)}, on "
+                                f"{count} mounted file system{'s' if count != 1 else ''}")
 
     def show_drive(self) -> None:
         drive = self.current()
@@ -268,6 +288,7 @@ class MainWindow(QMainWindow):
             self.health_box.set_value(f"{drive.health} %", f"From {drive.health_source}")
             # 0: the rated endurance is used up; the drive may still work, but keep a backup
             self.health_box.set_colour(RED if drive.warnings else ORANGE if drive.health == 0 else GREEN)
+        self.show_free_space(drive)
         self.cycles_box.set_value(NONE if drive.power_cycles is None else thousands(drive.power_cycles))
         if drive.hours is None:
             self.hours_box.set_value(NONE)
@@ -416,7 +437,7 @@ class MainWindow(QMainWindow):
     def show_serial_popup(self) -> None:
         """The serial in a popup below its pill, in the style of the info symbol's, selectable to copy; the pill keeps
         its width. The serial is personal data: shown only on a click, gone with a click elsewhere, another drive or
-        Refresh, and never logged."""
+        a refresh, and never logged."""
         drive = self.current()
         if drive is None or not drive.serial:
             return

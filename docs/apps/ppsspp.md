@@ -40,7 +40,7 @@ and red when not. Hold the pointer over a state to read it in full.
 - **Steam**: green while Steam runs and is signed in, red when it is not
 
 When the window opens without a controller, a desktop notification says so too. It asks you to switch the
-controller on or press its PS button.
+controller on or wake it.
 
 A game started from Steam reads the controller that is connected when it starts. So switch your controller on
 first. A game in Steam starts only while Steam is signed in. So start Steam and sign in before you start a game.

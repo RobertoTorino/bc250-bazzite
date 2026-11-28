@@ -76,9 +76,20 @@ def test_an_emulator_card_compares_the_pin_with_github():
     assert [(u.current, u.latest) for u in source.updates] == [(vita["apps"][0]["version"], newer_tag)]
     assert "no stable releases" in source.detail and "after a test on a board" in source.note
     assert 'href="https://github.com/x/releases/1"' in source.about
-    pcsx2 = _github("pcsx2")
-    same = upstreams.check_github(pcsx2, fetch=lambda url: {"tag_name": "v" + pcsx2["apps"][0]["pin"]})
-    assert same.updates == () and "Latest stable on GitHub" in same.detail
+    assert source.links == (("Vita3K on GitHub", "https://github.com/Vita3K/Vita3K"),        # the project, not
+                            ("The latest release", "https://github.com/x/releases/1"))       # its builds' repository
+    pcsx2 = _github("pcsx2")                    # nightlies (owner, 28-11-2026): the newest release of all
+    asked = []
+    same = upstreams.check_github(pcsx2, fetch=lambda url: asked.append(url)
+                                  or [{"tag_name": "v" + pcsx2["apps"][0]["pin"]}])
+    assert same.updates == () and "Latest nightly on GitHub" in same.detail
+    assert asked == ["https://api.github.com/repos/PCSX2/pcsx2/releases?per_page=1"]
+    later = upstreams.check_github(pcsx2, fetch=lambda url: [{"tag_name": "v2.9.999"}])
+    assert [u.latest for u in later.updates] == ["v2.9.999"] and "after a test on a board" in later.note
+    shad = _github("shadps4")                   # its Install takes the newest nightly itself
+    newer = upstreams.check_github(shad, fetch=lambda url: [{"tag_name": "Pre-release-shadPS4-2099-01-01-abc",
+                                                              "published_at": "2099-01-01T00:00:00Z"}])
+    assert newer.updates and newer.note.startswith("A newer nightly is out. Install in")
     failed = upstreams.check_github(_github("pcsx2"), fetch=lambda url: (_ for _ in ()).throw(OSError("offline")))
     assert failed.error.startswith("GitHub could not be asked") and failed.group == "emulators"
 
@@ -158,3 +169,11 @@ def test_every_card_links_to_sonys_pages():
                                      for page in item["pages"])
         assert all(page["url"].startswith("https://www.playstation.com/") and "srsltid" not in page["url"]
                    for page in item["pages"])
+        assert source.links == tuple((page["text"], page["url"]) for page in item["pages"])   # on the card too
+
+def test_every_emulator_card_links_to_its_project_on_github():
+    """Owner, 28-11-2026: the GitHub link on each emulator's card, also when GitHub could not be asked."""
+    for item in catalog()["github"]:
+        offline = upstreams.check_github(item, fetch=lambda url: (_ for _ in ()).throw(OSError("offline")))
+        project = item.get("project") or item["apps"][0]["repo"]
+        assert offline.links == ((f"{item['name']} on GitHub", f"https://github.com/{project}"),)

@@ -370,7 +370,8 @@ class BazziteCard(QFrame):
         layout.addLayout(title_row)
         self.text = QLabel("Reading Bazzite's update state…")
         self.text.setWordWrap(True)
-        self.text.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.text.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        self.text.setOpenExternalLinks(True)
         layout.addWidget(self.text)
 
     def show_state(self, state: BazziteState) -> None:
@@ -420,8 +421,17 @@ class SystemCard(QFrame):
         self.text = QLabel()
         self.text.setWordWrap(True)
         self.text.setTextFormat(Qt.TextFormat.RichText)
-        self.text.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.text.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        self.text.setOpenExternalLinks(True)
         layout.addWidget(self.text)
+        self.links = QLabel(" · ".join(f"<a href='{escape(url, quote=True)}'>{escape(text)}</a>"
+                                       for text, url in source.links))
+        self.links.setTextFormat(Qt.TextFormat.RichText)
+        self.links.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        self.links.setOpenExternalLinks(True)          # every link opens in the browser (owner, 28-11-2026)
+        self.links.setWordWrap(True)
+        self.links.setVisible(bool(source.links))
+        layout.addWidget(self.links)
         self.held = hint_label("")
         layout.addWidget(self.held)
         self.note = QLabel()

@@ -63,7 +63,7 @@ mkdir -p "$(dirname "$LAUNCHER")"
 cat >"$LAUNCHER" <<LAUNCH
 #!/usr/bin/env bash
 # $APP_NAME launcher, written by dev/text/install.sh. Runs the app of this checkout.
-[ -x "$APP/run.sh" ] || { echo "No checkout in $REPO any more; run dev/text/install.sh again." >&2; exit 1; }
+[ -x "$APP/run.sh" ] || { echo "No checkout in $REPO anymore; run dev/text/install.sh again." >&2; exit 1; }
 exec "$APP/run.sh" "\$@"
 LAUNCH
 chmod 755 "$LAUNCHER"

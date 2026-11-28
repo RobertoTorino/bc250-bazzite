@@ -1,3 +1,17 @@
+Changelog: 28-11-2026 17:23:00
+
+Added. The shadPS4 and PCSX2 cards look at the newest release of all, nightlies included, since both apps now install
+nightlies (owner, 28-11-2026; nightly in the catalog). shadPS4's card compares the dates (its pin is PUBLISHED) and
+says that Install in the app puts a newer nightly in (newest in the catalog).
+
+Changelog: 28-11-2026 17:08:04
+
+Added. Each firmware card shows its Sony pages as links on the card, and each emulator card links to its project and
+its latest release on GitHub (owner, 28-11-2026). Every link on a card opens in the browser, the card's text too.
+Vita3K's link goes to Vita3K/Vita3K (project in the catalog), not to the repository of its builds. The PlayStation
+Portal page is the one the owner named (en-sg). The catalog has the newer KytyPS5-Native, RPCS3, Vita3K and Xenia
+pins.
+
 Changelog: 28-11-2026 12:38:25
 
 Fixed. The comments and texts that name an emulator manager use its new name, such as BC-250 PCSX2 Manager (owner, 28-11-2026).
