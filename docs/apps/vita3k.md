@@ -293,10 +293,33 @@ tab. It also removes the three older files. The log holds what the app did. It h
 nor anything personal.
 
 Two buttons sit above the log. **BC-250 Vita3K Manager** shows the app's own log. **Vita3K** shows what Vita3K
-printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-vita3k-manager/emulator.log`. Each
-game's part opens with a line that says how the wrapper started Vita3K. It ends with a line that gives Vita3K's exit
-code. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps
+printed while the last games ran. The run wrapper writes it to `~/.local/share/bc250-vita3k-manager/emulator.log`.
+Every line starts with its time and a level: INFO, WARNING or ERROR. Every line shows your home folder as `~`. This file also turns over at 1 MB, and the app keeps
 the three older files. With **Vita3K** chosen, **Clear logs** empties that log and removes its three older files.
+
+Each game's part opens with these lines, written before the game starts:
+
+- how the wrapper started Vita3K
+- the Vita3K build
+- the board by its name, with its BIOS
+- the processor, its threads and the kernel
+- the game, by its title ID
+- each controller, or a warning that none is connected
+- the session, such as Wayland on KDE
+- each connected display with its name and preferred mode
+- the desktop's mode, such as 1920x1080 at 120 Hz
+- the memory and swap left
+
+It ends with these lines:
+
+- the exit code and the signal that ended it, as an error for a crash
+- how long the game ran
+- the memory and swap left
+- the system log's out-of-memory kills, GPU hangs, resets and faults, and core dumps while the game ran
+
+A line Vita3K prints is an ERROR when it starts with error or tells of a crash. It is a WARNING when it starts with
+warning or tells of something that failed. A game can be killed together with the wrapper that logs it. The next
+start then says so first, with what the system log has from that start on.
 
 ## From a terminal
 

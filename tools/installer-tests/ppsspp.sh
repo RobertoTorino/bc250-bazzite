@@ -52,7 +52,7 @@ chmod +x "$D/$APP/emulator/1.20.4/ppsspp.AppImage"
 ln -sfn 1.20.4 "$D/$APP/emulator/current"
 mkdir -p "$T/games" && touch "$T/games/My Game.iso"                           # a game that is there (the wrapper's gone check)
 bash "$RUN" --fullscreen --pause-menu-exit "$T/games/My Game.iso" > "$T/run.log" 2>&1; rc=$?
-check "starts the current PPSSPP with the arguments as given" "[ $rc -eq 0 ] && grep -qxF 'args: --fullscreen --pause-menu-exit $T/games/My Game.iso' $T/run.log $D/$APP/emulator.log"
+check "starts the current PPSSPP with the arguments as given" "[ $rc -eq 0 ] && cut -c21- $D/$APP/emulator.log | grep -qxF 'INFO args: --fullscreen --pause-menu-exit $T/games/My Game.iso'"
 
 echo "== 3. install a staged release (core bundled in the tarball) without the Desktop icon"
 rm -rf "$T/stage"; /usr/bin/python3 "$NEXUS/tools/stage_app.py" ppsspp "$T/stage" > /dev/null

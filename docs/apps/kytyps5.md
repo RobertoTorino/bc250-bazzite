@@ -143,6 +143,37 @@ Installing the helper changes how the board runs. To check that it is gone, run 
 The **View logs** tab shows what the app said and did, newest last. A box above it switches to what KytyPS5-Native
 printed while a game ran. **Clear logs** empties the log that is shown.
 
+Every line of the emulator log starts with its time and a level: INFO, WARNING or ERROR. A line KytyPS5-Native
+prints is an ERROR when it starts with error or tells of a crash. It is a WARNING when it starts with warning or
+tells of something that failed.
+
+The emulator log also has lines of its own around each game. Before the game starts it gives:
+
+- the KytyPS5-Native build
+- the board by its name, with its BIOS
+- the processor, its threads and the kernel
+- the game, with its title ID and version
+- each controller, or a warning that none is connected
+- the session, such as Wayland on KDE
+- each connected display with its name and preferred mode
+- the desktop's mode, such as 1920x1080 at 120 Hz
+- the size the game gets
+- the memory and swap left
+- whether the GPU helper runs
+
+KytyPS5-Native's own window sets the game's size in its settings. The log then gives `screen_resolution` and
+`fullscreen_enabled` from its `Kyty.ini`.
+
+After the game it gives:
+
+- the exit code and the signal that ended it, such as SIGPIPE, as an error for a crash
+- how long the game ran
+- the memory and swap left
+- the system log's out-of-memory kills, GPU hangs, resets and faults, and core dumps while the game ran
+
+A game can be killed together with the wrapper that logs it. The next start then says so first, with what the system
+log has from that start on.
+
 ## New KytyPS5-Native releases
 
 Each version of the app was tried with one KytyPS5-Native release, the one **Install** puts in. When the window

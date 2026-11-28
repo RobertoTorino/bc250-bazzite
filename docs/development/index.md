@@ -644,6 +644,7 @@ as its `AppInfo`.
 | `card` | `CardWindow`, the template of a small window, with the header's two symbols and rows of five even places |
 | `action_tab` | `ActionTab`, the last tab of a `QTabWidget` as a button, such as Start game in the game managers. A click acts, and the open page stays open |
 | `log_page` | `LogPage`, the View logs tab of a game manager. Two radio buttons choose the app's log or `emulator.log` beside it, which the run wrapper writes. Clear logs empties the log shown |
+| `gamelog.sh` | The emulator log of a game manager's run wrapper. The wrapper sources it and ends with `gamelog_run`. It writes the game's build, board, game, controllers, displays and memory before the start. After the end it writes the exit code, the time the game ran and the system log's crashes. Every line has its time and a level |
 | `settings` | `open_settings(info)` at each app's existing file, geometry helpers, `SettingsStore` (typed defaults) | board-test's `AppSettings` |
 | `help` | `HelpView`. The content stays in the app | upscaler |
 | `updates` | `latest_release()`, `UpdateStatus` and `UpdateChecker`. `latest_release()` takes a tag prefix for the per-app tags. It follows GitHub's release pages from the newest one, until a page holds the prefix, since other releases can fill the first page. The class `UpdateChecker` runs any job off the GUI thread | upscaler + governor |

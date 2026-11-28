@@ -45,12 +45,12 @@ chmod +x "$D/$APP/emulator/0.0.43-20395/rpcs3.AppImage"
 ln -sfn 0.0.43-20395 "$D/$APP/emulator/current"
 mkdir -p "$T/games/My Game/PS3_GAME/USRDIR" && touch "$T/games/My Game/PS3_GAME/USRDIR/EBOOT.BIN"   # a game that is there
 bash "$RUN" --no-gui --fullscreen "$T/games/My Game/PS3_GAME/USRDIR/EBOOT.BIN" > "$T/run.log" 2>&1; rc=$?
-check "starts the current RPCS3 with the arguments as given" "[ $rc -eq 0 ] && grep -qxF 'args: --no-gui --fullscreen $T/games/My Game/PS3_GAME/USRDIR/EBOOT.BIN' $T/run.log $D/$APP/emulator.log"
+check "starts the current RPCS3 with the arguments as given" "[ $rc -eq 0 ] && cut -c21- $D/$APP/emulator.log | grep -qxF 'INFO args: --no-gui --fullscreen $T/games/My Game/PS3_GAME/USRDIR/EBOOT.BIN'"
 check "the game started goes to the app's log, by its folder's name" "grep -q ' INFO Started My Game from a terminal, with' $D/$APP/$APP.log && ! grep -q '$T/games/' $D/$APP/$APP.log"
 bash "$RUN" --installpkg "/downloads/My Packages" > "$T/run.log" 2>&1; rc=$?
-check "a folder of packages is passed on and not logged as a game" "[ $rc -eq 0 ] && grep -qxF 'args: --installpkg /downloads/My Packages' $T/run.log $D/$APP/emulator.log && ! grep -q 'My Packages' $D/$APP/$APP.log"
+check "a folder of packages is passed on and not logged as a game" "[ $rc -eq 0 ] && cut -c21- $D/$APP/emulator.log | grep -qxF 'INFO args: --installpkg /downloads/My Packages' && ! grep -q 'My Packages' $D/$APP/$APP.log"
 bash "$RUN" --headless --installpkg "/downloads/My Packages/Game.pkg" > "$T/run.log" 2>&1; rc=$?
-check "a headless install of one package is passed on and not logged as a game" "[ $rc -eq 0 ] && grep -qxF 'args: --headless --installpkg /downloads/My Packages/Game.pkg' $T/run.log $D/$APP/emulator.log && ! grep -q 'Game.pkg' $D/$APP/$APP.log"
+check "a headless install of one package is passed on and not logged as a game" "[ $rc -eq 0 ] && cut -c21- $D/$APP/emulator.log | grep -qxF 'INFO args: --headless --installpkg /downloads/My Packages/Game.pkg' && ! grep -q 'Game.pkg' $D/$APP/$APP.log"
 
 echo "== 3. install a staged release (core bundled in the tarball) without the Desktop icon"
 rm -rf "$T/stage"; /usr/bin/python3 "$NEXUS/tools/stage_app.py" rpcs3 "$T/stage" > /dev/null

@@ -45,7 +45,7 @@ from bc250_core.action_tab import ActionTab
 from bc250_core.builds_dialog import BuildsDialog, fill_menu
 from bc250_core.keep_dialog import KeepDialog
 from bc250_core.log_page import LogPage
-from bc250_core.platform import bin_home, private, xdg_open
+from bc250_core.platform import bin_home, notify, private, xdg_open
 from bc250_core.settings import SettingsStore
 from bc250_core.updates import ReleaseInfo, UpdateChecker
 from bc250_core.widgets import AppHeader, InfoButton, MetricBox, StatusText, WrappedLabel, hint_label
@@ -147,6 +147,8 @@ class RpcsSettings(SettingsStore):
 
 class MainWindow(QMainWindow):
     CONTROLLER_POLL = 3000                  # ms: how often the window looks for a controller
+    # The desktop notification when the window opens without a controller (owner, 28-11-2026); another in the tests.
+    notify_desktop = staticmethod(notify)
 
     def __init__(self, home: Path | None = None, rpcs3_home: Path | None = None, steam_dir: Path | None = None,
                  run: Path | None = None, fetch: emulator.Download = emulator.download,
@@ -538,6 +540,7 @@ class MainWindow(QMainWindow):
         found = controllers.connected(self.devices)
         if found == self.controllers:
             return
+        first = self.controllers is None                # the window's first look
         self.controllers = found
         if found:
             self.controller.set_status("Controller connected" if len(found) == 1 else f"{len(found)} controllers",
@@ -552,6 +555,11 @@ class MainWindow(QMainWindow):
                                        "No controller is connected. Switch it on, or press its PS button to wake "
                                        "it, before you start a game from Steam. Without one, RPCS3 plays with the "
                                        "keyboard only.")
+            if first:           # said on the desktop too, as the run wrappers do (owner, 28-11-2026)
+                self.notify_desktop(APP_NAME, "No controller connected",
+                                    "Switch your controller on, or press its PS button to wake it, before you "
+                                    "start a game.")
+                self.log.warning("No controller was connected when the window opened.")
 
     def prepare_rpcs3(self) -> bool:
         """RPCS3's files brought to what the app owns (its GUI settings; the pad file follows the controllers,
